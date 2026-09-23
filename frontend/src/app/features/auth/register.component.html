@@ -1,0 +1,87 @@
+<app-auth-layout heading="Créer ton compte" intro="Quelques informations et tu peux commencer ton parcours.">
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (error(); as err) {
+      <div class="alert alert--error" role="alert">{{ err.message }}</div>
+    }
+
+    <div class="field">
+      <label for="displayName">Nom affiché</label>
+      <input id="displayName" class="input" type="text" formControlName="displayName" autocomplete="nickname"
+             [attr.aria-invalid]="invalid('displayName')" aria-describedby="displayName-error">
+      @if (invalid('displayName')) {
+        <span id="displayName-error" class="field__error">
+          {{ serverError('displayName') ?? (form.controls.displayName.hasError('required')
+              ? 'Le nom affiché est obligatoire.'
+              : 'Le nom affiché doit contenir entre 2 et 60 caractères.') }}
+        </span>
+      }
+    </div>
+
+    <div class="field">
+      <label for="email">Adresse e-mail</label>
+      <input id="email" class="input" type="email" formControlName="email" autocomplete="email"
+             [attr.aria-invalid]="invalid('email')" aria-describedby="email-error">
+      @if (invalid('email')) {
+        <span id="email-error" class="field__error">
+          {{ serverError('email') ?? (form.controls.email.hasError('required')
+              ? "L'adresse e-mail est obligatoire."
+              : "L'adresse e-mail n'est pas valide.") }}
+        </span>
+      }
+    </div>
+
+    <div class="field">
+      <label for="password">Mot de passe</label>
+      <div class="password">
+        <input id="password" class="input" [type]="showPassword() ? 'text' : 'password'" formControlName="password"
+               autocomplete="new-password" [attr.aria-invalid]="invalid('password')"
+               aria-describedby="password-hint password-error">
+        <button type="button" class="password__toggle" (click)="showPassword.set(!showPassword())"
+                [attr.aria-pressed]="showPassword()">
+          {{ showPassword() ? 'Masquer' : 'Afficher' }}
+        </button>
+      </div>
+      <span id="password-hint" class="field__hint">Au moins 10 caractères, dont une lettre et un chiffre.</span>
+      @if (invalid('password')) {
+        <span id="password-error" class="field__error">
+          {{ serverError('password') ?? (form.controls.password.hasError('required')
+              ? 'Le mot de passe est obligatoire.'
+              : 'Le mot de passe doit contenir entre 10 et 72 caractères, dont au moins une lettre et un chiffre.') }}
+        </span>
+      }
+    </div>
+
+    <div class="field">
+      <label for="confirmPassword">Confirme le mot de passe</label>
+      <input id="confirmPassword" class="input" [type]="showPassword() ? 'text' : 'password'"
+             formControlName="confirmPassword" autocomplete="new-password"
+             [attr.aria-invalid]="invalid('confirmPassword')" aria-describedby="confirmPassword-error">
+      @if (invalid('confirmPassword')) {
+        <span id="confirmPassword-error" class="field__error">
+          {{ serverError('confirmPassword') ?? (form.controls.confirmPassword.hasError('required')
+              ? 'La confirmation du mot de passe est obligatoire.'
+              : 'Les deux mots de passe ne correspondent pas.') }}
+        </span>
+      }
+    </div>
+
+    <div class="field">
+      <label class="checkbox">
+        <input type="checkbox" formControlName="acceptTerms" [attr.aria-invalid]="invalid('acceptTerms')"
+               aria-describedby="acceptTerms-error">
+        <span>J'accepte que mes données soient utilisées pour suivre ma progression, conformément à la politique de confidentialité.</span>
+      </label>
+      @if (invalid('acceptTerms')) {
+        <span id="acceptTerms-error" class="field__error">
+          {{ serverError('acceptTerms') ?? 'Tu dois accepter la politique de confidentialité pour créer un compte.' }}
+        </span>
+      }
+    </div>
+
+    <button type="submit" class="btn btn--block" [disabled]="submitting()">
+      {{ submitting() ? 'Création du compte…' : 'Créer mon compte' }}
+    </button>
+  </form>
+
+  <p class="switch">Déjà inscrite ? <a routerLink="/connexion">Se connecter</a></p>
+</app-auth-layout>

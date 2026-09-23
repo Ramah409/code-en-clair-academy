@@ -1,0 +1,112 @@
+.auth {
+  display: grid;
+  min-height: 100dvh;
+
+  @media (min-width: 900px) {
+    grid-template-columns: minmax(360px, 5fr) 7fr;
+  }
+}
+
+// ---------------------------------------------------------------- panneau de marque
+.auth__brand {
+  display: none;
+  position: relative;
+  overflow: hidden;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-7) var(--space-6);
+  background:
+    radial-gradient(120% 80% at 110% 0%, color-mix(in srgb, var(--rose-300) 35%, transparent), transparent 60%),
+    linear-gradient(160deg, var(--green-800), var(--green-900));
+  color: var(--green-50);
+
+  @media (min-width: 900px) {
+    display: flex;
+  }
+}
+
+.auth__logo {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+
+  span {
+    margin-left: 0.3em;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--rose-200);
+  }
+
+  &--compact {
+    margin-bottom: var(--space-6);
+    color: var(--primary-strong);
+
+    span {
+      color: var(--accent);
+    }
+
+    @media (min-width: 900px) {
+      display: none;
+    }
+  }
+}
+
+.auth__quote {
+  max-width: 14ch;
+  margin-bottom: var(--space-5);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 2.6vw + 1rem, 3rem);
+  font-weight: 500;
+  line-height: 1.1;
+  font-variation-settings: 'opsz' 144;
+}
+
+.auth__points {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--green-200);
+
+  li {
+    display: flex;
+    gap: var(--space-3);
+    align-items: baseline;
+
+    &::before {
+      content: '';
+      flex: none;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--rose-300);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.auth__foot {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--green-300);
+}
+
+// ---------------------------------------------------------------- formulaire
+.auth__main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-4);
+}
+
+.auth__panel {
+  width: min(440px, 100%);
+}
+
+.auth__title {
+  font-size: var(--fs-2xl);
+  margin-bottom: var(--space-2);
+}

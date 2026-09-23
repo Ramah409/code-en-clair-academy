@@ -1,1 +1,5 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@fontsource-variable/plus-jakarta-sans';
+@use '@fontsource-variable/fraunces';
+@use 'styles/tokens';
+@use 'styles/base';
+@use 'styles/components';

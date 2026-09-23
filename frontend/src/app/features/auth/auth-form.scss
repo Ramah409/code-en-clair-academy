@@ -1,0 +1,52 @@
+// Styles partagés par les formulaires de connexion et d'inscription
+
+form {
+  margin-top: var(--space-5);
+}
+
+.password {
+  position: relative;
+
+  .input {
+    padding-right: 5.5rem;
+  }
+}
+
+.password__toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  transform: translateY(-50%);
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--primary-soft);
+  }
+}
+
+.checkbox {
+  margin-bottom: var(--space-2);
+}
+
+.btn--block {
+  margin-top: var(--space-2);
+}
+
+.switch {
+  margin-top: var(--space-5);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+
+  a {
+    font-weight: 600;
+  }
+}

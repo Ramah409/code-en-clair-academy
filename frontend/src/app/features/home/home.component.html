@@ -1,0 +1,41 @@
+<header class="topbar">
+  <div class="container topbar__inner">
+    <p class="topbar__logo">CDA<span>Academy</span></p>
+    <button type="button" class="btn btn--secondary btn--sm" (click)="logout()">Se déconnecter</button>
+  </div>
+</header>
+
+@if (user(); as u) {
+  <main class="container home" id="contenu">
+    <div class="page-header">
+      <span class="eyebrow">Tableau de bord</span>
+      <h1>Bonjour {{ u.displayName }}</h1>
+      <p class="lead">Ton espace est prêt. Les parcours et les exercices arrivent bientôt ici.</p>
+    </div>
+
+    <div class="stats">
+      <section class="card" aria-labelledby="stat-level">
+        <h2 id="stat-level" class="card__title">Niveau {{ u.level }}</h2>
+        <div class="progress" role="progressbar" aria-label="Progression dans le niveau"
+             [attr.aria-valuenow]="levelProgress()" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress__bar" [style.width.%]="levelProgress()"></div>
+        </div>
+        <p class="muted stat__detail">{{ u.xp }} XP · prochain niveau à {{ u.nextLevelXp }} XP</p>
+      </section>
+
+      <section class="card" aria-labelledby="stat-streak">
+        <h2 id="stat-streak" class="card__title">Série en cours</h2>
+        <p class="stat__value">{{ u.currentStreak }} <span>jour{{ u.currentStreak > 1 ? 's' : '' }}</span></p>
+        <p class="muted stat__detail">Record : {{ u.longestStreak }} jour{{ u.longestStreak > 1 ? 's' : '' }}</p>
+      </section>
+
+      <section class="card" aria-labelledby="stat-goal">
+        <h2 id="stat-goal" class="card__title">Objectif quotidien</h2>
+        <p class="stat__value">{{ u.dailyGoalMinutes }} <span>min</span></p>
+        @if (u.role === 'ADMIN') {
+          <span class="chip chip--accent">Formatrice</span>
+        }
+      </section>
+    </div>
+  </main>
+}

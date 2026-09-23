@@ -1,0 +1,25 @@
+<div class="auth">
+  <aside class="auth__brand" aria-hidden="true">
+    <p class="auth__logo">CDA<span>Academy</span></p>
+    <div class="auth__pitch">
+      <p class="auth__quote">Un peu chaque jour, jusqu'au titre.</p>
+      <ul class="auth__points">
+        <li>Des parcours alignés sur le référentiel CDA</li>
+        <li>Des exercices corrigés et un suivi de progression</li>
+        <li>Un tuteur IA qui tourne en local, sans compte externe</li>
+      </ul>
+    </div>
+    <p class="auth__foot">Concepteur·rice Développeur·se d'Applications</p>
+  </aside>
+
+  <main class="auth__main" id="contenu">
+    <div class="auth__panel">
+      <p class="auth__logo auth__logo--compact">CDA<span>Academy</span></p>
+      <h1 class="auth__title">{{ heading() }}</h1>
+      @if (intro()) {
+        <p class="muted">{{ intro() }}</p>
+      }
+      <ng-content />
+    </div>
+  </main>
+</div>
