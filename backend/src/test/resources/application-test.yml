@@ -1,0 +1,7 @@
+app:
+  jwt:
+    secret: secret-de-test-uniquement-pour-les-tests-automatises-0123456789-abcdefghijklmnop
+    access-minutes: 5
+    refresh-days: 1
+  cors:
+    allowed-origins: http://localhost:4200
