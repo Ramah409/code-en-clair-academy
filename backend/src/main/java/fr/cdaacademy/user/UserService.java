@@ -72,7 +72,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public PageResponse<AdminUserResponse> search(String search, int page, int size) {
-        String term = (search == null || search.isBlank()) ? null : search.trim();
+        String term = search == null ? "" : search.trim();
         var pageable = PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, MAX_PAGE_SIZE),
                 Sort.by(Sort.Direction.DESC, "createdAt"));
         return PageResponse.from(users.search(term, pageable), UserMapper::toAdminResponse);

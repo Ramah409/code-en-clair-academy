@@ -18,3 +18,10 @@ export const guestGuard: CanActivateFn = () => {
   const router = inject(Router);
   return auth.isAuthenticated() ? router.createUrlTree(['/accueil']) : true;
 };
+
+/** Espace d'administration : réservé au rôle ADMIN (l'API le vérifie aussi). */
+export const adminGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  return auth.user()?.role === 'ADMIN' ? true : router.createUrlTree(['/accueil']);
+};

@@ -1,0 +1,62 @@
+<nav class="crumbs" aria-label="Fil d'Ariane"><a routerLink="/admin/parcours">Parcours et leçons</a> <span aria-hidden="true">›</span> Leçon</nav>
+
+@if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+}
+
+@if (lesson(); as l) {
+  <div class="adm-grid">
+    <aside class="adm-card">
+      <h2>Éléments rattachés</h2>
+      <h3>Questions ({{ l.questions.length }})</h3>
+      <ul class="adm-list">
+        @for (q of l.questions; track q.code) { <li><small><code>{{ q.code }}</code> — {{ q.prompt }}</small></li> }
+      </ul>
+      <a class="btn btn--secondary btn--sm" routerLink="/admin/questions" [queryParams]="{ lecon: l.id }"><app-icon name="plus" [size]="14" /> Question</a>
+      <h3>Exercices ({{ l.exercises.length }})</h3>
+      <ul class="adm-list">
+        @for (e of l.exercises; track e.slug) { <li><small><code>{{ e.slug }}</code> — {{ e.title }}</small></li> }
+      </ul>
+      <a class="btn btn--secondary btn--sm" routerLink="/admin/exercices" [queryParams]="{ lecon: l.id }"><app-icon name="plus" [size]="14" /> Exercice</a>
+      <p class="muted">Chaque petite leçon doit se terminer par un bloc « QCM de fin » d'au moins deux questions.</p>
+    </aside>
+
+    <form class="adm-form adm-card" (ngSubmit)="save()">
+      <h2>{{ l.title }}</h2>
+      <div class="adm-row">
+        <div class="field"><label for="l-title">Titre</label>
+          <input id="l-title" name="title" class="input" [ngModel]="l.title" (ngModelChange)="patch('title', $event)" /></div>
+        <div class="field"><label for="l-dur">Durée (5 à 15 min)</label>
+          <input id="l-dur" name="dur" type="number" min="5" max="15" class="input" [ngModel]="l.duration" (ngModelChange)="patch('duration', $event)" /></div>
+        <div class="field"><label for="l-xp">XP</label>
+          <input id="l-xp" name="xp" type="number" min="0" max="200" class="input" [ngModel]="l.xp" (ngModelChange)="patch('xp', $event)" /></div>
+      </div>
+      <div class="field"><label for="l-obj">Objectif</label>
+        <input id="l-obj" name="obj" class="input" [ngModel]="l.objective" (ngModelChange)="patch('objective', $event)" /></div>
+      <div class="field"><label for="l-pre">Prérequis</label>
+        <input id="l-pre" name="pre" class="input" [ngModel]="l.prerequisites" (ngModelChange)="patch('prerequisites', $event)" /></div>
+      <div class="adm-row">
+        <div class="field"><label for="l-memo">Fiche « À retenir » (Markdown)</label>
+          <textarea id="l-memo" name="memo" class="input" rows="6" [ngModel]="l.memo" (ngModelChange)="patch('memo', $event)"></textarea></div>
+        <div class="field"><label for="l-mist">Erreurs fréquentes (Markdown)</label>
+          <textarea id="l-mist" name="mist" class="input" rows="6" [ngModel]="l.commonMistakes" (ngModelChange)="patch('commonMistakes', $event)"></textarea></div>
+      </div>
+      <div class="field">
+        <label for="l-blocks">Blocs de la leçon (JSON)</label>
+        <p class="muted">Insérer un modèle :
+          @for (n of snippetNames; track n) { <button type="button" class="chip-toggle" (click)="insert(n)">{{ n }}</button> }
+          <button type="button" class="btn btn--ghost btn--sm" (click)="format()">Mettre en forme</button>
+        </p>
+        <textarea id="l-blocks" name="blocks" class="input adm-code" spellcheck="false" [ngModel]="blocksText()" (ngModelChange)="blocksText.set($event)"></textarea>
+      </div>
+      <label class="checkbox"><input type="checkbox" name="pub" [ngModel]="l.published" (ngModelChange)="patch('published', $event)" /> <span>Publiée</span></label>
+      <div class="row-actions">
+        <button type="submit" class="btn" [disabled]="busy()"><app-icon name="save" [size]="18" /> Enregistrer</button>
+        <a class="btn btn--ghost" [routerLink]="['/lecon', l.slug]">Voir la leçon</a>
+        <button type="button" class="btn btn--ghost" (click)="remove()"><app-icon name="trash" [size]="18" /> Supprimer</button>
+      </div>
+    </form>
+  </div>
+} @else if (!error()) {
+  <div class="skeleton skeleton--hero"></div>
+}

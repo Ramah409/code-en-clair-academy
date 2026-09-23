@@ -1,0 +1,86 @@
+@if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+}
+
+@if (editing(); as e) {
+  <form class="adm-form adm-card" (ngSubmit)="save()" aria-labelledby="e-edit-title">
+    <h2 id="e-edit-title">{{ e.id ? 'Modifier l’exercice' : 'Nouvel exercice' }}</h2>
+    @if (check(); as c) {
+      <div class="adm-check" [class.adm-check--ok]="c.success" [class.adm-check--ko]="!c.success" role="status">
+        <strong>{{ c.success ? 'La correction de référence est acceptée par le correcteur.' : 'La correction de référence est refusée : corrige l’exercice.' }}</strong>
+        <p>{{ c.message }}</p>
+        @if (c.problems.length) { <ul>@for (p of c.problems; track p) { <li>{{ p }}</li> }</ul> }
+      </div>
+    }
+    <div class="adm-row">
+      <div class="field"><label for="e-slug">Slug</label>
+        <input id="e-slug" name="slug" class="input" [ngModel]="e.slug" (ngModelChange)="patch('slug', $event)" /></div>
+      <div class="field"><label for="e-kind">Type</label>
+        <select id="e-kind" name="kind" class="select" [ngModel]="e.kind" (ngModelChange)="patch('kind', $event)">
+          @for (k of kindKeys; track k) { <option [value]="k">{{ kinds[k] || k }}</option> }
+        </select></div>
+      <div class="field"><label for="e-diff">Difficulté</label>
+        <select id="e-diff" name="diff" class="select" [ngModel]="e.difficulty" (ngModelChange)="patch('difficulty', $event)">
+          <option value="FACILE">Facile</option><option value="INTERMEDIAIRE">Intermédiaire</option><option value="DIFFICILE">Difficile</option>
+        </select></div>
+      <div class="field"><label for="e-xp">XP</label>
+        <input id="e-xp" name="xp" type="number" min="0" max="200" class="input" [ngModel]="e.xp" (ngModelChange)="patch('xp', $event)" /></div>
+      <div class="field"><label for="e-lesson">Leçon (id)</label>
+        <input id="e-lesson" name="lesson" type="number" class="input" [ngModel]="e.lessonId" (ngModelChange)="patch('lessonId', $event)" /></div>
+    </div>
+    <div class="field"><label for="e-title">Titre</label>
+      <input id="e-title" name="title" class="input" [ngModel]="e.title" (ngModelChange)="patch('title', $event)" /></div>
+    <div class="field"><label for="e-stmt">Énoncé (Markdown)</label>
+      <textarea id="e-stmt" name="stmt" class="input" rows="4" [ngModel]="e.statement" (ngModelChange)="patch('statement', $event)"></textarea></div>
+    <div class="field"><label for="e-crit">Critères de réussite</label>
+      <input id="e-crit" name="crit" class="input" [ngModel]="e.criteria" (ngModelChange)="patch('criteria', $event)" /></div>
+    <fieldset class="field">
+      <legend>Trois indices, du plus léger au plus précis</legend>
+      @for (h of e.hints; track $index; let i = $index) {
+        <input class="input" [name]="'h' + i" [attr.aria-label]="'Indice ' + (i + 1)" [ngModel]="h" (ngModelChange)="patchHint(i, $event)" />
+      }
+    </fieldset>
+    <div class="adm-row">
+      <div class="field"><label for="e-sol">Solution de référence</label>
+        <textarea id="e-sol" name="sol" class="input adm-code" style="min-height: 140px" spellcheck="false" [ngModel]="e.solution" (ngModelChange)="patch('solution', $event)"></textarea></div>
+      <div class="field"><label for="e-expl">Correction expliquée (Markdown)</label>
+        <textarea id="e-expl" name="expl" class="input" rows="6" [ngModel]="e.explanation" (ngModelChange)="patch('explanation', $event)"></textarea></div>
+    </div>
+    <div class="field"><label for="e-payload">Paramètres de correction (payload JSON)</label>
+      <textarea id="e-payload" name="payload" class="input adm-code" spellcheck="false" [ngModel]="payloadText()" (ngModelChange)="payloadText.set($event)"></textarea></div>
+    <div class="row-actions">
+      <button type="submit" class="btn" [disabled]="busy()"><app-icon name="save" [size]="18" /> Enregistrer et vérifier</button>
+      <button type="button" class="btn btn--ghost" (click)="editing.set(null)">Fermer</button>
+      @if (e.id) { <button type="button" class="btn btn--ghost" (click)="remove()"><app-icon name="trash" [size]="18" /> Supprimer</button> }
+    </div>
+  </form>
+}
+
+<section class="adm-card" aria-labelledby="e-list-title">
+  <h2 id="e-list-title">Exercices</h2>
+  <form class="adm-row" (ngSubmit)="load()">
+    <select class="select" name="course" aria-label="Filtrer par parcours" [ngModel]="course()" (ngModelChange)="course.set($event)">
+      <option value="">Tous les parcours</option>
+      @for (c of courses(); track c.id) { <option [ngValue]="c.id">{{ c.title }}</option> }
+    </select>
+    <input class="input" name="search" type="search" placeholder="Rechercher" aria-label="Rechercher" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+    <button type="submit" class="btn btn--secondary"><app-icon name="search" [size]="16" /> Filtrer</button>
+    <button type="button" class="btn" (click)="create()"><app-icon name="plus" [size]="16" /> Nouvel exercice</button>
+  </form>
+  <div class="result__scroll">
+    <table class="adm-table">
+      <thead><tr><th>Titre</th><th>Type</th><th>Leçon</th><th>Essais</th><th></th></tr></thead>
+      <tbody>
+        @for (r of rows(); track r.id) {
+          <tr>
+            <td>{{ r.title }}<br /><code class="muted">{{ r.slug }}</code></td>
+            <td>{{ kinds[r.kind] || r.kind }}</td>
+            <td>{{ r.lessonTitle || r.courseTitle || '—' }}</td>
+            <td>{{ r.attempts }}</td>
+            <td><button type="button" class="icon-btn" (click)="edit(r)" [attr.aria-label]="'Modifier ' + r.title"><app-icon name="edit" [size]="16" /></button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

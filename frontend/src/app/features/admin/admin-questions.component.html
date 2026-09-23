@@ -1,0 +1,100 @@
+@if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+}
+
+@if (editing(); as q) {
+  <form class="adm-form adm-card" (ngSubmit)="save()" aria-labelledby="q-edit-title">
+    <h2 id="q-edit-title">{{ q.id ? 'Modifier la question' : 'Nouvelle question' }}</h2>
+    @if (q.usage) { <p class="muted">Déjà utilisée {{ q.usage }} fois par des apprenantes : préfère la dépublier plutôt que de la supprimer.</p> }
+    <div class="adm-row">
+      <div class="field"><label for="q-code">Code (identifiant)</label>
+        <input id="q-code" name="code" class="input" placeholder="généré si vide" [ngModel]="q.code" (ngModelChange)="patch('code', $event)" /></div>
+      <div class="field"><label for="q-kind">Type</label>
+        <select id="q-kind" name="kind" class="select" [ngModel]="q.kind" (ngModelChange)="patch('kind', $event)">
+          @for (k of kindKeys; track k) { <option [value]="k">{{ kinds[k] }}</option> }
+        </select></div>
+      <div class="field"><label for="q-diff">Difficulté (1 à 4)</label>
+        <input id="q-diff" name="diff" type="number" min="1" max="4" class="input" [ngModel]="q.difficulty" (ngModelChange)="patch('difficulty', $event)" /></div>
+      <div class="field"><label for="q-lesson">Leçon (id, facultatif)</label>
+        <input id="q-lesson" name="lesson" type="number" class="input" [ngModel]="q.lessonId" (ngModelChange)="patch('lessonId', $event)" /></div>
+    </div>
+    <div class="field"><label for="q-prompt">Énoncé (Markdown)</label>
+      <textarea id="q-prompt" name="prompt" class="input" rows="3" [ngModel]="q.prompt" (ngModelChange)="patch('prompt', $event)"></textarea></div>
+    <div class="adm-row">
+      <div class="field"><label for="q-snippet">Extrait de code (facultatif)</label>
+        <textarea id="q-snippet" name="snippet" class="input adm-code" style="min-height: 90px" [ngModel]="q.snippet" (ngModelChange)="patch('snippet', $event)"></textarea></div>
+      <div class="field"><label for="q-lang">Langage de l'extrait</label>
+        <input id="q-lang" name="lang" class="input" placeholder="sql, java, typescript…" [ngModel]="q.language" (ngModelChange)="patch('language', $event)" /></div>
+    </div>
+
+    @if (isText()) {
+      <fieldset class="field">
+        <legend>Réponses acceptées</legend>
+        @for (a of q.answers; track $index; let i = $index) {
+          <input class="input" [name]="'ans' + i" [attr.aria-label]="'Réponse acceptée ' + (i + 1)" [ngModel]="a" (ngModelChange)="patchAnswer(i, $event)" />
+        }
+        <button type="button" class="btn btn--ghost btn--sm" (click)="addAnswer()"><app-icon name="plus" [size]="14" /> Variante</button>
+      </fieldset>
+    } @else {
+      <fieldset class="field">
+        <legend>Choix (coche la ou les bonnes réponses ; chaque choix explique pourquoi)</legend>
+        @for (c of q.choices; track $index; let i = $index) {
+          <div class="adm-choice">
+            <input type="checkbox" [name]="'ok' + i" [attr.aria-label]="'Choix ' + (i + 1) + ' correct'" [ngModel]="c.correct" (ngModelChange)="patchChoice(i, { correct: $event })" />
+            <input class="input" [name]="'lab' + i" placeholder="Libellé" [attr.aria-label]="'Libellé du choix ' + (i + 1)" [ngModel]="c.label" (ngModelChange)="patchChoice(i, { label: $event })" />
+            <input class="input" [name]="'why' + i" placeholder="Pourquoi (affiché à la correction)" [attr.aria-label]="'Explication du choix ' + (i + 1)" [ngModel]="c.why" (ngModelChange)="patchChoice(i, { why: $event })" />
+            <button type="button" class="icon-btn" (click)="removeChoice(i)" [attr.aria-label]="'Retirer le choix ' + (i + 1)"><app-icon name="x" [size]="16" /></button>
+          </div>
+        }
+        <button type="button" class="btn btn--ghost btn--sm" (click)="addChoice()"><app-icon name="plus" [size]="14" /> Choix</button>
+      </fieldset>
+    }
+
+    <div class="field"><label for="q-expl">Explication générale (affichée après la réponse)</label>
+      <textarea id="q-expl" name="expl" class="input" rows="3" [ngModel]="q.explanation" (ngModelChange)="patch('explanation', $event)"></textarea></div>
+    <label class="checkbox"><input type="checkbox" name="pub" [ngModel]="q.published" (ngModelChange)="patch('published', $event)" /> <span>Publiée (utilisable dans les QCM)</span></label>
+    <div class="row-actions">
+      <button type="submit" class="btn" [disabled]="busy()"><app-icon name="save" [size]="18" /> Enregistrer</button>
+      <button type="button" class="btn btn--ghost" (click)="editing.set(null)">Fermer</button>
+      @if (q.id) { <button type="button" class="btn btn--ghost" (click)="remove()"><app-icon name="trash" [size]="18" /> Supprimer</button> }
+    </div>
+  </form>
+}
+
+<section class="adm-card" aria-labelledby="q-list-title">
+  <h2 id="q-list-title">Banque de questions</h2>
+  <form class="adm-row" (ngSubmit)="load(0)">
+    <select class="select" name="course" aria-label="Filtrer par parcours" [ngModel]="course()" (ngModelChange)="course.set($event)">
+      <option value="">Tous les parcours</option>
+      @for (c of courses(); track c.id) { <option [ngValue]="c.id">{{ c.title }}</option> }
+    </select>
+    <input class="input" name="search" type="search" placeholder="Rechercher (énoncé ou code)" aria-label="Rechercher"
+           [ngModel]="search()" (ngModelChange)="search.set($event)" />
+    <button type="submit" class="btn btn--secondary"><app-icon name="search" [size]="16" /> Filtrer</button>
+    <button type="button" class="btn" (click)="create()"><app-icon name="plus" [size]="16" /> Nouvelle question</button>
+  </form>
+  @if (page(); as p) {
+    <p class="muted">{{ p.totalElements }} question{{ p.totalElements > 1 ? 's' : '' }}</p>
+    <div class="result__scroll">
+      <table class="adm-table">
+        <thead><tr><th>Code</th><th>Énoncé</th><th>Type</th><th>Leçon</th><th></th></tr></thead>
+        <tbody>
+          @for (r of p.content; track r.id) {
+            <tr [class.is-off]="!r.published">
+              <td><code>{{ r.code }}</code></td>
+              <td>{{ r.prompt }}</td>
+              <td>{{ kinds[r.kind] }} — niv. {{ r.difficulty }}</td>
+              <td>{{ r.lessonTitle || r.chapterTitle || '—' }}</td>
+              <td><button type="button" class="icon-btn" (click)="edit(r)" [attr.aria-label]="'Modifier ' + r.code"><app-icon name="edit" [size]="16" /></button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="row-actions">
+      <button type="button" class="btn btn--ghost btn--sm" [disabled]="p.page === 0" (click)="load(p.page - 1)">Précédent</button>
+      <span class="muted">Page {{ p.page + 1 }} / {{ p.totalPages || 1 }}</span>
+      <button type="button" class="btn btn--ghost btn--sm" [disabled]="p.page + 1 >= p.totalPages" (click)="load(p.page + 1)">Suivant</button>
+    </div>
+  }
+</section>

@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { authGuard, guestGuard } from './core/auth/auth.guards';
+import { adminGuard, authGuard, guestGuard } from './core/auth/auth.guards';
 import { ShellComponent } from './layout/shell.component';
 
 export const routes: Routes = [
@@ -120,6 +120,37 @@ export const routes: Routes = [
         title: 'Attestation · Code en Clair Academy',
         loadComponent: () =>
           import('./features/certificates/certificate-print.component').then((m) => m.CertificatePrintComponent),
+      },
+      {
+        path: 'admin',
+        title: 'Administration · Code en Clair Academy',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./features/admin/admin.component').then((m) => m.AdminComponent),
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'parcours' },
+          {
+            path: 'parcours',
+            loadComponent: () => import('./features/admin/admin-courses.component').then((m) => m.AdminCoursesComponent),
+          },
+          {
+            path: 'lecons/:id',
+            loadComponent: () => import('./features/admin/admin-lesson.component').then((m) => m.AdminLessonComponent),
+          },
+          {
+            path: 'questions',
+            loadComponent: () =>
+              import('./features/admin/admin-questions.component').then((m) => m.AdminQuestionsComponent),
+          },
+          {
+            path: 'exercices',
+            loadComponent: () =>
+              import('./features/admin/admin-exercises.component').then((m) => m.AdminExercisesComponent),
+          },
+          {
+            path: 'comptes',
+            loadComponent: () => import('./features/admin/admin-users.component').then((m) => m.AdminUsersComponent),
+          },
+        ],
       },
       {
         path: 'progression',

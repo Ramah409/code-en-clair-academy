@@ -16,10 +16,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("select count(u) > 0 from User u where lower(u.email) = lower(:email)")
     boolean existsByEmailIgnoreCase(@Param("email") String email);
 
-    /** Recherche paramétrée (aucune concaténation SQL) sur le nom affiché ou l'e-mail. */
+    /**
+     * Recherche paramétrée (aucune concaténation SQL) sur le nom affiché ou l'e-mail. Une recherche vide
+     * est passée en chaîne vide et non en null : PostgreSQL ne sait pas typer un paramètre null (bytea).
+     */
     @Query("""
             select u from User u
-            where :search is null
+            where :search = ''
                or lower(u.email) like lower(concat('%', :search, '%'))
                or lower(u.displayName) like lower(concat('%', :search, '%'))
             """)

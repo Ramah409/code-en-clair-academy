@@ -188,6 +188,12 @@ public class ExerciseService {
                 showSolution ? ex.payload().get("solutionModel") : null);
     }
 
+    /** Correction sans enregistrement ni récompense (vérification d'un exercice par l'administration). */
+    public ValidationResult preview(long userId, String slug, JsonNode answer) {
+        Exercise ex = find(slug);
+        return validator(ex).validate(ex, answer);
+    }
+
     static int xpFor(Exercise ex, State st) {
         double xp = ex.xp() * (1 - 0.2 * st.hintsUsed());
         if (st.solutionViewed()) {
