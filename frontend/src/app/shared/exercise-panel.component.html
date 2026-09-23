@@ -1,0 +1,169 @@
+@if (ex(); as e) {
+  <section class="exo" [class.exo--solved]="e.solved" [class.exo--compact]="compact()" [attr.aria-labelledby]="'exo-' + e.slug">
+    <header class="exo__head">
+      <div class="exo__tags">
+        <span class="tag tag--kind">{{ kindLabel() }}</span>
+        <span class="tag">{{ difficultyLabel() }}</span>
+        <span class="tag tag--xp"><app-icon name="bolt" [size]="14" /> {{ e.xp }} XP</span>
+        @if (e.solved) {
+          <span class="tag tag--done"><app-icon name="check" [size]="14" /> Réussi</span>
+        }
+      </div>
+      <h3 class="exo__title" [id]="'exo-' + e.slug">{{ e.title }}</h3>
+    </header>
+
+    <div class="exo__statement"><app-markdown [md]="e.statement" /></div>
+    @if (e.criteria) {
+      <p class="exo__criteria"><app-icon name="target" [size]="16" /> <span>{{ e.criteria }}</span></p>
+    }
+
+    <!-- Zone de travail selon le type d'exercice -->
+    @switch (e.kind) {
+      @case ('COMPLETER') {
+        <div class="blanks" [attr.aria-label]="'Code à compléter, ' + blanks().length + ' trous'">
+          <pre class="blanks__code"><code>@for (part of templateParts(); track $index) {@if (part.blank !== undefined) {<input class="blanks__input" type="text" spellcheck="false" autocomplete="off"
+                  [attr.aria-label]="'Trou n° ' + (part.blank + 1)"
+                  [style.width.ch]="(blanks()[part.blank].length || 4) + 2"
+                  [ngModel]="blanks()[part.blank]" (ngModelChange)="setBlank(part.blank, $event)"
+                  [class.blanks__input--ok]="result()?.details?.[part.blank]?.correct"
+                  [class.blanks__input--ko]="result()?.details?.[part.blank]?.correct === false" />} @else {<span>{{ part.text }}</span>}}</code></pre>
+        </div>
+      }
+      @case ('REMETTRE_ORDRE') {
+        <ol class="order" aria-label="Lignes à remettre dans l'ordre">
+          @for (line of order(); track line.id; let i = $index, first = $first, last = $last) {
+            <li class="order__line">
+              <span class="order__num">{{ i + 1 }}</span>
+              <code class="order__code">{{ line.text }}</code>
+              <span class="order__moves">
+                <button type="button" class="icon-btn" [disabled]="first" (click)="move(i, -1)"
+                        [attr.aria-label]="'Monter la ligne ' + (i + 1)"><app-icon name="up" [size]="18" /></button>
+                <button type="button" class="icon-btn" [disabled]="last" (click)="move(i, 1)"
+                        [attr.aria-label]="'Descendre la ligne ' + (i + 1)"><app-icon name="down" [size]="18" /></button>
+              </span>
+            </li>
+          }
+        </ol>
+      }
+      @default {
+        <app-code-editor [language]="language()" [value]="code()" [minHeight]="compact() ? 120 : 170"
+                         [schema]="e.kind === 'SQL' ? schema.completion() : undefined"
+                         [ariaLabel]="'Éditeur pour l’exercice ' + e.title"
+                         (valueChange)="onCode($event)" (run)="e.kind === 'SQL' ? test() : submit()" />
+      }
+    }
+
+    <div class="exo__actions">
+      @if (e.kind === 'SQL') {
+        <button type="button" class="btn btn--secondary" (click)="test()" [disabled]="busy()">
+          <app-icon name="play" [size]="18" /> Tester
+        </button>
+      }
+      <button type="button" class="btn" (click)="submit()" [disabled]="busy()">
+        <app-icon name="check" [size]="18" /> {{ busy() ? 'Vérification…' : 'Valider' }}
+      </button>
+      <span class="exo__spacer"></span>
+      <button type="button" class="btn btn--ghost" (click)="nextHint()" [disabled]="hintsLeft() === 0">
+        <app-icon name="lightbulb" [size]="18" />
+        {{ hintsLeft() === 0 ? 'Indices épuisés' : 'Indice ' + (e.hintsUsed + 1) + ' sur 3' }}
+      </button>
+      @if (!e.solution) {
+        <button type="button" class="btn btn--ghost" [disabled]="!e.solutionAvailable" (click)="confirmSolution.set(true)"
+                [title]="e.solutionAvailable ? '' : 'Disponible après une tentative ou les trois indices'">
+          <app-icon name="eye" [size]="18" /> Correction
+        </button>
+      }
+    </div>
+
+    @if (confirmSolution()) {
+      <div class="exo__confirm" role="alertdialog" aria-label="Afficher la correction">
+        <p>Afficher la correction réduit l'XP de cet exercice au quart. Tu devras quand même valider ta réponse.</p>
+        <div class="exo__confirm-actions">
+          <button type="button" class="btn btn--sm" (click)="showSolution()">Afficher la correction</button>
+          <button type="button" class="btn btn--ghost btn--sm" (click)="confirmSolution.set(false)">Continuer à chercher</button>
+        </div>
+      </div>
+    }
+
+    @if (e.hints.length) {
+      <ol class="hints" aria-label="Indices">
+        @for (h of e.hints; track $index) {
+          <li class="hint"><span class="hint__num">Indice {{ $index + 1 }}</span> <app-markdown [md]="h" [inline]="true" /></li>
+        }
+      </ol>
+    }
+
+    @if (error()) {
+      <div class="alert alert--error" role="alert">{{ error() }}</div>
+    }
+
+    <!-- Aperçu (bouton Tester) -->
+    @if (preview(); as p) {
+      <div class="exo__preview" aria-live="polite">
+        <p class="exo__label">Aperçu de ton résultat (non validé)</p>
+        @for (r of p.results; track $index) {
+          @if (r.data && $last) {
+            <app-result-table [data]="r.data" />
+          }
+        }
+        @if (p.error; as err) {
+          <div class="sql-error" role="alert">
+            <p class="sql-error__msg">{{ err.message }}</p>
+            @if (err.hint) { <p class="sql-error__hint"><app-icon name="lightbulb" [size]="16" /> {{ err.hint }}</p> }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Correction automatique -->
+    @if (result(); as r) {
+      <div class="verdict" [class.verdict--ok]="r.success" [class.verdict--ko]="!r.success" role="status">
+        <p class="verdict__title">
+          <app-icon [name]="r.success ? 'check' : 'target'" [size]="20" /> {{ r.message }}
+        </p>
+        @if (r.feedback.length) {
+          <ul class="verdict__list">
+            @for (f of r.feedback; track $index) {
+              <li>{{ f }}</li>
+            }
+          </ul>
+        }
+        @if (sqlDetails(); as d) {
+          @if (d.error) {
+            <div class="sql-error">
+              <p class="sql-error__msg">{{ d.error.message }}</p>
+            </div>
+          }
+          <div class="compare-results">
+            @if (d.actual) {
+              <div><p class="exo__label">Ton résultat</p><app-result-table [data]="d.actual" caption="Ton résultat" /></div>
+            }
+            @if (d.expected && !r.success) {
+              <div><p class="exo__label">Résultat attendu</p><app-result-table [data]="d.expected" caption="Résultat attendu" /></div>
+            }
+          </div>
+        }
+        @if (r.success && r.details?.output) {
+          <p class="exo__label">Résultat produit par ce code</p>
+          <pre class="exo__output">{{ r.details.output }}</pre>
+        }
+      </div>
+    }
+
+    <!-- Correction détaillée -->
+    @if (e.solution) {
+      <details class="solution" [open]="!e.solved || !!result()?.success">
+        <summary><app-icon name="book" [size]="18" /> Correction expliquée</summary>
+        <app-code-view [code]="e.solution" [language]="language()" caption="Solution de référence" />
+        @if (e.explanation) {
+          <div class="solution__why"><app-markdown [md]="e.explanation" /></div>
+        }
+        @if (isCode() && !e.solved) {
+          <button type="button" class="btn btn--secondary btn--sm" (click)="useSolution()">
+            Copier la correction dans l'éditeur
+          </button>
+        }
+      </details>
+    }
+  </section>
+}

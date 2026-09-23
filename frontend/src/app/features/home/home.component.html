@@ -1,41 +1,128 @@
-<header class="topbar">
-  <div class="container topbar__inner">
-    <p class="topbar__logo">CDA<span>Academy</span></p>
-    <button type="button" class="btn btn--secondary btn--sm" (click)="logout()">Se déconnecter</button>
+@if (data(); as d) {
+  <header class="home__head">
+    <h1>{{ greeting() }} {{ firstName() }}</h1>
+    <p class="lead">
+      @if (d.streak.activeToday) {
+        Tu as déjà étudié {{ d.dailyGoal.minutesToday }} min aujourd'hui.
+        {{ d.dailyGoal.reached ? 'Objectif atteint : bravo.' : 'Encore ' + (d.dailyGoal.goalMinutes - d.dailyGoal.minutesToday) + ' min pour ton objectif.' }}
+      } @else if (d.streak.current > 0) {
+        Ta série de {{ d.streak.current }} jour{{ d.streak.current > 1 ? 's' : '' }} t'attend : une leçon suffit pour la prolonger.
+      } @else {
+        Dix minutes aujourd'hui, c'est déjà une leçon terminée.
+      }
+    </p>
+  </header>
+
+  <div class="home__top">
+    <!-- Reprendre -->
+    <section class="resume" aria-labelledby="resume-title">
+      @if (d.resume; as r) {
+        <p class="resume__where">{{ r.courseTitle }} <span aria-hidden="true">›</span> {{ r.chapterTitle }}</p>
+        <h2 id="resume-title" class="resume__title">{{ r.lessonTitle }}</h2>
+        <a class="btn resume__cta" [routerLink]="['/lecon', r.lessonSlug]">
+          <app-icon name="play" [size]="18" />
+          {{ r.started ? 'Reprendre la leçon' : 'Commencer la leçon' }}
+        </a>
+      } @else {
+        <h2 id="resume-title" class="resume__title">Choisis ton premier parcours</h2>
+        <a class="btn resume__cta" routerLink="/parcours">Voir les parcours</a>
+      }
+    </section>
+
+    <!-- Objectif du jour -->
+    <section class="goal" aria-labelledby="goal-title">
+      <h2 id="goal-title" class="panel-title">Objectif du jour</h2>
+      <div class="goal__body">
+        <app-progress-ring [percent]="d.dailyGoal.percent" [size]="112"
+                           [color]="d.dailyGoal.reached ? 'var(--primary)' : 'var(--accent)'"
+                           [label]="d.dailyGoal.minutesToday + ' minutes sur ' + d.dailyGoal.goalMinutes">
+          <span class="goal__min">{{ d.dailyGoal.minutesToday }}<small>/{{ d.dailyGoal.goalMinutes }} min</small></span>
+        </app-progress-ring>
+        <ul class="goal__facts">
+          <li><app-icon name="flame" [size]="18" /> <span><strong>{{ d.streak.current }}</strong> jour{{ d.streak.current > 1 ? 's' : '' }} de suite</span></li>
+          <li><app-icon name="bolt" [size]="18" /> <span><strong>{{ d.dailyGoal.xpToday }}</strong> XP aujourd'hui</span></li>
+          <li><app-icon name="star" [size]="18" /> <span>Niveau <strong>{{ d.level.level }}</strong> — {{ d.level.nextLevelXp - d.level.xp }} XP avant le suivant</span></li>
+        </ul>
+      </div>
+    </section>
   </div>
-</header>
 
-@if (user(); as u) {
-  <main class="container home" id="contenu">
-    <div class="page-header">
-      <span class="eyebrow">Tableau de bord</span>
-      <h1>Bonjour {{ u.displayName }}</h1>
-      <p class="lead">Ton espace est prêt. Les parcours et les exercices arrivent bientôt ici.</p>
-    </div>
+  <div class="home__grid">
+    <section class="home__courses" aria-labelledby="courses-title">
+      <div class="section-head">
+        <h2 id="courses-title">{{ started().length ? 'Tes parcours en cours' : 'Parcours conseillés' }}</h2>
+        <a routerLink="/parcours" class="link-more">Tous les parcours</a>
+      </div>
+      <ul class="course-rows">
+        @for (c of (started().length ? started() : suggested()); track c.slug) {
+          <li>
+            <a class="course-row" [routerLink]="['/parcours', c.slug]">
+              <span class="course-row__icon"><app-icon [name]="c.icon" [size]="22" /></span>
+              <span class="course-row__main">
+                <span class="course-row__title">{{ c.title }}</span>
+                <span class="course-row__meta">
+                  {{ c.lessonsDone }} / {{ c.lessonCount }} leçons
+                  @if (c.nextLesson) { — suite : {{ c.nextLesson.title }} }
+                </span>
+                <span class="meter" role="progressbar" [attr.aria-valuenow]="c.percent" aria-valuemin="0" aria-valuemax="100"
+                      [attr.aria-label]="'Progression ' + c.title"><span [style.width.%]="c.percent"></span></span>
+              </span>
+              <span class="course-row__pct">{{ c.percent }} %</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
 
-    <div class="stats">
-      <section class="card" aria-labelledby="stat-level">
-        <h2 id="stat-level" class="card__title">Niveau {{ u.level }}</h2>
-        <div class="progress" role="progressbar" aria-label="Progression dans le niveau"
-             [attr.aria-valuenow]="levelProgress()" aria-valuemin="0" aria-valuemax="100">
-          <div class="progress__bar" [style.width.%]="levelProgress()"></div>
-        </div>
-        <p class="muted stat__detail">{{ u.xp }} XP · prochain niveau à {{ u.nextLevelXp }} XP</p>
-      </section>
-
-      <section class="card" aria-labelledby="stat-streak">
-        <h2 id="stat-streak" class="card__title">Série en cours</h2>
-        <p class="stat__value">{{ u.currentStreak }} <span>jour{{ u.currentStreak > 1 ? 's' : '' }}</span></p>
-        <p class="muted stat__detail">Record : {{ u.longestStreak }} jour{{ u.longestStreak > 1 ? 's' : '' }}</p>
-      </section>
-
-      <section class="card" aria-labelledby="stat-goal">
-        <h2 id="stat-goal" class="card__title">Objectif quotidien</h2>
-        <p class="stat__value">{{ u.dailyGoalMinutes }} <span>min</span></p>
-        @if (u.role === 'ADMIN') {
-          <span class="chip chip--accent">Formatrice</span>
+    <aside class="home__side">
+      <section class="panel" aria-labelledby="mistakes-title">
+        <h2 id="mistakes-title" class="panel-title">À retravailler</h2>
+        @if (d.mistakesToReview > 0) {
+          <p>{{ d.mistakesToReview }} question{{ d.mistakesToReview > 1 ? 's' : '' }} ratée{{ d.mistakesToReview > 1 ? 's' : '' }}
+            attendent une revanche. Une question sort de la liste après deux bonnes réponses d'affilée.</p>
+          <a class="btn btn--secondary btn--sm" routerLink="/quiz" [queryParams]="{ mode: 'erreurs' }">
+            <app-icon name="refresh" [size]="16" /> Revoir mes erreurs
+          </a>
+        } @else {
+          <p class="muted">Aucune erreur en attente. Lance un QCM d'entraînement pour tester tes acquis.</p>
+          <a class="btn btn--secondary btn--sm" routerLink="/quiz">S'entraîner</a>
         }
       </section>
-    </div>
-  </main>
+
+      <section class="panel" aria-labelledby="week-title">
+        <h2 id="week-title" class="panel-title">Tes 7 derniers jours</h2>
+        <div class="week" role="img" [attr.aria-label]="'Minutes étudiées sur les 7 derniers jours'">
+          @for (day of week(); track day.date) {
+            <div class="week__day" [class.week__day--on]="day.minutes > 0" [title]="day.minutes + ' min, ' + day.xp + ' XP'">
+              <span class="week__bar"><span [style.height.%]="day.height"></span></span>
+              <span class="week__label">{{ day.label }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="badges-title">
+        <div class="section-head">
+          <h2 id="badges-title" class="panel-title">Badges récents</h2>
+          <a routerLink="/progression" class="link-more">Tous</a>
+        </div>
+        @if (d.recentBadges.length) {
+          <ul class="mini-badges">
+            @for (b of d.recentBadges; track b.code) {
+              <li class="mini-badge" [title]="b.description">
+                <span class="mini-badge__icon"><app-icon [name]="b.icon" [size]="20" /></span>
+                <span>{{ b.name }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">Termine ta première leçon pour obtenir le badge « Premiers pas ».</p>
+        }
+      </section>
+    </aside>
+  </div>
+} @else if (error()) {
+  <div class="alert alert--error">Impossible de charger ton tableau de bord. Vérifie que l'API est démarrée puis recharge la page.</div>
+} @else {
+  <div class="skeleton skeleton--hero"></div>
 }

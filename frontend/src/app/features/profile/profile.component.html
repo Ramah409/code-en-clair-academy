@@ -1,0 +1,75 @@
+<header class="page-header">
+  <h1>Profil</h1>
+  <p class="lead">Ton nom, ton objectif quotidien et l'apparence de l'application.</p>
+</header>
+
+@if (user(); as u) {
+  <div class="prof">
+    <section class="panel" aria-labelledby="me-title">
+      <h2 id="me-title" class="panel-title">Mes informations</h2>
+      <p class="muted">{{ u.email }} — {{ u.role === 'ADMIN' ? 'administratrice' : 'apprenante' }} — inscrite le {{ u.createdAt.slice(0, 10) }}</p>
+      <form (ngSubmit)="saveProfile()">
+        <div class="field">
+          <label for="p-name">Nom affiché</label>
+          <input id="p-name" class="input" name="displayName" [ngModel]="displayName()" (ngModelChange)="displayName.set($event)"
+                 minlength="2" maxlength="60" required />
+        </div>
+        <fieldset class="seg">
+          <legend>Objectif quotidien</legend>
+          @for (g of goals; track g) {
+            <label class="seg__opt"><input type="radio" name="goal" [value]="g" [ngModel]="dailyGoal()" (ngModelChange)="dailyGoal.set(g)" /> {{ g }} min</label>
+          }
+        </fieldset>
+        <fieldset class="seg">
+          <legend>Thème</legend>
+          @for (t of [{ v: 'SYSTEM', l: 'Comme mon appareil' }, { v: 'LIGHT', l: 'Clair' }, { v: 'DARK', l: 'Sombre' }]; track t.v) {
+            <label class="seg__opt"><input type="radio" name="theme" [value]="t.v" [ngModel]="themeChoice()" (ngModelChange)="previewTheme(t.v)" /> {{ t.l }}</label>
+          }
+        </fieldset>
+        @if (profileError()) { <div class="alert alert--error" role="alert">{{ profileError() }}</div> }
+        <button type="submit" class="btn" [disabled]="savingProfile()">{{ savingProfile() ? 'Enregistrement…' : 'Enregistrer' }}</button>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="pwd-title">
+      <h2 id="pwd-title" class="panel-title">Mot de passe</h2>
+      <form (ngSubmit)="changePassword()">
+        <div class="field">
+          <label for="p-cur">Mot de passe actuel</label>
+          <input id="p-cur" class="input" type="password" name="current" autocomplete="current-password"
+                 [ngModel]="currentPassword()" (ngModelChange)="currentPassword.set($event)" required />
+        </div>
+        <div class="field">
+          <label for="p-new">Nouveau mot de passe</label>
+          <input id="p-new" class="input" type="password" name="new" autocomplete="new-password"
+                 [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)" required />
+          <span class="field__hint">Au moins 10 caractères, dont une lettre et un chiffre.</span>
+        </div>
+        @if (passwordError()) { <div class="alert alert--error" role="alert">{{ passwordError() }}</div> }
+        <button type="submit" class="btn btn--secondary" [disabled]="savingPassword() || !currentPassword() || !newPassword()">
+          Changer le mot de passe
+        </button>
+      </form>
+    </section>
+
+    <section class="panel panel--danger" aria-labelledby="del-title">
+      <h2 id="del-title" class="panel-title">Supprimer mon compte</h2>
+      <p>Conformément au RGPD, la suppression efface définitivement ton compte et toutes tes données : progression,
+        réponses, badges et conversations avec l'assistant.</p>
+      @if (!deleteConfirm()) {
+        <button type="button" class="btn btn--ghost" (click)="deleteConfirm.set(true)"><app-icon name="trash" [size]="18" /> Supprimer mon compte</button>
+      } @else {
+        <div class="field">
+          <label for="p-del">Confirme avec ton mot de passe</label>
+          <input id="p-del" class="input" type="password" autocomplete="current-password"
+                 [value]="deletePassword()" (input)="deletePassword.set($any($event.target).value)" />
+        </div>
+        @if (deleteError()) { <div class="alert alert--error" role="alert">{{ deleteError() }}</div> }
+        <div class="row-actions">
+          <button type="button" class="btn btn--danger" (click)="deleteAccount()" [disabled]="!deletePassword()">Supprimer définitivement</button>
+          <button type="button" class="btn btn--ghost" (click)="deleteConfirm.set(false)">Annuler</button>
+        </div>
+      }
+    </section>
+  </div>
+}

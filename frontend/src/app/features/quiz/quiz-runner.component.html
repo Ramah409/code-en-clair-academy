@@ -1,0 +1,76 @@
+@if (attempt(); as a) {
+  <div class="qr">
+    <header class="qr__head">
+      <div>
+        <nav class="crumbs" aria-label="Fil d'Ariane"><a routerLink="/quiz">Quiz</a> <span aria-hidden="true">›</span> en cours</nav>
+        <h1 class="qr__title">{{ a.title }}</h1>
+        <p class="qr__mode">
+          @if (training()) {
+            Mode entraînement : correction après chaque réponse — {{ correctSoFar() }} bonne{{ correctSoFar() > 1 ? 's' : '' }} réponse{{ correctSoFar() > 1 ? 's' : '' }} pour l'instant.
+          } @else {
+            Mode examen : tu peux changer tes réponses jusqu'à la fin ; correction à la remise. Réussite à {{ a.passingPercent }} %.
+          }
+        </p>
+      </div>
+      @if (clock(); as c) {
+        <p class="qr__clock" [class.qr__clock--low]="(remaining() ?? 0) < 60" role="timer" aria-live="off">
+          <app-icon name="clock" [size]="20" /> {{ c }}
+        </p>
+      }
+    </header>
+
+    <nav class="qr__nav" aria-label="Questions">
+      @for (it of a.items; track it.position; let i = $index) {
+        <button type="button" class="qr__dot"
+                [class.qr__dot--current]="i === index()"
+                [class.qr__dot--answered]="it.answered && !training()"
+                [class.qr__dot--ok]="training() && it.feedback?.correct"
+                [class.qr__dot--ko]="training() && it.feedback && !it.feedback.correct"
+                [attr.aria-current]="i === index() ? 'step' : null"
+                [attr.aria-label]="'Question ' + (i + 1) + (it.answered ? ', répondue' : '')"
+                (click)="go(i)">{{ i + 1 }}</button>
+      }
+    </nav>
+
+    @if (item(); as it) {
+      <p class="qr__count">Question {{ index() + 1 }} sur {{ a.items.length }}</p>
+      <app-question-card [question]="it.question" [given]="it.given ?? null" [feedback]="feedbackOf(it)"
+                         [mode]="training() ? 'immediate' : 'deferred'" [busy]="busy()" [allowRetry]="false"
+                         [showMeta]="true" (answer)="answer($event)" />
+    }
+
+    @if (error()) {
+      <div class="alert alert--error" role="alert">{{ error() }}</div>
+    }
+
+    @if (confirmFinish()) {
+      <div class="qr__confirm" role="alertdialog" aria-label="Terminer le QCM">
+        <p>{{ unanswered() }} question{{ unanswered() > 1 ? 's' : '' }} sans réponse compteront comme fausses. Terminer quand même ?</p>
+        <div class="qr__actions">
+          <button type="button" class="btn btn--sm" (click)="finish()" [disabled]="busy()">Terminer et voir la correction</button>
+          <button type="button" class="btn btn--ghost btn--sm" (click)="confirmFinish.set(false)">Continuer le QCM</button>
+        </div>
+      </div>
+    }
+
+    <div class="qr__actions qr__footer">
+      <button type="button" class="btn btn--ghost" [disabled]="index() === 0" (click)="go(index() - 1)">
+        <app-icon name="arrow-left" [size]="18" /> Précédente
+      </button>
+      <span class="qr__spacer"></span>
+      @if (index() < a.items.length - 1) {
+        <button type="button" class="btn" [class.btn--secondary]="training() && !item()?.answered" (click)="next()">
+          Suivante <app-icon name="arrow-right" [size]="18" />
+        </button>
+      }
+      <button type="button" class="btn" [class.btn--secondary]="index() < a.items.length - 1" (click)="askFinish()" [disabled]="busy()">
+        <app-icon name="flag" [size]="18" /> Terminer
+      </button>
+    </div>
+  </div>
+} @else if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+  <a routerLink="/quiz" class="btn btn--secondary">Retour aux quiz</a>
+} @else {
+  <div class="skeleton skeleton--hero"></div>
+}

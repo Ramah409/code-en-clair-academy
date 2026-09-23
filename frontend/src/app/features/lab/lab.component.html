@@ -1,0 +1,72 @@
+<header class="page-header">
+  <h1>Laboratoire SQL</h1>
+  <p class="lead">Écris n'importe quelle requête sur la base pédagogique : boutique en ligne et service RH. Tout est
+    exécuté par PostgreSQL puis annulé, tu peux donc tester INSERT, UPDATE, DELETE ou CREATE TABLE sans risque.</p>
+</header>
+
+<div class="lab">
+  <div class="lab__work">
+    @for (k of [editorKey()]; track k) {
+      <app-sql-runner [initial]="code()" [minHeight]="220" (executed)="remember($event)" />
+    }
+
+    <section class="lab__examples" aria-labelledby="examples-title">
+      <h2 id="examples-title" class="panel-title">Exemples à charger</h2>
+      <ul class="pills">
+        @for (ex of examples; track ex.title) {
+          <li><button type="button" class="pill" (click)="load(ex.sql)">{{ ex.title }}</button></li>
+        }
+      </ul>
+    </section>
+
+    @if (history().length) {
+      <section class="lab__history" aria-labelledby="history-title">
+        <h2 id="history-title" class="panel-title">Tes dernières requêtes</h2>
+        <ul>
+          @for (h of history(); track h) {
+            <li><button type="button" class="history-item" (click)="load(h)"><code>{{ h }}</code></button></li>
+          }
+        </ul>
+      </section>
+    }
+
+    <p class="lab__more">
+      <app-icon name="target" [size]="18" />
+      Envie de défis corrigés ? <a routerLink="/exercices" [queryParams]="{}">Les exercices SQL</a> comparent ton résultat à celui attendu.
+    </p>
+  </div>
+
+  <aside class="lab__schema" aria-labelledby="schema-title">
+    <h2 id="schema-title" class="panel-title"><app-icon name="database" [size]="18" /> Base pédagogique</h2>
+    <p class="muted lab__legend"><app-icon name="key" [size]="14" /> clé primaire <app-icon name="link" [size]="14" /> clé étrangère</p>
+    <ul class="tables">
+      @for (t of schema.tables(); track t.name) {
+        <li class="tbl" [class.tbl--open]="openTable() === t.name">
+          <button type="button" class="tbl__head" (click)="toggle(t.name)" [attr.aria-expanded]="openTable() === t.name">
+            <app-icon name="table" [size]="16" />
+            <span class="tbl__name">{{ t.name }}</span>
+            <span class="tbl__rows">{{ t.rowCount }} lignes</span>
+          </button>
+          @if (openTable() === t.name) {
+            <ul class="cols">
+              @for (c of t.columns; track c.name) {
+                <li class="col">
+                  <span class="col__icon">
+                    @if (c.primaryKey) { <app-icon name="key" [size]="14" /> }
+                    @else if (c.references) { <app-icon name="link" [size]="14" /> }
+                  </span>
+                  <span class="col__name">{{ c.name }}</span>
+                  <span class="col__type">{{ c.type }}{{ c.nullable ? '' : ' not null' }}</span>
+                  @if (c.references) { <span class="col__ref">→ {{ c.references }}</span> }
+                </li>
+              }
+            </ul>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="load('SELECT *\nFROM ' + t.name + '\nLIMIT 20;')">
+              Afficher un extrait
+            </button>
+          }
+        </li>
+      }
+    </ul>
+  </aside>
+</div>

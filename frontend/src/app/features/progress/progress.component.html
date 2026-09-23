@@ -1,0 +1,88 @@
+<header class="page-header">
+  <h1>Progression</h1>
+  <p class="lead">Ton niveau, ta régularité et tes badges. Chaque leçon, exercice et QCM réussi te rapporte de l'XP.</p>
+</header>
+
+@if (data(); as d) {
+  <section class="lvl" aria-labelledby="lvl-title">
+    <div class="lvl__main">
+      <p class="lvl__num" id="lvl-title">Niveau {{ d.level.level }}</p>
+      <p class="lvl__xp">{{ d.level.xp }} XP — encore {{ d.level.nextLevelXp - d.level.xp }} XP pour le niveau {{ d.level.level + 1 }}</p>
+      <span class="meter meter--lg"><span [style.width.%]="d.level.percent"></span></span>
+    </div>
+    <dl class="lvl__facts">
+      <div><dt>Série actuelle</dt><dd>{{ d.streak.current }} j</dd></div>
+      <div><dt>Meilleure série</dt><dd>{{ d.streak.longest }} j</dd></div>
+      <div><dt>Temps d'étude</dt><dd>{{ hours(d.totals.minutesStudied) }}</dd></div>
+      <div><dt>Leçons validées</dt><dd>{{ d.totals.lessonsDone }}</dd></div>
+      <div><dt>Exercices réussis</dt><dd>{{ d.totals.exercisesSolved }}</dd></div>
+      <div><dt>Chapitres validés</dt><dd>{{ d.totals.chaptersPassed }}</dd></div>
+      <div><dt>QCM réussis</dt><dd>{{ d.totals.quizzesPassed }}</dd></div>
+      <div><dt>Réponses données</dt><dd>{{ d.totals.questionsAnswered }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="panel cal" aria-labelledby="cal-title">
+    <div class="section-head">
+      <h2 id="cal-title" class="panel-title">Régularité sur 4 mois</h2>
+      <span class="muted">{{ activeDays() }} jour{{ activeDays() > 1 ? 's' : '' }} actif{{ activeDays() > 1 ? 's' : '' }}</span>
+    </div>
+    <div class="cal__grid" role="img" [attr.aria-label]="activeDays() + ' jours actifs sur les 120 derniers jours'">
+      @for (week of calendar(); track $index) {
+        <div class="cal__week">
+          @for (day of week; track $index) {
+            @if (day) {
+              <span class="cal__day cal__day--{{ day.level }}" [title]="day.date + ' : ' + day.minutes + ' min, ' + day.xp + ' XP'"></span>
+            } @else {
+              <span class="cal__day cal__day--empty"></span>
+            }
+          }
+        </div>
+      }
+    </div>
+    <p class="cal__legend muted">Moins <span class="cal__day cal__day--0"></span><span class="cal__day cal__day--1"></span><span class="cal__day cal__day--2"></span><span class="cal__day cal__day--3"></span><span class="cal__day cal__day--4"></span> Plus</p>
+  </section>
+
+  <section class="badges-sec" aria-labelledby="badges-title">
+    <h2 id="badges-title">Badges <small class="muted">{{ earned() }} / {{ d.badges.length }}</small></h2>
+    <ul class="badges">
+      @for (b of d.badges; track b.code) {
+        <li class="badge" [class.badge--earned]="b.earnedAt">
+          <span class="badge__icon"><app-icon [name]="b.icon" [size]="26" /></span>
+          <span class="badge__name">{{ b.name }}</span>
+          <span class="badge__desc">{{ b.description }}</span>
+          @if (!b.earnedAt) {
+            <span class="meter meter--sm"><span [style.width.%]="badgePercent(b.value, b.threshold)"></span></span>
+            <span class="badge__val">{{ b.value > b.threshold ? b.threshold : b.value }} / {{ b.threshold }}</span>
+          } @else {
+            <span class="badge__val">Obtenu le {{ b.earnedAt.slice(0, 10) }}</span>
+          }
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section aria-labelledby="tracks-title">
+    <div class="section-head">
+      <h2 id="tracks-title">Parcours</h2>
+      <a routerLink="/quiz" class="link-more">Statistiques QCM par thème</a>
+    </div>
+    <ul class="course-rows">
+      @for (c of d.courses; track c.slug) {
+        <li>
+          <a class="course-row" [routerLink]="['/parcours', c.slug]">
+            <span class="course-row__icon"><app-icon [name]="c.icon" [size]="22" /></span>
+            <span class="course-row__main">
+              <span class="course-row__title">{{ c.title }}</span>
+              <span class="course-row__meta">{{ c.lessonsDone }} / {{ c.lessonCount }} leçons{{ c.examPassed ? ' — examen final réussi' : '' }}</span>
+              <span class="meter"><span [style.width.%]="c.percent"></span></span>
+            </span>
+            <span class="course-row__pct">{{ c.percent }} %</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+} @else {
+  <div class="skeleton skeleton--hero"></div>
+}

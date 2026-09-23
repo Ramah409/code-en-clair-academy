@@ -1,0 +1,132 @@
+@if (course(); as c) {
+  <nav class="crumbs" aria-label="Fil d'Ariane"><a routerLink="/parcours">Parcours</a> <span aria-hidden="true">›</span> {{ c.title }}</nav>
+
+  <header class="cd__head">
+    <div class="cd__intro">
+      <span class="cd__icon"><app-icon [name]="c.icon" [size]="30" /></span>
+      <div>
+        <h1>{{ c.title }}</h1>
+        <p class="lead">{{ c.summary }}</p>
+      </div>
+    </div>
+    <div class="cd__progress">
+      <p><strong>{{ c.lessonsDone }}</strong> leçon{{ c.lessonsDone > 1 ? 's' : '' }} terminée{{ c.lessonsDone > 1 ? 's' : '' }} sur {{ c.lessonCount }}</p>
+      <span class="meter meter--lg"><span [style.width.%]="c.percent"></span></span>
+      @if (c.nextLesson; as n) {
+        <a class="btn" [routerLink]="['/lecon', n.slug]"><app-icon name="play" [size]="18" /> {{ c.lessonsDone ? 'Continuer' : 'Commencer' }} : {{ n.title }}</a>
+      }
+    </div>
+  </header>
+
+  <details class="cd__about" [open]="showAbout()">
+    <summary>À propos de ce parcours</summary>
+    <app-markdown [md]="c.description" />
+    <p class="muted">Règle de progression : chaque leçon se débloque quand la précédente est validée, et chaque chapitre
+      quand le QCM du chapitre précédent est réussi à {{ c.passingPercent }} % ou plus.</p>
+  </details>
+
+  @if (error()) {
+    <div class="alert alert--error" role="alert">{{ error() }}</div>
+  }
+
+  <!-- Tige de progression -->
+  <ol class="stem" aria-label="Chapitres du parcours">
+    @for (ch of c.chapters; track ch.slug) {
+      <li class="stem__chapter" [class.stem__chapter--locked]="!ch.unlocked">
+        <div class="stem__chapter-head">
+          <span class="stem__knot" aria-hidden="true">{{ ch.position }}</span>
+          <div>
+            <p class="stem__level">Chapitre {{ ch.position }} — {{ levels[ch.level] }}</p>
+            <h2 class="stem__title">{{ ch.title }}</h2>
+            <p class="stem__summary">{{ ch.summary }}</p>
+            @if (!ch.unlocked) {
+              <p class="stem__lock"><app-icon name="lock" [size]="15" /> Réussis le QCM du chapitre précédent pour débloquer ce chapitre.</p>
+            }
+          </div>
+        </div>
+
+        <ol class="stem__lessons">
+          @for (l of ch.lessons; track l.slug) {
+            <li class="node node--{{ l.status.toLowerCase() }}">
+              <span class="node__dot" aria-hidden="true">
+                @if (l.status === 'DONE') { <app-icon name="check" [size]="14" /> }
+                @if (l.status === 'LOCKED') { <app-icon name="lock" [size]="12" /> }
+              </span>
+              @if (l.status === 'LOCKED') {
+                <span class="node__body">
+                  <span class="node__title">{{ l.title }}</span>
+                  <span class="node__meta">{{ l.duration }} min — verrouillée</span>
+                </span>
+              } @else {
+                <a class="node__body" [routerLink]="['/lecon', l.slug]">
+                  <span class="node__title">{{ l.title }}</span>
+                  <span class="node__meta">{{ l.duration }} min — {{ l.xp }} XP — {{ lessonLabel(l) }}</span>
+                </a>
+              }
+            </li>
+          }
+          <!-- Feuille : QCM de fin de chapitre -->
+          <li class="node node--quiz" [class.node--quiz-passed]="ch.quizPassed" [class.node--quiz-open]="quizAvailable(ch)">
+            <span class="node__leaf" aria-hidden="true"><app-icon name="leaf" [size]="18" /></span>
+            <div class="node__body node__body--quiz">
+              <span class="node__title">QCM de fin de chapitre</span>
+              <span class="node__meta">
+                {{ ch.quizQuestionCount }} questions tirées d'une banque de {{ ch.bankSize }} — réussite à {{ c.passingPercent }} %
+                @if (ch.bestQuizPercent !== undefined && ch.bestQuizPercent !== null) { — meilleur score : {{ ch.bestQuizPercent }} % }
+              </span>
+              @if (quizAvailable(ch)) {
+                <button type="button" class="btn btn--sm" [class.btn--secondary]="ch.quizPassed" (click)="startChapterQuiz(ch)"
+                        [disabled]="starting() === ch.slug">
+                  {{ starting() === ch.slug ? 'Préparation…' : ch.quizPassed ? 'Refaire le QCM' : ch.quizAttempts ? 'Retenter le QCM' : 'Passer le QCM' }}
+                </button>
+              } @else {
+                <span class="node__hint">Disponible quand toutes les leçons du chapitre sont terminées.</span>
+              }
+            </div>
+          </li>
+        </ol>
+      </li>
+    }
+
+    <!-- Examen final et projet -->
+    <li class="stem__chapter stem__chapter--final" [class.stem__chapter--locked]="!c.examAvailable">
+      <div class="stem__chapter-head">
+        <span class="stem__knot stem__knot--final" aria-hidden="true"><app-icon name="flag" [size]="16" /></span>
+        <div>
+          <p class="stem__level">Fin de parcours</p>
+          <h2 class="stem__title">Examen final et projet</h2>
+        </div>
+      </div>
+      <div class="finale">
+        <div class="finale__item">
+          <h3><app-icon name="graduation" [size]="20" /> Examen final</h3>
+          <p>{{ c.examQuestionCount }} questions (30 à 50 au choix), théorie et extraits de code, plusieurs niveaux.
+            @if (c.examTimeLimitMinutes) { Temps limité facultatif : {{ c.examTimeLimitMinutes }} min. }</p>
+          @if (c.bestExamPercent !== undefined && c.bestExamPercent !== null) {
+            <p class="muted">Meilleur score : {{ c.bestExamPercent }} % en {{ c.examAttempts }} tentative{{ c.examAttempts > 1 ? 's' : '' }}.</p>
+          }
+          @if (c.examAvailable) {
+            <a class="btn btn--sm" [routerLink]="['/quiz']" [queryParams]="{ examen: c.slug }">Préparer l'examen</a>
+          } @else {
+            <p class="node__hint"><app-icon name="lock" [size]="14" /> S'ouvre quand tous les QCM de chapitre sont réussis.</p>
+          }
+        </div>
+        @if (c.project; as p) {
+          <div class="finale__item">
+            <h3><app-icon name="hammer" [size]="20" /> Projet : {{ p.title }}</h3>
+            <p>{{ p.stepCount }} étapes guidées, inspirées d'une situation professionnelle. {{ p.stepsDone }} / {{ p.stepCount }} validées.</p>
+            @if (p.available) {
+              <a class="btn btn--sm btn--secondary" [routerLink]="['/projets', p.slug]">Ouvrir le projet</a>
+            } @else {
+              <p class="node__hint"><app-icon name="lock" [size]="14" /> S'ouvre à la fin du parcours.</p>
+            }
+          </div>
+        }
+      </div>
+    </li>
+  </ol>
+} @else if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+} @else {
+  <div class="skeleton skeleton--hero"></div>
+}

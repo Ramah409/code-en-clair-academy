@@ -1,0 +1,192 @@
+@if (lesson(); as l) {
+  <div class="lp">
+    <header class="lp__head">
+      <nav class="crumbs" aria-label="Fil d'Ariane">
+        <a routerLink="/parcours">Parcours</a> <span aria-hidden="true">›</span>
+        <a [routerLink]="['/parcours', l.course.slug]">{{ l.course.title }}</a> <span aria-hidden="true">›</span>
+        {{ l.chapter.title }}
+      </nav>
+      <p class="lp__where">Leçon {{ l.position }} sur {{ l.lessonCount }} — {{ levels[l.chapter.level] }} — {{ l.duration }} min</p>
+      <h1 class="lp__title">{{ l.title }}</h1>
+      <div class="lp__goal">
+        <p><strong>Objectif :</strong> {{ l.objective }}</p>
+        @if (l.prerequisites) {
+          <p class="muted"><strong>Prérequis :</strong> {{ l.prerequisites }}</p>
+        }
+      </div>
+    </header>
+
+    <div class="lp__progress" role="progressbar" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100"
+         aria-label="Avancement dans la leçon">
+      <span [style.width.%]="progress()"></span>
+    </div>
+
+    <div class="lp__flow">
+      @for (step of visibleSteps(); track $index; let si = $index) {
+        <section class="step" #stepEl tabindex="-1" [attr.aria-label]="'Étape ' + (si + 1)">
+          @for (b of step.blocks; track $index) {
+            @switch (b.type) {
+              @case ('text') {
+                <div class="blk blk--text"><app-markdown [md]="asAny(b).md" /></div>
+              }
+              @case ('definition') {
+                <div class="blk blk--def">
+                  <p class="def__term"><app-icon name="book" [size]="18" /> {{ asAny(b).term }}</p>
+                  <app-markdown [md]="asAny(b).md" />
+                </div>
+              }
+              @case ('code') {
+                <div class="blk blk--wide">
+                  <app-code-view [code]="asAny(b).code" [language]="asAny(b).language" [caption]="asAny(b).title"
+                                 [notes]="asAny(b).lines" [output]="asAny(b).output" />
+                </div>
+              }
+              @case ('demo') {
+                <div class="blk blk--wide blk--demo">
+                  <p class="demo__title"><app-icon name="play" [size]="18" /> {{ asAny(b).title || 'Démonstration' }}</p>
+                  @if (asAny(b).md) {
+                    <app-markdown [md]="asAny(b).md" />
+                  }
+                  @if (asAny(b).language === 'sql') {
+                    <app-sql-runner [initial]="asAny(b).code" />
+                  } @else {
+                    <app-code-view [code]="asAny(b).code" [language]="asAny(b).language" [output]="asAny(b).output" />
+                  }
+                </div>
+              }
+              @case ('callout') {
+                <aside class="blk callout callout--{{ asAny(b).variant }}">
+                  <app-icon [name]="asAny(b).variant === 'warning' ? 'alert' : asAny(b).variant === 'exam' ? 'graduation' : asAny(b).variant === 'tip' ? 'lightbulb' : 'info'" [size]="20" />
+                  <div>
+                    @if (asAny(b).title) { <p class="callout__title">{{ asAny(b).title }}</p> }
+                    <app-markdown [md]="asAny(b).md" />
+                  </div>
+                </aside>
+              }
+              @case ('steps') {
+                <div class="blk">
+                  @if (asAny(b).title) { <p class="blk__title">{{ asAny(b).title }}</p> }
+                  <ol class="howto">
+                    @for (item of asAny(b).items; track $index) {
+                      <li><app-markdown [md]="item" /></li>
+                    }
+                  </ol>
+                </div>
+              }
+              @case ('compare') {
+                <div class="blk blk--wide compare">
+                  @for (side of [asAny(b).left, asAny(b).right]; track $index) {
+                    <div class="compare__side" [class.compare__side--good]="side.good" [class.compare__side--bad]="side.good === false">
+                      <p class="compare__title">
+                        <app-icon [name]="side.good ? 'check' : side.good === false ? 'x' : 'diamond'" [size]="16" /> {{ side.title }}
+                      </p>
+                      @if (side.code) { <app-code-view [code]="side.code" [language]="side.language || 'text'" /> }
+                      @if (side.md) { <app-markdown [md]="side.md" /> }
+                    </div>
+                  }
+                </div>
+              }
+              @case ('question') {
+                <div class="blk blk--interaction">
+                  <app-question-card [question]="asQuestion(b).question"
+                                     [feedback]="feedbacks()[asQuestion(b).ref] ?? null"
+                                     [disabled]="passed().has(asQuestion(b).ref) && !feedbacks()[asQuestion(b).ref]"
+                                     [busy]="answering() === asQuestion(b).ref"
+                                     (answer)="answer(asQuestion(b).ref, $event)"
+                                     (retry)="retry(asQuestion(b).ref)" />
+                  @if (passed().has(asQuestion(b).ref) && !feedbacks()[asQuestion(b).ref]) {
+                    <p class="interaction__done"><app-icon name="check" [size]="16" /> Question déjà réussie.</p>
+                  }
+                </div>
+              }
+              @case ('exercise') {
+                <div class="blk blk--wide blk--interaction">
+                  <app-exercise-panel [initial]="asExercise(b).exercise" [compact]="true" (solvedChange)="exerciseSolved(asExercise(b).ref)" />
+                </div>
+              }
+            }
+          }
+
+          @if ($last && !finished()) {
+            <div class="step__next">
+              @if (gateOpen(si)) {
+                <button type="button" class="btn" (click)="next()">Continuer <app-icon name="arrow-right" [size]="18" /></button>
+              } @else {
+                <p class="step__lock">
+                  <app-icon name="lock" [size]="16" />
+                  {{ step.gate?.type === 'exercise' ? 'Valide cet exercice pour continuer.' : 'Trouve la bonne réponse pour continuer.' }}
+                </p>
+              }
+            </div>
+          }
+        </section>
+      }
+    </div>
+
+    @if (finished()) {
+      <section class="lp__end" aria-labelledby="end-title">
+        <h2 id="end-title" class="sr-only">Fin de la leçon</h2>
+        <div class="end__grid">
+          @if (l.memo) {
+            <div class="end__memo">
+              <p class="end__label"><app-icon name="star" [size]="18" /> À retenir</p>
+              <app-markdown [md]="l.memo" />
+            </div>
+          }
+          @if (l.commonMistakes) {
+            <div class="end__mistakes">
+              <p class="end__label"><app-icon name="alert" [size]="18" /> Erreurs fréquentes</p>
+              <app-markdown [md]="l.commonMistakes" />
+            </div>
+          }
+        </div>
+
+        @if (error()) {
+          <div class="alert alert--error" role="alert">{{ error() }}</div>
+        }
+
+        @if (completion(); as c) {
+          <div class="done" role="status">
+            <p class="done__title">Leçon validée</p>
+            <p class="done__xp">
+              @if (c.alreadyDone) { Tu avais déjà validé cette leçon. } @else { +{{ c.reward.xpEarned }} XP, série de {{ c.reward.streak }} jour{{ c.reward.streak > 1 ? 's' : '' }}. }
+            </p>
+            <div class="done__actions">
+              @if (c.next; as n) {
+                <a class="btn" [routerLink]="['/lecon', n.slug]">Leçon suivante : {{ n.title }} <app-icon name="arrow-right" [size]="18" /></a>
+              } @else if (c.chapterQuizAvailable) {
+                <button type="button" class="btn" (click)="goQuiz()">Passer le QCM du chapitre <app-icon name="arrow-right" [size]="18" /></button>
+              }
+              <a class="btn btn--ghost" [routerLink]="['/parcours', l.course.slug]">Retour au parcours</a>
+            </div>
+          </div>
+        } @else if (l.status === 'TERMINEE') {
+          <div class="done done--quiet">
+            <p>Leçon déjà validée.</p>
+            <div class="done__actions">
+              @if (l.next; as n) {
+                <a class="btn" [routerLink]="['/lecon', n.slug]">Leçon suivante : {{ n.title }}</a>
+              }
+              <a class="btn btn--ghost" [routerLink]="['/parcours', l.course.slug]">Retour au parcours</a>
+            </div>
+          </div>
+        } @else {
+          <button type="button" class="btn lp__complete" (click)="complete()" [disabled]="completing()">
+            <app-icon name="check" [size]="18" /> {{ completing() ? 'Validation…' : 'Valider la leçon (+' + l.xp + ' XP)' }}
+          </button>
+        }
+      </section>
+    }
+
+    <nav class="lp__nav" aria-label="Navigation entre leçons">
+      @if (l.previous; as p) {
+        <a [routerLink]="['/lecon', p.slug]" class="lp__nav-link"><app-icon name="arrow-left" [size]="16" /> {{ p.title }}</a>
+      }
+    </nav>
+  </div>
+} @else if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+  <a routerLink="/parcours" class="btn btn--secondary">Retour aux parcours</a>
+} @else {
+  <div class="skeleton skeleton--hero"></div>
+}

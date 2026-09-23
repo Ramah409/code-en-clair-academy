@@ -1,0 +1,86 @@
+<a class="skip-link" href="#contenu">Aller au contenu</a>
+
+<div class="app" [class.app--drawer]="drawerOpen()">
+  <aside class="side" [class.side--open]="drawerOpen()" aria-label="Navigation principale">
+    <a routerLink="/accueil" class="side__logo">CDA<span>Academy</span></a>
+
+    <nav class="side__nav">
+      <ul>
+        @for (item of visibleNav(); track item.path) {
+          <li>
+            <a class="side__link" [routerLink]="item.path" routerLinkActive="side__link--active"
+               [routerLinkActiveOptions]="{ exact: false }" ariaCurrentWhenActive="page">
+              <app-icon [name]="item.icon" [size]="20" />
+              <span>{{ item.label }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    @if (user(); as u) {
+      <div class="side__me">
+        <div class="side__who">
+          <span class="side__avatar" aria-hidden="true">{{ initials() }}</span>
+          <span class="side__name">{{ u.displayName }}</span>
+        </div>
+        <div class="side__stats">
+          <span class="side__stat" title="Série de jours consécutifs">
+            <app-icon name="flame" [size]="16" /> {{ u.currentStreak }} j
+          </span>
+          <span class="side__stat" title="Points d'expérience">
+            <app-icon name="bolt" [size]="16" /> {{ u.xp }} XP
+          </span>
+        </div>
+        <div class="side__level">
+          <span>Niveau {{ u.level }}</span>
+          <span class="side__level-next">{{ u.nextLevelXp - u.xp }} XP avant le niveau {{ u.level + 1 }}</span>
+        </div>
+        <div class="side__bar" role="progressbar" aria-label="Progression dans le niveau"
+             [attr.aria-valuenow]="levelPercent()" aria-valuemin="0" aria-valuemax="100">
+          <span [style.width.%]="levelPercent()"></span>
+        </div>
+        <button type="button" class="side__logout" (click)="logout()">
+          <app-icon name="logout" [size]="18" /> Se déconnecter
+        </button>
+      </div>
+    }
+  </aside>
+
+  @if (drawerOpen()) {
+    <button type="button" class="scrim" aria-label="Fermer le menu" (click)="drawerOpen.set(false)"></button>
+  }
+
+  <div class="main">
+    <header class="topbar">
+      <a routerLink="/accueil" class="topbar__logo">CDA<span>Academy</span></a>
+      @if (user(); as u) {
+        <span class="topbar__stat"><app-icon name="flame" [size]="16" /> {{ u.currentStreak }}</span>
+        <span class="topbar__stat"><app-icon name="bolt" [size]="16" /> {{ u.xp }}</span>
+      }
+      <button type="button" class="icon-btn topbar__menu" (click)="drawerOpen.set(!drawerOpen())"
+              [attr.aria-expanded]="drawerOpen()" aria-label="Ouvrir le menu">
+        <app-icon [name]="drawerOpen() ? 'x' : 'menu'" [size]="22" />
+      </button>
+    </header>
+
+    <main id="contenu" class="content" tabindex="-1">
+      <router-outlet />
+    </main>
+  </div>
+
+  <nav class="tabs" aria-label="Navigation rapide">
+    @for (t of tabs; track t.path) {
+      <a class="tabs__item" [routerLink]="t.path" routerLinkActive="tabs__item--active" ariaCurrentWhenActive="page">
+        <app-icon [name]="t.icon" [size]="22" />
+        <span>{{ t.label }}</span>
+      </a>
+    }
+    <button type="button" class="tabs__item" (click)="drawerOpen.set(true)">
+      <app-icon name="menu" [size]="22" />
+      <span>Plus</span>
+    </button>
+  </nav>
+</div>
+
+<app-toasts />

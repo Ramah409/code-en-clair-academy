@@ -1,0 +1,216 @@
+<header class="page-header">
+  <h1>Entraînement QCM</h1>
+  <p class="lead">Choisis ta matière, ton niveau et ton rythme. En mode entraînement, chaque réponse est corrigée
+    tout de suite ; en mode examen, la correction arrive à la fin.</p>
+</header>
+
+@if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+}
+
+@if (options(); as o) {
+  @if (examCourse(); as ec) {
+    <section class="exam-setup" aria-labelledby="exam-setup-title">
+      <h2 id="exam-setup-title"><app-icon name="graduation" [size]="22" /> Examen final — {{ ec.title }}</h2>
+      <p>Questions tirées de toute la banque du parcours ({{ ec.questionCount }} questions), correction à la fin,
+        réussite à 80 %.</p>
+      <div class="exam-setup__row">
+        <fieldset class="seg">
+          <legend>Nombre de questions</legend>
+          @for (n of [30, 40, 50]; track n) {
+            <label class="seg__opt"><input type="radio" name="examCount" [value]="n" [ngModel]="examCount()" (ngModelChange)="examCount.set(n)" /> {{ n }}</label>
+          }
+        </fieldset>
+        <fieldset class="seg">
+          <legend>Niveau</legend>
+          <label class="seg__opt"><input type="radio" name="examDiff" [value]="null" [ngModel]="examDifficulty()" (ngModelChange)="examDifficulty.set(null)" /> Tous</label>
+          @for (d of ec.difficulties; track d) {
+            <label class="seg__opt"><input type="radio" name="examDiff" [value]="d" [ngModel]="examDifficulty()" (ngModelChange)="examDifficulty.set(d)" /> {{ difficulties[d] }}</label>
+          }
+        </fieldset>
+        <label class="checkbox">
+          <input type="checkbox" [ngModel]="examTimed()" (ngModelChange)="examTimed.set($event)" />
+          <span>Temps limité ({{ Math.round(examCount() * 1.2) }} min)</span>
+        </label>
+      </div>
+      <button type="button" class="btn" (click)="startCourseExam()" [disabled]="starting()">Commencer l'examen</button>
+    </section>
+  }
+
+  <div class="hub">
+    <!-- Configurateur -->
+    <section class="config" aria-labelledby="config-title">
+      <h2 id="config-title">Composer un QCM</h2>
+
+      <div class="field">
+        <label for="q-course">Matière</label>
+        <select id="q-course" class="select" [ngModel]="course()" (ngModelChange)="selectCourse($event)">
+          <option value="">Toutes les matières (mélange aléatoire)</option>
+          @for (c of o.courses; track c.slug) {
+            <option [value]="c.slug">{{ c.title }} ({{ c.questionCount }} questions)</option>
+          }
+        </select>
+      </div>
+
+      @if (selectedCourse(); as sc) {
+        <div class="field">
+          <label for="q-chapter">Chapitre</label>
+          <select id="q-chapter" class="select" [ngModel]="chapter()" (ngModelChange)="chapter.set($event)">
+            <option value="">Tous les chapitres</option>
+            @for (ch of sc.chapters; track ch.slug) {
+              <option [value]="ch.slug">{{ ch.title }} ({{ ch.questionCount }})</option>
+            }
+          </select>
+        </div>
+      }
+
+      <fieldset class="seg">
+        <legend>Niveau</legend>
+        <label class="seg__opt"><input type="radio" name="diff" [value]="null" [ngModel]="difficulty()" (ngModelChange)="difficulty.set(null)" /> Tous</label>
+        @for (d of [1, 2, 3, 4]; track d) {
+          <label class="seg__opt"><input type="radio" name="diff" [value]="d" [ngModel]="difficulty()" (ngModelChange)="difficulty.set(d)" /> {{ difficulties[d] }}</label>
+        }
+      </fieldset>
+
+      <fieldset class="seg">
+        <legend>Nombre de questions</legend>
+        @for (n of counts; track n) {
+          <label class="seg__opt"><input type="radio" name="count" [value]="n" [ngModel]="count()" (ngModelChange)="count.set(n)" /> {{ n }}</label>
+        }
+      </fieldset>
+
+      <fieldset class="seg">
+        <legend>Mode</legend>
+        <label class="seg__opt seg__opt--wide">
+          <input type="radio" name="mode" value="ENTRAINEMENT" [ngModel]="quizMode()" (ngModelChange)="quizMode.set($event)" />
+          <span><strong>Entraînement</strong> — correction après chaque question</span>
+        </label>
+        <label class="seg__opt seg__opt--wide">
+          <input type="radio" name="mode" value="EXAMEN" [ngModel]="quizMode()" (ngModelChange)="quizMode.set($event)" />
+          <span><strong>Examen</strong> — correction uniquement à la fin</span>
+        </label>
+      </fieldset>
+
+      @if (quizMode() === 'EXAMEN') {
+        <label class="checkbox">
+          <input type="checkbox" [ngModel]="timed()" (ngModelChange)="timed.set($event)" />
+          <span>Chronométré :</span>
+          <input class="input input--inline" type="number" min="5" max="120" [ngModel]="minutes()" (ngModelChange)="minutes.set($event)"
+                 [disabled]="!timed()" aria-label="Durée en minutes" /> min
+        </label>
+      }
+
+      <p class="config__avail muted">{{ available() }} question{{ available() > 1 ? 's' : '' }} disponible{{ available() > 1 ? 's' : '' }} avec ces critères (hors filtre de niveau).</p>
+      <button type="button" class="btn" (click)="startPractice()" [disabled]="starting() || !available()">
+        <app-icon name="play" [size]="18" /> {{ starting() ? 'Préparation…' : 'Lancer le QCM' }}
+      </button>
+    </section>
+
+    <!-- Raccourcis -->
+    <div class="shortcuts">
+      <section class="shortcut shortcut--mistakes" [class.shortcut--highlight]="mode() === 'erreurs'" aria-labelledby="mistakes-title">
+        <h2 id="mistakes-title"><app-icon name="refresh" [size]="20" /> Mes erreurs</h2>
+        <p>{{ o.mistakesToReview }} question{{ o.mistakesToReview > 1 ? 's' : '' }} à retravailler. Une question quitte la liste
+          après deux bonnes réponses consécutives.</p>
+        <button type="button" class="btn btn--secondary btn--sm" (click)="startMistakes()" [disabled]="!o.mistakesToReview || starting()">
+          Retravailler mes erreurs
+        </button>
+      </section>
+
+      <section class="shortcut" aria-labelledby="random-title">
+        <h2 id="random-title"><app-icon name="shuffle" [size]="20" /> QCM aléatoire</h2>
+        <p>20 questions mélangeant toutes les matières, correction immédiate.</p>
+        <button type="button" class="btn btn--secondary btn--sm" (click)="startRandom()" [disabled]="starting()">Tirer 20 questions</button>
+      </section>
+
+      <section class="shortcut" aria-labelledby="mock-title">
+        <h2 id="mock-title"><app-icon name="graduation" [size]="20" /> Examens blancs CDA</h2>
+        @if (o.exams.length) {
+          <ul class="mocks">
+            @for (e of o.exams; track e.slug) {
+              <li class="mock">
+                <div>
+                  <p class="mock__title">{{ e.title }}</p>
+                  <p class="mock__meta">{{ e.questionCount }} questions — {{ e.durationMinutes }} min — réussite à {{ e.passingScore }} %
+                    @if (e.bestPercent !== undefined && e.bestPercent !== null) { — meilleur : {{ e.bestPercent }} % }</p>
+                </div>
+                <button type="button" class="btn btn--sm" (click)="startMock(e.slug)" [disabled]="starting()">Commencer</button>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">Les examens blancs apparaissent ici dès que plusieurs parcours sont disponibles.</p>
+        }
+        <a routerLink="/examen-cda" class="link-more">Mises en situation et questions du jury</a>
+      </section>
+    </div>
+  </div>
+
+  @if (stats(); as s) {
+    <div class="insights">
+      <section class="panel" aria-labelledby="themes-title">
+        <h2 id="themes-title" class="panel-title">Statistiques par thème</h2>
+        @if (s.themes.length) {
+          <p class="muted">{{ s.answered }} réponses, {{ s.rate }} % de réussite, {{ s.quizzesPassed }} QCM réussis sur {{ s.quizzesDone }}.</p>
+          <ul class="themes">
+            @for (t of s.themes; track t.theme + t.course) {
+              <li class="theme">
+                <span class="theme__name">{{ t.theme }} <small>{{ t.course }}</small></span>
+                <span class="theme__bar theme__bar--{{ rateClass(t.rate) }}"><span [style.width.%]="t.rate"></span></span>
+                <span class="theme__rate">{{ t.rate }} %</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">Réponds à quelques questions pour voir tes points forts et tes points faibles.</p>
+        }
+      </section>
+
+      <section class="panel" aria-labelledby="errors-title">
+        <h2 id="errors-title" class="panel-title">Erreurs récurrentes</h2>
+        @if (s.recurringErrors.length) {
+          <ul class="errors">
+            @for (e of s.recurringErrors; track e.code) {
+              <li class="err" [class.err--fixed]="e.fixed">
+                <span class="err__count" [title]="e.timesWrong + ' erreur(s)'">{{ e.timesWrong }}×</span>
+                <span class="err__body">
+                  <app-markdown [md]="e.prompt" [inline]="true" />
+                  <small>{{ e.theme }} — {{ e.fixed ? 'corrigée' : e.timesCorrect + ' bonne(s) réponse(s)' }}</small>
+                </span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">Aucune erreur enregistrée pour l'instant.</p>
+        }
+      </section>
+
+      <section class="panel panel--wide" aria-labelledby="history-title">
+        <h2 id="history-title" class="panel-title">Historique des tentatives</h2>
+        @if (history().length) {
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>QCM</th><th>Type</th><th>Questions</th><th>Score</th><th>Date</th><th></th></tr></thead>
+              <tbody>
+                @for (h of history(); track h.id) {
+                  <tr>
+                    <td>{{ h.title }}</td>
+                    <td>{{ scopeLabels[h.scope] }}</td>
+                    <td>{{ h.total }}</td>
+                    <td><span class="score" [class.score--ok]="h.passed">{{ h.percent }} %</span></td>
+                    <td>{{ h.submittedAt | slice: 0 : 10 }}</td>
+                    <td><a [routerLink]="['/quiz', h.id, 'resultat']">Correction</a></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="muted">Tes QCM terminés apparaîtront ici avec leur score.</p>
+        }
+      </section>
+    </div>
+  }
+} @else if (!error()) {
+  <div class="skeleton skeleton--hero"></div>
+}

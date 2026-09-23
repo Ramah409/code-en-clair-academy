@@ -1,0 +1,304 @@
+.cd__head {
+  display: grid;
+  gap: var(--space-5);
+  margin-bottom: var(--space-4);
+
+  @media (min-width: 960px) {
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+    align-items: end;
+  }
+}
+
+.cd__intro {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+
+  h1 {
+    font-size: clamp(1.8rem, 2vw + 1rem, 2.5rem);
+    margin-bottom: var(--space-2);
+  }
+
+  .lead {
+    margin: 0;
+  }
+}
+
+.cd__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+
+.cd__progress {
+  display: grid;
+  gap: var(--space-3);
+
+  p {
+    margin: 0;
+  }
+
+  .btn {
+    justify-self: start;
+    max-width: 100%;
+    white-space: normal;
+    text-align: left;
+    padding-block: var(--space-2);
+  }
+}
+
+.cd__about {
+  margin-bottom: var(--space-6);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  max-width: 80ch;
+
+  summary {
+    cursor: pointer;
+    font-weight: 650;
+  }
+}
+
+// ---------------------------------------------------------------- tige de progression
+.stem {
+  --stem-x: 19px;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 860px;
+
+  // La tige : un trait continu qui relie tous les chapitres
+  &::before {
+    content: '';
+    position: absolute;
+    left: var(--stem-x);
+    top: 20px;
+    bottom: 20px;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--green-200);
+  }
+}
+
+.stem__chapter {
+  position: relative;
+  padding-bottom: var(--space-6);
+}
+
+.stem__chapter-head {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.stem__knot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 41px;
+  height: 41px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--text-on-primary);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: 0 0 0 5px var(--bg);
+
+  &--final {
+    background: var(--accent);
+    color: #fff;
+  }
+}
+
+.stem__chapter--locked .stem__knot {
+  background: var(--bg-sunken);
+  color: var(--text-subtle);
+  border: 2px solid var(--border-strong);
+}
+
+.stem__level {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.stem__title {
+  margin: 2px 0 var(--space-1);
+  font-size: var(--fs-xl);
+}
+
+.stem__summary {
+  margin: 0;
+  color: var(--text-muted);
+  max-width: 70ch;
+}
+
+.stem__lock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-subtle);
+}
+
+.stem__lessons {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.node {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.node__dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 14px 0 0 calc(var(--stem-x) - 9.5px);
+  border-radius: 50%;
+  border: 3px solid var(--primary);
+  background: var(--bg);
+  color: var(--text-on-primary);
+}
+
+.node--done .node__dot {
+  background: var(--primary);
+}
+
+// La leçon en cours porte l'anneau rose : « tu es ici »
+.node--in_progress .node__dot,
+.node--available .node__dot {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.node--locked .node__dot {
+  border-color: var(--border-strong);
+  color: var(--text-subtle);
+}
+
+.node__body {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+
+a.node__body:hover {
+  background: var(--bg-elevated);
+  color: inherit;
+  box-shadow: var(--shadow-sm);
+}
+
+.node__title {
+  font-weight: 650;
+}
+
+.node--locked .node__title {
+  color: var(--text-subtle);
+}
+
+.node__meta,
+.node__hint {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.node__hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.node__leaf {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  margin: 10px 0 0 calc(var(--stem-x) - 15.5px);
+  border-radius: 50% 4px 50% 4px;
+  background: var(--bg-sunken);
+  color: var(--text-subtle);
+  border: 2px solid var(--border-strong);
+}
+
+.node--quiz-open .node__leaf {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--rose-700);
+}
+
+.node--quiz-passed .node__leaf {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.node__body--quiz {
+  margin: var(--space-2) 0;
+  background: var(--bg-elevated);
+  border: 1px dashed var(--border-strong);
+
+  .btn {
+    justify-self: start;
+    margin-top: var(--space-2);
+  }
+}
+
+.node--quiz-passed .node__body--quiz {
+  border-style: solid;
+  border-color: var(--green-200);
+}
+
+.finale {
+  display: grid;
+  gap: var(--space-4);
+  margin-left: calc(var(--stem-x) + 30px);
+
+  @media (min-width: 720px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.finale__item {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+}

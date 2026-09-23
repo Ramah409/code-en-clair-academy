@@ -1,0 +1,128 @@
+.qres {
+  max-width: 860px;
+}
+
+.qres__score {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  align-items: center;
+  margin: var(--space-3) 0 var(--space-6);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+
+  &--ok {
+    background: var(--primary-soft);
+  }
+
+  > div {
+    flex: 1;
+    min-width: 260px;
+  }
+}
+
+.qres__pct {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 600;
+
+  small {
+    font-size: 1rem;
+  }
+}
+
+.qres__kicker {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.qres__verdict {
+  margin: var(--space-1) 0 var(--space-2);
+  font-size: clamp(1.8rem, 2vw + 1rem, 2.6rem);
+}
+
+.qres__unlock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--success);
+  font-weight: 650;
+}
+
+.qres__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.review {
+  margin-bottom: var(--space-6);
+
+  h2 {
+    font-size: var(--fs-xl);
+  }
+}
+
+.review__list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review__item {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.review__count {
+  flex: none;
+  min-width: 48px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--rose-700);
+}
+
+.review__body {
+  display: grid;
+  gap: 2px;
+  font-size: var(--fs-sm);
+}
+
+.review__perfect {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 650;
+  color: var(--success);
+}
+
+.correction h2 {
+  font-size: var(--fs-xl);
+  margin: 0;
+}
+
+.correction__list {
+  display: grid;
+  gap: var(--space-5);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.correction__num {
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-sm);
+  font-weight: 650;
+  color: var(--text-muted);
+}

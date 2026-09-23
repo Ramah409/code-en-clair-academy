@@ -1,0 +1,86 @@
+@if (result(); as r) {
+  <div class="qres">
+    <nav class="crumbs" aria-label="Fil d'Ariane"><a routerLink="/quiz">Quiz</a> <span aria-hidden="true">›</span> résultat</nav>
+
+    <section class="qres__score" [class.qres__score--ok]="r.passed" aria-labelledby="score-title">
+      <app-progress-ring [percent]="r.percent" [size]="150" [color]="r.passed ? 'var(--primary)' : 'var(--accent)'"
+                         [label]="'Score ' + r.percent + ' %'">
+        <span class="qres__pct">{{ r.percent }}<small>%</small></span>
+      </app-progress-ring>
+      <div>
+        <p class="qres__kicker">{{ r.title }}</p>
+        <h1 id="score-title" class="qres__verdict">
+          @if (r.passed) { Réussi } @else { Pas encore réussi }
+        </h1>
+        <p>{{ r.correct }} bonne{{ r.correct > 1 ? 's' : '' }} réponse{{ r.correct > 1 ? 's' : '' }} sur {{ r.total }}
+          — seuil de réussite : {{ r.passingPercent }} % — durée : {{ duration() }} — +{{ r.xpEarned }} XP</p>
+        @if (r.scope === 'CHAPITRE' && r.passed && r.nextChapterUnlocked) {
+          <p class="qres__unlock"><app-icon name="check" [size]="18" /> Le chapitre suivant est débloqué.</p>
+        }
+        @if (!r.passed && r.passingPercent) {
+          <p class="qres__advice">Revois les notions ci-dessous, puis recommence : tu auras de nouvelles questions ou un ordre différent.</p>
+        }
+        <div class="qres__actions">
+          <button type="button" class="btn" (click)="restart()" [disabled]="restarting()">
+            <app-icon name="refresh" [size]="18" /> {{ r.passed ? 'Recommencer' : 'Retenter' }}
+          </button>
+          @if (r.courseSlug) {
+            <a class="btn btn--secondary" [routerLink]="['/parcours', r.courseSlug]">Retour au parcours</a>
+          }
+          <a class="btn btn--ghost" routerLink="/quiz">Autres QCM</a>
+        </div>
+      </div>
+    </section>
+
+    @if (error()) {
+      <div class="alert alert--error" role="alert">{{ error() }}</div>
+    }
+
+    @if (r.review.length) {
+      <section class="review" aria-labelledby="review-title">
+        <h2 id="review-title">Notions à revoir</h2>
+        <ul class="review__list">
+          @for (t of r.review; track $index) {
+            <li class="review__item">
+              <span class="review__count">{{ t.wrong }} / {{ t.total }}</span>
+              <span class="review__body">
+                <strong>{{ t.theme }}</strong>
+                @if (t.lessonSlug) {
+                  <span>Leçon à relire : <a [routerLink]="['/lecon', t.lessonSlug]">{{ t.lessonTitle }}</a> ({{ t.chapterTitle }})</span>
+                } @else {
+                  <span>Questions de synthèse du chapitre : relis le résumé « À retenir » des leçons.</span>
+                }
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+    } @else {
+      <p class="review__perfect"><app-icon name="trophy" [size]="20" /> Aucune erreur : toutes les notions sont maîtrisées.</p>
+    }
+
+    <section class="correction" aria-labelledby="correction-title">
+      <div class="section-head">
+        <h2 id="correction-title">Correction détaillée</h2>
+        <label class="checkbox">
+          <input type="checkbox" [checked]="onlyWrong()" (change)="onlyWrong.set(!onlyWrong())" />
+          <span>Seulement mes erreurs</span>
+        </label>
+      </div>
+      <ol class="correction__list">
+        @for (it of items(); track it.position) {
+          <li>
+            <p class="correction__num">Question {{ it.position }}
+              @if (!it.given || (!it.given.choices?.length && !it.given.text)) { — sans réponse }</p>
+            <app-question-card [question]="it.question" [feedback]="it.feedback" [given]="it.given ?? null"
+                               [allowRetry]="false" [showMeta]="true" />
+          </li>
+        }
+      </ol>
+    </section>
+  </div>
+} @else if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+} @else {
+  <div class="skeleton skeleton--hero"></div>
+}
