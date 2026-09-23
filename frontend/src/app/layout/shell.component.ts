@@ -41,6 +41,7 @@ export class ShellComponent {
     { path: '/quiz', label: 'Quiz', icon: 'quiz' },
     { path: '/examen-cda', label: 'Examen CDA', icon: 'graduation' },
     { path: '/progression', label: 'Progression', icon: 'chart' },
+    { path: '/attestations', label: 'Attestations', icon: 'medal' },
     { path: '/profil', label: 'Profil', icon: 'user' },
     { path: '/admin', label: 'Administration', icon: 'shield', adminOnly: true },
   ];

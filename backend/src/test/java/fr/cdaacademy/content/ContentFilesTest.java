@@ -10,6 +10,14 @@ import org.junit.jupiter.api.Test;
 class ContentFilesTest {
 
     @Test
+    void tousLesExamensSontValides() {
+        var exams = new ContentLoader().loadExams(Path.of("../database/content"));
+        assertThat(exams).isNotEmpty();
+        assertThat(exams.stream().filter(e -> Boolean.TRUE.equals(e.finalExam())).count())
+                .as("un seul examen blanc final").isEqualTo(1L);
+    }
+
+    @Test
     void tousLesParcoursSontValides() {
         var bundles = new ContentLoader().loadAll(Path.of("../database/content"));
         assertThat(bundles).isNotEmpty();

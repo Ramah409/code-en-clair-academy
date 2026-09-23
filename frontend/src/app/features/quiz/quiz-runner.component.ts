@@ -148,6 +148,7 @@ export class QuizRunnerComponent implements OnDestroy {
     this.api.submitQuiz(a.id).subscribe({
       next: (res) => {
         this.rewards.celebrate(res.reward);
+        (res.newCertificates ?? []).forEach((c) => this.rewards.certificate(c.title));
         void this.router.navigate(['/quiz', a.id, 'resultat'], { replaceUrl: true });
       },
       error: (e: unknown) => {

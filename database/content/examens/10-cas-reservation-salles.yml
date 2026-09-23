@@ -1,0 +1,166 @@
+slug: cas-reservation-salles
+version: 1
+position: 10
+kind: ETUDE_DE_CAS
+level: EXAMEN
+title: "Étude de cas — réserver une salle à la médiathèque"
+description: |
+  Une mise en situation complète, comme au titre CDA : tu pars d'une demande exprimée avec des mots de
+  tous les jours et tu conçois l'application, du besoin jusqu'aux tests. Tu rédiges tes réponses, puis tu
+  compares avec un corrigé et tu t'auto-évalues avec une grille.
+durationMinutes: 90
+content:
+  context: |
+    La médiathèque de Bellerive prête trois salles (une salle de réunion, une salle informatique et un
+    auditorium) aux associations de la ville. Aujourd'hui, tout se fait par téléphone et sur un cahier :
+    il y a des doubles réservations et personne ne sait qui a réservé quoi.
+
+    La directrice souhaite une **application web** :
+    - les associations créent un compte, consultent les créneaux libres et demandent une réservation ;
+    - un agent de la médiathèque valide ou refuse chaque demande ;
+    - une salle ne peut pas être réservée deux fois sur le même créneau ;
+    - une association ne peut pas avoir plus de 3 réservations à venir.
+
+    L'équipe technique impose : Angular pour le frontend, Spring Boot pour l'API, PostgreSQL pour la base.
+  documents:
+    - title: "Extrait du cahier actuel"
+      md: |
+        | Date | Salle | Horaire | Association | Contact |
+        |------|-------|---------|-------------|---------|
+        | 12/03 | Réunion | 18 h – 20 h | Les Amis du Livre | 06 12 34 56 78 |
+        | 12/03 | Réunion | 19 h – 21 h | Club Échecs | club.echecs@exemple.fr |
+        | 14/03 | Auditorium | 14 h – 17 h | Théâtre Jeunes | 06 98 76 54 32 |
+
+        *Remarque : le 12/03, la salle de réunion a été réservée deux fois sur des horaires qui se
+        chevauchent.*
+  tasks:
+    - title: "Analyser le besoin"
+      md: |
+        Liste les **acteurs** de l'application, puis écris **quatre user stories** au format
+        « En tant que…, je veux…, afin de… ». Termine par les **règles de gestion** que tu repères.
+      hint: "Qui utilise l'application ? Qui valide ? Relis les phrases avec « ne peut pas »."
+      model: |
+        **Acteurs** : l'association (représentée par une personne), l'agent de la médiathèque ; éventuellement
+        un visiteur non connecté qui consulte les créneaux.
+
+        **User stories**
+        - En tant qu'association, je veux créer un compte, afin de demander des réservations.
+        - En tant qu'association, je veux voir les créneaux libres d'une salle, afin de choisir un horaire.
+        - En tant qu'association, je veux demander une réservation, afin d'utiliser une salle pour mon activité.
+        - En tant qu'agent, je veux valider ou refuser une demande, afin d'organiser l'occupation des salles.
+
+        **Règles de gestion**
+        - RG1 : une salle ne peut pas avoir deux réservations **validées** qui se chevauchent.
+        - RG2 : une association a au plus 3 réservations à venir (en attente ou validées).
+        - RG3 : seule une personne ayant le rôle AGENT peut valider ou refuser.
+        - RG4 : une réservation a un statut : EN_ATTENTE, VALIDEE, REFUSEE, ANNULEE.
+      criteria:
+        - "J'ai identifié au moins les deux acteurs : association et agent."
+        - "Mes user stories suivent le format « En tant que…, je veux…, afin de… »."
+        - "J'ai une user story pour la validation par l'agent."
+        - "J'ai écrit la règle du non-chevauchement des réservations."
+        - "J'ai écrit la règle des 3 réservations à venir maximum."
+    - title: "Modéliser les données (MCD)"
+      md: |
+        Propose le **MCD** en notation Merise : entités avec identifiant et attributs, associations avec un
+        verbe et les **cardinalités** de chaque côté. Explique en une phrase où tu places la date et les
+        horaires.
+      hint: "Trois entités suffisent. Le créneau (date, début, fin) décrit-il la salle, l'association… ou la réservation ?"
+      model: |
+        - ASSOCIATION (**id_association**, nom, email_contact, telephone)
+        - SALLE (**id_salle**, nom, capacite)
+        - RESERVATION (**id_reservation**, date_reservation, heure_debut, heure_fin, statut, date_demande)
+
+        Associations :
+        - ASSOCIATION **0,n** — DEMANDER — **1,1** RESERVATION
+        - SALLE **0,n** — CONCERNER — **1,1** RESERVATION
+
+        Le créneau (date, heure de début, heure de fin) décrit **une réservation précise** : ce sont donc des
+        attributs de RESERVATION. On aurait aussi pu modéliser RESERVATION comme une association porteuse
+        entre ASSOCIATION et SALLE, mais une entité est plus simple car elle a son propre statut et sa vie.
+      criteria:
+        - "Chaque entité a un identifiant."
+        - "La date et les horaires sont dans RESERVATION (pas dans SALLE ni dans ASSOCIATION)."
+        - "Une réservation concerne exactement une salle (1,1)."
+        - "Une réservation est demandée par exactement une association (1,1)."
+        - "Le statut de la réservation apparaît dans le modèle."
+    - title: "Passer au MLD et au SQL"
+      md: |
+        Écris le **MLD** (clé primaire soulignée, clés étrangères précédées de #), puis le `CREATE TABLE` de
+        la table des réservations avec ses contraintes.
+      hint: "Associations 1,1 – 0,n : la clé étrangère va du côté 1,1. Pense aux CHECK sur le statut et les horaires."
+      model: |
+        **MLD**
+        - association (<u>id_association</u>, nom, email_contact, telephone)
+        - salle (<u>id_salle</u>, nom, capacite)
+        - reservation (<u>id_reservation</u>, date_reservation, heure_debut, heure_fin, statut, date_demande, #id_association, #id_salle)
+
+        ```sql
+        CREATE TABLE reservation (
+          id_reservation   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+          date_reservation DATE        NOT NULL,
+          heure_debut      TIME        NOT NULL,
+          heure_fin        TIME        NOT NULL,
+          statut           VARCHAR(10) NOT NULL DEFAULT 'EN_ATTENTE'
+                           CHECK (statut IN ('EN_ATTENTE', 'VALIDEE', 'REFUSEE', 'ANNULEE')),
+          date_demande     TIMESTAMPTZ NOT NULL DEFAULT now(),
+          id_association   BIGINT      NOT NULL REFERENCES association (id_association),
+          id_salle         BIGINT      NOT NULL REFERENCES salle (id_salle),
+          CHECK (heure_fin > heure_debut)
+        );
+        CREATE INDEX ix_reservation_salle_date ON reservation (id_salle, date_reservation);
+        ```
+
+        Le non-chevauchement (RG1) se vérifie dans le service Java avant la validation ; en PostgreSQL
+        avancé, une contrainte d'exclusion (`EXCLUDE USING gist`) peut aussi le garantir.
+      criteria:
+        - "La table reservation contient les deux clés étrangères."
+        - "Le statut a une valeur par défaut et un CHECK."
+        - "J'ai une contrainte qui garantit que la fin est après le début."
+        - "Les colonnes obligatoires sont NOT NULL."
+    - title: "Concevoir l'API REST et la sécurité"
+      md: |
+        Liste les **endpoints** (verbe + adresse) nécessaires, en précisant pour chacun **qui** a le droit de
+        l'appeler. Explique comment tu protèges la validation des réservations.
+      hint: "GET pour lire, POST pour créer, PATCH ou PUT pour changer un statut. Pense aux rôles USER et AGENT."
+      model: |
+        | Endpoint | Rôle | Réponse |
+        |----------|------|---------|
+        | `POST /api/auth/register`, `POST /api/auth/login` | public | 201 / 200 |
+        | `GET /api/salles` | connecté | 200 |
+        | `GET /api/salles/{id}/creneaux?date=` | connecté | 200 |
+        | `POST /api/reservations` | ASSOCIATION | 201, 409 si chevauchement, 422 si plus de 3 à venir |
+        | `GET /api/reservations/mes-reservations` | ASSOCIATION | 200 |
+        | `DELETE /api/reservations/{id}` (annuler la sienne) | ASSOCIATION propriétaire | 204, 403 sinon |
+        | `GET /api/admin/reservations?statut=EN_ATTENTE` | AGENT | 200 |
+        | `PATCH /api/admin/reservations/{id}` (`{"statut":"VALIDEE"}`) | AGENT | 200 |
+
+        Sécurité : authentification par JWT (ou session), mots de passe hachés avec BCrypt, règle
+        `.requestMatchers("/api/admin/**").hasRole("AGENT")` côté Spring, et vérification dans le service que
+        l'association qui annule est bien la propriétaire de la réservation (sinon 403). Le rôle est stocké
+        en base et n'est jamais choisi dans un formulaire.
+      criteria:
+        - "Chaque endpoint a un verbe HTTP adapté (GET lire, POST créer, PATCH/PUT modifier, DELETE supprimer)."
+        - "La validation est réservée au rôle agent, vérifiée côté serveur."
+        - "J'ai prévu qu'une association ne peut annuler que ses propres réservations."
+        - "J'ai indiqué les codes de réponse en cas d'erreur (409, 403…)."
+        - "Les mots de passe sont hachés (BCrypt ou équivalent)."
+    - title: "Prévoir les tests"
+      md: |
+        Décris **trois tests** : un test unitaire, un test d'intégration et un test fonctionnel (ou de bout
+        en bout). Pour chacun : ce que tu testes et le résultat attendu.
+      hint: "Le non-chevauchement est une règle métier parfaite pour un test unitaire du service."
+      model: |
+        - **Test unitaire (JUnit + Mockito)** : `ReservationService.demander` refuse une réservation qui chevauche
+          une réservation validée de la même salle → exception `ConflitCreneauException` ; le repository
+          `save` n'est jamais appelé.
+        - **Test d'intégration (MockMvc)** : `PATCH /api/admin/reservations/5` avec un jeton de rôle ASSOCIATION
+          → **403** ; avec un jeton AGENT → **200** et statut VALIDEE en base.
+        - **Test fonctionnel (Playwright ou manuel avec scénario)** : une association se connecte, réserve la
+          salle de réunion le 12/03 de 18 h à 20 h, puis une autre essaie 19 h – 21 h → message
+          « Ce créneau n'est plus disponible ».
+      criteria:
+        - "J'ai un test unitaire sur une règle métier."
+        - "J'ai un test qui vérifie les droits (403 pour un rôle insuffisant)."
+        - "Chaque test a un résultat attendu précis."
+        - "Je sais dire la différence entre test unitaire et test d'intégration."

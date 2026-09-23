@@ -1,0 +1,85 @@
+slug: oral-questions-techniques
+version: 1
+position: 20
+kind: ORAL
+level: EXAMEN
+title: "Oral — questions techniques du jury CDA"
+description: "Les questions techniques les plus fréquentes à l'entretien, avec une réponse simple et précise."
+durationMinutes: 30
+content:
+  questions:
+    - theme: Architecture
+      q: "Qu'est-ce qu'une architecture trois tiers ?"
+      a: "Une application découpée en trois couches séparées : présentation (Angular, dans le navigateur), logique métier (API Spring Boot) et données (PostgreSQL). Chaque couche ne parle qu'à sa voisine."
+    - theme: Architecture
+      q: "Quelle différence entre le modèle MVC et une API REST ?"
+      a: "MVC organise une application qui produit ses pages (modèle, vue, contrôleur). Une API REST ne produit pas de pages : elle expose des ressources en JSON ; la vue est dans un frontend séparé comme Angular."
+    - theme: Architecture
+      q: "Qu'est-ce qu'une API REST ?"
+      a: "Une interface qui expose des ressources par des URL et des verbes HTTP (GET, POST, PUT, DELETE), sans état côté serveur, avec des échanges en JSON et des codes de statut (200, 201, 404…)."
+    - theme: Java / Spring
+      q: "Qu'est-ce que l'injection de dépendances ?"
+      a: "Le framework crée les objets dont une classe a besoin et les lui fournit, souvent par le constructeur. La classe ne fait pas `new` : elle est plus simple à tester et à faire évoluer."
+    - theme: Java / Spring
+      q: "Quel est le rôle d'un repository Spring Data JPA ?"
+      a: "Accéder à la base : on déclare une interface qui hérite de `JpaRepository`, Spring génère l'implémentation (save, findById, méthodes dérivées du nom comme `findByEmail`)."
+    - theme: Java / Spring
+      q: "Qu'est-ce qu'une entité JPA ?"
+      a: "Une classe Java annotée `@Entity` qui correspond à une table ; chaque instance correspond à une ligne. L'ORM (Hibernate) fait la traduction entre objets et SQL."
+    - theme: Java / Spring
+      q: "À quoi sert @Transactional ?"
+      a: "À exécuter toutes les opérations d'une méthode dans une même transaction : tout est validé à la fin, ou tout est annulé si une exception survient."
+    - theme: Base de données
+      q: "Expliquez les étapes MCD, MLD et MPD."
+      a: "Le MCD décrit les données sans technique (entités, associations, cardinalités). Le MLD les traduit en tables, clés primaires et étrangères. Le MPD est le script réel pour le SGBD choisi (types, contraintes, index)."
+    - theme: Base de données
+      q: "Qu'est-ce qu'une clé étrangère ?"
+      a: "Une colonne qui contient la clé primaire d'une ligne d'une autre table. Le SGBD vérifie que cette ligne existe : c'est l'intégrité référentielle."
+    - theme: Base de données
+      q: "Qu'est-ce que la normalisation ?"
+      a: "Organiser les tables pour éviter la redondance : une information à un seul endroit. 1FN : valeurs atomiques ; 2FN : pas de dépendance à une partie de la clé ; 3FN : pas de dépendance entre colonnes non clés."
+    - theme: Base de données
+      q: "Que signifie ACID ?"
+      a: "Atomicité (tout ou rien), Cohérence (les règles restent respectées), Isolation (les transactions ne se gênent pas), Durabilité (ce qui est validé survit à une panne)."
+    - theme: Sécurité
+      q: "Comment stockez-vous les mots de passe ?"
+      a: "Hachés avec un algorithme lent et salé (BCrypt ou Argon2). On ne peut pas les retrouver ; on compare avec la fonction `matches`."
+    - theme: Sécurité
+      q: "Qu'est-ce qu'un JWT et comment est-il vérifié ?"
+      a: "Un jeton signé qui contient l'identité, le rôle et une date d'expiration. Le serveur vérifie la signature avec son secret et la date à chaque requête ; le contenu est lisible mais infalsifiable."
+    - theme: Sécurité
+      q: "Comment vous protégez-vous de l'injection SQL ?"
+      a: "Avec des requêtes paramétrées (Spring Data, JdbcTemplate avec `?`) : les valeurs sont transmises à part et ne deviennent jamais du code SQL."
+    - theme: Sécurité
+      q: "Qu'est-ce qu'une faille XSS ?"
+      a: "L'injection de JavaScript dans une page, qui s'exécute chez les autres utilisateurs. Angular échappe les données affichées ; il faut éviter `innerHTML` avec des données saisies et protéger les jetons (cookie HttpOnly)."
+    - theme: Sécurité
+      q: "À quoi sert CORS ?"
+      a: "À autoriser un frontend situé sur une autre origine (domaine, port) à appeler l'API depuis le navigateur. On liste précisément les origines de confiance."
+    - theme: Sécurité
+      q: "Quelle différence entre authentification et autorisation ?"
+      a: "L'authentification vérifie qui tu es (mot de passe, jeton). L'autorisation vérifie ce que tu as le droit de faire (rôle, propriétaire de la ressource)."
+    - theme: Angular
+      q: "Qu'est-ce qu'un composant Angular ?"
+      a: "Une brique d'interface formée d'une classe TypeScript (données, méthodes) et d'un template HTML. Les composants s'assemblent pour construire les pages."
+    - theme: Angular
+      q: "À quoi sert un service Angular ?"
+      a: "À partager de la logique entre composants, notamment les appels HTTP. Il est injecté là où on en a besoin."
+    - theme: Angular
+      q: "Qu'est-ce qu'un Observable ?"
+      a: "Un flux de valeurs qui arrivent dans le temps (une réponse HTTP, des saisies…). On s'y abonne avec `subscribe` ou le pipe `async` ; RxJS fournit des opérateurs pour le transformer."
+    - theme: Angular
+      q: "À quoi sert un guard ?"
+      a: "À autoriser ou refuser l'accès à une route (connexion, rôle). C'est un confort pour l'interface : la vraie protection des données est côté serveur."
+    - theme: Tests
+      q: "Quels types de tests connaissez-vous ?"
+      a: "Unitaires (une classe seule, avec des doublures), d'intégration (plusieurs couches ensemble, par exemple MockMvc avec la base), fonctionnels ou de bout en bout (un parcours utilisateur dans un vrai navigateur)."
+    - theme: Déploiement
+      q: "Quelle différence entre une image et un conteneur Docker ?"
+      a: "L'image est un modèle figé construit à partir d'un Dockerfile ; le conteneur est une image en cours d'exécution."
+    - theme: Déploiement
+      q: "Comment gérez-vous les secrets en production ?"
+      a: "Dans des variables d'environnement fournies par l'hébergeur ou un gestionnaire de secrets, jamais dans le code ni dans Git. Le dépôt ne contient qu'un fichier d'exemple sans valeurs."
+    - theme: Qualité
+      q: "Qu'est-ce qu'une intégration continue ?"
+      a: "Une automatisation qui, à chaque envoi de code (push), compile le projet et lance les tests, par exemple avec GitHub Actions. Une erreur est détectée tout de suite."

@@ -58,6 +58,61 @@ public class ContentLoader {
         }
     }
 
+    static final Set<String> EXAM_KINDS = Set.of("EXAMEN_BLANC", "ETUDE_DE_CAS", "ORAL");
+
+    /** Lit les examens décrits dans {@code <racine>/examens/*.yml}. */
+    public List<ContentFiles.ExamFile> loadExams(Path root) {
+        Path dir = root.resolve("examens");
+        if (!Files.isDirectory(dir)) {
+            return List.of();
+        }
+        try (Stream<Path> files = Files.list(dir)) {
+            List<ContentFiles.ExamFile> exams = new ArrayList<>();
+            Set<String> slugs = new HashSet<>();
+            for (Path file : files.filter(f -> f.toString().endsWith(".yml")).sorted().toList()) {
+                ContentFiles.ExamFile exam = read(file, ContentFiles.ExamFile.class);
+                validate(exam, file);
+                require(slugs.add(exam.slug()), file, "examen en double : " + exam.slug());
+                exams.add(exam);
+            }
+            exams.sort(Comparator.comparingInt(ContentFiles.ExamFile::position));
+            return exams;
+        } catch (IOException e) {
+            throw new ContentException("Lecture impossible du dossier " + dir, e);
+        }
+    }
+
+    private void validate(ContentFiles.ExamFile exam, Path file) {
+        require(exam.slug() != null && exam.title() != null && exam.description() != null, file,
+                "slug, title et description obligatoires");
+        require(EXAM_KINDS.contains(exam.kind()), file, "type d'examen inconnu : " + exam.kind());
+        require(exam.level() == null || LEVELS.contains(exam.level()), file, "niveau inconnu : " + exam.level());
+        require(exam.durationMinutes() >= 5 && exam.durationMinutes() <= 300, file, "durée entre 5 et 300 minutes");
+        JsonNode content = exam.content();
+        switch (exam.kind()) {
+            case "EXAMEN_BLANC" -> require(exam.questionCount() != null && exam.questionCount() >= 10
+                    && exam.questionCount() <= 100, file, "questionCount entre 10 et 100");
+            case "ETUDE_DE_CAS" -> {
+                require(content != null && content.hasNonNull("context") && content.path("tasks").isArray()
+                        && !content.path("tasks").isEmpty(), file, "une étude de cas demande context et tasks");
+                for (JsonNode task : content.path("tasks")) {
+                    require(task.hasNonNull("title") && task.hasNonNull("md") && task.hasNonNull("model")
+                            && task.path("criteria").isArray() && !task.path("criteria").isEmpty(), file,
+                            "chaque tâche demande title, md, model et criteria");
+                }
+            }
+            case "ORAL" -> {
+                require(content != null && content.path("questions").isArray() && !content.path("questions").isEmpty(),
+                        file, "un oral demande une liste questions");
+                for (JsonNode q : content.path("questions")) {
+                    require(q.hasNonNull("q") && q.hasNonNull("a"), file, "question d'oral sans q ou a");
+                }
+            }
+            default -> {
+            }
+        }
+    }
+
     public CourseBundle load(Path courseDir) {
         CourseFile course = read(courseDir.resolve("parcours.yml"), CourseFile.class);
         List<ChapterFile> chapters = new ArrayList<>();

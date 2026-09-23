@@ -525,6 +525,7 @@ export interface QuizResult {
   nextChapterUnlocked: boolean;
   review: ReviewTopic[];
   items: QuizResultItem[];
+  newCertificates?: Certificate[];
 }
 
 export interface QuizHistoryItem {
@@ -624,4 +625,124 @@ export interface ProjectListItem {
   stepCount: number;
   stepsDone: number;
   available: boolean;
+}
+
+// ------------------------------------------------------------------ examen CDA
+
+export interface ExamAttemptSummary {
+  id: number;
+  percent?: number;
+  passed?: boolean;
+  startedAt: string;
+  submittedAt?: string;
+}
+
+export interface MockExam {
+  slug: string;
+  title: string;
+  description: string;
+  level?: Level;
+  durationMinutes: number;
+  questionCount: number;
+  passingScore: number;
+  finalExam: boolean;
+  courses: string[];
+  bestPercent?: number;
+  passed: boolean;
+  attempts: ExamAttemptSummary[];
+}
+
+export interface CaseSummary {
+  slug: string;
+  title: string;
+  description: string;
+  level?: Level;
+  durationMinutes: number;
+  taskCount: number;
+  started: boolean;
+  revealed: boolean;
+  completed: boolean;
+  score?: number;
+}
+
+export interface ExamOverview {
+  mockExams: MockExam[];
+  caseStudies: CaseSummary[];
+  jury: { total: number; known: number; toReview: number; available: number };
+}
+
+export interface CaseTask {
+  title: string;
+  md: string;
+  hint?: string;
+  model?: string;
+  criteria?: string[];
+  criteriaCount?: number;
+}
+
+export interface CaseStudy {
+  slug: string;
+  title: string;
+  description: string;
+  level?: Level;
+  durationMinutes: number;
+  context: { md: string; documents: { title: string; md: string }[] };
+  tasks: CaseTask[];
+  answers: Record<string, string>;
+  checked: Record<string, number[]>;
+  revealed: boolean;
+  completed: boolean;
+  score?: number;
+  reward?: Reward;
+}
+
+export interface JuryCard {
+  key: string;
+  question: string;
+  answer: string;
+  tip?: string;
+  source: string;
+  courseSlug?: string;
+  known?: boolean;
+}
+
+// ------------------------------------------------------------------ attestations
+
+export type CertificateKind = 'NIVEAU' | 'PARCOURS' | 'GLOBALE';
+
+export interface Certificate {
+  code: string;
+  kind: CertificateKind;
+  title: string;
+  courseSlug?: string;
+  level?: Level;
+  holderName: string;
+  issuedAt: string;
+  details: any;
+}
+
+export interface CertificateGoal {
+  kind: CertificateKind;
+  title: string;
+  courseSlug?: string;
+  level?: Level;
+  obtained: boolean;
+  code?: string;
+  done: number;
+  total: number;
+  remaining: string[];
+}
+
+export interface CertificateOverview {
+  certificates: Certificate[];
+  goals: CertificateGoal[];
+  newlyIssued: Certificate[];
+}
+
+export interface PublicCertificate {
+  code: string;
+  title: string;
+  holderName: string;
+  issuedAt: string;
+  kind: CertificateKind;
 }

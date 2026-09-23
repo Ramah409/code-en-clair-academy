@@ -1,0 +1,113 @@
+slug: cas-securiser-api-existante
+version: 1
+position: 11
+kind: ETUDE_DE_CAS
+level: EXAMEN
+title: "Étude de cas — auditer et sécuriser une API existante"
+description: |
+  Une entreprise te confie une petite API Spring Boot déjà en ligne. Tu dois repérer les failles, les
+  classer par priorité et proposer des corrections vérifiables. C'est exactement l'exercice que tu as fait
+  sur Soramfr, cette fois sur un projet que tu ne connais pas.
+durationMinutes: 60
+content:
+  context: |
+    La société **VéloPartage** loue des vélos entre particuliers. Son API Spring Boot gère les comptes, les
+    annonces de vélos et les réservations. Un stagiaire l'a écrite l'an dernier. Avant une campagne de
+    publicité, la direction veut un **audit de sécurité** simple.
+
+    On te fournit trois extraits du code et de la configuration.
+  documents:
+    - title: "Extrait 1 — application.properties"
+      md: |
+        ```properties
+        spring.datasource.url=jdbc:postgresql://db.velopartage.fr:5432/prod
+        spring.datasource.username=postgres
+        spring.datasource.password=velo2023
+        jwt.secret=secret
+        spring.jpa.hibernate.ddl-auto=update
+        ```
+    - title: "Extrait 2 — AnnonceController.java"
+      md: |
+        ```java
+        @GetMapping("/api/annonces/recherche")
+        public List<Annonce> rechercher(@RequestParam String ville) {
+            String sql = "SELECT * FROM annonces WHERE ville = '" + ville + "'";
+            return jdbcTemplate.query(sql, new AnnonceMapper());
+        }
+
+        @DeleteMapping("/api/annonces/{id}")
+        public void supprimer(@PathVariable Long id) {
+            annonceRepository.deleteById(id);
+        }
+        ```
+    - title: "Extrait 3 — UtilisateurController.java"
+      md: |
+        ```java
+        @GetMapping("/api/utilisateurs/{id}")
+        public Utilisateur profil(@PathVariable Long id) {
+            return utilisateurRepository.findById(id).orElseThrow();
+        }
+        ```
+        *L'entité `Utilisateur` contient : id, nom, email, telephone, adresse, motDePasseHash, role.*
+  tasks:
+    - title: "Repérer les failles"
+      md: |
+        Pour chaque extrait, liste les **failles** ou mauvaises pratiques que tu repères, et nomme le risque
+        correspondant (injection, contrôle d'accès, secret exposé, fuite de données…).
+      hint: "Extrait 1 : quatre problèmes. Extrait 2 : deux. Extrait 3 : deux."
+      model: |
+        **Extrait 1 (configuration)**
+        - Mot de passe de base faible et écrit en clair ; compte `postgres` (superutilisateur) utilisé par l'application.
+        - Secret JWT « secret » : trop court et devinable, on peut fabriquer des jetons valides.
+        - Adresse de la base de production écrite dans le code.
+        - `ddl-auto=update` en production : Hibernate modifie le schéma sans contrôle.
+
+        **Extrait 2 (annonces)**
+        - **Injection SQL** : la ville est collée dans la requête (`' OR '1'='1`).
+        - **Contrôle d'accès absent** : n'importe quel utilisateur connecté peut supprimer l'annonce de quelqu'un d'autre.
+
+        **Extrait 3 (profil)**
+        - **Fuite de données** : l'entité est renvoyée telle quelle (hash du mot de passe, adresse, téléphone).
+        - **IDOR** (accès direct à un objet) : n'importe qui peut lire le profil de n'importe quel id.
+      criteria:
+        - "J'ai repéré l'injection SQL de l'extrait 2."
+        - "J'ai repéré le secret JWT faible et le mot de passe en clair."
+        - "J'ai repéré que n'importe qui peut supprimer n'importe quelle annonce."
+        - "J'ai repéré que l'entité Utilisateur est renvoyée avec des données sensibles."
+        - "J'ai repéré qu'on peut lire le profil de n'importe quel utilisateur par son id."
+    - title: "Classer par priorité"
+      md: |
+        Classe les failles en **critique**, **haute** et **moyenne**, en justifiant chaque niveau en une phrase
+        (gravité et facilité d'exploitation).
+      hint: "Ce qui donne accès à toute la base ou à tous les comptes, sans compétence particulière, est critique."
+      model: |
+        - **Critique** : injection SQL (lecture ou destruction de toute la base, exploitable depuis un simple
+          navigateur) ; secret JWT « secret » (on se fabrique un jeton ADMIN) ; mot de passe de production dans le code.
+        - **Haute** : suppression des annonces des autres ; profil de n'importe qui lisible avec hash et
+          adresse (données personnelles, RGPD).
+        - **Moyenne** : `ddl-auto=update` ; compte superutilisateur (aggrave les autres failles mais n'est pas
+          exploitable seul).
+      criteria:
+        - "L'injection SQL est classée critique."
+        - "Le secret JWT faible est classé critique."
+        - "Chaque niveau est justifié par la gravité et la facilité d'exploitation."
+    - title: "Proposer les corrections"
+      md: |
+        Pour chaque faille critique ou haute, écris la **correction** (avec un bout de code ou de configuration)
+        et la façon de **vérifier** qu'elle fonctionne.
+      hint: "Requête paramétrée, variables d'environnement, DTO, vérification du propriétaire, tests MockMvc."
+      model: |
+        - **Injection** : `jdbcTemplate.query("SELECT * FROM annonces WHERE ville = ?", new AnnonceMapper(), ville)`
+          ou `annonceRepository.findByVille(ville)`. Vérification : un test avec `' OR '1'='1` renvoie une liste vide.
+        - **Secrets** : `jwt.secret=${JWT_SECRET}` (64 caractères aléatoires), `spring.datasource.password=${DB_PASSWORD}` ;
+          changer immédiatement les deux valeurs exposées ; compte PostgreSQL dédié avec des droits limités.
+        - **Suppression** : dans le service, charger l'annonce et vérifier `annonce.getProprietaire().getId().equals(idConnecte)`
+          (sinon 403). Vérification : test MockMvc avec le jeton d'un autre utilisateur → 403.
+        - **Profil** : renvoyer un `ProfilDto(id, nom)` pour les autres, un DTO complet (sans hash) seulement
+          pour soi (`/api/moi`). Vérification : `jsonPath("$.motDePasseHash").doesNotExist()`.
+      criteria:
+        - "L'injection est corrigée par une requête paramétrée."
+        - "Les secrets passent en variables d'environnement ET les valeurs exposées sont changées."
+        - "La suppression vérifie que l'annonce appartient à la personne connectée."
+        - "Le profil est renvoyé via un DTO sans données sensibles."
+        - "Chaque correction a une façon concrète de la vérifier (test, résultat attendu)."

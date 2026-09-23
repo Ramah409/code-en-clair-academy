@@ -1,0 +1,14 @@
+slug: examen-blanc-soramfr
+version: 1
+position: 3
+kind: EXAMEN_BLANC
+level: AVANCE
+title: "Examen blanc — mon projet Soramfr"
+description: |
+  25 questions sur ton propre projet : architecture, base de données, Spring Boot, sécurité JWT, Angular,
+  tests et déploiement, en 30 minutes. Si tu réussis celui-ci, tu es prête pour les questions du jury sur
+  ton dossier.
+durationMinutes: 30
+passingScore: 70
+questionCount: 25
+courses: [pratiquer-soramfr]

@@ -1,0 +1,35 @@
+<div class="cp-tools no-print">
+  <a routerLink="/attestations" class="btn btn--ghost"><app-icon name="arrow-left" [size]="18" /> Mes attestations</a>
+  @if (cert()) {
+    <button type="button" class="btn" (click)="print()"><app-icon name="save" [size]="18" /> Imprimer ou enregistrer en PDF</button>
+  }
+</div>
+
+@if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+}
+
+@if (cert(); as c) {
+  <article class="cp" aria-label="Attestation">
+    <p class="cp__brand">Code en Clair<span>Academy</span></p>
+    <p class="cp__kind">{{ kindLabel() }}</p>
+    <p class="cp__intro">délivrée à</p>
+    <p class="cp__name">{{ c.holderName }}</p>
+    <p class="cp__intro">pour avoir validé</p>
+    <h1 class="cp__title">{{ c.title }}</h1>
+    @if (chapters().length) {
+      <ul class="cp__chapters">
+        @for (ch of chapters(); track ch.chapitre) {
+          <li>{{ ch.chapitre }}@if (ch.meilleurScore) { <span> — {{ ch.meilleurScore }} %</span> }</li>
+        }
+      </ul>
+    }
+    <p class="cp__rule">Chaque chapitre a été validé par un QCM réussi à 80 % minimum{{ c.kind !== 'NIVEAU' ? ', et l\'examen final réussi' : '' }}.</p>
+    <footer class="cp__foot">
+      <p>Délivrée le {{ c.issuedAt | date: 'd MMMM y' }}</p>
+      <p>Code de vérification : <strong>{{ c.code }}</strong><br /><span class="cp__url">{{ verifyUrl() }}</span></p>
+    </footer>
+  </article>
+} @else if (!error()) {
+  <div class="skeleton skeleton--hero"></div>
+}

@@ -1615,3 +1615,24 @@
     color: var(--success);
   }
 }
+
+// ---------------------------------------------------------------- impression (attestations)
+
+@media print {
+  .side,
+  .topbar,
+  .tabs,
+  .toasts,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}

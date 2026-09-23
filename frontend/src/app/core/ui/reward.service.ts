@@ -36,6 +36,11 @@ export class RewardService {
     }
   }
 
+  /** Nouvelle attestation délivrée (affichée aussi longtemps qu'un badge). */
+  certificate(title: string): void {
+    this.push({ kind: 'badge', title: 'Nouvelle attestation', detail: title, icon: 'medal' });
+  }
+
   info(title: string, detail?: string): void {
     this.push({ kind: 'info', title, detail, icon: 'info' });
   }

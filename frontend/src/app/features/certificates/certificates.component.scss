@@ -1,0 +1,136 @@
+.cglobal {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  border: 2px dashed var(--accent-border);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  color: var(--rose-700);
+
+  h2 {
+    margin: 0 0 var(--space-1);
+    color: var(--text);
+  }
+
+  p {
+    color: var(--text);
+  }
+}
+
+.cglobal--ok {
+  border-style: solid;
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.cglobal__body {
+  flex: 1;
+  min-width: 0;
+
+  details {
+    color: var(--text);
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+  }
+}
+
+.cowned {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+
+  @media (min-width: 760px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cowned__item {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  color: var(--primary);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--primary);
+  }
+}
+
+.cowned__title {
+  display: block;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cowned__meta {
+  display: block;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.cgoals {
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+
+  h3 {
+    margin: 0 0 var(--space-3);
+  }
+}
+
+.cgoals__list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cgoal {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) auto;
+  gap: 4px var(--space-3);
+  align-items: center;
+}
+
+.cgoal__label {
+  font-weight: 600;
+}
+
+.cgoal__progress,
+.cgoal__done {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+}
+
+.cgoal__done {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.cgoal__progress .meter {
+  width: 110px;
+}
+
+.cgoal__next {
+  grid-column: 1 / -1;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}

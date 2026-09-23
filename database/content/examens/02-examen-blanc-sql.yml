@@ -1,0 +1,13 @@
+slug: examen-blanc-bases-de-donnees
+version: 1
+position: 2
+kind: EXAMEN_BLANC
+level: INTERMEDIAIRE
+title: "Examen blanc — bases de données et SQL"
+description: |
+  25 questions sur SQL, PostgreSQL et la modélisation, en 30 minutes. Idéal pour vérifier ton niveau
+  sur l'activité « persistance des données » avant la session complète.
+durationMinutes: 30
+passingScore: 70
+questionCount: 25
+courses: [sql-postgresql]

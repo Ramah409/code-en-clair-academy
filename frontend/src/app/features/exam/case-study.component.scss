@@ -1,0 +1,150 @@
+.cs-context {
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--primary-soft);
+
+  h2 {
+    margin-top: 0;
+  }
+}
+
+.cs-doc {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+
+  summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+}
+
+.cs-tasks {
+  display: grid;
+  gap: var(--space-6);
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+}
+
+.cs-task {
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+}
+
+.cs-task__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-lg);
+}
+
+.cs-task__num {
+  display: block;
+  font-size: var(--fs-sm);
+  color: var(--primary);
+}
+
+.cs-hint {
+  margin: var(--space-2) 0;
+
+  summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: var(--text-muted);
+  }
+}
+
+.cs-label {
+  display: block;
+  margin: var(--space-3) 0 var(--space-1);
+  font-weight: 700;
+}
+
+.cs-answer {
+  width: 100%;
+  min-height: 160px;
+  resize: vertical;
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+.cs-count {
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-sm);
+}
+
+.cs-model {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--success);
+  border-radius: var(--radius-md);
+  background: var(--primary-soft);
+}
+
+.cs-model__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 var(--space-2);
+  font-weight: 700;
+}
+
+.cs-grid {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--accent-border);
+  border-radius: var(--radius-md);
+
+  legend {
+    padding: 0 6px;
+    font-weight: 700;
+  }
+}
+
+.cs-crit {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: 6px 0;
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    accent-color: var(--primary);
+  }
+}
+
+.cs-bar {
+  position: sticky;
+  bottom: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-md, 0 6px 20px rgba(0, 0, 0, 0.08));
+}
+
+.cs-bar__info {
+  flex: 1 1 220px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.cs-bar__info--done {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--success);
+}

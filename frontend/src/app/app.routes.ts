@@ -17,6 +17,18 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/register.component').then((m) => m.RegisterComponent),
   },
   {
+    path: 'verification',
+    title: 'Vérifier une attestation · Code en Clair Academy',
+    loadComponent: () =>
+      import('./features/certificates/certificate-verify.component').then((m) => m.CertificateVerifyComponent),
+  },
+  {
+    path: 'verification/:code',
+    title: 'Vérifier une attestation · Code en Clair Academy',
+    loadComponent: () =>
+      import('./features/certificates/certificate-verify.component').then((m) => m.CertificateVerifyComponent),
+  },
+  {
     path: '',
     component: ShellComponent,
     canActivate: [authGuard],
@@ -81,6 +93,33 @@ export const routes: Routes = [
         path: 'projets/:slug',
         title: 'Projet · Code en Clair Academy',
         loadComponent: () => import('./features/project/project-page.component').then((m) => m.ProjectPageComponent),
+      },
+      {
+        path: 'examen-cda',
+        title: 'Examen CDA · Code en Clair Academy',
+        loadComponent: () => import('./features/exam/exam-hub.component').then((m) => m.ExamHubComponent),
+      },
+      {
+        path: 'examen-cda/cas/:slug',
+        title: 'Étude de cas · Code en Clair Academy',
+        loadComponent: () => import('./features/exam/case-study.component').then((m) => m.CaseStudyComponent),
+      },
+      {
+        path: 'examen-cda/jury',
+        title: 'Questions du jury · Code en Clair Academy',
+        loadComponent: () => import('./features/exam/jury-trainer.component').then((m) => m.JuryTrainerComponent),
+      },
+      {
+        path: 'attestations',
+        title: 'Mes attestations · Code en Clair Academy',
+        loadComponent: () =>
+          import('./features/certificates/certificates.component').then((m) => m.CertificatesComponent),
+      },
+      {
+        path: 'attestations/:code',
+        title: 'Attestation · Code en Clair Academy',
+        loadComponent: () =>
+          import('./features/certificates/certificate-print.component').then((m) => m.CertificatePrintComponent),
       },
       {
         path: 'progression',

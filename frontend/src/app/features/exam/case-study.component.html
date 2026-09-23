@@ -1,0 +1,85 @@
+@if (cas(); as c) {
+  <nav class="crumbs" aria-label="Fil d'Ariane">
+    <a routerLink="/examen-cda">Examen CDA</a> <span aria-hidden="true">›</span> Étude de cas
+  </nav>
+  <header class="page-header">
+    <h1>{{ c.title }}</h1>
+    <app-markdown [md]="c.description" />
+    <p class="muted">{{ c.tasks.length }} tâches — environ {{ c.durationMinutes }} minutes. Tes réponses sont enregistrées : tu peux t'arrêter et revenir.</p>
+  </header>
+
+  <section class="cs-context" aria-labelledby="ctx-title">
+    <h2 id="ctx-title">La situation</h2>
+    <app-markdown [md]="c.context.md" />
+    @for (d of c.context.documents; track $index) {
+      <details class="cs-doc" open>
+        <summary>{{ d.title }}</summary>
+        <app-markdown [md]="d.md" />
+      </details>
+    }
+  </section>
+
+  <ol class="cs-tasks">
+    @for (t of c.tasks; track $index; let i = $index) {
+      <li class="cs-task" [attr.aria-labelledby]="'task-' + i">
+        <h2 class="cs-task__title" [id]="'task-' + i"><span class="cs-task__num">Tâche {{ i + 1 }}</span> {{ t.title }}</h2>
+        <app-markdown [md]="t.md" />
+        @if (t.hint && !c.revealed) {
+          <details class="cs-hint"><summary><app-icon name="lightbulb" [size]="16" /> Un coup de pouce</summary><p>{{ t.hint }}</p></details>
+        }
+        <label class="cs-label" [for]="'answer-' + i">Ta réponse</label>
+        <textarea class="input cs-answer" [id]="'answer-' + i" rows="8" maxlength="6000"
+                  [ngModel]="answers()[(i + 1) + '']" (ngModelChange)="setAnswer(i, $event)"
+                  [readOnly]="c.revealed"></textarea>
+
+        @if (c.revealed) {
+          <div class="cs-model">
+            <p class="cs-model__title"><app-icon name="check" [size]="18" /> Corrigé proposé</p>
+            <app-markdown [md]="t.model || ''" />
+          </div>
+          <fieldset class="cs-grid" [id]="i === 0 ? 'grille' : null">
+            <legend>Grille : coche ce que ta réponse contient vraiment</legend>
+            @for (cr of t.criteria; track $index; let j = $index) {
+              <label class="cs-crit">
+                <input type="checkbox" [checked]="isChecked(i, j)" (change)="toggle(i, j)" />
+                <span>{{ cr }}</span>
+              </label>
+            }
+          </fieldset>
+        } @else {
+          <p class="muted cs-count">{{ t.criteriaCount }} critères seront vérifiés.</p>
+        }
+      </li>
+    }
+  </ol>
+
+  @if (error()) {
+    <div class="alert alert--error" role="alert">{{ error() }}</div>
+  }
+
+  <div class="cs-bar">
+    @if (!c.revealed) {
+      <p class="cs-bar__info">{{ answeredCount() }} tâche{{ answeredCount() > 1 ? 's' : '' }} rédigée{{ answeredCount() > 1 ? 's' : '' }} sur {{ c.tasks.length }}
+        @if (savedAt()) { — enregistré }</p>
+      <button type="button" class="btn btn--secondary" (click)="save()" [disabled]="saving()"><app-icon name="save" [size]="18" /> Enregistrer</button>
+      <button type="button" class="btn" (click)="reveal()" [disabled]="saving() || answeredCount() < c.tasks.length">
+        Voir le corrigé
+      </button>
+    } @else if (!c.completed) {
+      <p class="cs-bar__info">Critères cochés : {{ liveScore() }} %</p>
+      <button type="button" class="btn" (click)="finish()" [disabled]="saving()"><app-icon name="check" [size]="18" /> Terminer l'auto-évaluation</button>
+    } @else {
+      <p class="cs-bar__info cs-bar__info--done" role="status">
+        <app-icon name="star" [size]="18" /> Étude de cas terminée : {{ c.score }} % des critères.
+        @if ((c.score ?? 0) < 70) { Relis les critères non cochés : ce sont tes prochains points à travailler. }
+      </p>
+      <button type="button" class="btn btn--secondary" (click)="finish()" [disabled]="saving()">Mettre à jour ma grille</button>
+      <a class="btn btn--ghost" routerLink="/examen-cda">Retour à l'espace examen</a>
+    }
+  </div>
+} @else if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+  <a class="btn btn--secondary" routerLink="/examen-cda">Retour</a>
+} @else {
+  <div class="skeleton skeleton--hero"></div>
+}

@@ -1,0 +1,42 @@
+slug: oral-projet-et-posture
+version: 1
+position: 21
+kind: ORAL
+level: EXAMEN
+title: "Oral — présenter son projet et sa démarche"
+description: "Les questions sur ton projet, ta façon de travailler et ton recul, avec des pistes de réponse."
+durationMinutes: 20
+content:
+  questions:
+    - theme: Projet
+      q: "Présentez votre projet en deux minutes."
+      a: "Le besoin et le public, les fonctionnalités principales, l'architecture (Angular, Spring Boot, PostgreSQL), ce que tu vas montrer en démonstration, puis une limite et une amélioration prévue."
+      tip: "Répète-le à voix haute avec un chronomètre."
+    - theme: Projet
+      q: "Pourquoi avez-vous choisi ces technologies ?"
+      a: "Parce qu'elles répondent au besoin et sont très utilisées en entreprise : Angular structure les applications à plusieurs pages, Spring Boot fournit sécurité, accès aux données et tests, PostgreSQL est une base relationnelle fiable et gratuite."
+    - theme: Démarche
+      q: "Comment avez-vous organisé votre travail ?"
+      a: "En découpant le projet en fonctionnalités (user stories), priorisées, suivies dans un tableau (Trello, GitHub Projects), avec des étapes courtes : conception, développement, tests, démonstration."
+    - theme: Démarche
+      q: "Comment utilisez-vous Git ?"
+      a: "Une branche par fonctionnalité, des commits courts avec des messages clairs, une fusion vers la branche principale une fois la fonctionnalité testée. Le dépôt ne contient jamais de secrets."
+    - theme: Démarche
+      q: "Quelle a été votre plus grande difficulté et comment l'avez-vous surmontée ?"
+      a: "Une difficulté réelle, la démarche de résolution (documentation, tests avec Postman, découpage du problème, aide demandée) et ce que tu en as appris."
+      tip: "Le jury évalue la démarche plus que la difficulté elle-même."
+    - theme: Recul
+      q: "Que feriez-vous différemment ?"
+      a: "Une ou deux choses concrètes : écrire les tests plus tôt, modéliser la base avant de coder, protéger les routes côté serveur dès le début, sortir les secrets de la configuration."
+    - theme: Recul
+      q: "Votre application est-elle prête pour la production ?"
+      a: "Réponse honnête : ce qui est prêt, ce qui ne l'est pas encore (sécurité, tests, surveillance) et le plan pour y arriver, par priorité."
+    - theme: Veille
+      q: "Comment faites-vous votre veille technologique ?"
+      a: "Documentation officielle (Angular, Spring), blogs et newsletters, bulletins de l'ANSSI et du CERT-FR, OWASP pour la sécurité ; exemple d'une nouveauté que tu as découverte et testée."
+    - theme: Accessibilité
+      q: "Avez-vous pensé à l'accessibilité ?"
+      a: "Étiquettes sur tous les champs, contrastes suffisants, navigation au clavier, textes alternatifs, messages d'erreur annoncés (`role=\"alert\"`) ; référence au RGAA."
+    - theme: RGPD
+      q: "Quelles données personnelles votre application traite-t-elle et comment les protégez-vous ?"
+      a: "Nom, e-mail, mot de passe (haché). Minimisation (seulement le nécessaire), accès limité par rôle, pas de données sensibles dans les logs, possibilité de supprimer son compte, mentions d'information."

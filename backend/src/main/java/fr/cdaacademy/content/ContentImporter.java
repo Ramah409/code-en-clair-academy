@@ -15,11 +15,13 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import fr.cdaacademy.config.AppProperties;
 import fr.cdaacademy.content.ContentFiles.ChapterFile;
 import fr.cdaacademy.content.ContentFiles.ChoiceDef;
 import fr.cdaacademy.content.ContentFiles.CourseFile;
+import fr.cdaacademy.content.ContentFiles.ExamFile;
 import fr.cdaacademy.content.ContentFiles.ExerciseDef;
 import fr.cdaacademy.content.ContentFiles.LessonDef;
 import fr.cdaacademy.content.ContentFiles.ProjectDef;
@@ -75,6 +77,44 @@ public class ContentImporter implements ApplicationRunner {
             tx.executeWithoutResult(status -> importCourse(bundle));
             log.info("Parcours « {} » importé (version {})", bundle.course().title(), bundle.course().version());
         }
+        importExams();
+    }
+
+    // ------------------------------------------------------------------ examens
+
+    private void importExams() {
+        List<ExamFile> exams;
+        try {
+            exams = new ContentLoader().loadExams(contentRoot);
+        } catch (ContentLoader.ContentException e) {
+            log.error("Examens non chargés : {}", e.getMessage());
+            return;
+        }
+        for (ExamFile e : exams) {
+            Integer stored = jdbc.query("select content_version from exams where slug = ?",
+                    rs -> rs.next() ? rs.getInt(1) : null, e.slug());
+            if (stored != null && stored >= e.version()) {
+                continue;
+            }
+            ObjectNode content = e.content() != null && e.content().isObject() ? ((ObjectNode) e.content()).deepCopy()
+                    : json.createObjectNode();
+            if (e.courses() != null && !e.courses().isEmpty()) {
+                content.set("courses", json.valueToTree(e.courses()));
+            }
+            jdbc.update("""
+                    insert into exams (slug, kind, title, description, duration_minutes, passing_score, question_count,
+                                       content, final_exam, position, level, content_version)
+                    values (?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?)
+                    on conflict (slug) do update set kind = excluded.kind, title = excluded.title,
+                        description = excluded.description, duration_minutes = excluded.duration_minutes,
+                        passing_score = excluded.passing_score, question_count = excluded.question_count,
+                        content = excluded.content, final_exam = excluded.final_exam, position = excluded.position,
+                        level = excluded.level, content_version = excluded.content_version, updated_at = now()
+                    """, e.slug(), e.kind(), e.title(), e.description().strip(), e.durationMinutes(),
+                    e.passingScore() == null ? 70 : e.passingScore(), e.questionCount(), toJson(content),
+                    Boolean.TRUE.equals(e.finalExam()), e.position(), e.level(), e.version());
+            log.info("Examen « {} » importé (version {})", e.title(), e.version());
+        }
     }
 
     // ------------------------------------------------------------------ parcours
@@ -83,17 +123,19 @@ public class ContentImporter implements ApplicationRunner {
         CourseFile c = bundle.course();
         long courseId = jdbc.queryForObject("""
                 insert into courses (slug, level_number, title, summary, description, category, icon, content_version,
-                                     exam_question_count, exam_time_limit_minutes)
-                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                     exam_question_count, exam_time_limit_minutes, mandatory)
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 on conflict (slug) do update set level_number = excluded.level_number, title = excluded.title,
                     summary = excluded.summary, description = excluded.description, category = excluded.category,
                     icon = excluded.icon, content_version = excluded.content_version,
                     exam_question_count = excluded.exam_question_count,
-                    exam_time_limit_minutes = excluded.exam_time_limit_minutes, updated_at = now()
+                    exam_time_limit_minutes = excluded.exam_time_limit_minutes, mandatory = excluded.mandatory,
+                    updated_at = now()
                 returning id
                 """, Long.class, c.slug(), c.position(), c.title(), c.summary(), c.description(), c.category(),
                 c.icon() == null ? "book" : c.icon(), c.version(),
-                c.examQuestionCount() == null ? 40 : c.examQuestionCount(), c.examTimeLimitMinutes());
+                c.examQuestionCount() == null ? 40 : c.examQuestionCount(), c.examTimeLimitMinutes(),
+                c.isMandatory());
 
         List<String> chapterSlugs = new ArrayList<>();
         List<String> questionCodes = new ArrayList<>();

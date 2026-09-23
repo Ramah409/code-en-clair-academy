@@ -1,0 +1,84 @@
+<header class="page-header">
+  <h1>Mes attestations</h1>
+  <p class="lead">Une attestation n'est délivrée que sur des résultats réellement obtenus : chaque chapitre validé
+    par son QCM (80 % minimum), l'examen final du parcours, puis l'examen blanc final pour la certification globale.</p>
+</header>
+
+@if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+}
+
+@if (data(); as d) {
+  @if (global(); as g) {
+    <section class="cglobal" [class.cglobal--ok]="g.obtained" aria-labelledby="global-title">
+      <app-icon name="trophy" [size]="40" />
+      <div class="cglobal__body">
+        <h2 id="global-title">{{ g.title }}</h2>
+        @if (g.obtained) {
+          <p>Félicitations : tu as terminé tous les parcours obligatoires et réussi l'examen blanc final.</p>
+          <a class="btn" [routerLink]="['/attestations', g.code]">Voir et imprimer</a>
+        } @else {
+          <p>Tous les parcours obligatoires complets, puis l'examen blanc final réussi.</p>
+          <div class="meter" role="progressbar" [attr.aria-valuenow]="percent(g)" aria-valuemin="0" aria-valuemax="100"
+               aria-label="Avancement vers la certification globale"><span [style.width.%]="percent(g)"></span></div>
+          <p class="muted">{{ g.done }} étape{{ g.done > 1 ? 's' : '' }} sur {{ g.total }}</p>
+          <details>
+            <summary>Ce qu'il reste à faire</summary>
+            <ul>@for (r of g.remaining; track r) { <li>{{ r }}</li> }</ul>
+          </details>
+        }
+      </div>
+    </section>
+  }
+
+  @if (d.certificates.length) {
+    <section aria-labelledby="owned-title">
+      <h2 id="owned-title">Obtenues ({{ d.certificates.length }})</h2>
+      <ul class="cowned">
+        @for (c of d.certificates; track c.code) {
+          <li>
+            <a class="cowned__item" [routerLink]="['/attestations', c.code]">
+              <app-icon name="medal" [size]="28" />
+              <span>
+                <span class="cowned__title">{{ c.title }}</span>
+                <span class="cowned__meta">Délivrée le {{ c.issuedAt | date: 'd MMMM y' }} — code {{ c.code }}</span>
+              </span>
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
+  } @else {
+    <p class="empty">Pas encore d'attestation : termine les chapitres de niveau débutant d'un parcours et réussis leurs QCM pour obtenir la première.</p>
+  }
+
+  <section aria-labelledby="goals-title">
+    <h2 id="goals-title">Par parcours</h2>
+    @for (grp of byCourse(); track grp.slug) {
+      <article class="cgoals">
+        <h3><a [routerLink]="['/parcours', grp.slug]">{{ grp.title }}</a></h3>
+        <ul class="cgoals__list">
+          @for (g of grp.goals; track g.title) {
+            <li class="cgoal" [class.cgoal--ok]="g.obtained">
+              <span class="cgoal__label">{{ label(g) }}</span>
+              @if (g.obtained) {
+                <a class="cgoal__done" [routerLink]="['/attestations', g.code]"><app-icon name="check" [size]="16" /> Obtenue</a>
+              } @else {
+                <span class="cgoal__progress">
+                  <span class="meter meter--sm" role="progressbar" [attr.aria-valuenow]="percent(g)" aria-valuemin="0"
+                        aria-valuemax="100" [attr.aria-label]="'Avancement : ' + label(g)"><span [style.width.%]="percent(g)"></span></span>
+                  {{ g.done }}/{{ g.total }}
+                </span>
+                @if (g.remaining.length) {
+                  <span class="cgoal__next">Prochaine étape : {{ g.remaining[0] }}</span>
+                }
+              }
+            </li>
+          }
+        </ul>
+      </article>
+    }
+  </section>
+} @else if (!error()) {
+  <div class="skeleton skeleton--hero"></div>
+}

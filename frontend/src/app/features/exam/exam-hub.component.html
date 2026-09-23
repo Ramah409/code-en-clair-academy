@@ -1,0 +1,118 @@
+<header class="page-header">
+  <h1>Examen CDA</h1>
+  <p class="lead">Entraîne-toi dans les conditions de l'épreuve : examens blancs chronométrés, études de cas
+    rédigées et questions du jury. Les erreurs ne sont pas des échecs : chaque correction te dit quoi revoir.</p>
+</header>
+
+@if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+}
+
+@if (overview(); as o) {
+  <section class="xsec" aria-labelledby="mock-title">
+    <h2 id="mock-title" class="xsec__title"><app-icon name="clock" [size]="22" /> Examens blancs</h2>
+    <p class="xsec__lead">Pas de correction pendant l'épreuve, un chronomètre, puis un bilan détaillé des notions à revoir.</p>
+    <div class="mocks">
+      @for (m of o.mockExams; track m.slug) {
+        <article class="mock" [class.mock--final]="m.finalExam">
+          <header class="mock__head">
+            <h3 class="mock__title">{{ m.title }}</h3>
+            @if (m.finalExam) { <span class="tag tag--xp">Compte pour la certification</span> }
+          </header>
+          <app-markdown [md]="m.description" />
+          <ul class="mock__facts">
+            <li><app-icon name="quiz" [size]="16" /> {{ m.questionCount }} questions</li>
+            <li><app-icon name="clock" [size]="16" /> {{ m.durationMinutes }} min</li>
+            <li><app-icon name="target" [size]="16" /> Réussite à {{ m.passingScore }} %</li>
+            @if (m.level) { <li><app-icon name="mountain" [size]="16" /> {{ levels[m.level] }}</li> }
+          </ul>
+          @if (m.bestPercent !== undefined && m.bestPercent !== null) {
+            <p class="mock__best" [class.mock__best--ok]="m.passed">
+              <app-icon [name]="m.passed ? 'check' : 'history'" [size]="16" />
+              Meilleur score : {{ m.bestPercent }} % {{ m.passed ? '— réussi' : '' }}
+            </p>
+          }
+          @if (confirm() === m.slug) {
+            <div class="mock__confirm" role="alertdialog" [attr.aria-label]="'Commencer ' + m.title">
+              <p>Le chronomètre démarre tout de suite ({{ m.durationMinutes }} minutes). Tu pourras répondre dans l'ordre que tu veux.</p>
+              <div class="row-actions">
+                <button type="button" class="btn" (click)="start(m)" [disabled]="starting() === m.slug">
+                  {{ starting() === m.slug ? 'Préparation…' : 'C\'est parti' }}
+                </button>
+                <button type="button" class="btn btn--ghost" (click)="confirm.set(null)">Pas maintenant</button>
+              </div>
+            </div>
+          } @else {
+            <button type="button" class="btn" (click)="confirm.set(m.slug)">
+              <app-icon name="play" [size]="18" /> {{ m.attempts.length ? 'Repasser l\'examen' : 'Commencer l\'examen' }}
+            </button>
+          }
+          @if (m.attempts.length) {
+            <details class="mock__history">
+              <summary>Historique ({{ m.attempts.length }} tentative{{ m.attempts.length > 1 ? 's' : '' }})</summary>
+              <ol>
+                @for (a of m.attempts; track a.id) {
+                  <li>
+                    <a [routerLink]="attemptLink(a.id, a.submittedAt)">{{ a.startedAt | date: 'd MMM y, HH:mm' }}</a>
+                    @if (a.submittedAt) {
+                      — {{ a.percent }} % <span [class]="a.passed ? 'ok' : 'ko'">{{ a.passed ? 'réussi' : 'à retenter' }}</span>
+                    } @else {
+                      — en cours
+                    }
+                  </li>
+                }
+              </ol>
+            </details>
+          }
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="xsec" aria-labelledby="cases-title">
+    <h2 id="cases-title" class="xsec__title"><app-icon name="book" [size]="22" /> Études de cas</h2>
+    <p class="xsec__lead">Une situation réelle, des tâches à rédiger, puis un corrigé et une grille pour t'auto-évaluer honnêtement.</p>
+    <div class="cases">
+      @for (c of o.caseStudies; track c.slug) {
+        <a class="case" [routerLink]="['/examen-cda/cas', c.slug]">
+          <span class="case__title">{{ c.title }}</span>
+          <span class="case__meta">{{ c.taskCount }} tâches — environ {{ c.durationMinutes }} min</span>
+          <span class="case__state">
+            @if (c.completed) {
+              <app-icon name="check" [size]="16" /> Terminée — {{ c.score }} % des critères
+            } @else if (c.revealed) {
+              Corrigé ouvert — auto-évaluation à faire
+            } @else if (c.started) {
+              Rédaction en cours
+            } @else {
+              À commencer
+            }
+          </span>
+        </a>
+      }
+    </div>
+  </section>
+
+  <section class="xsec" aria-labelledby="jury-title">
+    <h2 id="jury-title" class="xsec__title"><app-icon name="chat" [size]="22" /> Questions du jury</h2>
+    <p class="xsec__lead">Réponds à voix haute, affiche la réponse modèle, puis dis honnêtement si tu savais.
+      Les questions « à revoir » reviennent en priorité.</p>
+    <div class="jstats">
+      <p><strong>{{ o.jury.total }}</strong> questions débloquées par tes leçons</p>
+      <p><strong>{{ o.jury.known }}</strong> sues</p>
+      <p><strong>{{ o.jury.toReview }}</strong> à revoir</p>
+      <p><strong>{{ o.jury.available }}</strong> au total</p>
+    </div>
+    <div class="row-actions">
+      <a class="btn" routerLink="/examen-cda/jury"><app-icon name="play" [size]="18" /> S'entraîner</a>
+      @if (o.jury.toReview) {
+        <a class="btn btn--secondary" routerLink="/examen-cda/jury" [queryParams]="{ revoir: 1 }">Revoir mes {{ o.jury.toReview }} questions</a>
+      }
+    </div>
+  </section>
+
+  <p class="xfoot"><app-icon name="medal" [size]="18" /> Tes attestations et la certification globale :
+    <a routerLink="/attestations">voir mes attestations</a>.</p>
+} @else if (!error()) {
+  <div class="skeleton skeleton--hero"></div>
+}

@@ -1,0 +1,73 @@
+<nav class="crumbs" aria-label="Fil d'Ariane">
+  <a routerLink="/examen-cda">Examen CDA</a> <span aria-hidden="true">›</span> Questions du jury
+</nav>
+<header class="page-header">
+  <h1>Questions du jury</h1>
+  <p class="lead">Lis la question, réponds <strong>à voix haute</strong> comme devant le jury (30 secondes à 1 minute),
+    puis compare avec la réponse modèle. Sois honnête : les questions « à revoir » reviendront en premier.</p>
+</header>
+
+<form class="jt-filters" (ngSubmit)="startSession()">
+  <div class="field">
+    <label for="jt-course">Parcours</label>
+    <select id="jt-course" class="select" name="course" [ngModel]="course()" (ngModelChange)="course.set($event)">
+      <option value="">Tous (avec les questions d'oral générales)</option>
+      @for (c of courses(); track c.slug) { <option [value]="c.slug">{{ c.title }}</option> }
+    </select>
+  </div>
+  <label class="checkbox">
+    <input type="checkbox" name="all" [ngModel]="all()" (ngModelChange)="all.set($event)" />
+    <span>Inclure les leçons que je n'ai pas encore faites</span>
+  </label>
+  <label class="checkbox">
+    <input type="checkbox" name="review" [ngModel]="onlyReview()" (ngModelChange)="onlyReview.set($event)" />
+    <span>Seulement mes questions « à revoir »</span>
+  </label>
+  <button type="submit" class="btn btn--secondary"><app-icon name="shuffle" [size]="18" /> Nouvelle série</button>
+</form>
+
+@if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+}
+
+@if (cards(); as list) {
+  @if (!list.length) {
+    <div class="empty">
+      <p>Aucune question pour ces réglages.</p>
+      <p class="muted">Les questions du jury se débloquent au fil des leçons terminées. Coche « Inclure les leçons que je n'ai pas encore faites » pour tout voir.</p>
+    </div>
+  } @else if (finished()) {
+    <section class="jt-end" role="status">
+      <h2>Série terminée</h2>
+      <p><strong>{{ results().known }}</strong> question{{ results().known > 1 ? 's' : '' }} sue{{ results().known > 1 ? 's' : '' }},
+        <strong>{{ results().review }}</strong> à revoir.</p>
+      @if (results().review) {
+        <p class="muted">Relis les réponses modèles, puis refais une série « à revoir » demain : répéter à quelques jours d'écart est ce qui fait retenir.</p>
+      }
+      <button type="button" class="btn" (click)="startSession()">Nouvelle série</button>
+    </section>
+  } @else {
+    @if (current(); as c) {
+    <section class="jt-card" aria-live="polite">
+      <p class="jt-card__progress">Question {{ index() + 1 }} sur {{ list.length }} — <span class="muted">{{ c.source }}</span></p>
+      <h2 class="jt-card__q" id="jury-question" tabindex="-1">{{ c.question }}</h2>
+      @if (c.known === false) { <p class="tag tag--xp">À revoir</p> }
+      @if (!shown()) {
+        <button type="button" class="btn" (click)="shown.set(true)"><app-icon name="eye" [size]="18" /> J'ai répondu, afficher la réponse</button>
+      } @else {
+        <div class="jt-card__a">
+          <p class="jt-card__label">Réponse modèle</p>
+          <app-markdown [md]="c.answer" />
+          @if (c.tip) { <p class="jt-card__tip"><app-icon name="lightbulb" [size]="16" /> {{ c.tip }}</p> }
+        </div>
+        <div class="row-actions">
+          <button type="button" class="btn" (click)="answer(true)"><app-icon name="check" [size]="18" /> Je savais</button>
+          <button type="button" class="btn btn--secondary" (click)="answer(false)"><app-icon name="refresh" [size]="18" /> À revoir</button>
+        </div>
+      }
+    </section>
+    }
+  }
+} @else if (!error()) {
+  <div class="skeleton skeleton--hero"></div>
+}

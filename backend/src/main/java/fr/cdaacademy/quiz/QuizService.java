@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.cdaacademy.common.BusinessRuleException;
+import fr.cdaacademy.certificate.CertificateService;
 import fr.cdaacademy.common.NotFoundException;
 import fr.cdaacademy.course.CourseAccess;
 import fr.cdaacademy.course.CourseAccess.ChapterState;
@@ -70,7 +71,13 @@ public class QuizService {
     public record ResultView(long id, String scope, String mode, String title, int correct, int total, int percent,
             boolean passed, int passingPercent, int xpEarned, Reward reward, long durationSeconds, Instant submittedAt,
             String courseSlug, String chapterSlug, boolean nextChapterUnlocked, List<ReviewTopic> review,
-            List<ResultItem> items) {
+            List<ResultItem> items, List<CertificateService.CertificateView> newCertificates) {
+
+        ResultView withCertificates(List<CertificateService.CertificateView> certificates) {
+            return new ResultView(id, scope, mode, title, correct, total, percent, passed, passingPercent, xpEarned,
+                    reward, durationSeconds, submittedAt, courseSlug, chapterSlug, nextChapterUnlocked, review, items,
+                    certificates);
+        }
     }
 
     public record HistoryItem(long id, String scope, String mode, String title, int total, Integer percent,
@@ -85,9 +92,11 @@ public class QuizService {
     private final QuestionStats stats;
     private final CourseAccess access;
     private final ProgressService progress;
+    private final CertificateService certificates;
 
     public QuizService(JdbcTemplate jdbc, ObjectMapper json, QuestionBank bank, QuestionStats stats,
-            CourseAccess access, ProgressService progress) {
+            CourseAccess access, ProgressService progress, CertificateService certificates) {
+        this.certificates = certificates;
         this.jdbc = jdbc;
         this.json = json;
         this.bank = bank;
@@ -184,16 +193,28 @@ public class QuizService {
                 }
             }
             case "EXAMEN_BLANC" -> {
-                Map<String, Object> exam = jdbc.queryForMap("""
-                        select id, duration_minutes, coalesce(question_count, 40) as question_count from exams
-                        where slug = ? and kind = 'EXAMEN_BLANC' and published
+                List<Map<String, Object>> found = jdbc.queryForList("""
+                        select id, duration_minutes, coalesce(question_count, 40) as question_count,
+                               array(select jsonb_array_elements_text(content -> 'courses')) as courses
+                        from exams where slug = ? and kind = 'EXAMEN_BLANC' and published
                         """, required(req.exam(), "examen"));
+                if (found.isEmpty()) {
+                    throw new NotFoundException("Examen blanc introuvable.");
+                }
+                Map<String, Object> exam = found.getFirst();
                 examId = ((Number) exam.get("id")).longValue();
                 mode = "EXAMEN";
                 count = ((Number) exam.get("question_count")).intValue();
                 timeLimit = ((Number) exam.get("duration_minutes")).intValue();
                 difficulty = null;
-                filter = "q.course_id is not null";
+                String[] courses = toStrings(exam.get("courses"));
+                if (courses.length > 0) {
+                    // Examen blanc ciblé : questions des seuls parcours indiqués dans le fichier de l'examen
+                    filter = "q.course_id in (select id from courses where slug = any (?))";
+                    args.add(courses);
+                } else {
+                    filter = "q.course_id is not null";
+                }
             }
             default -> throw new BusinessRuleException("Type de QCM inconnu : " + scope);
         }
@@ -350,7 +371,9 @@ public class QuizService {
                 where id = ?
                 """, correct, percent, passed, xp, attemptId);
         Reward reward = progress.award(userId, xp, (int) Math.min(seconds, 3 * 3600), false);
-        return result(userId, attemptId, reward);
+        ResultView result = result(userId, attemptId, reward);
+        // Un QCM de chapitre, un examen final ou un examen blanc réussi peut ouvrir droit à une attestation
+        return passed ? result.withCertificates(certificates.refresh(userId)) : result;
     }
 
     // ------------------------------------------------------------------ résultats
@@ -405,7 +428,7 @@ public class QuizService {
         return new ResultView(a.id(), a.scope(), a.mode(), title(a), a.correctCount(), items.size(),
                 a.percent() == null ? 0 : a.percent(), Boolean.TRUE.equals(a.passed()), passingPercent(a),
                 a.xpEarned(), reward, Duration.between(a.startedAt(), a.submittedAt()).getSeconds(), a.submittedAt(),
-                a.courseSlug(), a.chapterSlug(), nextUnlocked, review, results);
+                a.courseSlug(), a.chapterSlug(), nextUnlocked, review, results, List.of());
     }
 
     @Transactional(readOnly = true)
@@ -416,6 +439,14 @@ public class QuizService {
                 """, this::mapAttempt, userId, scope, scope, course, course);
         return attempts.stream().map(a -> new HistoryItem(a.id(), a.scope(), a.mode(), title(a), a.questionCount(),
                 a.percent(), a.passed(), a.startedAt(), a.submittedAt())).toList();
+    }
+
+    private static String[] toStrings(Object sqlArray) {
+        try {
+            return sqlArray instanceof java.sql.Array a ? (String[]) a.getArray() : new String[0];
+        } catch (java.sql.SQLException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     // ------------------------------------------------------------------ règles

@@ -6,19 +6,25 @@ import { User } from '../auth/auth.models';
 import {
   Answer,
   AnswerResult,
+  CaseStudy,
   CatalogItem,
+  Certificate,
+  CertificateOverview,
   Completion,
   CourseDetail,
   CourseSummary,
   Dashboard,
+  ExamOverview,
   ExerciseView,
   Hint,
+  JuryCard,
   LabRun,
   LabTable,
   LessonView,
   ProjectListItem,
   ProjectView,
   ProgressOverview,
+  PublicCertificate,
   QuizAttempt,
   QuizHistoryItem,
   QuizOptions,
@@ -190,5 +196,53 @@ export class ApiService {
 
   deleteAccount(password: string): Observable<void> {
     return this.http.delete<void>('/api/me', { body: { password } });
+  }
+
+  // Examen CDA
+  examOverview(): Observable<ExamOverview> {
+    return this.http.get<ExamOverview>('/api/exam');
+  }
+
+  caseStudy(slug: string): Observable<CaseStudy> {
+    return this.http.get<CaseStudy>(`/api/exam/cases/${slug}`);
+  }
+
+  saveCaseAnswers(slug: string, answers: Record<string, string>): Observable<CaseStudy> {
+    return this.http.put<CaseStudy>(`/api/exam/cases/${slug}/answers`, { answers });
+  }
+
+  revealCase(slug: string): Observable<CaseStudy> {
+    return this.http.post<CaseStudy>(`/api/exam/cases/${slug}/reveal`, {});
+  }
+
+  saveCaseChecks(slug: string, checked: Record<string, number[]>): Observable<CaseStudy> {
+    return this.http.put<CaseStudy>(`/api/exam/cases/${slug}/checks`, { checked });
+  }
+
+  jurySession(options: { course?: string; all?: boolean; toReview?: boolean; size?: number }): Observable<JuryCard[]> {
+    let params = new HttpParams();
+    Object.entries(options).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') {
+        params = params.set(k, String(v));
+      }
+    });
+    return this.http.get<JuryCard[]>('/api/exam/jury', { params });
+  }
+
+  reviewJury(key: string, known: boolean): Observable<void> {
+    return this.http.post<void>('/api/exam/jury/review', { key, known });
+  }
+
+  // Attestations
+  certificates(): Observable<CertificateOverview> {
+    return this.http.get<CertificateOverview>('/api/certificates');
+  }
+
+  certificate(code: string): Observable<Certificate> {
+    return this.http.get<Certificate>(`/api/certificates/${code}`);
+  }
+
+  verifyCertificate(code: string): Observable<PublicCertificate> {
+    return this.http.get<PublicCertificate>(`/api/public/certificates/${encodeURIComponent(code)}`);
   }
 }

@@ -1,5 +1,5 @@
 slug: pratiquer-soramfr
-version: 1
+version: 2
 position: 12
 title: "Pratiquer avec mon projet Soramfr"
 category: PROJET
@@ -27,6 +27,7 @@ description: |
   première fois qu'il apparaît.
 examQuestionCount: 30
 examTimeLimitMinutes: 40
+mandatory: false
 project:
   slug: projet-soramfr-securise
   title: "Reconstruire Soramfr en version sécurisée"

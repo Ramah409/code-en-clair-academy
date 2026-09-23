@@ -1,0 +1,16 @@
+slug: examen-blanc-cda-complet
+version: 1
+position: 1
+kind: EXAMEN_BLANC
+level: EXAMEN
+title: "Examen blanc CDA — session complète"
+description: |
+  L'examen blanc final : 40 questions tirées de **tous les parcours**, en 50 minutes, sans correction
+  pendant l'épreuve. Il faut **70 %** pour le réussir.
+
+  C'est cet examen blanc qui compte pour la certification « Code en Clair Academy – Parcours complet ».
+  Tu peux le repasser autant de fois que tu veux : les questions changent à chaque tentative.
+durationMinutes: 50
+passingScore: 70
+questionCount: 40
+finalExam: true

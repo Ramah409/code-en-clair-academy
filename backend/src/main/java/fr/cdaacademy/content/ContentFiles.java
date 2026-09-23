@@ -27,7 +27,37 @@ public final class ContentFiles {
             String description,
             Integer examQuestionCount,
             Integer examTimeLimitMinutes,
+            Boolean mandatory,
             ProjectDef project) {
+
+        /** Un parcours compte pour la certification globale sauf mention contraire. */
+        public boolean isMandatory() {
+            return mandatory == null || mandatory;
+        }
+    }
+
+    /**
+     * Examen de l'espace « Examen CDA » ({@code examens/*.yml}) :
+     * <ul>
+     *   <li>EXAMEN_BLANC : QCM chronométré tiré de la banque de questions (éventuellement limitée à des parcours) ;</li>
+     *   <li>ETUDE_DE_CAS : mise en situation (contexte, documents, tâches, corrigé et grille d'auto-évaluation) ;</li>
+     *   <li>ORAL : questions du jury avec réponses modèles.</li>
+     * </ul>
+     */
+    public record ExamFile(
+            String slug,
+            int version,
+            int position,
+            String kind,
+            String level,
+            String title,
+            String description,
+            int durationMinutes,
+            Integer passingScore,
+            Integer questionCount,
+            Boolean finalExam,
+            List<String> courses,
+            JsonNode content) {
     }
 
     public record ChapterFile(
