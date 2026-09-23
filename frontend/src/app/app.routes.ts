@@ -58,6 +58,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/lab/lab.component').then((m) => m.LabComponent),
       },
       {
+        path: 'modelisation',
+        title: 'Modélisation · CDA Academy',
+        loadComponent: () => import('./features/modeling/modeling.component').then((m) => m.ModelingComponent),
+      },
+      {
         path: 'quiz',
         title: 'Quiz · CDA Academy',
         loadComponent: () => import('./features/quiz/quiz-hub.component').then((m) => m.QuizHubComponent),

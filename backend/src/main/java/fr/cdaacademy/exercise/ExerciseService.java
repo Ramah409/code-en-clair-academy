@@ -32,11 +32,11 @@ public class ExerciseService {
     public record ExerciseView(String slug, String title, String kind, String difficulty, String statement,
             String criteria, int xp, JsonNode payload, Context context, int hintsUsed, List<String> hints,
             boolean solutionViewed, boolean solutionAvailable, String solution, String explanation,
-            String lastAnswer, boolean solved, int submissions) {
+            String lastAnswer, boolean solved, int submissions, JsonNode solutionModel) {
     }
 
     public record SubmitResult(boolean success, String message, List<String> feedback, Object details,
-            boolean firstSuccess, Reward reward, String solution, String explanation) {
+            boolean firstSuccess, Reward reward, String solution, String explanation, JsonNode solutionModel) {
     }
 
     public record Hint(int index, String text, int remaining) {
@@ -103,7 +103,8 @@ public class ExerciseService {
         return new ExerciseView(ex.slug(), ex.title(), ex.kind(), ex.difficulty(), ex.statement(), ex.criteria(),
                 ex.xp(), validator(ex).publicPayload(ex), ctx, st.hintsUsed(), ex.hints().subList(0, st.hintsUsed()),
                 st.solutionViewed(), canViewSolution(st), showSolution ? ex.solution() : null,
-                showSolution ? ex.explanation() : null, st.lastAnswer(), solved, st.submissions());
+                showSolution ? ex.explanation() : null, st.lastAnswer(), solved, st.submissions(),
+                showSolution && ex.payload().has("solutionModel") ? ex.payload().get("solutionModel") : null);
     }
 
     /** Vue publique utilisable dans une leçon (identique, sans contexte). */
@@ -183,7 +184,8 @@ public class ExerciseService {
         }
         boolean showSolution = result.success();
         return new SubmitResult(result.success(), result.message(), result.feedback(), result.details(), firstSuccess,
-                reward, showSolution ? ex.solution() : null, showSolution ? ex.explanation() : null);
+                reward, showSolution ? ex.solution() : null, showSolution ? ex.explanation() : null,
+                showSolution ? ex.payload().get("solutionModel") : null);
     }
 
     static int xpFor(Exercise ex, State st) {

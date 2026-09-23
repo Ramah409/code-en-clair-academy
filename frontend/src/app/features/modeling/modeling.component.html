@@ -1,0 +1,99 @@
+<header class="page-header">
+  <h1>Modélisation</h1>
+  <p class="lead">Du besoin métier à la base de données, en trois modèles : le MCD décrit les données, le MLD les traduit
+    en tables et le MPD les crée en SQL. Entraîne-toi sur des exercices corrigés ou construis tes propres modèles.</p>
+</header>
+
+<ol class="pipeline" aria-label="Les trois niveaux de modélisation Merise">
+  <li><strong>MCD</strong><span>Entités, associations, cardinalités — le langage du métier.</span></li>
+  <li><strong>MLD</strong><span>Tables, clés primaires et étrangères — les règles de passage.</span></li>
+  <li><strong>MPD</strong><span>CREATE TABLE, types et contraintes — pour PostgreSQL.</span></li>
+</ol>
+
+<div class="tabs-bar" role="tablist" aria-label="Espace de modélisation">
+  <button type="button" role="tab" class="tabs-bar__tab" [class.tabs-bar__tab--on]="tab() === 'exercices'"
+          [attr.aria-selected]="tab() === 'exercices'" (click)="tab.set('exercices')">Exercices corrigés</button>
+  <button type="button" role="tab" class="tabs-bar__tab" [class.tabs-bar__tab--on]="tab() === 'atelier'"
+          [attr.aria-selected]="tab() === 'atelier'" (click)="tab.set('atelier')">Atelier libre</button>
+</div>
+
+@if (tab() === 'exercices') {
+  <div class="mgroups">
+    @for (g of groups(); track g.kind) {
+      <section class="mgroup" [attr.aria-labelledby]="'g-' + g.kind">
+        <h2 [id]="'g-' + g.kind">{{ g.label }}</h2>
+        <ul class="exo-list">
+          @for (e of g.items; track e.slug) {
+            <li>
+              <a class="exo-row" [routerLink]="['/exercices', e.slug]" [class.exo-row--done]="e.solved">
+                <span class="exo-row__state" aria-hidden="true"><app-icon [name]="e.solved ? 'check' : 'diagram'" [size]="18" /></span>
+                <span class="exo-row__main">
+                  <span class="exo-row__title">{{ e.title }}</span>
+                  <span class="exo-row__meta">{{ e.lessonTitle || e.courseTitle }}</span>
+                </span>
+                <span class="tag">{{ difficulties[e.difficulty] }}</span>
+                <span class="exo-row__xp">{{ e.xp }} XP</span>
+              </a>
+            </li>
+          } @empty {
+            <li class="empty">Les exercices de ce type arrivent avec le parcours Merise.</li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+} @else {
+  <section class="atelier" aria-labelledby="atelier-title">
+    <h2 id="atelier-title" class="sr-only">Atelier libre</h2>
+    <div class="atelier__bar">
+      <label class="atelier__title">
+        <span class="sr-only">Titre du modèle</span>
+        <input class="input" [ngModel]="title()" (ngModelChange)="title.set($event)" maxlength="150" />
+      </label>
+      <button type="button" class="btn btn--sm" (click)="save()" [disabled]="saving()"><app-icon name="save" [size]="16" /> Enregistrer</button>
+      <button type="button" class="btn btn--sm btn--secondary" (click)="generate()"><app-icon name="sparkle" [size]="16" /> Générer le MLD et le SQL</button>
+      <button type="button" class="btn btn--sm btn--ghost" (click)="reset(false)">Nouveau modèle vide</button>
+      <button type="button" class="btn btn--sm btn--ghost" (click)="reset(true)">Recharger l'exemple</button>
+    </div>
+
+    <app-mcd-editor [initial]="start()" (modelChange)="onModel($event)" />
+
+    @if (mld(); as m) {
+      <div class="atelier__out">
+        <div class="panel">
+          <h3 class="panel-title">MLD généré</h3>
+          <app-mld-view [model]="m" />
+          <p class="muted atelier__note">Règles appliquées : une association avec une patte (x,1) devient une clé étrangère de ce côté ;
+            une association (x,n)–(x,n) devient une table dont la clé primaire est composée des clés étrangères.</p>
+        </div>
+        <div class="panel">
+          <h3 class="panel-title">MPD (script PostgreSQL)</h3>
+          <app-code-view [code]="sql()" language="sql" caption="Script généré — types proposés d'après les noms" />
+          <button type="button" class="btn btn--sm atelier__test" (click)="test()"><app-icon name="play" [size]="16" /> Tester dans le laboratoire</button>
+          @if (runError()) { <div class="alert alert--error">{{ runError() }}</div> }
+          @if (run(); as r) {
+            @if (r.error; as e) {
+              <div class="sql-error"><p class="sql-error__msg">{{ e.message }}</p>@if (e.hint) { <p class="sql-error__hint">{{ e.hint }}</p> }</div>
+            } @else {
+              <p class="runner__count"><app-icon name="check" [size]="16" /> {{ r.results.length }} table(s) créée(s) sans erreur, puis supprimée(s) (transaction annulée).</p>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    @if (saved().length) {
+      <section class="panel atelier__saved" aria-labelledby="saved-title">
+        <h3 id="saved-title" class="panel-title">Mes modèles enregistrés</h3>
+        <ul class="saved">
+          @for (d of saved(); track d.id) {
+            <li>
+              <button type="button" class="pill" (click)="open(d.id)">{{ d.title }}</button>
+              <button type="button" class="icon-btn" (click)="remove(d.id)" [attr.aria-label]="'Supprimer ' + d.title"><app-icon name="trash" [size]="16" /></button>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </section>
+}

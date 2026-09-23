@@ -29,6 +29,18 @@
                   [class.blanks__input--ko]="result()?.details?.[part.blank]?.correct === false" />} @else {<span>{{ part.text }}</span>}}</code></pre>
         </div>
       }
+      @case ('MCD') {
+        <app-mcd-editor [initial]="mcdStart()" (modelChange)="mcd.set($event)" />
+      }
+      @case ('MCD_VERS_MLD') {
+        @if (e.payload?.mcd?.entities) {
+          <div class="exo__source">
+            <p class="exo__label">MCD à traduire</p>
+            <app-mcd-diagram [model]="e.payload.mcd" />
+          </div>
+        }
+        <app-mld-editor [initial]="mldStart()" (modelChange)="mld.set($event)" />
+      }
       @case ('REMETTRE_ORDRE') {
         <ol class="order" aria-label="Lignes à remettre dans l'ordre">
           @for (line of order(); track line.id; let i = $index, first = $first, last = $last) {
@@ -47,14 +59,14 @@
       }
       @default {
         <app-code-editor [language]="language()" [value]="code()" [minHeight]="compact() ? 120 : 170"
-                         [schema]="e.kind === 'SQL' ? schema.completion() : undefined"
+                         [schema]="isSql() ? schema.completion() : undefined"
                          [ariaLabel]="'Éditeur pour l’exercice ' + e.title"
-                         (valueChange)="onCode($event)" (run)="e.kind === 'SQL' ? test() : submit()" />
+                         (valueChange)="onCode($event)" (run)="isSql() ? test() : submit()" />
       }
     }
 
     <div class="exo__actions">
-      @if (e.kind === 'SQL') {
+      @if (isSql()) {
         <button type="button" class="btn btn--secondary" (click)="test()" [disabled]="busy()">
           <app-icon name="play" [size]="18" /> Tester
         </button>
@@ -128,6 +140,13 @@
             }
           </ul>
         }
+        @if (modelChecks().length) {
+          <ul class="checks">
+            @for (c of modelChecks(); track $index) {
+              <li class="check" [class.check--ok]="c.ok"><app-icon [name]="c.ok ? 'check' : 'x'" [size]="16" /> {{ c.message }}</li>
+            }
+          </ul>
+        }
         @if (sqlDetails(); as d) {
           @if (d.error) {
             <div class="sql-error">
@@ -154,11 +173,16 @@
     @if (e.solution) {
       <details class="solution" [open]="!e.solved || !!result()?.success">
         <summary><app-icon name="book" [size]="18" /> Correction expliquée</summary>
-        <app-code-view [code]="e.solution" [language]="language()" caption="Solution de référence" />
+        @if (e.kind === 'MCD' && e.solutionModel) {
+          <div class="exo__source"><app-mcd-diagram [model]="e.solutionModel" /></div>
+        } @else if (e.kind === 'MCD_VERS_MLD' && e.solutionModel) {
+          <div class="exo__source"><app-mld-view [model]="e.solutionModel" /></div>
+        }
+        <app-code-view [code]="e.solution" [language]="isCode() ? language() : 'text'" caption="Solution de référence" />
         @if (e.explanation) {
           <div class="solution__why"><app-markdown [md]="e.explanation" /></div>
         }
-        @if (isCode() && !e.solved) {
+        @if ((isCode() || e.solutionModel) && !e.solved) {
           <button type="button" class="btn btn--secondary btn--sm" (click)="useSolution()">
             Copier la correction dans l'éditeur
           </button>

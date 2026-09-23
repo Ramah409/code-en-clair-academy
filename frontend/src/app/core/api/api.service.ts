@@ -160,6 +160,25 @@ export class ApiService {
     return this.http.post<{ reward: Reward; projectCompleted: boolean }>(`/api/projects/${slug}/steps/${position}/complete`, { checked });
   }
 
+  // Modélisation : modèles personnels de l'atelier
+  diagrams(): Observable<{ id: number; title: string; updatedAt: string }[]> {
+    return this.http.get<{ id: number; title: string; updatedAt: string }[]>('/api/diagrams');
+  }
+
+  diagram(id: number): Observable<{ id: number; title: string; content: any; updatedAt: string }> {
+    return this.http.get<{ id: number; title: string; content: any; updatedAt: string }>(`/api/diagrams/${id}`);
+  }
+
+  saveDiagram(id: number | null, title: string, content: unknown): Observable<{ id: number; title: string; content: any; updatedAt: string }> {
+    return id
+      ? this.http.put<{ id: number; title: string; content: any; updatedAt: string }>(`/api/diagrams/${id}`, { title, content })
+      : this.http.post<{ id: number; title: string; content: any; updatedAt: string }>('/api/diagrams', { title, content });
+  }
+
+  deleteDiagram(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/diagrams/${id}`);
+  }
+
   // Profil
   updateProfile(body: { displayName: string; dailyGoalMinutes: number; theme: string }): Observable<User> {
     return this.http.patch<User>('/api/me', body);

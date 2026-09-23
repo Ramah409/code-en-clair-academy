@@ -11,6 +11,10 @@ import { CodeViewComponent } from './code-view.component';
 import { IconComponent } from './icon.component';
 import { MarkdownComponent } from './markdown.component';
 import { ResultTableComponent } from './result-table.component';
+import { McdDiagramComponent } from './modeling/mcd-diagram.component';
+import { McdEditorComponent } from './modeling/mcd-editor.component';
+import { MldEditorComponent, MldViewComponent } from './modeling/mld-editor.component';
+import { McdModel, MldModel } from './modeling/model';
 
 interface OrderLine {
   id: number;
@@ -20,7 +24,18 @@ interface OrderLine {
 /** Exercice pratique complet : énoncé, éditeur adapté au type, indices, correction et validation. */
 @Component({
   selector: 'app-exercise-panel',
-  imports: [FormsModule, CodeEditorComponent, CodeViewComponent, IconComponent, MarkdownComponent, ResultTableComponent],
+  imports: [
+    FormsModule,
+    CodeEditorComponent,
+    CodeViewComponent,
+    IconComponent,
+    MarkdownComponent,
+    ResultTableComponent,
+    McdDiagramComponent,
+    McdEditorComponent,
+    MldEditorComponent,
+    MldViewComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './exercise-panel.component.html',
 })
@@ -48,7 +63,18 @@ export class ExercisePanelComponent implements OnInit {
   readonly kindLabel = computed(() => EXERCISE_KIND_LABELS[this.ex()?.kind ?? ''] ?? 'Exercice');
   readonly difficultyLabel = computed(() => DIFFICULTY_NAMES[this.ex()?.difficulty ?? ''] ?? '');
   readonly language = computed(() => this.ex()?.payload?.language ?? 'sql');
-  readonly isCode = computed(() => ['SQL', 'CODE_LIBRE', 'CORRIGER_ERREUR'].includes(this.ex()?.kind ?? ''));
+  readonly isCode = computed(() => ['SQL', 'MLD_VERS_SQL', 'CODE_LIBRE', 'CORRIGER_ERREUR'].includes(this.ex()?.kind ?? ''));
+  readonly isSql = computed(() => ['SQL', 'MLD_VERS_SQL'].includes(this.ex()?.kind ?? ''));
+  readonly mcd = signal<McdModel | null>(null);
+  readonly mld = signal<MldModel | null>(null);
+  /** Modèles de départ transmis aux éditeurs (chargement, correction recopiée). */
+  readonly mcdStart = signal<McdModel | null>(null);
+  readonly mldStart = signal<MldModel | null>(null);
+  /** Contrôles détaillés renvoyés par la correction d'un MCD ou d'un MLD. */
+  readonly modelChecks = computed<{ element: string; ok: boolean; message: string }[]>(() => {
+    const kind = this.ex()?.kind;
+    return kind === 'MCD' || kind === 'MCD_VERS_MLD' ? (this.result()?.details ?? []) : [];
+  });
   readonly hintsLeft = computed(() => 3 - (this.ex()?.hintsUsed ?? 0));
 
   /** Modèle du code à trous découpé en segments de texte et en champs. */
@@ -67,13 +93,13 @@ export class ExercisePanelComponent implements OnInit {
     return parts;
   });
 
-  readonly sqlDetails = computed(() => (this.ex()?.kind === 'SQL' ? this.result()?.details : null));
+  readonly sqlDetails = computed(() => (this.isSql() ? this.result()?.details : null));
 
   ngOnInit(): void {
     const ex = this.initial();
     this.ex.set(ex);
     this.restore(ex);
-    if (ex.kind === 'SQL') {
+    if (ex.kind === 'SQL' || ex.kind === 'MLD_VERS_SQL') {
       this.schema.load();
     }
   }
@@ -94,6 +120,23 @@ export class ExercisePanelComponent implements OnInit {
       this.blanks.set(Array.from({ length: payload.blankCount ?? 0 }, (_, i) => saved[i] ?? ''));
     } else if (ex.kind === 'REMETTRE_ORDRE') {
       this.order.set([...(payload.lines ?? [])]);
+    } else if (ex.kind === 'MCD') {
+      this.mcd.set(this.parse(ex.lastAnswer) ?? (payload.starter && payload.starter.entities ? payload.starter : null));
+      this.mcdStart.set(this.mcd());
+    } else if (ex.kind === 'MCD_VERS_MLD') {
+      this.mld.set(this.parse(ex.lastAnswer) ?? (payload.starter && payload.starter.tables ? payload.starter : null));
+      this.mldStart.set(this.mld());
+    }
+  }
+
+  private parse<T>(value?: string): T | null {
+    if (!value) {
+      return null;
+    }
+    try {
+      return JSON.parse(value) as T;
+    } catch {
+      return null;
     }
   }
 
@@ -146,6 +189,10 @@ export class ExercisePanelComponent implements OnInit {
       answer = this.currentCode;
     } else if (ex.kind === 'COMPLETER') {
       answer = this.blanks();
+    } else if (ex.kind === 'MCD') {
+      answer = this.mcd() ?? { entities: [], associations: [] };
+    } else if (ex.kind === 'MCD_VERS_MLD') {
+      answer = this.mld() ?? { tables: [] };
     } else {
       answer = this.order().map((l) => l.id);
     }
@@ -167,6 +214,7 @@ export class ExercisePanelComponent implements OnInit {
                 solutionAvailable: true,
                 solution: res.solution ?? e.solution,
                 explanation: res.explanation ?? e.explanation,
+                solutionModel: res.solutionModel ?? e.solutionModel,
               }
             : e,
         );
@@ -210,10 +258,19 @@ export class ExercisePanelComponent implements OnInit {
 
   /** Recopie la correction dans l'éditeur, pour l'étudier et la valider. */
   useSolution(): void {
-    const solution = this.ex()?.solution;
-    if (solution && this.isCode()) {
-      this.code.set(solution);
-      this.currentCode = solution;
+    const e = this.ex();
+    if (!e) {
+      return;
+    }
+    if (e.kind === 'MCD' && e.solutionModel) {
+      this.mcd.set(structuredClone(e.solutionModel));
+      this.mcdStart.set(this.mcd());
+    } else if (e.kind === 'MCD_VERS_MLD' && e.solutionModel) {
+      this.mld.set(structuredClone(e.solutionModel));
+      this.mldStart.set(this.mld());
+    } else if (e.solution && this.isCode()) {
+      this.code.set(e.solution);
+      this.currentCode = e.solution;
     }
   }
 }

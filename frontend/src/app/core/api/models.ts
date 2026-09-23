@@ -360,6 +360,7 @@ export interface ExerciseView {
   lastAnswer?: string;
   solved: boolean;
   submissions: number;
+  solutionModel?: any;
 }
 
 export interface Hint {
@@ -383,6 +384,7 @@ export interface SubmitResult {
   reward?: Reward;
   solution?: string;
   explanation?: string;
+  solutionModel?: any;
 }
 
 export interface CatalogItem {

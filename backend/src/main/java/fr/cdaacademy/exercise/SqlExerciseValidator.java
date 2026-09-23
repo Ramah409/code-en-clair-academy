@@ -54,7 +54,7 @@ public class SqlExerciseValidator implements ExerciseValidator {
 
     @Override
     public Set<String> kinds() {
-        return Set.of("SQL");
+        return Set.of("SQL", "MLD_VERS_SQL");
     }
 
     @Override

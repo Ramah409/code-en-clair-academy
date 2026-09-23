@@ -54,6 +54,7 @@ class ExerciseSolutionsIntegrationTest extends PostgresIntegrationTest {
                     IntStream.range(0, payload.path("lines").size()).forEach(order::add);
                     yield order;
                 }
+                case "MCD", "MCD_VERS_MLD" -> payload.path("solutionModel");
                 default -> TextNode.valueOf((String) row.get("solution"));
             };
             try {

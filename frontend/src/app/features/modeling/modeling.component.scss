@@ -1,0 +1,144 @@
+.pipeline {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+
+  @media (min-width: 820px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  li {
+    position: relative;
+    display: grid;
+    gap: 2px;
+    padding: var(--space-3) var(--space-4) var(--space-3) 3.2rem;
+    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    font-size: var(--fs-sm);
+    counter-increment: step;
+
+    &::before {
+      content: counter(step);
+      position: absolute;
+      left: var(--space-3);
+      top: var(--space-3);
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--text-on-primary);
+      font-weight: 700;
+    }
+
+    strong {
+      font-family: var(--font-display);
+      font-size: var(--fs-lg);
+    }
+
+    span {
+      color: var(--text-muted);
+    }
+  }
+}
+
+.tabs-bar {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.tabs-bar__tab {
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+
+  &--on {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+}
+
+.mgroups {
+  display: grid;
+  gap: var(--space-5);
+
+  h2 {
+    font-size: var(--fs-xl);
+  }
+}
+
+.atelier {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.atelier__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.atelier__title {
+  flex: 1;
+  min-width: 200px;
+
+  .input {
+    font-weight: 700;
+  }
+}
+
+.atelier__out {
+  display: grid;
+  gap: var(--space-4);
+
+  @media (min-width: 1100px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.atelier__note {
+  margin-top: var(--space-3);
+  font-size: var(--fs-sm);
+}
+
+.atelier__test {
+  margin: var(--space-3) 0;
+}
+
+.saved {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.pill {
+  padding: 6px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}

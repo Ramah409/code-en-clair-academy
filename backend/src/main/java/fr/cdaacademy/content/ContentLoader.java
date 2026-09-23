@@ -165,6 +165,10 @@ public class ContentLoader {
         require(ex.hints() != null && ex.hints().size() == 3, file, where + " : exactement trois indices graduels");
         require(ex.solution() != null && ex.explanation() != null, file, where + " : solution et explication");
         require(ex.payload() != null && ex.payload().isObject(), file, where + " : payload obligatoire");
+        if ("MCD".equals(ex.kind()) || "MCD_VERS_MLD".equals(ex.kind())) {
+            require(ex.payload().has("expected") && ex.payload().has("solutionModel"), file,
+                    where + " : un exercice de modélisation demande payload.expected et payload.solutionModel");
+        }
     }
 
     private static <T> List<T> nullSafe(List<T> list) {
