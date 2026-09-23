@@ -33,6 +33,7 @@ import {
   Reward,
   StartQuiz,
   SubmitResult,
+  TutorMessage,
 } from './models';
 
 /** Accès typé à l'API REST de Code en Clair Academy. */
@@ -244,5 +245,31 @@ export class ApiService {
 
   verifyCertificate(code: string): Observable<PublicCertificate> {
     return this.http.get<PublicCertificate>(`/api/public/certificates/${encodeURIComponent(code)}`);
+  }
+
+  // Assistant
+  tutorStatus(): Observable<{ aiAvailable: boolean; model: string }> {
+    return this.http.get<{ aiAvailable: boolean; model: string }>('/api/tutor/status');
+  }
+
+  tutorConversations(): Observable<{ id: number; title: string; mode: string; updatedAt: string }[]> {
+    return this.http.get<{ id: number; title: string; mode: string; updatedAt: string }[]>('/api/tutor/conversations');
+  }
+
+  tutorConversation(id: number): Observable<{ id: number; title: string; messages: TutorMessage[] }> {
+    return this.http.get<{ id: number; title: string; messages: TutorMessage[] }>(`/api/tutor/conversations/${id}`);
+  }
+
+  deleteTutorConversation(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/tutor/conversations/${id}`);
+  }
+
+  askTutor(body: {
+    conversationId?: number | null;
+    question: string;
+    lessonSlug?: string;
+    exerciseSlug?: string;
+  }): Observable<{ conversationId: number; answer: TutorMessage; aiAvailable: boolean }> {
+    return this.http.post<{ conversationId: number; answer: TutorMessage; aiAvailable: boolean }>('/api/tutor/ask', body);
   }
 }

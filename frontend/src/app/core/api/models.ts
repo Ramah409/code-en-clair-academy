@@ -746,3 +746,14 @@ export interface PublicCertificate {
   issuedAt: string;
   kind: CertificateKind;
 }
+
+// ------------------------------------------------------------------ assistant
+
+export interface TutorMessage {
+  id: number;
+  author: 'USER' | 'ASSISTANT';
+  content: string;
+  source?: 'OLLAMA' | 'COURS';
+  links?: { label: string; url: string }[];
+  createdAt: string;
+}

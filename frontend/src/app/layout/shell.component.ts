@@ -7,6 +7,7 @@ import { RewardService } from '../core/ui/reward.service';
 import { ThemeService } from '../core/ui/theme.service';
 import { IconComponent } from '../shared/icon.component';
 import { ToastsComponent } from './toasts.component';
+import { TutorPanelComponent } from './tutor-panel.component';
 
 interface NavItem {
   path: string;
@@ -18,7 +19,7 @@ interface NavItem {
 /** Structure de l'application connectée : navigation latérale, barre mobile, notifications. */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, ToastsComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, ToastsComponent, TutorPanelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
