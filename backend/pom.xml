@@ -48,7 +48,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
+            <!-- compile : le laboratoire SQL utilise l'analyseur du pilote pour contrôler les requêtes -->
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -76,6 +76,12 @@
             <artifactId>jjwt-jackson</artifactId>
             <version>${jjwt.version}</version>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- Fichiers de contenu pédagogique (YAML) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
         </dependency>
 
         <!-- Documentation OpenAPI / Swagger UI -->

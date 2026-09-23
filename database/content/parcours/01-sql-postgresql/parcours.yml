@@ -1,0 +1,24 @@
+slug: sql-postgresql
+version: 1
+position: 1
+title: "SQL et PostgreSQL"
+category: SQL
+icon: database
+summary: "Interroger, modifier et concevoir une base de données relationnelle avec PostgreSQL, de la première requête SELECT aux transactions."
+description: |
+  Toute application professionnelle repose sur des données : comptes, commandes, produits, inscriptions…
+  Ce parcours t'apprend à dialoguer avec une base **PostgreSQL** en langage **SQL**, exactement comme tu le
+  feras dans une application Spring Boot.
+
+  Tu travailles sur une vraie base pédagogique : une **boutique en ligne** (clients, produits, catégories,
+  commandes, lignes de commande, avis) et un **service RH** (employés, services). Chaque requête que tu écris
+  est réellement exécutée, puis annulée : tu peux tout essayer sans rien casser.
+
+  **Au programme** : lire des données (SELECT, WHERE, ORDER BY), filtrer finement, agréger (COUNT, SUM,
+  GROUP BY, HAVING), croiser plusieurs tables (jointures), écrire des sous-requêtes, modifier les données
+  (INSERT, UPDATE, DELETE, transactions) et créer ses propres tables avec leurs contraintes.
+
+  Ces compétences sont évaluées au titre **CDA** (activité « Concevoir et développer la persistance des
+  données ») : le dernier chapitre te prépare aux questions du jury.
+examQuestionCount: 40
+examTimeLimitMinutes: 45
