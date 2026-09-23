@@ -30,6 +30,7 @@ lessons:
           partir d'un modèle (le MPD). C'est le rôle du **DDL** (*Data Definition Language*) : `CREATE`,
           `ALTER`, `DROP`.
       - type: definition
+        id: def-ddl-et-dml
         term: "DDL et DML"
         md: |
           - **DDL** (définition) : crée ou modifie la **structure** → `CREATE TABLE`, `ALTER TABLE`, `DROP TABLE`.
@@ -87,6 +88,12 @@ lessons:
         ref: sql-c7l1-q3
       - type: question
         ref: sql-c7l1-q4
+      - type: quiz
+        items:
+          - ref: sqlq-create-1
+          - ref: sqlq-create-2
+            review: def-ddl-et-dml
+          - ref: sqlq-create-3
     questions:
       - code: sql-c7l1-q1
         kind: CHOIX_UNIQUE
@@ -145,7 +152,52 @@ lessons:
           - label: "La colonne est une clé étrangère"
             correct: false
             why: "Une identité est une valeur générée, pas une référence."
-        explanation: "C'est ce qu'utilise le schéma de CDA Academy. `SERIAL` produit un effet proche, avec une séquence moins encapsulée."
+        explanation: "C'est ce qu'utilise le schéma de Code en Clair Academy. `SERIAL` produit un effet proche, avec une séquence moins encapsulée."
+      - code: sqlq-create-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-ddl
+        prompt: Quel type pour une date de naissance (sans heure) ?
+        choices:
+          - label: '`DATE`'
+            correct: true
+            why: Oui.
+          - label: '`VARCHAR(10)`'
+            correct: false
+            why: Un texte ne permet ni calcul ni contrôle de validité.
+          - label: '`INTEGER`'
+            correct: false
+            why: Un nombre ne représente pas une date.
+        explanation: DATE (jour), TIMESTAMPTZ (date + heure + fuseau), INTERVAL (durée).
+      - code: sqlq-create-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: Laquelle de ces instructions fait partie du DDL ?
+        choices:
+          - label: '`ALTER TABLE`'
+            correct: true
+            why: 'Oui : elle modifie la structure.'
+          - label: '`INSERT`'
+            correct: false
+            why: INSERT manipule les données (DML).
+          - label: '`SELECT`'
+            correct: false
+            why: SELECT lit les données.
+        explanation: DDL = structure (CREATE, ALTER, DROP) ; DML = données (INSERT, UPDATE, DELETE).
+      - code: sqlq-create-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-ddl
+        prompt: '`VARCHAR(50)` refuse un texte de 60 caractères.'
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : PostgreSQL lève une erreur (valeur trop longue).'
+          - label: Faux
+            correct: false
+            why: 'PostgreSQL ne tronque pas : il refuse.'
+        explanation: 'La longueur maximale est une contrainte de qualité : choisis-la selon le métier.'
     exercises:
       - slug: sql-ex-create-apprenants
         kind: SQL
@@ -267,6 +319,11 @@ lessons:
         ref: sql-c7l2-q3
       - type: question
         ref: sql-c7l2-q4
+      - type: quiz
+        items:
+          - ref: sqlq-contr-1
+          - ref: sqlq-contr-2
+          - ref: sqlq-contr-3
     questions:
       - code: sql-c7l2-q1
         kind: CHOIX_UNIQUE
@@ -323,6 +380,51 @@ lessons:
         language: sql
         answers: ["REFERENCES"]
         explanation: "`REFERENCES table (colonne)` déclare une clé étrangère directement sur la colonne."
+      - code: sqlq-contr-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-ddl
+        prompt: Quelle contrainte rend une colonne obligatoire ?
+        choices:
+          - label: '`NOT NULL`'
+            correct: true
+            why: Oui.
+          - label: '`UNIQUE`'
+            correct: false
+            why: UNIQUE interdit les doublons, pas le vide.
+          - label: '`DEFAULT`'
+            correct: false
+            why: DEFAULT propose une valeur, mais n'interdit pas NULL.
+        explanation: NOT NULL = obligatoire ; UNIQUE = sans doublon ; CHECK = règle ; FOREIGN KEY = lien.
+      - code: sqlq-contr-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: Que fait `ON DELETE SET NULL` sur une clé étrangère ?
+        choices:
+          - label: Met la clé étrangère à NULL quand la ligne visée est supprimée
+            correct: true
+            why: 'Oui : la ligne dépendante est conservée.'
+          - label: Supprime les lignes dépendantes
+            correct: false
+            why: C'est CASCADE.
+          - label: Empêche la suppression
+            correct: false
+            why: C'est le comportement par défaut (RESTRICT / NO ACTION).
+        explanation: La colonne doit alors accepter NULL.
+      - code: sqlq-contr-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-ddl
+        prompt: Une contrainte en base protège les données même si le code de l'application a un bug.
+        choices:
+          - label: Vrai
+            correct: true
+            why: "Oui : c'est la dernière ligne de défense."
+          - label: Faux
+            correct: false
+            why: La base refuse toute donnée invalide, quel que soit le programme.
+        explanation: 'Règles dans le service ET contraintes en base : deux niveaux de protection.'
     exercises:
       - slug: sql-ex-create-avis-formation
         kind: SQL
@@ -418,6 +520,7 @@ lessons:
       - type: question
         ref: sql-c7l3-q1
       - type: definition
+        id: def-vue
         term: "Vue"
         md: "Requête enregistrée sous un nom. Elle ne stocke pas de données (sauf vue matérialisée) : chaque interrogation réexécute la requête. Idéal pour simplifier l'accès ou masquer des colonnes sensibles."
       - type: code
@@ -466,6 +569,12 @@ lessons:
         ref: sql-ex-vue-ventes
       - type: question
         ref: sql-c7l3-q4
+      - type: quiz
+        items:
+          - ref: sqlq-index-1
+          - ref: sqlq-index-2
+            review: def-vue
+          - ref: sqlq-index-3
     questions:
       - code: sql-c7l3-q1
         kind: CHOIX_UNIQUE
@@ -521,7 +630,52 @@ lessons:
           - label: "Toutes les colonnes NOT NULL"
             correct: false
             why: "NOT NULL n'a pas besoin d'index."
-        explanation: "Bonne pratique : indexer les clés étrangères utilisées dans les jointures (comme dans le schéma de CDA Academy)."
+        explanation: "Bonne pratique : indexer les clés étrangères utilisées dans les jointures (comme dans le schéma de Code en Clair Academy)."
+      - code: sqlq-index-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: À quoi sert un index ?
+        choices:
+          - label: À accélérer les recherches sur une colonne
+            correct: true
+            why: "Oui : comme l'index d'un livre."
+          - label: À empêcher les doublons dans tous les cas
+            correct: false
+            why: Seul un index UNIQUE fait cela.
+          - label: À sauvegarder la table
+            correct: false
+            why: Un index n'est pas une sauvegarde.
+        explanation: Index = lectures plus rapides, écritures un peu plus lentes et place disque en plus.
+      - code: sqlq-index-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: Quel est l'intérêt d'une vue ?
+        choices:
+          - label: Donner un nom à une requête pour la réutiliser simplement
+            correct: true
+            why: "Oui : on l'interroge comme une table."
+          - label: Copier les données pour les sauvegarder
+            correct: false
+            why: Une vue classique ne stocke pas de données.
+          - label: Accélérer toutes les requêtes
+            correct: false
+            why: Elle ne rend pas la requête plus rapide par elle-même.
+        explanation: Une vue simplifie, masque des colonnes sensibles et centralise une logique.
+      - code: sqlq-index-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-avance
+        prompt: '`EXPLAIN` montre le plan choisi par PostgreSQL pour exécuter une requête.'
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : on y voit par exemple Seq Scan ou Index Scan.'
+          - label: Faux
+            correct: false
+            why: C'est précisément son rôle.
+        explanation: EXPLAIN (ANALYZE) aide à vérifier qu'un index est bien utilisé.
     exercises:
       - slug: sql-ex-vue-ventes
         kind: SQL
@@ -577,7 +731,7 @@ bank:
       - label: "`VARCHAR(30)`"
         correct: false
         why: "Un texte ne se trie pas et ne se calcule pas comme une date."
-    explanation: "Le schéma de CDA Academy utilise TIMESTAMPTZ pour tous les horodatages (created_at, updated_at…)."
+    explanation: "Le schéma de Code en Clair Academy utilise TIMESTAMPTZ pour tous les horodatages (created_at, updated_at…)."
   - code: sql-c7-b2
     kind: RESULTAT_CODE
     difficulty: 2
@@ -598,7 +752,7 @@ bank:
       - label: "Les deux lignes sont insérées"
         correct: false
         why: "La contrainte l'interdit."
-    explanation: "Astuce : pour une unicité insensible à la casse, on crée un index unique sur `lower(email)` (comme dans CDA Academy)."
+    explanation: "Astuce : pour une unicité insensible à la casse, on crée un index unique sur `lower(email)` (comme dans Code en Clair Academy)."
   - code: sql-c7-b3
     kind: VRAI_FAUX
     difficulty: 2

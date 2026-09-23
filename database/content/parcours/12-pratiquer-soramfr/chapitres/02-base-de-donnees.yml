@@ -1,0 +1,1196 @@
+slug: soramfr-base-de-donnees
+position: 2
+level: DEBUTANT
+title: "La base de données de Soramfr"
+summary: "Passer de l'entité Java à la table users, relier les tables par une clé étrangère et corriger le MCD du rapport en vraie notation Merise."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sor-table-users
+    title: "De l'entité UserEntity à la table users"
+    duration: 13
+    objective: "Lire l'entité UserEntity et écrire la table correspondante en SQL, avec ses contraintes."
+    prerequisites: "Chapitre « Découvrir Soramfr »."
+    skills: [sql-ddl, spring-jpa]
+    xp: 20
+    memo: |
+      - Une **entité** JPA (`@Entity`) est une classe Java qui correspond à **une table**.
+      - Chaque attribut de la classe devient une **colonne**.
+      - `@Id` + `@GeneratedValue(strategy = IDENTITY)` : clé primaire générée par PostgreSQL.
+      - `@Column(nullable = false)` → `NOT NULL` ; `unique = true` → `UNIQUE` ; `length = 60` → `VARCHAR(60)`.
+      - Le mot de passe est stocké **haché** dans `password_hash` (60 caractères pour BCrypt).
+      - Soramfr n'a pas de colonne `role` : c'est une faiblesse, qu'on corrige avec `role VARCHAR(10) NOT NULL DEFAULT 'USER' CHECK (role IN ('USER', 'ADMIN'))`.
+    commonMistakes: |
+      - Oublier `NOT NULL` sur une information obligatoire : la base acceptera des lignes incomplètes.
+      - Compter uniquement sur le service Java pour l'unicité de l'e-mail : la contrainte `UNIQUE` en base est la dernière barrière.
+      - Stocker le mot de passe dans une colonne `password` en clair.
+      - Laisser `spring.jpa.hibernate.ddl-auto=update` en production : Hibernate modifie la base tout seul, sans trace.
+    blocks:
+      - type: text
+        md: |
+          Dans Soramfr, les comptes sont rangés dans une **table** PostgreSQL appelée `users`. Mais tu n'as
+          jamais écrit cette table à la main : c'est **Hibernate** qui l'a créée à partir de ta classe Java
+          `UserEntity`. Dans cette leçon, on fait le lien entre les deux.
+      - type: definition
+        id: def-table-rappel
+        term: "Table, colonne, ligne (rappel)"
+        md: |
+          Une **table** est un tableau. Chaque **colonne** est une information (le nom, l'e-mail…).
+          Chaque **ligne** est un élément (un compte). C'est comme un classeur Excel bien rangé.
+      - type: definition
+        id: def-contrainte
+        term: "Contrainte"
+        md: |
+          Une **règle** que la base fait respecter toute seule, même si le code Java se trompe. C'est le
+          vigile à l'entrée : il refuse ce qui ne respecte pas le règlement.
+          - `NOT NULL` : la case ne peut pas rester vide ;
+          - `UNIQUE` : deux lignes ne peuvent pas avoir la même valeur ;
+          - `PRIMARY KEY` : identifiant unique et obligatoire de chaque ligne ;
+          - `CHECK (...)` : une condition à respecter (par exemple `role IN ('USER', 'ADMIN')`).
+      - type: code
+        id: code-livres
+        language: sql
+        title: "Exemple simple : une table de livres"
+        code: |
+          CREATE TABLE livres (
+            id     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            titre  VARCHAR(200) NOT NULL,
+            isbn   VARCHAR(13)  NOT NULL UNIQUE,
+            pages  INTEGER      CHECK (pages > 0)
+          );
+        lines:
+          - n: 1
+            note: "`CREATE TABLE livres` : on crée une table qui s'appelle `livres`."
+          - n: 2
+            note: "`id` : un nombre entier (`BIGINT`) que PostgreSQL **invente tout seul** (1, 2, 3…). C'est la clé primaire."
+          - n: 3
+            note: "`VARCHAR(200)` : un texte de 200 caractères au maximum. `NOT NULL` : obligatoire."
+          - n: 4
+            note: "`UNIQUE` : deux livres ne peuvent pas avoir le même ISBN."
+          - n: 5
+            note: "`CHECK (pages > 0)` : un livre ne peut pas avoir 0 page ou moins. La colonne reste facultative."
+      - type: question
+        ref: sor-t1-q1
+        review: def-contrainte
+      - type: definition
+        id: def-entite-jpa
+        term: "Entité JPA et Hibernate"
+        md: |
+          **JPA** est la règle du jeu en Java pour enregistrer des objets dans une base. **Hibernate** est
+          l'outil qui applique cette règle. Tu marques une classe avec `@Entity` : Hibernate sait alors la
+          transformer en table, et chaque objet en ligne. C'est un **traducteur** entre Java et SQL.
+      - type: code
+        id: code-userentity
+        language: java
+        title: "Soramfr — UserEntity.java (extrait)"
+        code: |
+          @Entity
+          @Table(name = "users")
+          public class UserEntity {
+
+             @Column(name = "password_hash", nullable = false, length = 60)
+             @JsonIgnore
+             private String passwordHash;
+
+             @Id
+             @GeneratedValue(strategy = GenerationType.IDENTITY)
+             private Long id;
+
+             @Column(nullable = false)
+             private String name;
+
+             @Column(nullable = false, unique = true)
+             private String email;
+
+             @Column(nullable = false, unique = true)
+             private String username;
+
+             @CreationTimestamp
+             @Column(updatable = false, nullable = false)
+             private Instant createdAt;
+          }
+        lines:
+          - n: 1
+            note: "`@Entity` : cette classe correspond à une table."
+          - n: 2
+            note: "`@Table(name = \"users\")` : la table s'appellera `users` (sinon Hibernate prendrait le nom de la classe)."
+          - n: 5
+            note: "Colonne `password_hash`, obligatoire, 60 caractères : c'est **exactement** la longueur d'un hash BCrypt."
+          - n: 6
+            note: "`@JsonIgnore` : ce champ n'apparaît jamais dans le JSON renvoyé. Très bien pour la sécurité."
+          - n: 9
+            note: "`@Id` : c'est la clé primaire."
+          - n: 10
+            note: "`IDENTITY` : PostgreSQL génère la valeur (1, 2, 3…) au moment de l'INSERT."
+          - n: 13
+            note: "`nullable = false` devient `NOT NULL` en SQL."
+          - n: 16
+            note: "`unique = true` devient une contrainte `UNIQUE` : deux comptes ne peuvent pas partager un e-mail."
+          - n: 22
+            note: "`@CreationTimestamp` : Hibernate remplit la date de création tout seul. `updatable = false` : on ne peut plus la changer."
+      - type: code
+        id: code-users-sql
+        language: sql
+        title: "La table produite par Hibernate (simplifiée)"
+        code: |
+          CREATE TABLE users (
+            id            BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+            password_hash VARCHAR(60)  NOT NULL,
+            name          VARCHAR(255) NOT NULL,
+            email         VARCHAR(255) NOT NULL UNIQUE,
+            username      VARCHAR(255) NOT NULL UNIQUE,
+            created_at    TIMESTAMP(6) WITH TIME ZONE NOT NULL
+          );
+        lines:
+          - n: 3
+            note: "`length = 60` est devenu `VARCHAR(60)`."
+          - n: 4
+            note: "Sans `length`, Hibernate choisit 255 caractères par défaut."
+          - n: 7
+            note: "Un `Instant` Java devient une date-heure **avec fuseau horaire**."
+      - type: callout
+        variant: warning
+        title: "Ce qui manque dans Soramfr : la colonne role"
+        md: |
+          Le rapport parle des rôles USER et ADMIN, et l'image du modèle physique affiche une colonne `role`…
+          mais **l'entité n'en a pas**. Dans le code, l'administratrice est reconnue grâce à son pseudo
+          (`admin`) ou à une adresse e-mail écrite en dur dans `AuthService`. Si quelqu'un s'inscrit avec le
+          pseudo `admin`, il devient administrateur ! La bonne solution : une colonne `role` en base, avec
+          `USER` par défaut.
+      - type: question
+        ref: sor-t1-q2
+        review: code-userentity
+      - type: text
+        md: "Exercice guidé : complète la table `users` de Soramfr."
+      - type: exercise
+        ref: sor-ex-users-guide
+      - type: text
+        md: |
+          En autonomie : crée la table **corrigée** `soram_utilisateurs`, avec la colonne `role` qui manquait.
+          Ta requête est exécutée pour de vrai dans le laboratoire, puis annulée.
+      - type: exercise
+        ref: sor-ex-table-utilisateurs
+      - type: jury
+        items:
+          - q: "Pourquoi la colonne password_hash fait-elle 60 caractères ?"
+            a: "Parce qu'un hash BCrypt fait toujours 60 caractères. Il contient l'algorithme, le coût, le sel et le hash lui-même."
+          - q: "L'e-mail est déjà vérifié dans le service. Pourquoi une contrainte UNIQUE en base ?"
+            a: |
+              Le service peut être contourné (un autre programme, un bug, deux inscriptions au même instant).
+              La contrainte en base est la **dernière barrière** : elle garantit l'unicité quoi qu'il arrive.
+          - q: "Comment gérez-vous les rôles ?"
+            a: |
+              « Dans la version actuelle, le rôle est calculé au moment de la connexion à partir du pseudo. C'est
+              une limite : j'ajouterais une colonne `role` en base, `USER` par défaut, modifiable uniquement par
+              une administratrice. »
+            tip: "Reconnaître une limite et proposer la correction est bien vu par le jury."
+      - type: quiz
+        items:
+          - ref: sor-t1-q3
+            review: code-userentity
+          - ref: sor-t1-q4
+            review: def-contrainte
+          - ref: sor-t1-q5
+            review: code-users-sql
+          - ref: sor-t1-q6
+    questions:
+      - code: sor-t1-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-ddl
+        prompt: "Quelle contrainte empêche deux comptes d'avoir le même e-mail ?"
+        choices:
+          - label: "`UNIQUE`"
+            correct: true
+            why: "Oui : la base refuse la deuxième ligne avec le même e-mail."
+          - label: "`NOT NULL`"
+            correct: false
+            why: "`NOT NULL` oblige à remplir la case, mais autorise les doublons."
+          - label: "`CHECK (email > 0)`"
+            correct: false
+            why: "Cette condition n'a pas de sens pour un texte et n'empêche pas les doublons."
+        explanation: "`UNIQUE` interdit les doublons ; `NOT NULL` interdit le vide. On a souvent besoin des deux."
+      - code: sor-t1-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Dans `UserEntity`, que devient `@Column(nullable = false, unique = true)` en SQL ?"
+        choices:
+          - label: "`NOT NULL UNIQUE`"
+            correct: true
+            why: "Oui : obligatoire et sans doublon."
+          - label: "`NULL UNIQUE`"
+            correct: false
+            why: "`nullable = false` veut dire que le vide est **interdit**."
+          - label: "`PRIMARY KEY`"
+            correct: false
+            why: "La clé primaire est marquée par `@Id`, pas par `@Column`."
+        explanation: "`nullable = false` → `NOT NULL`, `unique = true` → `UNIQUE`, `length = 60` → `VARCHAR(60)`."
+      - code: sor-t1-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-jpa
+        prompt: "Quelle annotation indique que `UserEntity` correspond à une table ?"
+        choices:
+          - label: "`@Entity`"
+            correct: true
+            why: "Oui : Hibernate traite alors la classe comme une table."
+          - label: "`@Service`"
+            correct: false
+            why: "`@Service` marque une classe de logique métier."
+          - label: "`@JsonIgnore`"
+            correct: false
+            why: "`@JsonIgnore` cache un champ dans le JSON."
+        explanation: "`@Entity` (et éventuellement `@Table` pour choisir le nom) : la classe devient une table."
+      - code: sor-t1-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Une contrainte `CHECK (role IN ('USER', 'ADMIN'))` empêche d'enregistrer le rôle `SUPERADMIN`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Oui : la base refuse toute valeur hors de la liste."
+          - label: "Faux"
+            correct: false
+            why: "La contrainte n'accepte que les deux valeurs listées."
+        explanation: "`CHECK` vérifie une condition à chaque INSERT et UPDATE. C'est une règle métier gardée par la base."
+      - code: sor-t1-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Pourquoi Hibernate crée-t-il `name VARCHAR(255)` ?"
+        choices:
+          - label: "Parce qu'aucune longueur n'est précisée dans `@Column` : 255 est la valeur par défaut"
+            correct: true
+            why: "Oui : sans `length`, Hibernate prend 255."
+          - label: "Parce que PostgreSQL impose 255 caractères"
+            correct: false
+            why: "PostgreSQL accepte d'autres longueurs, et même `TEXT` sans limite."
+          - label: "Parce que c'est écrit dans le DTO"
+            correct: false
+            why: "Le DTO ne décide pas de la structure de la table."
+        explanation: "Précise `length` quand une longueur a un sens métier (e-mail : 254, hash BCrypt : 60…)."
+      - code: sor-t1-q6
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: rgpd-secrets
+        prompt: "Dans Soramfr, une personne s'inscrit avec le pseudo `admin`. Que se passe-t-il à sa connexion ?"
+        choices:
+          - label: "Elle reçoit le rôle ADMIN, car le rôle est calculé à partir du pseudo"
+            correct: true
+            why: "C'est la faille : `\"admin\".equalsIgnoreCase(username)` suffit à devenir administrateur."
+          - label: "Elle reçoit le rôle USER, car le rôle est lu en base"
+            correct: false
+            why: "Justement, il n'y a pas de colonne `role` dans la version actuelle."
+          - label: "L'inscription est refusée"
+            correct: false
+            why: "Rien n'interdit ce pseudo, sauf s'il est déjà pris."
+        explanation: "Si le compte `admin` n'existe pas encore, n'importe qui peut le créer et devenir administrateur. Le rôle doit être stocké en base et attribué par une administratrice."
+    exercises:
+      - slug: sor-ex-users-guide
+        kind: COMPLETER
+        title: "Compléter la table users de Soramfr"
+        difficulty: FACILE
+        skill: sql-ddl
+        statement: "Complète le script SQL pour qu'il corresponde à l'entité `UserEntity`."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "La colonne `id` est l'identifiant de chaque ligne."
+          - "Un hash BCrypt mesure toujours le même nombre de caractères."
+          - "PRIMARY KEY, 60, NOT NULL, UNIQUE."
+        solution: '["PRIMARY KEY", "60", "NOT NULL", "UNIQUE"]'
+        explanation: |
+          - `PRIMARY KEY` : `@Id` devient la clé primaire.
+          - `60` : longueur d'un hash BCrypt (`length = 60`).
+          - `NOT NULL` : `nullable = false`.
+          - `UNIQUE` : `unique = true`, l'e-mail ne peut pas être en double.
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            CREATE TABLE users (
+              id            BIGINT GENERATED BY DEFAULT AS IDENTITY [[1]],
+              password_hash VARCHAR([[2]]) NOT NULL,
+              name          VARCHAR(255) [[3]],
+              email         VARCHAR(255) NOT NULL [[4]]
+            );
+          blanks:
+            - ["PRIMARY KEY"]
+            - ["60"]
+            - ["NOT NULL"]
+            - ["UNIQUE"]
+      - slug: sor-ex-table-utilisateurs
+        kind: SQL
+        title: "Créer la table soram_utilisateurs (version corrigée)"
+        difficulty: INTERMEDIAIRE
+        skill: sql-ddl
+        statement: |
+          Crée la table `soram_utilisateurs` :
+
+          | Colonne | Type | Règle |
+          |---------|------|-------|
+          | `id` | `BIGINT` généré automatiquement | clé primaire |
+          | `nom` | `VARCHAR(100)` | obligatoire |
+          | `email` | `VARCHAR(254)` | obligatoire, unique |
+          | `pseudo` | `VARCHAR(50)` | obligatoire, unique |
+          | `mot_de_passe_hash` | `VARCHAR(60)` | obligatoire |
+          | `role` | `VARCHAR(10)` | obligatoire, `'USER'` par défaut, seulement `'USER'` ou `'ADMIN'` |
+          | `date_creation` | `TIMESTAMPTZ` | obligatoire, date et heure actuelles par défaut |
+        criteria: "Colonnes, types, NOT NULL, valeurs par défaut, clé primaire, UNIQUE et CHECK conformes."
+        hints:
+          - "Commence par `CREATE TABLE soram_utilisateurs (` et sépare les colonnes par des virgules."
+          - "`id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY`, puis `email VARCHAR(254) NOT NULL UNIQUE`."
+          - "`role VARCHAR(10) NOT NULL DEFAULT 'USER' CHECK (role IN ('USER', 'ADMIN'))` et `date_creation TIMESTAMPTZ NOT NULL DEFAULT now()`."
+        solution: |
+          CREATE TABLE soram_utilisateurs (
+            id                BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            nom               VARCHAR(100) NOT NULL,
+            email             VARCHAR(254) NOT NULL UNIQUE,
+            pseudo            VARCHAR(50)  NOT NULL UNIQUE,
+            mot_de_passe_hash VARCHAR(60)  NOT NULL,
+            role              VARCHAR(10)  NOT NULL DEFAULT 'USER' CHECK (role IN ('USER', 'ADMIN')),
+            date_creation     TIMESTAMPTZ  NOT NULL DEFAULT now()
+          );
+        explanation: |
+          La vérification lit la description de ta table dans le catalogue de PostgreSQL : noms et types des
+          colonnes, caractère obligatoire, présence d'une valeur par défaut, et nombre de contraintes de chaque
+          sorte (1 clé primaire, 2 UNIQUE, 1 CHECK).
+
+          Par rapport à Soramfr, cette table **stocke le rôle** : l'administratrice n'est plus reconnue à son
+          pseudo, et la base refuse tout rôle inconnu.
+        xp: 25
+        payload:
+          mode: WRITE
+          check: >-
+            SELECT 'colonne' AS element, column_name AS nom, data_type AS type,
+                   COALESCE(character_maximum_length::text, '') AS taille, is_nullable AS nullable,
+                   CASE WHEN column_default IS NULL THEN 'non' ELSE 'oui' END AS defaut
+            FROM information_schema.columns
+            WHERE table_schema = 'lab' AND table_name = 'soram_utilisateurs'
+            UNION ALL
+            SELECT 'contrainte', contype::text, count(*)::text, '', '', ''
+            FROM pg_constraint
+            WHERE conrelid = (SELECT oid FROM pg_class WHERE relname = 'soram_utilisateurs'
+                              AND relnamespace = 'lab'::regnamespace)
+            GROUP BY contype
+            ORDER BY 1, 2
+
+  # ===================================================================== LEÇON 2
+  - slug: sor-relations
+    title: "Relier deux tables : les commandes des clientes"
+    duration: 13
+    objective: "Comprendre la clé étrangère et écrire la relation entre les utilisatrices et leurs commandes."
+    prerequisites: "Leçon « De l'entité UserEntity à la table users »."
+    skills: [sql-ddl, merise-mld-mpd]
+    xp: 20
+    memo: |
+      - Une **clé étrangère** est une colonne qui contient l'identifiant d'une ligne **d'une autre table**.
+      - `utilisateur_id BIGINT NOT NULL REFERENCES soram_utilisateurs (id)` : chaque commande appartient à une utilisatrice qui existe.
+      - La clé étrangère se place **du côté « plusieurs »** : une utilisatrice a plusieurs commandes, donc la colonne est dans `commandes`.
+      - PostgreSQL refuse une commande qui pointe vers une utilisatrice inexistante, et refuse de supprimer une utilisatrice qui a encore des commandes (par défaut).
+      - Soramfr garde aujourd'hui le panier dans le navigateur (`localStorage`) : rien n'est enregistré en base. C'est une amélioration à prévoir.
+    commonMistakes: |
+      - Mettre la liste des commandes **dans** la table des utilisatrices (une colonne `commandes`) : une case ne doit contenir qu'une seule valeur.
+      - Mettre la clé étrangère du mauvais côté.
+      - Oublier `NOT NULL` sur la clé étrangère : on aurait des commandes sans propriétaire.
+      - Donner à la clé étrangère un type différent de la clé primaire visée (`INTEGER` vers un `BIGINT`).
+    blocks:
+      - type: text
+        md: |
+          Dans une vraie boutique, une cliente passe des **commandes**. Il faut donc une deuxième table, et un
+          moyen de dire « cette commande appartient à cette cliente ». C'est le rôle de la **clé étrangère**.
+      - type: definition
+        id: def-cle-etrangere
+        term: "Clé étrangère"
+        md: |
+          Une colonne qui **recopie l'identifiant** d'une ligne d'une autre table. C'est comme le numéro de
+          client écrit sur un bon de commande : grâce à lui, on retrouve la cliente dans le fichier clients.
+
+          En SQL : `REFERENCES table_visee (colonne)`. PostgreSQL vérifie que le numéro existe vraiment.
+      - type: code
+        id: code-auteurs-livres
+        language: sql
+        title: "Exemple simple : des auteurs et leurs livres"
+        code: |
+          CREATE TABLE auteurs (
+            id  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            nom VARCHAR(100) NOT NULL
+          );
+
+          CREATE TABLE livres (
+            id        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            titre     VARCHAR(200) NOT NULL,
+            auteur_id BIGINT NOT NULL REFERENCES auteurs (id)
+          );
+        lines:
+          - n: 1
+            note: "On crée d'abord la table **visée** (les auteurs) : elle doit exister avant qu'on la référence."
+          - n: 9
+            note: "`auteur_id` contient l'`id` d'un auteur. `REFERENCES auteurs (id)` : c'est la clé étrangère. `NOT NULL` : tout livre a un auteur."
+      - type: question
+        ref: sor-r1-q1
+        review: def-cle-etrangere
+      - type: definition
+        id: def-un-plusieurs
+        term: "Relation « un à plusieurs »"
+        md: |
+          **Une** cliente peut avoir **plusieurs** commandes, mais **une** commande appartient à **une seule**
+          cliente. Règle simple : la clé étrangère va **du côté « plusieurs »** (dans `commandes`).
+          On ne peut pas faire l'inverse : il faudrait mettre plusieurs numéros de commande dans une seule case.
+      - type: code
+        id: code-soram-commandes
+        language: sql
+        title: "Soramfr, version corrigée : les commandes"
+        code: |
+          CREATE TABLE soram_commandes (
+            id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            date_commande  TIMESTAMPTZ NOT NULL DEFAULT now(),
+            statut         VARCHAR(20) NOT NULL DEFAULT 'EN_COURS',
+            utilisateur_id BIGINT NOT NULL REFERENCES soram_utilisateurs (id)
+          );
+        lines:
+          - n: 3
+            note: "La date de la commande est remplie automatiquement."
+          - n: 4
+            note: "Le statut suit la vie de la commande : EN_COURS, VALIDEE, ANNULEE…"
+          - n: 5
+            note: "La clé étrangère : même type (`BIGINT`) que `soram_utilisateurs.id`, obligatoire, vérifiée par PostgreSQL."
+      - type: callout
+        variant: info
+        title: "Et dans le Soramfr actuel ?"
+        md: |
+          Le panier de Soramfr est gardé dans le navigateur (`localStorage.setItem('panier', ...)`) et la
+          validation affiche seulement `alert('commande confirmer !')`. Rien n'est enregistré côté serveur :
+          si la cliente change d'ordinateur, son panier disparaît. Enregistrer les commandes en base, avec une
+          clé étrangère vers l'utilisatrice, est l'évolution naturelle du projet.
+      - type: question
+        ref: sor-r1-q2
+        review: def-un-plusieurs
+      - type: text
+        md: "Exercice guidé : complète la ligne qui relie une commande à son utilisatrice."
+      - type: exercise
+        ref: sor-ex-fk-guide
+      - type: text
+        md: |
+          TP en autonomie : **écris une relation entre deux tables**. La table `soram_utilisateurs` est déjà
+          écrite dans l'éditeur ; ajoute `soram_commandes` en dessous.
+      - type: exercise
+        ref: sor-ex-relation-commandes
+      - type: jury
+        items:
+          - q: "Qu'est-ce qu'une clé étrangère ?"
+            a: "Une colonne qui contient l'identifiant d'une ligne d'une autre table. La base vérifie que cette ligne existe : c'est l'intégrité référentielle."
+          - q: "De quel côté placez-vous la clé étrangère dans une relation un-à-plusieurs ?"
+            a: "Du côté « plusieurs ». Une utilisatrice a plusieurs commandes : la colonne `utilisateur_id` va dans la table des commandes."
+          - q: "Pourquoi le panier n'est-il pas en base ?"
+            a: |
+              « Par manque de temps, j'ai gardé le panier dans le navigateur. Pour la suite, je créerais les
+              tables commande et contenir, reliées par des clés étrangères, et une API `/api/commandes`. »
+      - type: quiz
+        items:
+          - ref: sor-r1-q3
+            review: def-cle-etrangere
+          - ref: sor-r1-q4
+            review: code-soram-commandes
+          - ref: sor-r1-q5
+            review: def-un-plusieurs
+    questions:
+      - code: sor-r1-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-ddl
+        prompt: "Dans la table `livres`, que contient la colonne `auteur_id` ?"
+        choices:
+          - label: "L'identifiant d'une ligne de la table `auteurs`"
+            correct: true
+            why: "Oui : c'est une clé étrangère vers `auteurs (id)`."
+          - label: "Le nom complet de l'auteur"
+            correct: false
+            why: "Le nom est rangé dans `auteurs` ; on ne le recopie pas dans chaque livre."
+          - label: "Le nombre de livres de l'auteur"
+            correct: false
+            why: "Ce nombre se calcule avec `COUNT` ; on ne le stocke pas."
+        explanation: "La clé étrangère recopie seulement l'identifiant. Le reste des informations se retrouve par une jointure."
+      - code: sor-r1-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mld-mpd
+        prompt: "Une utilisatrice a plusieurs commandes. Où place-t-on la clé étrangère ?"
+        choices:
+          - label: "Dans la table des commandes (`utilisateur_id`)"
+            correct: true
+            why: "Oui : côté « plusieurs »."
+          - label: "Dans la table des utilisatrices (`commande_id`)"
+            correct: false
+            why: "Une case ne peut contenir qu'une valeur : on ne pourrait y mettre qu'une seule commande."
+          - label: "Dans les deux tables"
+            correct: false
+            why: "Ce serait redondant et source d'incohérences."
+        explanation: "Règle : dans une relation un-à-plusieurs, la clé étrangère est du côté « plusieurs »."
+      - code: sor-r1-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Avec `REFERENCES soram_utilisateurs (id)`, PostgreSQL accepte une commande dont `utilisateur_id` vaut 999 alors qu'aucune utilisatrice n'a l'id 999."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : il refuse avec l'erreur 23503 (violation de clé étrangère)."
+          - label: "Faux"
+            correct: true
+            why: "Exact : la base garantit que la commande pointe vers une utilisatrice existante."
+        explanation: "C'est l'**intégrité référentielle** : une clé étrangère ne peut pas pointer dans le vide."
+      - code: sor-r1-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "`soram_utilisateurs.id` est un `BIGINT`. Quel type choisir pour `soram_commandes.utilisateur_id` ?"
+        choices:
+          - label: "`BIGINT`"
+            correct: true
+            why: "Oui : même type que la clé primaire visée."
+          - label: "`VARCHAR(20)`"
+            correct: false
+            why: "Un identifiant numérique ne se stocke pas en texte."
+          - label: "`BIGINT GENERATED ALWAYS AS IDENTITY`"
+            correct: false
+            why: "La clé étrangère recopie un identifiant existant : elle ne doit pas en générer un nouveau."
+        explanation: "La clé étrangère a le même type que la clé primaire qu'elle référence, sans génération automatique."
+      - code: sor-r1-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: sql-dml
+        prompt: "Une utilisatrice a encore des commandes. Que se passe-t-il si on essaie de la supprimer (clé étrangère par défaut) ?"
+        choices:
+          - label: "PostgreSQL refuse la suppression"
+            correct: true
+            why: "Oui : par défaut, la suppression est bloquée tant que des lignes y font référence."
+          - label: "Ses commandes sont supprimées aussi"
+            correct: false
+            why: "Seulement si on a écrit `ON DELETE CASCADE`."
+          - label: "Ses commandes restent, avec un `utilisateur_id` vide"
+            correct: false
+            why: "Seulement avec `ON DELETE SET NULL`, et la colonne ne doit pas être `NOT NULL`."
+        explanation: "Comportement par défaut : on ne supprime pas une ligne encore référencée. `CASCADE` et `SET NULL` sont des choix explicites."
+    exercises:
+      - slug: sor-ex-fk-guide
+        kind: COMPLETER
+        title: "Compléter la clé étrangère"
+        difficulty: FACILE
+        skill: sql-ddl
+        statement: "Complète la ligne pour que chaque commande appartienne à une utilisatrice existante."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Même type que l'id des utilisatrices."
+          - "Le mot-clé qui crée une clé étrangère commence par REF…"
+          - "BIGINT, REFERENCES, id."
+        solution: '["BIGINT", "REFERENCES", "id"]'
+        explanation: "`utilisateur_id BIGINT NOT NULL REFERENCES soram_utilisateurs (id)` : même type, obligatoire, et vérifiée par PostgreSQL."
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            utilisateur_id [[1]] NOT NULL [[2]] soram_utilisateurs ([[3]])
+          blanks:
+            - ["BIGINT"]
+            - ["REFERENCES"]
+            - ["id"]
+      - slug: sor-ex-relation-commandes
+        kind: SQL
+        title: "TP — Écrire la relation entre utilisatrices et commandes"
+        difficulty: INTERMEDIAIRE
+        skill: sql-ddl
+        statement: |
+          La table `soram_utilisateurs` est déjà dans l'éditeur. **En dessous**, crée `soram_commandes` :
+
+          | Colonne | Type | Règle |
+          |---------|------|-------|
+          | `id` | `BIGINT` généré automatiquement | clé primaire |
+          | `date_commande` | `TIMESTAMPTZ` | obligatoire, maintenant par défaut |
+          | `statut` | `VARCHAR(20)` | obligatoire, `'EN_COURS'` par défaut |
+          | `utilisateur_id` | `BIGINT` | obligatoire, clé étrangère vers `soram_utilisateurs (id)` |
+        criteria: "Les deux tables existent ; la clé étrangère relie les commandes aux utilisatrices."
+        hints:
+          - "Écris un deuxième `CREATE TABLE soram_commandes (...)` après le premier, terminé par `;`."
+          - "`date_commande TIMESTAMPTZ NOT NULL DEFAULT now()` et `statut VARCHAR(20) NOT NULL DEFAULT 'EN_COURS'`."
+          - "`utilisateur_id BIGINT NOT NULL REFERENCES soram_utilisateurs (id)`."
+        solution: |
+          CREATE TABLE soram_utilisateurs (
+            id     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            nom    VARCHAR(100) NOT NULL,
+            email  VARCHAR(254) NOT NULL UNIQUE
+          );
+
+          CREATE TABLE soram_commandes (
+            id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            date_commande  TIMESTAMPTZ NOT NULL DEFAULT now(),
+            statut         VARCHAR(20) NOT NULL DEFAULT 'EN_COURS',
+            utilisateur_id BIGINT NOT NULL REFERENCES soram_utilisateurs (id)
+          );
+        explanation: |
+          On crée la table visée d'abord, puis la table qui la référence. La vérification contrôle les
+          colonnes de `soram_commandes` et ses contraintes : une clé primaire (`p`) et une clé étrangère (`f`)
+          dirigée vers `soram_utilisateurs`.
+        xp: 30
+        payload:
+          mode: WRITE
+          starter: |
+            CREATE TABLE soram_utilisateurs (
+              id     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+              nom    VARCHAR(100) NOT NULL,
+              email  VARCHAR(254) NOT NULL UNIQUE
+            );
+
+            -- Écris ici la table soram_commandes
+          check: >-
+            SELECT 'colonne' AS element, column_name AS nom, data_type AS type, is_nullable AS nullable,
+                   CASE WHEN column_default IS NULL THEN 'non' ELSE 'oui' END AS defaut
+            FROM information_schema.columns
+            WHERE table_schema = 'lab' AND table_name = 'soram_commandes'
+            UNION ALL
+            SELECT 'contrainte', contype::text,
+                   COALESCE((SELECT relname FROM pg_class WHERE oid = confrelid), ''), '', ''
+            FROM pg_constraint
+            WHERE conrelid = (SELECT oid FROM pg_class WHERE relname = 'soram_commandes'
+                              AND relnamespace = 'lab'::regnamespace)
+            ORDER BY 1, 2
+
+  # ===================================================================== LEÇON 3
+  - slug: sor-mcd-merise
+    title: "Corriger le MCD du rapport en notation Merise"
+    duration: 15
+    objective: "Lire et construire un MCD Merise (entités, identifiants, associations, cardinalités), puis le traduire en MLD."
+    prerequisites: "Leçon « Relier deux tables »."
+    skills: [merise-mcd, merise-mld-mpd]
+    xp: 25
+    memo: |
+      - Le **MCD** décrit les données **sans technique** : entités, attributs, identifiants, associations.
+      - **Entité** : un rectangle (UTILISATEUR). **Identifiant** : souligné (id_utilisateur).
+      - **Association** : une ellipse avec un verbe (PASSER, CONTENIR).
+      - **Cardinalités** : « min,max » de chaque côté. UTILISATEUR 0,n PASSER : une utilisatrice passe 0 ou plusieurs commandes.
+      - On ne stocke pas ce qui se **calcule** (total, sous-total).
+      - Passage au MLD : x,1 – x,n → clé étrangère côté x,1 ; x,n – x,n → nouvelle table avec clé primaire composée.
+    commonMistakes: |
+      - Utiliser la notation « pattes de corbeau » (ERD) en l'appelant MCD Merise, comme dans le rapport.
+      - Oublier les identifiants.
+      - Stocker des attributs calculés (`total`, `sous_total`).
+      - Créer une entité pour une action (CONFIRMATION_DE_COMMANDE) : une action est une association ou un changement de statut.
+      - Mettre la quantité dans PRODUIT : elle dépend du couple commande + produit, donc de l'association CONTENIR.
+    blocks:
+      - type: text
+        md: |
+          Le rapport de Soramfr présente un « MCD ». Mais il utilise la notation des **pattes de corbeau**
+          (celle des diagrammes ERD anglo-saxons), sans identifiants, avec des colonnes calculées. Pour le
+          titre CDA, le jury attend la **notation Merise**. On va la reprendre ensemble.
+      - type: definition
+        id: def-mcd
+        term: "MCD (Modèle Conceptuel de Données)"
+        md: |
+          Le **plan** des données, fait avant de coder. Comme le plan d'un architecte, il montre les pièces
+          et les portes, pas les tuyaux. On y voit **quoi** stocker et **les liens** entre les choses, sans
+          parler de SQL ni de Java.
+      - type: definition
+        id: def-entite-merise
+        term: "Entité, attribut, identifiant"
+        md: |
+          - Une **entité** est une « chose » dont on garde des informations : UTILISATEUR, PRODUIT, COMMANDE.
+          - Un **attribut** est une information de l'entité : nom, prix…
+          - L'**identifiant** (souligné) distingue chaque occurrence : `id_produit`.
+      - type: definition
+        id: def-cardinalites
+        term: "Association et cardinalités"
+        md: |
+          Une **association** relie des entités avec un verbe : une utilisatrice **PASSE** une commande.
+
+          Les **cardinalités** se lisent depuis l'entité : « combien de fois, au minimum et au maximum,
+          une occurrence participe à l'association ? »
+          - UTILISATEUR **0,n** PASSER : une utilisatrice passe 0 ou plusieurs commandes ;
+          - COMMANDE **1,1** PASSER : une commande est passée par exactement une utilisatrice.
+      - type: compare
+        left:
+          title: "Rapport : notation ERD"
+          good: false
+          md: |
+            - Pattes de corbeau au lieu de cardinalités Merise.
+            - Pas d'identifiant souligné.
+            - `total` et `sous_total` stockés (ils se calculent).
+            - Entité CONFIRMATION_DE_COMMANDE (c'est une action).
+        right:
+          title: "Merise corrigé"
+          good: true
+          md: |
+            - UTILISATEUR (<u>id_utilisateur</u>, nom, email, pseudo, mot_de_passe_hash, role)
+            - PRODUIT (<u>id_produit</u>, nom, description, prix)
+            - COMMANDE (<u>id_commande</u>, date_commande, statut)
+            - UTILISATEUR 0,n — **PASSER** — 1,1 COMMANDE
+            - COMMANDE 1,n — **CONTENIR** (quantite) — 0,n PRODUIT
+      - type: question
+        ref: sor-m1-q1
+        review: def-cardinalites
+      - type: callout
+        variant: tip
+        title: "Où mettre la quantité ?"
+        md: |
+          « 3 alarmes de poche » : le 3 ne décrit ni **la** commande (elle contient d'autres produits), ni
+          **le** produit (il est commandé par d'autres). Il décrit le **couple** commande + produit : c'est un
+          attribut de l'association **CONTENIR**.
+      - type: text
+        md: |
+          Exercice guidé : construis le MCD corrigé dans l'éditeur. UTILISATEUR et PRODUIT sont déjà placés.
+          Ajoute COMMANDE, puis les associations PASSER et CONTENIR avec leurs cardinalités.
+      - type: exercise
+        ref: sor-ex-mcd-soramfr
+      - type: definition
+        id: def-passage-mld
+        term: "Du MCD au MLD"
+        md: |
+          Le **MLD** (Modèle Logique de Données) transforme le plan en tables. Deux règles suffisent ici :
+          1. chaque entité devient une table, son identifiant devient la clé primaire ;
+          2. association **x,1 – x,n** (PASSER) : la clé étrangère va dans la table du côté **x,1** (commande) ;
+          3. association **x,n – x,n** (CONTENIR) : on crée une **nouvelle table** dont la clé primaire est
+             composée des deux clés étrangères, plus les attributs de l'association (quantite).
+      - type: text
+        md: "En autonomie : traduis ce MCD en MLD dans l'éditeur de tables."
+      - type: exercise
+        ref: sor-ex-mld-soramfr
+      - type: jury
+        items:
+          - q: "Votre MCD utilise des pattes de corbeau. Est-ce du Merise ?"
+            a: |
+              « Non, c'est la notation ERD. En Merise, on écrit les cardinalités min,max sur chaque patte,
+              on souligne les identifiants et on nomme les associations par un verbe. J'ai refait mon MCD
+              dans cette notation. »
+          - q: "Pourquoi ne stockez-vous pas le total de la commande ?"
+            a: "Parce qu'il se calcule à partir des quantités et des prix. Le stocker créerait un risque d'incohérence si une ligne change."
+          - q: "Lisez la cardinalité 1,n entre COMMANDE et CONTENIR."
+            a: "Une commande contient au moins un produit et au plus plusieurs produits."
+      - type: quiz
+        items:
+          - ref: sor-m1-q2
+            review: def-entite-merise
+          - ref: sor-m1-q3
+            review: def-passage-mld
+          - ref: sor-m1-q4
+            review: def-mcd
+          - ref: sor-m1-q5
+            review: def-passage-mld
+    questions:
+      - code: sor-m1-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "COMMANDE **1,1** — PASSER — **0,n** UTILISATEUR. Comment lit-on le **1,1** ?"
+        choices:
+          - label: "Une commande est passée par une et une seule utilisatrice"
+            correct: true
+            why: "Oui : au minimum 1, au maximum 1."
+          - label: "Une utilisatrice passe exactement une commande"
+            correct: false
+            why: "Les cardinalités se lisent depuis l'entité qui les porte : ici la commande."
+          - label: "Il y a une seule commande dans toute la boutique"
+            correct: false
+            why: "La cardinalité parle d'**une** occurrence, pas du nombre total."
+        explanation: "On lit depuis l'entité : « **une** COMMANDE participe au minimum 1 fois et au maximum 1 fois à PASSER »."
+      - code: sor-m1-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "Dans le MCD corrigé, où se trouve l'attribut `quantite` ?"
+        choices:
+          - label: "Dans l'association CONTENIR"
+            correct: true
+            why: "Oui : il dépend du couple commande + produit."
+          - label: "Dans l'entité PRODUIT"
+            correct: false
+            why: "Un même produit est commandé en quantités différentes selon la commande."
+          - label: "Dans l'entité COMMANDE"
+            correct: false
+            why: "Une commande contient plusieurs produits, chacun avec sa quantité."
+        explanation: "Un attribut qui dépend de plusieurs entités à la fois est porté par l'**association** qui les relie."
+      - code: sor-m1-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: merise-mld-mpd
+        prompt: "Que devient l'association CONTENIR (1,n — 0,n) dans le MLD ?"
+        choices:
+          - label: "Une table `contenir (#id_commande, #id_produit, quantite)` avec une clé primaire composée"
+            correct: true
+            why: "Oui : association x,n – x,n → nouvelle table."
+          - label: "Une colonne `id_produit` dans la table commande"
+            correct: false
+            why: "Une commande contient plusieurs produits : une seule colonne ne suffit pas."
+          - label: "Rien : les associations disparaissent dans le MLD"
+            correct: false
+            why: "Elles deviennent des clés étrangères ou des tables, selon les cardinalités."
+        explanation: "Les deux maximums valent n : on crée une table d'association. Sa clé primaire est le couple des deux clés étrangères."
+      - code: sor-m1-q4
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "Quels défauts du MCD du rapport faut-il corriger ?"
+        choices:
+          - label: "Les attributs calculés `total` et `sous_total`"
+            correct: true
+            why: "Ils se calculent : on ne les stocke pas."
+          - label: "L'absence d'identifiants soulignés"
+            correct: true
+            why: "Chaque entité Merise a un identifiant."
+          - label: "La notation en pattes de corbeau"
+            correct: true
+            why: "Le jury attend la notation Merise avec cardinalités min,max."
+          - label: "La présence d'une entité PRODUIT"
+            correct: false
+            why: "PRODUIT est bien une entité : on garde des informations sur chaque produit."
+        explanation: "Un MCD Merise : identifiants soulignés, associations verbales, cardinalités min,max, aucun attribut calculé."
+      - code: sor-m1-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mld-mpd
+        prompt: "Association PASSER : UTILISATEUR 0,n — 1,1 COMMANDE. Où va la clé étrangère ?"
+        choices:
+          - label: "Dans la table commande (`#id_utilisateur`)"
+            correct: true
+            why: "Oui : côté 1,1."
+          - label: "Dans la table utilisateur (`#id_commande`)"
+            correct: false
+            why: "Une utilisatrice peut avoir plusieurs commandes."
+          - label: "Dans une nouvelle table passer"
+            correct: false
+            why: "Une nouvelle table n'est nécessaire que si les deux maximums valent n."
+        explanation: "Règle x,1 – x,n : la clé étrangère migre du côté de la cardinalité maximale 1."
+    exercises:
+      - slug: sor-ex-mcd-soramfr
+        kind: MCD
+        title: "Construire le MCD Merise de Soramfr"
+        difficulty: INTERMEDIAIRE
+        skill: merise-mcd
+        statement: |
+          Règles de gestion :
+          - une utilisatrice a un nom, un e-mail, un pseudo, un mot de passe (haché) et un rôle ;
+          - un produit a un nom, une description et un prix ;
+          - une commande a une date et un statut ; elle est passée par **une seule** utilisatrice ;
+          - une utilisatrice peut passer **aucune ou plusieurs** commandes ;
+          - une commande contient **au moins un** produit, chacun avec une **quantité** ;
+          - un produit peut n'avoir jamais été commandé.
+
+          UTILISATEUR et PRODUIT sont déjà dans l'éditeur. Coche l'identifiant de chaque entité, ajoute
+          COMMANDE et les deux associations.
+        criteria: "Trois entités avec identifiant, deux associations, cardinalités et attribut quantite corrects."
+        hints:
+          - "Il manque l'entité COMMANDE (id_commande, date_commande, statut). Coche les identifiants."
+          - "PASSER relie UTILISATEUR (0,n) et COMMANDE (1,1)."
+          - "CONTENIR relie COMMANDE (1,n) et PRODUIT (0,n), et porte l'attribut quantite."
+        solution: |
+          UTILISATEUR (id_utilisateur, nom, email, pseudo, mot_de_passe_hash, role)
+          PRODUIT (id_produit, nom, description, prix)
+          COMMANDE (id_commande, date_commande, statut)
+          UTILISATEUR 0,n — PASSER — 1,1 COMMANDE
+          COMMANDE 1,n — CONTENIR (quantite) — 0,n PRODUIT
+        explanation: |
+          Chaque règle de gestion devient un élément du MCD :
+          - « passée par une seule utilisatrice » → 1,1 côté COMMANDE ;
+          - « aucune ou plusieurs commandes » → 0,n côté UTILISATEUR ;
+          - « au moins un produit » → 1,n côté COMMANDE ; « jamais commandé » possible → 0,n côté PRODUIT ;
+          - la quantité dépend du couple commande + produit → attribut de CONTENIR.
+        xp: 30
+        payload:
+          starter:
+            entities:
+              - id: e1
+                name: UTILISATEUR
+                x: 40
+                y: 40
+                attributes:
+                  - { name: id_utilisateur }
+                  - { name: nom }
+                  - { name: email }
+                  - { name: pseudo }
+                  - { name: mot_de_passe_hash }
+                  - { name: role }
+              - id: e2
+                name: PRODUIT
+                x: 640
+                y: 280
+                attributes:
+                  - { name: id_produit }
+                  - { name: nom }
+                  - { name: description }
+                  - { name: prix }
+            associations: []
+          expected:
+            entities:
+              - name: UTILISATEUR
+                aliases: [UTILISATRICE, USER]
+                attributes:
+                  - nom
+                  - email
+                  - { name: pseudo, aliases: [username] }
+                  - { name: mot_de_passe_hash, aliases: [mot_de_passe, password_hash, password] }
+                  - role
+              - name: PRODUIT
+                attributes: [nom, prix]
+              - name: COMMANDE
+                attributes:
+                  - { name: date_commande, aliases: [date] }
+                  - statut
+            associations:
+              - entities: [UTILISATEUR, COMMANDE]
+                cards: { UTILISATEUR: "0,n", COMMANDE: "1,1" }
+              - entities: [COMMANDE, PRODUIT]
+                cards: { COMMANDE: "1,n", PRODUIT: "0,n" }
+                attributes: [quantite]
+          solutionModel:
+            entities:
+              - id: e1
+                name: UTILISATEUR
+                x: 40
+                y: 40
+                attributes:
+                  - { name: id_utilisateur, identifier: true }
+                  - { name: nom }
+                  - { name: email }
+                  - { name: pseudo }
+                  - { name: mot_de_passe_hash }
+                  - { name: role }
+              - id: e2
+                name: PRODUIT
+                x: 640
+                y: 280
+                attributes:
+                  - { name: id_produit, identifier: true }
+                  - { name: nom }
+                  - { name: description }
+                  - { name: prix }
+              - id: e3
+                name: COMMANDE
+                x: 640
+                y: 40
+                attributes:
+                  - { name: id_commande, identifier: true }
+                  - { name: date_commande }
+                  - { name: statut }
+            associations:
+              - id: a1
+                name: PASSER
+                x: 380
+                y: 60
+                attributes: []
+                links:
+                  - { entity: e1, card: "0,n" }
+                  - { entity: e3, card: "1,1" }
+              - id: a2
+                name: CONTENIR
+                x: 660
+                y: 180
+                attributes:
+                  - { name: quantite }
+                links:
+                  - { entity: e3, card: "1,n" }
+                  - { entity: e2, card: "0,n" }
+      - slug: sor-ex-mld-soramfr
+        kind: MCD_VERS_MLD
+        title: "Traduire le MCD de Soramfr en MLD"
+        difficulty: INTERMEDIAIRE
+        skill: merise-mld-mpd
+        statement: |
+          Traduis le MCD affiché en MLD : crée une table par entité, place la clé étrangère de PASSER du bon
+          côté, et crée la table de l'association CONTENIR.
+        criteria: "Quatre tables, clés primaires simples ou composées, clés étrangères vers les bonnes tables, colonne quantite."
+        hints:
+          - "Quatre tables : utilisateur, produit, commande, contenir."
+          - "`commande` reçoit une clé étrangère vers `utilisateur` (côté 1,1)."
+          - "`contenir` : clé primaire composée de deux clés étrangères (commande et produit), plus `quantite`."
+        solution: |
+          utilisateur (id_utilisateur, nom, email, pseudo, mot_de_passe_hash, role)
+          produit (id_produit, nom, description, prix)
+          commande (id_commande, date_commande, statut, #id_utilisateur)
+          contenir (#id_commande, #id_produit, quantite)
+        explanation: |
+          - PASSER (0,n – 1,1) : la clé étrangère `id_utilisateur` va dans `commande`.
+          - CONTENIR (1,n – 0,n) : nouvelle table `contenir`, clé primaire (`id_commande`, `id_produit`),
+            chacune étant aussi une clé étrangère, plus l'attribut `quantite`.
+        xp: 30
+        payload:
+          mcd:
+            entities:
+              - id: e1
+                name: UTILISATEUR
+                x: 40
+                y: 40
+                attributes:
+                  - { name: id_utilisateur, identifier: true }
+                  - { name: nom }
+                  - { name: email }
+                  - { name: pseudo }
+                  - { name: mot_de_passe_hash }
+                  - { name: role }
+              - id: e2
+                name: PRODUIT
+                x: 640
+                y: 280
+                attributes:
+                  - { name: id_produit, identifier: true }
+                  - { name: nom }
+                  - { name: description }
+                  - { name: prix }
+              - id: e3
+                name: COMMANDE
+                x: 640
+                y: 40
+                attributes:
+                  - { name: id_commande, identifier: true }
+                  - { name: date_commande }
+                  - { name: statut }
+            associations:
+              - id: a1
+                name: PASSER
+                x: 380
+                y: 60
+                attributes: []
+                links:
+                  - { entity: e1, card: "0,n" }
+                  - { entity: e3, card: "1,1" }
+              - id: a2
+                name: CONTENIR
+                x: 660
+                y: 180
+                attributes:
+                  - { name: quantite }
+                links:
+                  - { entity: e3, card: "1,n" }
+                  - { entity: e2, card: "0,n" }
+          expected:
+            tables:
+              - name: utilisateur
+                aliases: [utilisateurs, utilisatrice, users]
+                pkCount: 1
+                fks: []
+                columns: [nom, email]
+              - name: produit
+                aliases: [produits]
+                pkCount: 1
+                fks: []
+                columns: [nom, prix]
+              - name: commande
+                aliases: [commandes]
+                pkCount: 1
+                fks: [utilisateur]
+                columns: [statut]
+              - name: contenir
+                aliases: [ligne_commande, lignes_commande]
+                pkCount: 2
+                pkFks: [commande, produit]
+                fks: [commande, produit]
+                columns: [quantite]
+          solutionModel:
+            tables:
+              - id: t1
+                name: utilisateur
+                columns:
+                  - { name: id_utilisateur, pk: true, fk: "" }
+                  - { name: nom, pk: false, fk: "" }
+                  - { name: email, pk: false, fk: "" }
+                  - { name: pseudo, pk: false, fk: "" }
+                  - { name: mot_de_passe_hash, pk: false, fk: "" }
+                  - { name: role, pk: false, fk: "" }
+              - id: t2
+                name: produit
+                columns:
+                  - { name: id_produit, pk: true, fk: "" }
+                  - { name: nom, pk: false, fk: "" }
+                  - { name: description, pk: false, fk: "" }
+                  - { name: prix, pk: false, fk: "" }
+              - id: t3
+                name: commande
+                columns:
+                  - { name: id_commande, pk: true, fk: "" }
+                  - { name: date_commande, pk: false, fk: "" }
+                  - { name: statut, pk: false, fk: "" }
+                  - { name: id_utilisateur, pk: false, fk: utilisateur }
+              - id: t4
+                name: contenir
+                columns:
+                  - { name: id_commande, pk: true, fk: commande }
+                  - { name: id_produit, pk: true, fk: produit }
+                  - { name: quantite, pk: false, fk: "" }
+
+bank:
+  - code: sor-c2-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-jpa
+    prompt: "Quel réglage fait créer et modifier les tables automatiquement par Hibernate dans Soramfr ?"
+    choices:
+      - label: "`spring.jpa.hibernate.ddl-auto=update`"
+        correct: true
+        why: "Oui : Hibernate compare les entités à la base et ajoute ce qui manque."
+      - label: "`spring.jpa.show-sql=true`"
+        correct: false
+        why: "Ce réglage affiche les requêtes SQL dans la console, il ne modifie rien."
+      - label: "`server.port=8080`"
+        correct: false
+        why: "C'est le port HTTP du backend."
+    explanation: "`ddl-auto=update` est pratique en développement mais risqué en production : on préfère des migrations versionnées (Flyway) et `ddl-auto=validate`."
+  - code: sor-c2-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: merise-mcd
+    prompt: "Dans un MCD Merise, comment repère-t-on l'identifiant d'une entité ?"
+    choices:
+      - label: "Il est souligné"
+        correct: true
+        why: "Oui : c'est la convention Merise."
+      - label: "Il est écrit en rouge"
+        correct: false
+        why: "Aucune couleur n'est imposée par Merise."
+      - label: "Il est toujours le dernier attribut"
+        correct: false
+        why: "La position n'a pas d'importance ; on le place souvent en premier."
+    explanation: "Identifiant souligné dans le MCD ; clé primaire soulignée et clés étrangères précédées de # dans le MLD."
+  - code: sor-c2-b3
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: sql-ddl
+    prompt: "Le mot de passe de la base de données de Soramfr (`postgres` par défaut) peut rester tel quel en production."
+    choices:
+      - label: "Vrai"
+        correct: false
+        why: "Non : c'est le premier mot de passe essayé par un attaquant."
+      - label: "Faux"
+        correct: true
+        why: "Exact : en production, un mot de passe long, unique, fourni par une variable d'environnement."
+    explanation: "Les secrets (mot de passe de la base, clé JWT) ne doivent être ni faibles ni écrits dans le code."
+  - code: sor-c2-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: merise-mld-mpd
+    prompt: "Dans le MLD `commande (id_commande, date_commande, statut, #id_utilisateur)`, que signifie le `#` ?"
+    choices:
+      - label: "`id_utilisateur` est une clé étrangère"
+        correct: true
+        why: "Oui : c'est la convention d'écriture du MLD."
+      - label: "`id_utilisateur` est un nombre"
+        correct: false
+        why: "Le `#` ne parle pas du type."
+      - label: "`id_utilisateur` est facultatif"
+        correct: false
+        why: "Le `#` ne dit rien du caractère obligatoire."
+    explanation: "MLD : clé primaire soulignée, clé étrangère précédée de `#`."
+  - code: sor-c2-b5
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: merise-mcd
+    prompt: "Le rapport contient une entité CONFIRMATION_DE_COMMANDE. Quelle modélisation est plus juste ?"
+    choices:
+      - label: "Un attribut `statut` dans COMMANDE (EN_COURS, VALIDEE…)"
+        correct: true
+        why: "Oui : confirmer une commande change son état, ce n'est pas une nouvelle chose à stocker."
+      - label: "Une deuxième entité COMMANDE_CONFIRMEE"
+        correct: false
+        why: "On dupliquerait les commandes selon leur état."
+      - label: "Un attribut `confirmation` dans UTILISATEUR"
+        correct: false
+        why: "La confirmation concerne une commande, pas une personne."
+    explanation: "Une action ou un état se modélise souvent par un attribut (statut, date de validation), pas par une entité."

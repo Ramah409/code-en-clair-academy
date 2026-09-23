@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import fr.cdaacademy.common.BusinessRuleException;
 import fr.cdaacademy.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,6 +23,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ExerciseController {
 
     /** Réponse : texte (code, SQL) ou tableau (trous, ordre des lignes) ou objet (modélisation). */
+    /** Taille maximale d'une réponse (code, modèle MCD…), sérialisée en JSON. */
+    static final int MAX_ANSWER_LENGTH = 100_000;
+
     public record SubmitRequest(JsonNode answer, Integer secondsSpent) {
     }
 
@@ -60,6 +64,9 @@ public class ExerciseController {
     @Operation(summary = "Soumettre une réponse : correction automatique côté serveur")
     public ExerciseService.SubmitResult submit(@PathVariable String slug, @RequestBody SubmitRequest req) {
         int seconds = req.secondsSpent() == null ? 0 : req.secondsSpent();
+        if (req.answer() != null && req.answer().toString().length() > MAX_ANSWER_LENGTH) {
+            throw new BusinessRuleException("Ta réponse est trop volumineuse pour être corrigée.");
+        }
         return exercises.submit(CurrentUser.id(), slug, req.answer(), seconds);
     }
 

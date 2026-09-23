@@ -135,6 +135,15 @@ public class LessonService {
                         block.put("answered", answered.contains(q.id()));
                     }
                 }
+                case "quiz" -> {
+                    for (JsonNode item : block.path("items")) {
+                        Question q = questions.get(item.path("ref").asText());
+                        if (q != null) {
+                            ((ObjectNode) item).set("question", json.valueToTree(QuestionBank.toPublic(q, null)));
+                            ((ObjectNode) item).put("answered", answered.contains(q.id()));
+                        }
+                    }
+                }
                 case "exercise" -> {
                     Long id = exerciseId(block.path("ref").asText());
                     if (id != null) {
@@ -215,6 +224,13 @@ public class LessonService {
                 if (q != null && !answered.contains(q.id())) {
                     unanswered++;
                 }
+            } else if (type.equals("quiz")) {
+                for (JsonNode item : block.path("items")) {
+                    Question q = bank.byCode(item.path("ref").asText());
+                    if (q != null && !answered.contains(q.id())) {
+                        unanswered++;
+                    }
+                }
             } else if (type.equals("exercise")) {
                 Long id = exerciseId(block.path("ref").asText());
                 if (id != null && !exercises.isSolved(userId, id)) {
@@ -223,7 +239,7 @@ public class LessonService {
             }
         }
         if (unanswered > 0) {
-            missing.add(unanswered + " question(s) du cours à réussir");
+            missing.add(unanswered + " question(s) du cours ou du QCM de fin de leçon à réussir");
         }
         if (unsolved > 0) {
             missing.add(unsolved + " exercice(s) pratique(s) à valider");

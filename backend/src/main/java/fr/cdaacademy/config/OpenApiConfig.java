@@ -19,9 +19,9 @@ public class OpenApiConfig {
     OpenAPI cdaAcademyOpenApi() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("CDA Academy API")
+                        .title("Code en Clair Academy API")
                         .version("1.0.0")
-                        .description("API de la plateforme d'apprentissage CDA Academy. "
+                        .description("API de la plateforme d'apprentissage Code en Clair Academy. "
                                 + "Se connecter via POST /api/auth/login puis cliquer sur « Authorize » avec le jeton reçu."))
                 .components(new Components().addSecuritySchemes(BEARER, new SecurityScheme()
                         .type(SecurityScheme.Type.HTTP)

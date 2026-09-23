@@ -30,6 +30,7 @@ lessons:
           de chiffre d'affaires, panier moyen de 88 € »**. Ces valeurs de synthèse s'obtiennent avec les
           **fonctions d'agrégat**, qui transforment plusieurs lignes en une seule valeur.
       - type: definition
+        id: def-fonction-d-agregat
         term: "Fonction d'agrégat"
         md: "Fonction qui prend **un ensemble de lignes** et renvoie **une valeur** : `COUNT` (nombre), `SUM` (somme), `AVG` (moyenne), `MIN` et `MAX`."
       - type: code
@@ -88,6 +89,12 @@ lessons:
         ref: sql-ex-stats-avis
       - type: question
         ref: sql-c3l1-q4
+      - type: quiz
+        items:
+          - ref: sqlq-agg-1
+            review: def-fonction-d-agregat
+          - ref: sqlq-agg-2
+          - ref: sqlq-agg-3
     questions:
       - code: sql-c3l1-q1
         kind: CHOIX_UNIQUE
@@ -149,6 +156,54 @@ lessons:
         language: sql
         answers: ["DISTINCT"]
         explanation: "`COUNT(DISTINCT col)` compte les valeurs distinctes non NULL. Ici : 9 villes."
+      - code: sqlq-agg-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-agregation
+        prompt: Combien de lignes renvoie `SELECT COUNT(*) FROM produits;` (sans GROUP BY) ?
+        choices:
+          - label: Une seule ligne
+            correct: true
+            why: "Oui : une fonction d'agrégat résume tout en une valeur."
+          - label: Une ligne par produit
+            correct: false
+            why: L'agrégat regroupe toutes les lignes.
+          - label: Aucune
+            correct: false
+            why: Même sur une table vide, COUNT renvoie une ligne (0).
+        explanation: Sans GROUP BY, un agrégat produit un résumé unique.
+      - code: sqlq-agg-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: Quelle différence entre `COUNT(*)` et `COUNT(commentaire)` ?
+        choices:
+          - label: COUNT(commentaire) ne compte pas les lignes où commentaire est NULL
+            correct: true
+            why: Oui.
+          - label: Aucune
+            correct: false
+            why: Elles diffèrent dès qu'il y a des NULL.
+          - label: COUNT(*) ignore les NULL
+            correct: false
+            why: "C'est l'inverse : COUNT(*) compte toutes les lignes."
+        explanation: COUNT(*) compte les lignes ; COUNT(colonne) compte les valeurs non NULL.
+      - code: sqlq-agg-3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-agregation
+        prompt: Quelle fonction calcule la moyenne ?
+        choices:
+          - label: '`AVG`'
+            correct: true
+            why: Oui (average).
+          - label: '`SUM`'
+            correct: false
+            why: SUM fait la somme.
+          - label: '`MID`'
+            correct: false
+            why: Cette fonction n'existe pas en PostgreSQL.
+        explanation: 'COUNT, SUM, AVG, MIN, MAX : les cinq agrégats de base.'
     exercises:
       - slug: sql-ex-stats-avis
         kind: SQL
@@ -200,6 +255,7 @@ lessons:
           « Combien de produits par catégorie ? », « Combien de commandes par client ? » : ces questions
           demandent un agrégat **pour chaque valeur** d'une colonne. C'est le rôle de `GROUP BY`.
       - type: definition
+        id: def-group-by
         term: "GROUP BY"
         md: |
           Rassemble les lignes qui ont la **même valeur** dans la ou les colonnes indiquées. Chaque groupe
@@ -272,6 +328,12 @@ lessons:
         ref: sql-c3l2-q4
       - type: exercise
         ref: sql-ex-masse-salariale
+      - type: quiz
+        items:
+          - ref: sqlq-group-1
+            review: def-group-by
+          - ref: sqlq-group-2
+          - ref: sqlq-group-3
     questions:
       - code: sql-c3l2-q1
         kind: CHOIX_UNIQUE
@@ -346,6 +408,51 @@ lessons:
         language: sql
         answers: ["GROUP BY"]
         explanation: "`GROUP BY ville` crée un groupe par ville ; COUNT(*) compte les clients de chaque groupe."
+      - code: sqlq-group-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: Dans une requête avec GROUP BY, quelles colonnes peut-on afficher sans agrégat ?
+        choices:
+          - label: Seulement celles du GROUP BY
+            correct: true
+            why: 'Oui : les autres ont plusieurs valeurs par groupe.'
+          - label: Toutes les colonnes de la table
+            correct: false
+            why: 'PostgreSQL refuse : quelle valeur choisir dans le groupe ?'
+          - label: Aucune
+            correct: false
+            why: Les colonnes de regroupement peuvent être affichées.
+        explanation: "Règle d'or : chaque colonne du SELECT est soit dans le GROUP BY, soit dans un agrégat."
+      - code: sqlq-group-2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-agregation
+        prompt: Quelle requête donne le nombre de produits de chaque catégorie ?
+        choices:
+          - label: '`SELECT categorie_id, COUNT(*) FROM produits GROUP BY categorie_id;`'
+            correct: true
+            why: Oui.
+          - label: '`SELECT categorie_id, COUNT(*) FROM produits;`'
+            correct: false
+            why: 'Il manque le GROUP BY : erreur.'
+          - label: '`SELECT COUNT(categorie_id) FROM produits;`'
+            correct: false
+            why: On obtient un seul total, pas un nombre par catégorie.
+        explanation: GROUP BY crée un groupe par valeur ; COUNT compte les lignes de chaque groupe.
+      - code: sqlq-group-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-agregation
+        prompt: Les lignes dont la colonne de regroupement vaut NULL forment un groupe à part.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : GROUP BY rassemble tous les NULL dans un même groupe.'
+          - label: Faux
+            correct: false
+            why: 'Elles ne disparaissent pas : elles forment un groupe.'
+        explanation: Pense à ce groupe NULL dans tes résultats (produit sans catégorie, employé sans service…).
     exercises:
       - slug: sql-ex-commandes-par-statut
         kind: SQL
@@ -457,6 +564,7 @@ lessons:
       - type: question
         ref: sql-c3l3-q1
       - type: definition
+        id: def-ordre-logique-d-execution
         term: "Ordre logique d'exécution"
         md: |
           PostgreSQL n'exécute pas une requête dans l'ordre où elle est écrite :
@@ -495,6 +603,12 @@ lessons:
         ref: sql-ex-categories-bien-fournies
       - type: question
         ref: sql-c3l3-q4
+      - type: quiz
+        items:
+          - ref: sqlq-having-1
+            review: def-ordre-logique-d-execution
+          - ref: sqlq-having-2
+          - ref: sqlq-having-3
     questions:
       - code: sql-c3l3-q1
         kind: CHOIX_UNIQUE
@@ -560,6 +674,51 @@ lessons:
         language: sql
         answers: ["HAVING"]
         explanation: "HAVING filtre les groupes selon la valeur d'un agrégat. Attention : le groupe NULL (clients sans ville) compte aussi 3 clients et apparaît dans le résultat !"
+      - code: sqlq-having-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: Quelle est la différence entre WHERE et HAVING ?
+        choices:
+          - label: WHERE filtre les lignes avant le regroupement, HAVING filtre les groupes après
+            correct: true
+            why: Oui.
+          - label: Aucune, ce sont des synonymes
+            correct: false
+            why: Ils n'agissent pas au même moment.
+          - label: HAVING s'utilise sans GROUP BY uniquement
+            correct: false
+            why: HAVING s'utilise justement avec les groupes.
+        explanation: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT.
+      - code: sqlq-having-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: Quelle clause peut contenir `COUNT(*) > 2` ?
+        choices:
+          - label: HAVING
+            correct: true
+            why: "Oui : c'est une condition sur un groupe."
+          - label: WHERE
+            correct: false
+            why: WHERE s'exécute avant le calcul des agrégats.
+          - label: FROM
+            correct: false
+            why: FROM indique les tables.
+        explanation: Une condition qui utilise un agrégat va dans HAVING.
+      - code: sqlq-having-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-agregation
+        prompt: Filtrer dans WHERE quand c'est possible (avant de regrouper) est plus efficace que tout filtrer dans HAVING.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : moins de lignes à regrouper.'
+          - label: Faux
+            correct: false
+            why: "On réduit tôt le volume de données : c'est plus efficace."
+        explanation: Conditions sur les lignes → WHERE ; conditions sur les groupes → HAVING.
     exercises:
       - slug: sql-ex-categories-bien-fournies
         kind: SQL

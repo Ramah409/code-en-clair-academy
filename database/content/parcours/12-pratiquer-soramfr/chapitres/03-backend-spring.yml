@@ -1,0 +1,1819 @@
+slug: soramfr-backend-spring
+position: 3
+level: INTERMEDIAIRE
+title: "Le backend Spring Boot de Soramfr"
+summary: "Comprendre les couches du backend, créer une entité et son repository, reconstruire l'inscription, écrire un endpoint REST et gérer les erreurs proprement."
+quizQuestionCount: 12
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sor-couches
+    title: "Les couches du backend : chacun son métier"
+    duration: 11
+    objective: "Savoir à quoi servent les paquets controller, service, repository, entity et dto de Soramfr."
+    prerequisites: "Chapitre « Découvrir Soramfr »."
+    skills: [spring-structure, uml-architecture]
+    xp: 15
+    memo: |
+      - **controller** : reçoit les requêtes HTTP et renvoie les réponses (`@RestController`).
+      - **service** : contient les règles métier (`@Service`).
+      - **repository** : parle à la base (`extends JpaRepository`).
+      - **entity** : les classes qui correspondent aux tables (`@Entity`).
+      - **dto** : les objets qui voyagent dans l'API (entrée et sortie), sans les champs sensibles.
+      - **config**, **security**, **error** : réglages, sécurité, gestion des erreurs.
+      - Sens des appels : controller → service → repository → base. Jamais l'inverse.
+    commonMistakes: |
+      - Mettre des règles métier dans le contrôleur (« si l'e-mail existe… »).
+      - Renvoyer directement une entité dans l'API : on risque d'exposer des champs sensibles.
+      - Appeler le repository depuis le contrôleur en sautant le service.
+      - Dire que Soramfr suit « le modèle MVC » : c'est une **API REST en couches** ; la vue est dans Angular.
+    blocks:
+      - type: text
+        md: |
+          Ouvre le dossier `src/main/java` de Soramfr : tu y vois des **paquets** (des dossiers de classes) :
+          `controller`, `service`, `repository`, `entity`, `dto`, `config`, `security`, `error`. Ce rangement
+          n'est pas décoratif : chaque couche a **un seul métier**.
+      - type: definition
+        id: def-couche
+        term: "Architecture en couches"
+        md: |
+          Comme dans un restaurant bien organisé : la **serveuse** prend la commande (contrôleur), le **chef**
+          décide comment préparer (service), le **commis** va chercher les ingrédients au garde-manger
+          (repository). Personne ne fait le travail des autres. Si on change de garde-manger, seul le commis
+          doit s'adapter.
+      - type: steps
+        id: etapes-couches
+        title: "Les paquets de Soramfr"
+        items:
+          - "**controller** — `AuthController`, `UserController` : reçoivent `POST /api/auth/register`, `GET /api/users`…"
+          - "**service** — `AuthService`, `UserService` : vérifient, décident, appellent le repository."
+          - "**repository** — `UserRepository` : lit et écrit dans la table `users`."
+          - "**entity** — `UserEntity` : la table `users` vue depuis Java."
+          - "**dto** — `RegisterRequest`, `LoginRequest`, `AuthResponse`, `UserDto` : les données qui voyagent."
+          - "**config / security / error** — `SecurityConfig`, `CorsConfig`, `JwtService`, `JwtAuthFilter`, `ErrorHondler`."
+      - type: question
+        ref: sor-c-q1
+        review: def-couche
+      - type: definition
+        id: def-dto
+        term: "DTO (Data Transfer Object)"
+        md: |
+          Un objet qui sert **uniquement à transporter** des données entre Angular et Spring. C'est
+          l'**enveloppe** qu'on envoie par la poste : on n'y met que ce que le destinataire doit lire.
+          L'entité, elle, reste à la maison avec tous ses champs (y compris le hash du mot de passe).
+      - type: code
+        id: code-dto-soramfr
+        language: java
+        title: "Soramfr — RegisterRequest.java"
+        code: |
+          public class RegisterRequest {
+              public String name;
+              public String email;
+              public String username;
+              public String password;
+          }
+        lines:
+          - n: 1
+            note: "Un DTO d'**entrée** : il reçoit le JSON de l'inscription."
+          - n: 2
+            note: "Champs `public` : Jackson (la bibliothèque qui lit le JSON) peut les remplir directement. C'est simple, mais on préfère souvent un `record`."
+      - type: code
+        id: code-record
+        language: java
+        title: "La même chose, plus moderne : un record Java"
+        code: |
+          public record RegisterRequest(String name, String email, String username, String password) {
+          }
+        lines:
+          - n: 1
+            note: "Un **record** déclare en une ligne une classe dont les champs ne changent plus. Java crée tout seul le constructeur et les méthodes pour lire les champs."
+      - type: callout
+        variant: exam
+        title: "MVC ou pas MVC ?"
+        md: |
+          Le rapport dit que Soramfr suit le modèle **MVC**. Attention : le « V » (la vue) n'est pas dans
+          Spring, il est dans Angular. Côté backend, dis plutôt : « une **API REST en couches** :
+          contrôleur, service, repository ».
+      - type: text
+        md: "Exercice guidé : place la bonne annotation sur chaque classe."
+      - type: exercise
+        ref: sor-ex-annotations-couches
+      - type: text
+        md: "En autonomie : écris un DTO de sortie pour les produits, sous forme de record."
+      - type: exercise
+        ref: sor-ex-produit-dto
+      - type: jury
+        items:
+          - q: "Pourquoi séparer contrôleur, service et repository ?"
+            a: |
+              Chaque couche a une seule responsabilité. Le code est plus lisible, plus facile à tester (on peut
+              tester le service sans HTTP) et à faire évoluer (changer de base ne touche que le repository).
+          - q: "Pourquoi utiliser des DTO au lieu de renvoyer l'entité ?"
+            a: "Pour contrôler exactement ce qui sort de l'API. L'entité contient le hash du mot de passe ; le DTO ne contient que les champs publics."
+      - type: quiz
+        items:
+          - ref: sor-c-q2
+            review: etapes-couches
+          - ref: sor-c-q3
+            review: def-dto
+          - ref: sor-c-q4
+            review: code-record
+          - ref: sor-c-q5
+    questions:
+      - code: sor-c-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-structure
+        prompt: "Dans quelle couche place-t-on la règle « un e-mail ne peut pas être utilisé deux fois » ?"
+        choices:
+          - label: "Le service"
+            correct: true
+            why: "Oui : c'est une règle métier."
+          - label: "Le contrôleur"
+            correct: false
+            why: "Le contrôleur reçoit et répond ; il délègue les décisions au service."
+          - label: "Le DTO"
+            correct: false
+            why: "Un DTO transporte des données, il ne décide rien."
+        explanation: "Règles métier → service. (La contrainte UNIQUE en base reste une sécurité supplémentaire.)"
+      - code: sor-c-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-structure
+        prompt: "Quelle classe de Soramfr appartient à la couche **repository** ?"
+        choices:
+          - label: "`UserRepository`"
+            correct: true
+            why: "Oui : elle hérite de `JpaRepository` et parle à la base."
+          - label: "`AuthController`"
+            correct: false
+            why: "C'est un contrôleur."
+          - label: "`RegisterRequest`"
+            correct: false
+            why: "C'est un DTO."
+        explanation: "Le repository est la seule couche qui accède à la base."
+      - code: sor-c-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Pourquoi un DTO de sortie ne doit-il jamais contenir le mot de passe, même haché ?"
+        choices:
+          - label: "Parce que tout ce qui sort de l'API peut être lu par n'importe qui qui l'appelle"
+            correct: true
+            why: "Oui : un hash exposé peut être attaqué hors ligne."
+          - label: "Parce que Java ne sait pas sérialiser les mots de passe"
+            correct: false
+            why: "Java sait très bien le faire : c'est justement le danger."
+          - label: "Parce que le JSON ne supporte pas les caractères spéciaux"
+            correct: false
+            why: "Le JSON accepte ces caractères."
+        explanation: "Le DTO de sortie ne contient que le strict nécessaire. Le hash reste en base."
+      - code: sor-c-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: java-bases
+        prompt: "Un `record` Java crée automatiquement le constructeur et les méthodes pour lire ses champs."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Oui : c'est tout l'intérêt du record."
+          - label: "Faux"
+            correct: false
+            why: "Si : `new RegisterRequest(...)` et `req.email()` existent sans rien écrire de plus."
+        explanation: "Record : données immuables, constructeur, accesseurs, `equals`, `hashCode` et `toString` générés."
+      - code: sor-c-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: uml-architecture
+        prompt: "Comment décrire le plus justement l'architecture du backend de Soramfr ?"
+        choices:
+          - label: "Une API REST en couches (contrôleur, service, repository)"
+            correct: true
+            why: "Oui : le backend ne produit pas de vue HTML, il renvoie du JSON."
+          - label: "Un MVC complet avec des vues JSP"
+            correct: false
+            why: "Il n'y a aucune vue côté Spring : l'interface est dans Angular."
+          - label: "Un microservice par table"
+            correct: false
+            why: "Tout est dans une seule application Spring Boot."
+        explanation: "La vue est dans Angular. Côté serveur : une API REST organisée en couches."
+    exercises:
+      - slug: sor-ex-annotations-couches
+        kind: COMPLETER
+        title: "La bonne annotation pour chaque couche"
+        difficulty: FACILE
+        skill: spring-structure
+        statement: "Complète avec l'annotation (ou le type) qui convient. Respecte les majuscules."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Un contrôleur qui renvoie du JSON : @Rest…"
+          - "La logique métier : une annotation de sept lettres."
+          - "@RestController, @Service, JpaRepository."
+        solution: '["@RestController", "@Service", "JpaRepository"]'
+        explanation: "`@RestController` pour recevoir les requêtes et renvoyer du JSON, `@Service` pour la logique métier, `JpaRepository<UserEntity, Long>` pour obtenir gratuitement les méthodes d'accès à la base."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            [[1]]
+            public class AuthController { ... }
+
+            [[2]]
+            public class AuthService { ... }
+
+            public interface UserRepository extends [[3]]<UserEntity, Long> { ... }
+          blanks:
+            - ["@RestController"]
+            - ["@Service"]
+            - ["JpaRepository"]
+      - slug: sor-ex-produit-dto
+        kind: CODE_LIBRE
+        title: "Écrire le DTO ProduitDto"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          Écris un **record** `ProduitDto` avec trois champs : `id` (`Long`), `nom` (`String`) et
+          `prix` (`BigDecimal`, le type Java adapté à l'argent).
+        criteria: "Un record ProduitDto avec les trois champs typés."
+        hints:
+          - "Un record se déclare avec `public record Nom(...) { }`."
+          - "Les champs se mettent entre parenthèses, séparés par des virgules : `Type nom`."
+          - "`public record ProduitDto(Long id, String nom, BigDecimal prix) { }`"
+        solution: |
+          import java.math.BigDecimal;
+
+          public record ProduitDto(Long id, String nom, BigDecimal prix) {
+          }
+        explanation: |
+          `BigDecimal` évite les erreurs d'arrondi des nombres à virgule (`double`) : 0.1 + 0.2 ne donne pas
+          exactement 0.3 avec un `double`. Pour de l'argent, c'est inacceptable.
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            import java.math.BigDecimal;
+
+            // Écris ici le record ProduitDto
+          checks:
+            - pattern: 'record\s+ProduitDto\s*\('
+              message: "Déclare un record nommé ProduitDto : public record ProduitDto(...) { }"
+            - pattern: 'Long\s+id\b'
+              message: "Le premier champ est Long id."
+            - pattern: 'String\s+nom\b'
+              message: "Il faut un champ String nom."
+            - pattern: 'BigDecimal\s+prix\b'
+              message: "Le prix est un BigDecimal (pas un double) : BigDecimal prix."
+            - pattern: '\)\s*\{[\s\S]*\}'
+              message: "Un record se termine par un bloc { } (même vide)."
+
+  # ===================================================================== LEÇON 2
+  - slug: sor-entite-produit
+    title: "TP — Créer une entité et sa table"
+    duration: 13
+    objective: "Écrire l'entité JPA ProduitEntity et comprendre la table qu'elle produit."
+    prerequisites: "Leçon « De l'entité UserEntity à la table users »."
+    skills: [spring-jpa, sql-ddl]
+    xp: 25
+    memo: |
+      - `@Entity` + `@Table(name = "produits")` : la classe devient la table `produits`.
+      - `@Id` + `@GeneratedValue(strategy = GenerationType.IDENTITY)` : clé primaire générée par PostgreSQL.
+      - `@Column(nullable = false, length = 150)` → `VARCHAR(150) NOT NULL`.
+      - `BigDecimal` pour les prix, `@Column(precision = 10, scale = 2)` → `NUMERIC(10, 2)`.
+      - Un **constructeur vide** est obligatoire pour JPA.
+    commonMistakes: |
+      - Oublier le constructeur vide : Hibernate ne peut pas recréer l'objet en lisant la base.
+      - Utiliser `double` pour un prix.
+      - Oublier `@Id` : Spring refuse de démarrer (« No identifier specified for entity »).
+      - Écrire le catalogue en dur dans Angular (c'est le cas dans Soramfr) au lieu de le stocker en base.
+    blocks:
+      - type: text
+        md: |
+          Dans Soramfr, les douze produits sont écrits **en dur** dans `product.service.ts` (Angular). Pour
+          ajouter un produit, il faut modifier le code et redéployer ! La bonne solution : une table
+          `produits` en base, gérée par une **entité** Spring.
+      - type: code
+        id: code-produits-angular
+        language: typescript
+        title: "Soramfr — product.service.ts (extrait)"
+        code: |
+          private products: Product [] = [
+            new Product(1, "Brume de poche 25 ml", "Format mini avec capuchon de sécurité…", 20, "/img3.jpg"),
+            new Product(6, "Alarme portable de sécurité", "Alarme sonore puissante (130 dB)…", 15, "/coque1.jpg"),
+          ];
+          getAll(): Product[]{
+            return this.products;
+          }
+        lines:
+          - n: 1
+            note: "Un tableau de produits écrit directement dans le code du navigateur."
+          - n: 5
+            note: "`getAll()` renvoie ce tableau. Aucun appel HTTP : le commentaire du fichier dit « récupérés via l'API », mais ce n'est pas encore le cas."
+      - type: definition
+        id: def-annotation
+        term: "Annotation"
+        md: |
+          Une **étiquette** qui commence par `@` et que l'on colle sur une classe, un champ ou une méthode.
+          Elle ne fait rien toute seule : elle **donne une consigne** à un outil (Spring, Hibernate…). Comme
+          l'étiquette « fragile » sur un colis : c'est le livreur qui adapte son geste.
+      - type: code
+        id: code-entite-simple
+        language: java
+        title: "Exemple simple : une entité Livre"
+        code: |
+          @Entity
+          public class Livre {
+              @Id
+              @GeneratedValue(strategy = GenerationType.IDENTITY)
+              private Long id;
+
+              private String titre;
+
+              public Livre() {
+              }
+          }
+        lines:
+          - n: 1
+            note: "`@Entity` : Hibernate crée une table `livre`."
+          - n: 3
+            note: "`@Id` : la clé primaire."
+          - n: 4
+            note: "`IDENTITY` : c'est PostgreSQL qui choisit le numéro."
+          - n: 7
+            note: "Sans annotation, `titre` devient quand même une colonne (facultative, 255 caractères)."
+          - n: 9
+            note: "Le constructeur vide : Hibernate l'utilise pour recréer l'objet à partir d'une ligne."
+      - type: question
+        ref: sor-e-q1
+        review: code-entite-simple
+      - type: text
+        md: "Exercice guidé : remets les lignes de l'entité `ProduitEntity` dans l'ordre."
+      - type: exercise
+        ref: sor-ex-entite-ordre
+      - type: text
+        md: |
+          TP en autonomie : écris l'entité complète `ProduitEntity`. La vérification contrôle chaque
+          annotation et te dit précisément ce qui manque.
+      - type: exercise
+        ref: sor-ex-entite-produit
+      - type: code
+        id: code-table-produits
+        language: sql
+        title: "La table que produit ton entité"
+        code: |
+          CREATE TABLE produits (
+            id          BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+            nom         VARCHAR(150)   NOT NULL,
+            description VARCHAR(1000),
+            prix        NUMERIC(10, 2) NOT NULL,
+            image_url   VARCHAR(255)
+          );
+        lines:
+          - n: 3
+            note: "`@Column(nullable = false, length = 150)`."
+          - n: 5
+            note: "`BigDecimal` + `precision = 10, scale = 2` : 10 chiffres dont 2 après la virgule."
+          - n: 6
+            note: "`imageUrl` en Java devient `image_url` : Spring Boot convertit les noms en snake_case."
+      - type: jury
+        items:
+          - q: "Pourquoi JPA a-t-il besoin d'un constructeur sans paramètre ?"
+            a: "Pour créer un objet vide, puis le remplir avec les colonnes lues en base. Il ne connaît pas les autres constructeurs."
+          - q: "Pourquoi BigDecimal pour un prix ?"
+            a: "Les `double` font des erreurs d'arrondi (0.1 + 0.2 ≠ 0.3). `BigDecimal` calcule exactement, ce qui est indispensable pour de l'argent."
+      - type: quiz
+        items:
+          - ref: sor-e-q2
+            review: def-annotation
+          - ref: sor-e-q3
+            review: code-table-produits
+          - ref: sor-e-q4
+            review: code-produits-angular
+    questions:
+      - code: sor-e-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Que se passe-t-il si une entité n'a pas d'attribut annoté `@Id` ?"
+        choices:
+          - label: "L'application ne démarre pas : Hibernate exige une clé primaire"
+            correct: true
+            why: "Oui : « No identifier specified for entity »."
+          - label: "Hibernate ajoute tout seul une colonne id"
+            correct: false
+            why: "Non, il refuse l'entité."
+          - label: "La table est créée sans clé primaire"
+            correct: false
+            why: "JPA impose un identifiant à chaque entité."
+        explanation: "Toute entité JPA doit avoir un identifiant `@Id`."
+      - code: sor-e-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Une annotation Java (`@Entity`, `@Column`…), c'est…"
+        choices:
+          - label: "une étiquette qui donne une consigne à un outil"
+            correct: true
+            why: "Oui : Hibernate lit `@Entity` et agit en conséquence."
+          - label: "une méthode qui s'exécute toute seule"
+            correct: false
+            why: "Une annotation n'exécute rien ; c'est un outil qui la lit."
+          - label: "un commentaire ignoré par Java"
+            correct: false
+            why: "Les commentaires sont ignorés ; les annotations sont lues par les frameworks."
+        explanation: "L'annotation est une information attachée au code, lue par Spring, Hibernate, JUnit…"
+      - code: sor-e-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "L'attribut Java `imageUrl` devient quelle colonne avec Spring Boot ?"
+        choices:
+          - label: "`image_url`"
+            correct: true
+            why: "Oui : Spring Boot convertit le camelCase en snake_case."
+          - label: "`imageUrl`"
+            correct: false
+            why: "Par défaut, Spring Boot change la casse en snake_case."
+          - label: "`IMAGEURL`"
+            correct: false
+            why: "Ce n'est pas la stratégie de nommage par défaut."
+        explanation: "Stratégie de nommage par défaut de Spring Boot : `camelCase` → `snake_case`."
+      - code: sor-e-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: full-stack
+        prompt: "Quel est le principal problème du catalogue écrit en dur dans `product.service.ts` ?"
+        choices:
+          - label: "Ajouter ou modifier un produit oblige à changer le code et à redéployer"
+            correct: true
+            why: "Oui : les données sont mélangées au code."
+          - label: "Angular ne sait pas afficher plus de dix produits"
+            correct: false
+            why: "Angular affiche sans problème de longues listes."
+          - label: "Les prix sont trop bas"
+            correct: false
+            why: "Le problème n'est pas la valeur, mais l'endroit où elle est stockée."
+        explanation: "Les données doivent vivre en base, derrière une API. Le code, lui, doit seulement les afficher."
+    exercises:
+      - slug: sor-ex-entite-ordre
+        kind: REMETTRE_ORDRE
+        title: "Remettre l'entité ProduitEntity dans l'ordre"
+        difficulty: FACILE
+        skill: spring-jpa
+        statement: "Remets les lignes dans l'ordre pour obtenir une entité correcte."
+        criteria: "Les annotations précèdent ce qu'elles décrivent ; la classe est bien ouverte et fermée."
+        hints:
+          - "Les annotations de classe viennent avant `public class`."
+          - "`@Id` et `@GeneratedValue` se placent juste avant le champ `id`."
+          - "Le constructeur vide et l'accolade fermante terminent la classe."
+        solution: |
+          @Entity
+          @Table(name = "produits")
+          public class ProduitEntity {
+              @Id
+              @GeneratedValue(strategy = GenerationType.IDENTITY)
+              private Long id;
+              @Column(nullable = false, length = 150)
+              private String nom;
+              public ProduitEntity() { }
+          }
+        explanation: "Une annotation s'applique à l'élément qui la **suit** immédiatement."
+        xp: 10
+        payload:
+          language: java
+          lines:
+            - "@Entity"
+            - "@Table(name = \"produits\")"
+            - "public class ProduitEntity {"
+            - "    @Id"
+            - "    @GeneratedValue(strategy = GenerationType.IDENTITY)"
+            - "    private Long id;"
+            - "    @Column(nullable = false, length = 150)"
+            - "    private String nom;"
+            - "    public ProduitEntity() { }"
+            - "}"
+          alternatives:
+            - [1, 0, 2, 3, 4, 5, 6, 7, 8, 9]
+            - [0, 1, 2, 4, 3, 5, 6, 7, 8, 9]
+            - [1, 0, 2, 4, 3, 5, 6, 7, 8, 9]
+      - slug: sor-ex-entite-produit
+        kind: CODE_LIBRE
+        title: "TP — Écrire l'entité ProduitEntity"
+        difficulty: INTERMEDIAIRE
+        skill: spring-jpa
+        statement: |
+          Écris l'entité `ProduitEntity` qui correspond à la table `produits` :
+          - `id` : `Long`, clé primaire générée par PostgreSQL (`IDENTITY`) ;
+          - `nom` : `String`, obligatoire, 150 caractères maximum ;
+          - `description` : `String`, facultative, 1000 caractères maximum ;
+          - `prix` : `BigDecimal`, obligatoire, `precision = 10`, `scale = 2` ;
+          - `imageUrl` : `String`, facultative.
+
+          N'oublie pas le constructeur vide. (Les getters et setters ne sont pas demandés.)
+        criteria: "Toutes les annotations nécessaires sont présentes et correctes."
+        hints:
+          - "En haut : `@Entity` et `@Table(name = \"produits\")`."
+          - "Pour `id` : `@Id` puis `@GeneratedValue(strategy = GenerationType.IDENTITY)`."
+          - "`@Column(nullable = false, precision = 10, scale = 2) private BigDecimal prix;` et `public ProduitEntity() { }`."
+        solution: |
+          import java.math.BigDecimal;
+          import jakarta.persistence.*;
+
+          @Entity
+          @Table(name = "produits")
+          public class ProduitEntity {
+
+              @Id
+              @GeneratedValue(strategy = GenerationType.IDENTITY)
+              private Long id;
+
+              @Column(nullable = false, length = 150)
+              private String nom;
+
+              @Column(length = 1000)
+              private String description;
+
+              @Column(nullable = false, precision = 10, scale = 2)
+              private BigDecimal prix;
+
+              private String imageUrl;
+
+              public ProduitEntity() {
+              }
+          }
+        explanation: |
+          Chaque règle métier du tableau devient une annotation :
+          - « obligatoire » → `nullable = false` ; « 150 caractères » → `length = 150` ;
+          - « prix à deux décimales » → `BigDecimal` avec `precision` et `scale` ;
+          - le constructeur vide permet à Hibernate de recréer l'objet depuis la base.
+        xp: 30
+        payload:
+          language: java
+          starter: |
+            import java.math.BigDecimal;
+            import jakarta.persistence.*;
+
+            public class ProduitEntity {
+
+            }
+          checks:
+            - pattern: '@Entity\s+(@Table\([^)]*\)\s+)?public\s+class\s+ProduitEntity|@Table\([^)]*\)\s+@Entity\s+public\s+class\s+ProduitEntity'
+              message: "Ajoute @Entity juste au-dessus de la classe."
+            - pattern: '@Table\(\s*name\s*=\s*"produits"\s*\)'
+              message: "La table doit s'appeler produits : @Table(name = \"produits\")."
+            - pattern: '@Id\s+(@GeneratedValue\([^)]*\)\s+)?private\s+Long\s+id\s*;|@GeneratedValue\([^)]*\)\s+@Id\s+private\s+Long\s+id\s*;'
+              message: "Le champ id doit être annoté @Id : @Id private Long id;"
+            - pattern: '@GeneratedValue\(\s*strategy\s*=\s*GenerationType\.IDENTITY\s*\)'
+              message: "La clé primaire est générée par PostgreSQL : @GeneratedValue(strategy = GenerationType.IDENTITY)."
+            - pattern: '@Column\((?=[^)]*nullable\s*=\s*false)(?=[^)]*length\s*=\s*150)[^)]*\)\s*private\s+String\s+nom\s*;'
+              message: "Le nom est obligatoire et limité à 150 caractères : @Column(nullable = false, length = 150)."
+            - pattern: '@Column\([^)]*length\s*=\s*1000[^)]*\)\s*private\s+String\s+description\s*;'
+              message: "La description est limitée à 1000 caractères : @Column(length = 1000)."
+            - pattern: '@Column\((?=[^)]*nullable\s*=\s*false)(?=[^)]*precision\s*=\s*10)(?=[^)]*scale\s*=\s*2)[^)]*\)\s*private\s+BigDecimal\s+prix\s*;'
+              message: "Le prix : @Column(nullable = false, precision = 10, scale = 2) private BigDecimal prix;"
+            - pattern: 'private\s+String\s+imageUrl\s*;'
+              message: "Il manque le champ private String imageUrl;"
+            - pattern: 'public\s+ProduitEntity\s*\(\s*\)'
+              message: "JPA a besoin d'un constructeur vide : public ProduitEntity() { }"
+            - pattern: '\bdouble\s+prix'
+              absent: true
+              message: "N'utilise pas double pour un prix : les arrondis seraient faux. Utilise BigDecimal."
+
+  # ===================================================================== LEÇON 3
+  - slug: sor-repository
+    title: "Le repository : parler à la base sans écrire de SQL"
+    duration: 11
+    objective: "Comprendre JpaRepository et les méthodes dérivées de Soramfr (existsByEmail, findByEmailOrUsername)."
+    prerequisites: "Leçon « TP — Créer une entité et sa table »."
+    skills: [spring-jpa, sql-select]
+    xp: 20
+    memo: |
+      - `interface UserRepository extends JpaRepository<UserEntity, Long>` : `UserEntity` = l'entité, `Long` = le type de la clé.
+      - Méthodes offertes : `save`, `findById`, `findAll`, `existsById`, `deleteById`, `count`…
+      - **Méthodes dérivées** : Spring lit le **nom** de la méthode et écrit le SQL.
+      - `existsByEmail(email)` → `SELECT ... WHERE email = ?` (vrai ou faux).
+      - `findByEmailOrUsername(a, b)` → `WHERE email = ? OR username = ?`, renvoie un `Optional`.
+      - Les valeurs sont passées en **paramètres** (`?`) : pas d'injection SQL possible.
+    commonMistakes: |
+      - Faire une faute dans le nom de la méthode (`findByEmial`) : l'application refuse de démarrer.
+      - Oublier que `findBy…` peut ne rien trouver : on reçoit un `Optional` vide, à gérer avec `orElseThrow`.
+      - Écrire une classe qui implémente le repository : c'est inutile, Spring la génère.
+    blocks:
+      - type: text
+        md: |
+          Dans Soramfr, `UserRepository` fait quelques lignes et ne contient **aucun SQL**. Pourtant, il
+          sait vérifier un e-mail, trouver un compte ou en enregistrer un. Comment ?
+      - type: definition
+        id: def-interface
+        term: "Interface"
+        md: |
+          En Java, une **interface** est une liste de méthodes **promises**, sans leur contenu. C'est le menu
+          d'un restaurant : il dit ce qu'on peut commander, pas la recette. Ici, c'est **Spring** qui écrit la
+          recette (le code) tout seul au démarrage.
+      - type: code
+        id: code-user-repository
+        language: java
+        title: "Soramfr — UserRepository.java"
+        code: |
+          public interface UserRepository extends JpaRepository<UserEntity, Long> {
+
+              boolean existsByEmail(String email);
+
+              boolean existsByUsername(String username);
+
+              Optional<UserEntity> findByEmailOrUsername(String email, String username);
+          }
+        lines:
+          - n: 1
+            note: "`extends JpaRepository<UserEntity, Long>` : on hérite de `save`, `findById`, `findAll`, `deleteById`… pour l'entité `UserEntity` dont la clé est un `Long`."
+          - n: 3
+            note: "`existsByEmail` : Spring lit « exists / By / Email » et produit une requête qui répond vrai ou faux."
+          - n: 7
+            note: "`findByEmailOrUsername` : `WHERE email = ? OR username = ?`. Le résultat est un `Optional` : une boîte qui peut être vide."
+      - type: compare
+        left:
+          title: "Nom de la méthode"
+          code: |
+            existsByEmail(String email)
+            findByEmailOrUsername(String e, String u)
+            findByNomContainingIgnoreCase(String mot)
+          language: java
+        right:
+          title: "SQL généré (simplifié)"
+          code: |
+            SELECT count(*) > 0 FROM users WHERE email = ?;
+            SELECT * FROM users WHERE email = ? OR username = ?;
+            SELECT * FROM produits WHERE lower(nom) LIKE lower('%' || ? || '%');
+          language: sql
+      - type: question
+        ref: sor-rp-q1
+        review: code-user-repository
+      - type: definition
+        id: def-optional
+        term: "Optional"
+        md: |
+          Une **boîte** qui contient un objet… ou rien. Au lieu de renvoyer `null` (et risquer une erreur),
+          `findBy…` renvoie un `Optional`. On l'ouvre avec `orElseThrow(...)` : « donne-moi l'objet, sinon
+          lance une erreur ».
+      - type: code
+        id: code-orelsethrow
+        language: java
+        title: "Soramfr — AuthService.login (extrait)"
+        code: |
+          UserEntity nouvelutilisateur = userRepository.findByEmailOrUsername(req.identifier, req.identifier)
+                  .orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable"));
+        lines:
+          - n: 1
+            note: "La même valeur `identifier` est cherchée comme e-mail **ou** comme pseudo : on peut se connecter avec l'un ou l'autre."
+          - n: 2
+            note: "Si la boîte est vide, on lance une erreur. (On verra que ce message en dit trop à un attaquant.)"
+      - type: text
+        md: "Exercice guidé : complète le repository des produits."
+      - type: exercise
+        ref: sor-ex-repo-guide
+      - type: text
+        md: "En autonomie : écris un repository avec deux méthodes dérivées."
+      - type: exercise
+        ref: sor-ex-produit-repository
+      - type: jury
+        items:
+          - q: "Vous n'avez écrit aucun SQL pour les utilisateurs. Comment la base est-elle interrogée ?"
+            a: "Grâce à Spring Data JPA : il génère l'implémentation du repository et traduit le nom des méthodes (`existsByEmail`) en requêtes SQL paramétrées."
+          - q: "Votre application est-elle protégée contre l'injection SQL ?"
+            a: "Oui pour ces requêtes : Spring Data passe les valeurs en paramètres, jamais en les collant dans le texte SQL."
+      - type: quiz
+        items:
+          - ref: sor-rp-q2
+            review: def-interface
+          - ref: sor-rp-q3
+            review: def-optional
+          - ref: sor-rp-q4
+            review: code-user-repository
+    questions:
+      - code: sor-rp-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Que renvoie `existsByUsername(\"mai\")` ?"
+        choices:
+          - label: "`true` si un compte a le pseudo `mai`, sinon `false`"
+            correct: true
+            why: "Oui : c'est un `boolean`."
+          - label: "Le compte dont le pseudo est `mai`"
+            correct: false
+            why: "Pour obtenir le compte, il faudrait `findByUsername`."
+          - label: "Le nombre de comptes"
+            correct: false
+            why: "Ce serait `count()`."
+        explanation: "`existsBy…` → vrai/faux ; `findBy…` → le ou les objets ; `countBy…` → un nombre."
+      - code: sor-rp-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Il faut écrire une classe `UserRepositoryImpl` pour que `UserRepository` fonctionne."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : Spring Data génère l'implémentation au démarrage."
+          - label: "Faux"
+            correct: true
+            why: "Exact : l'interface suffit."
+        explanation: "On déclare l'interface ; Spring écrit le code."
+      - code: sor-rp-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Que fait `.orElseThrow(...)` sur un `Optional` vide ?"
+        choices:
+          - label: "Il lance l'exception fournie"
+            correct: true
+            why: "Oui : on arrête le traitement avec une erreur claire."
+          - label: "Il renvoie `null`"
+            correct: false
+            why: "C'est justement ce que l'Optional permet d'éviter."
+          - label: "Il crée un nouvel utilisateur"
+            correct: false
+            why: "Il ne crée rien."
+        explanation: "`orElseThrow` : l'objet s'il existe, sinon une exception (que le gestionnaire d'erreurs transforme en réponse HTTP)."
+      - code: sor-rp-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: sql-select
+        prompt: "Quel SQL correspond à `findByEmailOrUsername(email, username)` ?"
+        choices:
+          - label: "`SELECT * FROM users WHERE email = ? OR username = ?`"
+            correct: true
+            why: "Oui : `Or` dans le nom devient `OR` dans la requête."
+          - label: "`SELECT * FROM users WHERE email = ? AND username = ?`"
+            correct: false
+            why: "Ce serait `findByEmailAndUsername`."
+          - label: "`SELECT email, username FROM users`"
+            correct: false
+            why: "Il n'y a aucun filtre dans cette requête."
+        explanation: "Les mots `And`, `Or`, `Containing`, `LessThan`… du nom deviennent des conditions SQL."
+    exercises:
+      - slug: sor-ex-repo-guide
+        kind: COMPLETER
+        title: "Compléter ProduitRepository"
+        difficulty: FACILE
+        skill: spring-jpa
+        statement: "Complète le repository des produits. Respecte les majuscules."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "On hérite de l'interface fournie par Spring Data JPA."
+          - "Le type de la clé primaire de ProduitEntity est `Long`."
+          - "JpaRepository, ProduitEntity, Long."
+        solution: '["JpaRepository", "ProduitEntity", "Long"]'
+        explanation: "`JpaRepository<ProduitEntity, Long>` : l'entité gérée, puis le type de sa clé primaire."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            public interface ProduitRepository extends [[1]]<[[2]], [[3]]> {
+            }
+          blanks:
+            - ["JpaRepository"]
+            - ["ProduitEntity"]
+            - ["Long"]
+      - slug: sor-ex-produit-repository
+        kind: CODE_LIBRE
+        title: "Écrire ProduitRepository avec deux recherches"
+        difficulty: INTERMEDIAIRE
+        skill: spring-jpa
+        statement: |
+          Écris l'interface `ProduitRepository` pour l'entité `ProduitEntity` (clé `Long`) avec :
+          1. une méthode qui cherche les produits dont le **nom contient** un mot, **sans tenir compte des
+             majuscules** (la barre de recherche du catalogue) ;
+          2. une méthode qui renvoie les produits dont le **prix est inférieur ou égal** à un montant.
+
+          Les deux renvoient une `List<ProduitEntity>`.
+        criteria: "Interface héritant de JpaRepository, deux méthodes dérivées correctement nommées."
+        hints:
+          - "`public interface ProduitRepository extends JpaRepository<ProduitEntity, Long> { ... }`"
+          - "Mots-clés Spring Data : `Containing`, `IgnoreCase`, `LessThanEqual`."
+          - "`findByNomContainingIgnoreCase(String mot)` et `findByPrixLessThanEqual(BigDecimal prix)`."
+        solution: |
+          import java.math.BigDecimal;
+          import java.util.List;
+          import org.springframework.data.jpa.repository.JpaRepository;
+
+          public interface ProduitRepository extends JpaRepository<ProduitEntity, Long> {
+
+              List<ProduitEntity> findByNomContainingIgnoreCase(String mot);
+
+              List<ProduitEntity> findByPrixLessThanEqual(BigDecimal prix);
+          }
+        explanation: |
+          Spring lit le nom : `findBy` + `Nom` + `Containing` (LIKE '%mot%') + `IgnoreCase` (sans majuscules).
+          Puis `findBy` + `Prix` + `LessThanEqual` (<=). La recherche du catalogue, faite aujourd'hui en
+          TypeScript sur une liste en dur, peut ainsi se faire côté serveur.
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            import java.math.BigDecimal;
+            import java.util.List;
+            import org.springframework.data.jpa.repository.JpaRepository;
+
+          checks:
+            - pattern: 'interface\s+ProduitRepository\s+extends\s+JpaRepository\s*<\s*ProduitEntity\s*,\s*Long\s*>'
+              message: "Déclare l'interface : public interface ProduitRepository extends JpaRepository<ProduitEntity, Long>."
+            - pattern: 'List\s*<\s*ProduitEntity\s*>\s+findByNomContainingIgnoreCase\s*\(\s*String\s+\w+\s*\)'
+              message: "Recherche par nom : List<ProduitEntity> findByNomContainingIgnoreCase(String mot);"
+            - pattern: 'List\s*<\s*ProduitEntity\s*>\s+findByPrixLessThanEqual\s*\(\s*BigDecimal\s+\w+\s*\)'
+              message: "Recherche par prix : List<ProduitEntity> findByPrixLessThanEqual(BigDecimal prix);"
+            - pattern: 'class\s+ProduitRepository'
+              absent: true
+              message: "Un repository Spring Data est une interface, pas une classe."
+
+  # ===================================================================== LEÇON 4
+  - slug: sor-service-inscription
+    title: "TP — Reconstruire l'inscription dans le service"
+    duration: 15
+    objective: "Réécrire AuthService.register : contrôles, doublons, hachage BCrypt, sauvegarde et réponse."
+    prerequisites: "Leçon « Le repository »."
+    skills: [spring-rest, auth-jwt]
+    xp: 30
+    memo: |
+      Les cinq temps de `register` :
+      1. **Contrôler** les champs (vides, mot de passe d'au moins 8 caractères) → 400.
+      2. **Refuser les doublons** (`existsByEmail`, `existsByUsername`) → 409.
+      3. **Construire** l'entité à partir du DTO.
+      4. **Hacher** le mot de passe (`encoder.encode`) et ne stocker que le hash.
+      5. **Sauvegarder** (`save`) et renvoyer un DTO public (`AuthResponse`).
+    commonMistakes: |
+      - Stocker `req.password` au lieu de `encoder.encode(req.password)`.
+      - Vérifier les doublons **après** la sauvegarde.
+      - Renvoyer l'entité complète au lieu d'un DTO.
+      - Contrôle différent entre Angular (6 caractères) et Spring (8) : dans Soramfr, un mot de passe de 7 caractères passe le formulaire mais est refusé par le serveur.
+    blocks:
+      - type: text
+        md: |
+          On arrive au cœur de l'inscription : la méthode `register` du service. Tu vas la **lire** ligne par
+          ligne, puis la **réécrire** toi-même.
+      - type: definition
+        id: def-exception
+        term: "Exception"
+        md: |
+          Un **signal d'alarme** qui arrête le traitement en cours. `throw new ValidationException("Nom
+          obligatoire")` veut dire : « stop, cette demande n'est pas valable ». Un gestionnaire d'erreurs
+          attrape l'alarme et la transforme en réponse HTTP (400, 409…).
+      - type: code
+        id: code-register-simple
+        language: java
+        title: "Exemple simple : ouvrir un compte à la bibliothèque"
+        code: |
+          public Lecteur inscrire(String nom) {
+              if (nom == null || nom.isBlank()) {
+                  throw new IllegalArgumentException("Nom obligatoire");
+              }
+              if (lecteurs.existeDeja(nom)) {
+                  throw new IllegalStateException("Ce lecteur existe déjà");
+              }
+              return lecteurs.enregistrer(new Lecteur(nom));
+          }
+        lines:
+          - n: 2
+            note: "`isBlank()` : vrai si le texte est vide ou ne contient que des espaces."
+          - n: 3
+            note: "`throw` lance l'exception : la méthode s'arrête ici."
+          - n: 5
+            note: "On vérifie les doublons **avant** d'enregistrer."
+          - n: 8
+            note: "Tout est bon : on enregistre et on renvoie le résultat."
+      - type: code
+        id: code-register-soramfr
+        language: java
+        title: "Soramfr — AuthService.register (extrait)"
+        code: |
+          public AuthResponse register(RegisterRequest req){
+              if (req.name == null || req.name.isBlank())
+                  throw new ValidationException("Nom obligatoire");
+              if (req.password == null || req.password.length() < 8)
+                 throw new ValidationException("Mot de passe minimum 8 caractères");
+
+              if (userRepository.existsByEmail(req.email))
+                 throw new ErrorHondler.DuplicateResourceException("Email déjà utilisé");
+              if (userRepository.existsByUsername(req.username))
+                throw new ErrorHondler.DuplicateResourceException("Pseudo déjà utilisé");
+
+              UserEntity nouvelutilisateur = new UserEntity();
+              nouvelutilisateur.setName(req.name);
+              nouvelutilisateur.setEmail(req.email);
+              nouvelutilisateur.setUsername(req.username);
+              nouvelutilisateur.setPasswordHash(encoder.encode(req.password));
+
+              UserEntity saved = userRepository.save(nouvelutilisateur);
+              return new AuthResponse(saved.getId(), saved.getName(), saved.getEmail(), saved.getUsername());
+          }
+        lines:
+          - n: 2
+            note: "Contrôle du nom : absent ou vide → exception → réponse **400**."
+          - n: 4
+            note: "Mot de passe d'au moins **8** caractères. (Angular n'en exige que 6 : incohérence à corriger.)"
+          - n: 7
+            note: "Doublon d'e-mail → `DuplicateResourceException` → réponse **409**."
+          - n: 11
+            note: "On crée l'entité vide, puis on la remplit avec les données du DTO."
+          - n: 15
+            note: "**Le point clé** : on stocke `encoder.encode(...)`, le hash BCrypt, jamais le mot de passe."
+          - n: 17
+            note: "`save` exécute l'INSERT et renvoie l'entité avec son `id` généré."
+          - n: 18
+            note: "On renvoie un DTO public : id, nom, e-mail, pseudo. Pas de hash."
+      - type: question
+        ref: sor-s-q1
+        review: code-register-soramfr
+      - type: text
+        md: "Exercice guidé : complète les lignes clés de `register`."
+      - type: exercise
+        ref: sor-ex-register-guide
+      - type: text
+        md: |
+          TP en autonomie : **reconstruis la fonctionnalité d'inscription** côté serveur. Le squelette de la
+          classe est fourni ; écris le corps de `register`.
+      - type: exercise
+        ref: sor-ex-register-service
+      - type: jury
+        items:
+          - q: "Détaillez votre méthode d'inscription."
+            a: |
+              « Elle contrôle les champs obligatoires et la longueur du mot de passe, vérifie que l'e-mail et le
+              pseudo ne sont pas déjà utilisés, crée l'entité, hache le mot de passe avec BCrypt, l'enregistre
+              via le repository et renvoie un DTO sans le mot de passe. »
+          - q: "Que se passe-t-il si deux personnes s'inscrivent au même moment avec le même e-mail ?"
+            a: |
+              Les deux `existsByEmail` peuvent répondre « non » en même temps. C'est la contrainte `UNIQUE` en
+              base qui bloque la deuxième insertion. Il faudrait aussi traduire cette erreur en 409.
+      - type: quiz
+        items:
+          - ref: sor-s-q2
+            review: def-exception
+          - ref: sor-s-q3
+            review: code-register-soramfr
+          - ref: sor-s-q4
+            review: code-register-soramfr
+    questions:
+      - code: sor-s-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Quelle ligne garantit que le mot de passe n'est jamais stocké en clair ?"
+        choices:
+          - label: "`setPasswordHash(encoder.encode(req.password))`"
+            correct: true
+            why: "Oui : on stocke le hash BCrypt."
+          - label: "`@JsonIgnore` sur `passwordHash`"
+            correct: false
+            why: "`@JsonIgnore` évite de l'**envoyer** dans le JSON, mais ne change pas ce qui est **stocké**."
+          - label: "`req.password.length() < 8`"
+            correct: false
+            why: "C'est un contrôle de longueur."
+        explanation: "Seul `encoder.encode(...)` transforme le mot de passe avant l'enregistrement."
+      - code: sor-s-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-exceptions
+        prompt: "Que fait `throw new ValidationException(\"Nom obligatoire\")` ?"
+        choices:
+          - label: "Il arrête la méthode et signale une erreur"
+            correct: true
+            why: "Oui : le code suivant n'est pas exécuté."
+          - label: "Il affiche un message et continue"
+            correct: false
+            why: "`throw` interrompt la méthode."
+          - label: "Il enregistre le compte sans nom"
+            correct: false
+            why: "Justement non : on arrête tout."
+        explanation: "Une exception interrompt le traitement. Le gestionnaire d'erreurs la transforme en réponse HTTP 400."
+      - code: sor-s-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Angular accepte un mot de passe de 6 caractères, Spring en exige 8. Que voit une personne qui tape `abc123` ?"
+        choices:
+          - label: "Le formulaire l'accepte, puis le serveur répond 400 « Mot de passe minimum 8 caractères »"
+            correct: true
+            why: "Oui : les deux règles ne sont pas alignées."
+          - label: "Son compte est créé"
+            correct: false
+            why: "Le serveur refuse : c'est lui qui a le dernier mot."
+          - label: "Angular bloque le formulaire"
+            correct: false
+            why: "Angular n'exige que 6 caractères : `abc123` passe."
+        explanation: "Les règles doivent être **identiques** des deux côtés. Le contrôle Angular sert au confort ; celui du serveur sert à la sécurité."
+      - code: sor-s-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: spring-rest
+        prompt: "Pourquoi vérifier les doublons **avant** `save` ?"
+        choices:
+          - label: "Pour répondre un message clair (409) au lieu d'une erreur de base de données"
+            correct: true
+            why: "Oui : la contrainte UNIQUE reste une sécurité, mais le service donne un message compréhensible."
+          - label: "Parce que `save` supprime les doublons"
+            correct: false
+            why: "`save` ne supprime rien."
+          - label: "Ce n'est pas utile"
+            correct: false
+            why: "Sans ce contrôle, la personne recevrait une erreur 500 peu claire."
+        explanation: "Le service anticipe le cas prévu (doublon → 409). La contrainte UNIQUE couvre les cas imprévus (inscriptions simultanées)."
+    exercises:
+      - slug: sor-ex-register-guide
+        kind: COMPLETER
+        title: "Compléter les lignes clés de register"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: "Complète les quatre trous. Respecte les majuscules."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "La méthode du repository qui répond vrai/faux pour un e-mail."
+          - "La méthode de BCrypt qui hache un mot de passe."
+          - "existsByEmail, encode, save, AuthResponse."
+        solution: '["existsByEmail", "encode", "save", "AuthResponse"]'
+        explanation: "Vérifier (`existsByEmail`), hacher (`encode`), enregistrer (`save`), répondre avec un DTO public (`AuthResponse`)."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            if (userRepository.[[1]](req.email))
+                throw new ErrorHondler.DuplicateResourceException("Email déjà utilisé");
+
+            nouvelutilisateur.setPasswordHash(encoder.[[2]](req.password));
+            UserEntity saved = userRepository.[[3]](nouvelutilisateur);
+            return new [[4]](saved.getId(), saved.getName(), saved.getEmail(), saved.getUsername());
+          blanks:
+            - ["existsByEmail"]
+            - ["encode"]
+            - ["save"]
+            - ["AuthResponse"]
+      - slug: sor-ex-register-service
+        kind: CODE_LIBRE
+        title: "TP — Reconstruire la méthode register"
+        difficulty: DIFFICILE
+        skill: spring-rest
+        statement: |
+          Écris le corps de `register(RegisterRequest req)` :
+          1. refuse un nom, un e-mail ou un pseudo vide (`ValidationException`) ;
+          2. refuse un mot de passe absent ou de moins de **8** caractères ;
+          3. refuse un e-mail ou un pseudo déjà utilisé (`DuplicateResourceException`) ;
+          4. crée un `UserEntity`, remplis nom, e-mail, pseudo et **le hash** du mot de passe ;
+          5. enregistre-le et renvoie `new AuthResponse(id, name, email, username)`.
+        criteria: "Contrôles, doublons, hachage, sauvegarde et réponse publique présents ; aucun mot de passe en clair."
+        hints:
+          - "Contrôle : `if (req.name == null || req.name.isBlank()) throw new ValidationException(\"Nom obligatoire\");`"
+          - "Doublons : `if (userRepository.existsByEmail(req.email)) throw new DuplicateResourceException(\"Email déjà utilisé\");`"
+          - "`user.setPasswordHash(encoder.encode(req.password));` puis `UserEntity saved = userRepository.save(user);`"
+        solution: |
+          public AuthResponse register(RegisterRequest req) {
+              if (req.name == null || req.name.isBlank())
+                  throw new ValidationException("Nom obligatoire");
+              if (req.email == null || req.email.isBlank())
+                  throw new ValidationException("Email obligatoire");
+              if (req.username == null || req.username.isBlank())
+                  throw new ValidationException("Pseudo obligatoire");
+              if (req.password == null || req.password.length() < 8)
+                  throw new ValidationException("Mot de passe minimum 8 caractères");
+
+              if (userRepository.existsByEmail(req.email))
+                  throw new DuplicateResourceException("Email déjà utilisé");
+              if (userRepository.existsByUsername(req.username))
+                  throw new DuplicateResourceException("Pseudo déjà utilisé");
+
+              UserEntity user = new UserEntity();
+              user.setName(req.name);
+              user.setEmail(req.email);
+              user.setUsername(req.username);
+              user.setPasswordHash(encoder.encode(req.password));
+
+              UserEntity saved = userRepository.save(user);
+              return new AuthResponse(saved.getId(), saved.getName(), saved.getEmail(), saved.getUsername());
+          }
+        explanation: |
+          L'ordre compte : on contrôle d'abord ce qui est **gratuit** (les champs), puis ce qui demande la base
+          (les doublons), et on n'écrit en base qu'une fois tout vérifié. Le mot de passe n'existe en clair que
+          dans la variable `req.password`, le temps de le hacher.
+        xp: 40
+        payload:
+          language: java
+          starter: |
+            @Service
+            public class AuthService {
+
+                private final UserRepository userRepository;
+                private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+                public AuthService(UserRepository userRepository) {
+                    this.userRepository = userRepository;
+                }
+
+                public AuthResponse register(RegisterRequest req) {
+                    // 1. contrôles des champs
+
+                    // 2. doublons
+
+                    // 3. création de l'entité et hachage
+
+                    // 4. sauvegarde et réponse
+                }
+            }
+          checks:
+            - pattern: 'req\.name\s*==\s*null[\s\S]*req\.name\.isBlank\(\)'
+              message: "Refuse un nom absent ou vide : if (req.name == null || req.name.isBlank()) throw new ValidationException(...)."
+            - pattern: 'req\.email\s*==\s*null[\s\S]*req\.email\.isBlank\(\)'
+              message: "Refuse un e-mail absent ou vide."
+            - pattern: 'req\.username\s*==\s*null[\s\S]*req\.username\.isBlank\(\)'
+              message: "Refuse un pseudo absent ou vide."
+            - pattern: 'req\.password\.length\(\)\s*<\s*8'
+              message: "Refuse les mots de passe de moins de 8 caractères : req.password.length() < 8."
+            - pattern: 'throw\s+new\s+ValidationException\s*\('
+              message: "Les champs invalides lèvent une ValidationException (réponse 400)."
+            - pattern: 'userRepository\.existsByEmail\s*\(\s*req\.email\s*\)'
+              message: "Vérifie que l'e-mail est libre : userRepository.existsByEmail(req.email)."
+            - pattern: 'userRepository\.existsByUsername\s*\(\s*req\.username\s*\)'
+              message: "Vérifie que le pseudo est libre : userRepository.existsByUsername(req.username)."
+            - pattern: 'throw\s+new\s+(ErrorHondler\.)?DuplicateResourceException\s*\('
+              message: "Un doublon lève une DuplicateResourceException (réponse 409)."
+            - pattern: 'new\s+UserEntity\s*\('
+              message: "Crée l'entité : UserEntity user = new UserEntity();"
+            - pattern: 'setPasswordHash\s*\(\s*encoder\.encode\s*\(\s*req\.password\s*\)\s*\)'
+              message: "Stocke le hash : user.setPasswordHash(encoder.encode(req.password));"
+            - pattern: 'setPasswordHash\s*\(\s*req\.password\s*\)'
+              absent: true
+              message: "Danger : tu stockes le mot de passe en clair. Hache-le avec encoder.encode(...)."
+            - pattern: 'userRepository\.save\s*\('
+              message: "Enregistre l'entité avec userRepository.save(...)."
+            - pattern: 'return\s+new\s+AuthResponse\s*\('
+              message: "Renvoie un DTO public : return new AuthResponse(saved.getId(), ...);"
+            - pattern: 'existsByEmail[\s\S]*userRepository\.save'
+              message: "Les doublons doivent être vérifiés AVANT la sauvegarde."
+
+  # ===================================================================== LEÇON 5
+  - slug: sor-endpoint-rest
+    title: "TP — Créer et tester un endpoint REST"
+    duration: 14
+    objective: "Écrire un contrôleur REST pour les produits (liste et détail) et savoir le tester."
+    prerequisites: "Leçon « TP — Reconstruire l'inscription »."
+    skills: [spring-rest]
+    xp: 30
+    memo: |
+      - **Endpoint** = une adresse + un verbe HTTP que l'API accepte (`GET /api/produits`).
+      - `@GetMapping` (lire), `@PostMapping` (créer), `@PutMapping` (modifier), `@DeleteMapping` (supprimer).
+      - `@PathVariable Long id` : récupère la partie variable de l'adresse (`/api/produits/{id}`).
+      - `@RequestBody` : récupère le JSON envoyé.
+      - `ResponseEntity` : permet de choisir le code de statut (201, 204…).
+      - Le contrôleur **délègue** au service ; il ne touche jamais le repository.
+    commonMistakes: |
+      - Oublier `@PathVariable` : `id` reste vide.
+      - Utiliser `GET` pour une action qui modifie des données.
+      - Renvoyer 200 pour une création (préférer 201) ou pour une suppression (préférer 204).
+      - Oublier le `/` ou écrire deux `/` dans l'adresse (Soramfr a `"/api//auth/**"` dans `CorsConfig`).
+    blocks:
+      - type: text
+        md: |
+          Aujourd'hui, le catalogue de Soramfr est écrit dans Angular. Tu vas créer l'**endpoint** qui le
+          servira depuis la base : `GET /api/produits` pour la liste, `GET /api/produits/{id}` pour un produit.
+      - type: definition
+        id: def-endpoint
+        term: "Endpoint"
+        md: |
+          Une **porte d'entrée** de l'API : une adresse et un verbe. Comme un guichet précis à la poste :
+          « guichet 3 : retrait des colis ». `GET /api/produits` est le guichet « liste des produits ».
+      - type: code
+        id: code-usercontroller
+        language: java
+        title: "Soramfr — UserController.java (extrait)"
+        code: |
+          @RestController
+          @RequestMapping("/api/users")
+          public class UserController {
+
+              private final UserService userService;
+
+              public UserController(UserService userService){
+                  this.userService = userService;
+              }
+
+              @GetMapping
+              public List<UserDto> getAll(){
+                  return userService.getAll();
+              }
+
+              @GetMapping("/{id}")
+              public UserDto getById(@PathVariable Long id) {
+                  return userService.getById(id);
+              }
+
+              @DeleteMapping("/{id}")
+              public ResponseEntity<Void> delete(@PathVariable Long id){
+                  userService.delete(id);
+                  return ResponseEntity.noContent().build();
+              }
+          }
+        lines:
+          - n: 11
+            note: "`@GetMapping` sans adresse : c'est `GET /api/users`."
+          - n: 12
+            note: "La liste est convertie en tableau JSON, avec le code 200."
+          - n: 16
+            note: "`{id}` est une partie variable de l'adresse : `/api/users/7`."
+          - n: 17
+            note: "`@PathVariable Long id` : Spring met 7 dans la variable `id`."
+          - n: 21
+            note: "`@DeleteMapping(\"/{id}\")` : `DELETE /api/users/7`."
+          - n: 24
+            note: "`noContent()` : réponse **204**, suppression réussie, rien à renvoyer."
+      - type: question
+        ref: sor-ep-q1
+        review: code-usercontroller
+      - type: callout
+        variant: warning
+        title: "À vérifier dans Soramfr"
+        md: |
+          Rien, dans `SecurityConfig`, ne réserve `/api/users` à l'administratrice : **toute personne
+          connectée** peut lister et supprimer des comptes, même avec le rôle USER. On le corrige au chapitre
+          sécurité.
+      - type: text
+        md: "Exercice guidé : complète les annotations du contrôleur des produits."
+      - type: exercise
+        ref: sor-ex-endpoint-guide
+      - type: text
+        md: "TP en autonomie : écris le contrôleur complet."
+      - type: exercise
+        ref: sor-ex-produit-controller
+      - type: steps
+        id: etapes-test-endpoint
+        title: "Tester ton endpoint avec Postman"
+        items:
+          - "Lance le backend (`./mvnw spring-boot:run`)."
+          - "Dans Postman, crée une requête **GET** `http://localhost:8080/api/produits`."
+          - "Onglet **Authorization** → **Bearer Token** : colle le jeton reçu à la connexion (la route est protégée)."
+          - "Clique sur **Send** : tu dois voir le code **200** et un tableau JSON."
+          - "Essaie `GET /api/produits/999` : tu dois obtenir **404**, pas 500."
+          - "Retire le jeton et recommence : tu dois obtenir **401**."
+      - type: jury
+        items:
+          - q: "Quelle différence entre @PathVariable et @RequestBody ?"
+            a: "`@PathVariable` lit une valeur dans l'adresse (`/api/produits/3`). `@RequestBody` lit le JSON envoyé dans le corps de la requête."
+          - q: "Comment avez-vous testé vos endpoints ?"
+            a: |
+              « Avec Postman : pour chaque route, je vérifie le code de statut et le JSON, dans le cas normal et
+              dans les cas d'erreur (404, 401, 409). Prochaine étape : les automatiser avec MockMvc. »
+      - type: quiz
+        items:
+          - ref: sor-ep-q2
+            review: def-endpoint
+          - ref: sor-ep-q3
+            review: code-usercontroller
+          - ref: sor-ep-q4
+            review: etapes-test-endpoint
+    questions:
+      - code: sor-ep-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Quelle requête appelle la méthode `getById` de `UserController` pour le compte 12 ?"
+        choices:
+          - label: "`GET /api/users/12`"
+            correct: true
+            why: "Oui : `@RequestMapping(\"/api/users\")` + `@GetMapping(\"/{id}\")`."
+          - label: "`GET /api/users?id=12`"
+            correct: false
+            why: "Ce serait un paramètre de requête (`@RequestParam`), pas une partie de l'adresse."
+          - label: "`POST /api/users/12`"
+            correct: false
+            why: "La méthode est déclarée avec `@GetMapping`."
+        explanation: "L'adresse complète = préfixe de la classe + adresse de la méthode ; `{id}` est remplacé par la valeur."
+      - code: sor-ep-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Quel verbe HTTP convient pour **modifier** un produit existant ?"
+        choices:
+          - label: "PUT"
+            correct: true
+            why: "Oui : PUT remplace la ressource par la nouvelle version."
+          - label: "GET"
+            correct: false
+            why: "GET ne doit jamais modifier de données."
+          - label: "DELETE"
+            correct: false
+            why: "DELETE supprime."
+        explanation: "GET lit, POST crée, PUT modifie (remplace), PATCH modifie en partie, DELETE supprime."
+      - code: sor-ep-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Quel code renvoie `ResponseEntity.noContent().build()` ?"
+        choices:
+          - label: "204 No Content"
+            correct: true
+            why: "Oui : réussi, sans corps de réponse."
+          - label: "200 OK"
+            correct: false
+            why: "`ok()` renverrait 200."
+          - label: "404 Not Found"
+            correct: false
+            why: "`notFound()` renverrait 404."
+        explanation: "204 est la réponse habituelle d'une suppression réussie."
+      - code: sor-ep-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Tu appelles `GET /api/produits` dans Postman **sans jeton**. Quel code attends-tu si la sécurité est correcte ?"
+        choices:
+          - label: "401"
+            correct: true
+            why: "Oui : aucune identité prouvée."
+          - label: "200"
+            correct: false
+            why: "La route est protégée : sans jeton, pas d'accès."
+          - label: "404"
+            correct: false
+            why: "La route existe ; le problème vient de l'authentification."
+        explanation: "401 = pas authentifié. (Soramfr renvoie 403 dans ce cas, faute de point d'entrée d'authentification configuré : on le corrige au chapitre sécurité.)"
+    exercises:
+      - slug: sor-ex-endpoint-guide
+        kind: COMPLETER
+        title: "Compléter le contrôleur des produits"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: "Complète les annotations. Respecte les majuscules."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Un contrôleur qui renvoie du JSON : @Rest…"
+          - "Pour lire la valeur `{id}` de l'adresse : @Path…"
+          - "@RestController, @GetMapping, @GetMapping, @PathVariable."
+        solution: '["@RestController", "@GetMapping", "@GetMapping", "@PathVariable"]'
+        explanation: "`@RestController` pour la classe, `@GetMapping` pour les lectures, `@PathVariable` pour récupérer l'identifiant dans l'adresse."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            [[1]]
+            @RequestMapping("/api/produits")
+            public class ProduitController {
+
+                [[2]]
+                public List<ProduitDto> lister() { ... }
+
+                [[3]]("/{id}")
+                public ProduitDto detail([[4]] Long id) { ... }
+            }
+          blanks:
+            - ["@RestController"]
+            - ["@GetMapping"]
+            - ["@GetMapping"]
+            - ["@PathVariable"]
+      - slug: sor-ex-produit-controller
+        kind: CODE_LIBRE
+        title: "TP — Écrire ProduitController"
+        difficulty: INTERMEDIAIRE
+        skill: spring-rest
+        statement: |
+          Écris `ProduitController` :
+          - préfixe `/api/produits` ;
+          - `GET /api/produits` → `List<ProduitDto> lister()` qui appelle `produitService.lister()` ;
+          - `GET /api/produits/{id}` → `ProduitDto detail(Long id)` qui appelle `produitService.detail(id)` ;
+          - le service est reçu par le **constructeur**.
+        criteria: "Contrôleur REST, préfixe, deux GET, @PathVariable, délégation au service, aucun repository."
+        hints:
+          - "Annotations de classe : `@RestController` et `@RequestMapping(\"/api/produits\")`."
+          - "Champ `private final ProduitService produitService;` et un constructeur qui le reçoit."
+          - "`@GetMapping(\"/{id}\") public ProduitDto detail(@PathVariable Long id) { return produitService.detail(id); }`"
+        solution: |
+          @RestController
+          @RequestMapping("/api/produits")
+          public class ProduitController {
+
+              private final ProduitService produitService;
+
+              public ProduitController(ProduitService produitService) {
+                  this.produitService = produitService;
+              }
+
+              @GetMapping
+              public List<ProduitDto> lister() {
+                  return produitService.lister();
+              }
+
+              @GetMapping("/{id}")
+              public ProduitDto detail(@PathVariable Long id) {
+                  return produitService.detail(id);
+              }
+          }
+        explanation: |
+          Le contrôleur ne fait que **traduire** HTTP en appels Java : il ne contient aucune règle et ne parle
+          pas au repository. Si le produit n'existe pas, c'est le service qui lance l'exception, transformée en
+          404 par le gestionnaire d'erreurs.
+        xp: 35
+        payload:
+          language: java
+          starter: |
+            import java.util.List;
+            import org.springframework.web.bind.annotation.*;
+
+          checks:
+            - pattern: '@RestController'
+              message: "La classe doit être annotée @RestController."
+            - pattern: '@RequestMapping\(\s*"/api/produits"\s*\)'
+              message: "Préfixe de la classe : @RequestMapping(\"/api/produits\")."
+            - pattern: 'class\s+ProduitController'
+              message: "La classe s'appelle ProduitController."
+            - pattern: 'ProduitController\s*\(\s*ProduitService\s+\w+\s*\)'
+              message: "Le service est reçu par le constructeur : public ProduitController(ProduitService produitService)."
+            - pattern: '@GetMapping(\(\s*\))?\s+public\s+List\s*<\s*ProduitDto\s*>\s+lister\s*\(\s*\)'
+              message: "Liste : @GetMapping public List<ProduitDto> lister()."
+            - pattern: '@GetMapping\(\s*"/\{id\}"\s*\)\s+public\s+ProduitDto\s+detail\s*\(\s*@PathVariable\s+Long\s+id\s*\)'
+              message: "Détail : @GetMapping(\"/{id}\") public ProduitDto detail(@PathVariable Long id)."
+            - pattern: 'produitService\.lister\s*\(\s*\)'
+              message: "lister() doit appeler produitService.lister()."
+            - pattern: 'produitService\.detail\s*\(\s*id\s*\)'
+              message: "detail() doit appeler produitService.detail(id)."
+            - pattern: 'Repository'
+              absent: true
+              message: "Le contrôleur ne parle pas au repository : passe par le service."
+
+  # ===================================================================== LEÇON 6
+  - slug: sor-erreurs
+    title: "Gérer les erreurs sans en dire trop"
+    duration: 13
+    objective: "Comprendre ErrorHondler (@RestControllerAdvice) et corriger la connexion pour qu'elle ne révèle pas quels comptes existent."
+    prerequisites: "Leçon « TP — Créer et tester un endpoint REST »."
+    skills: [spring-rest, securite-owasp]
+    xp: 25
+    memo: |
+      - `@RestControllerAdvice` : une classe qui attrape les exceptions de **tous** les contrôleurs.
+      - `@ExceptionHandler(X.class)` : « quand l'exception X arrive, réponds comme ceci ».
+      - Soramfr : `EntityNotFoundException` → 404, `ValidationException` → 400, `DuplicateResourceException` → 409, reste → 500.
+      - Connexion : même réponse **401** et même message « Identifiant ou mot de passe incorrect » que le compte existe ou non.
+      - Ne jamais renvoyer la trace technique en production (`app.errors.include-details=false`).
+    commonMistakes: |
+      - Dire « Utilisateur introuvable » ou « mot de passe incorrect » : un attaquant apprend quels comptes existent (énumération).
+      - Renvoyer 400 ou 404 pour un mauvais mot de passe au lieu de 401.
+      - Laisser `include-details=true` en production : la classe de l'exception et la ligne du code sont exposées.
+      - Faute de frappe dans un nom de classe (`ErrorHondler`) : ça fonctionne, mais ça donne une impression de négligence.
+    blocks:
+      - type: text
+        md: |
+          Quand quelque chose se passe mal, l'API doit répondre **clairement** à Angular… sans donner
+          d'indices à un attaquant. Soramfr a un bon point de départ : une classe qui centralise les erreurs.
+      - type: definition
+        id: def-advice
+        term: "@RestControllerAdvice"
+        md: |
+          Un **service après-vente** commun à tous les contrôleurs. Quand une exception est lancée n'importe
+          où, elle remonte jusqu'à lui, et il choisit la réponse HTTP. Chaque contrôleur n'a plus à gérer ses
+          erreurs lui-même.
+      - type: code
+        id: code-errorhandler
+        language: java
+        title: "Soramfr — ErrorHondler.java (extrait)"
+        code: |
+          @RestControllerAdvice
+          public class ErrorHondler {
+
+              @ExceptionHandler(EntityNotFoundException.class)
+              public ResponseEntity<Map<String,Object>> notFound(EntityNotFoundException ex, HttpServletRequest request){
+                  return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                      "timestamp", Instant.now(),
+                      "status", HttpStatus.NOT_FOUND.value(),
+                      "error", "Utilisateur introuvable",
+                      "message", ex.getMessage(),
+                      "path", request.getRequestURI()
+                  ));
+              }
+
+              @ExceptionHandler(ValidationException.class)
+              public ResponseEntity<Map<String,Object>> badRequest(ValidationException ex, HttpServletRequest request){
+                  return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                      "status", 400, "error", "Requête invalide", "message", ex.getMessage()));
+              }
+          }
+        lines:
+          - n: 1
+            note: "Cette classe surveille tous les contrôleurs."
+          - n: 4
+            note: "Quand une `EntityNotFoundException` est lancée…"
+          - n: 6
+            note: "… on répond **404** avec un JSON qui décrit l'erreur."
+          - n: 9
+            note: "Petit défaut : « Utilisateur introuvable » est écrit en dur, même si c'est un produit qui manque."
+          - n: 10
+            note: "`ex.getMessage()` : le message choisi au moment du `throw`."
+          - n: 15
+            note: "Les `ValidationException` (champ vide, mot de passe trop court) deviennent des **400**."
+      - type: question
+        ref: sor-er-q1
+        review: code-errorhandler
+      - type: definition
+        id: def-enumeration
+        term: "Énumération de comptes"
+        md: |
+          Une technique d'attaque : on essaie des adresses e-mail une par une et on regarde la réponse. Si
+          le site dit « Utilisateur introuvable » pour les unes et « mot de passe incorrect » pour les autres,
+          l'attaquant sait **quels comptes existent**. Il peut ensuite les cibler (hameçonnage, essais de mots
+          de passe). C'est comme un portier qui répondrait « Madame Diallo n'habite pas ici » : il en dit trop.
+      - type: compare
+        left:
+          title: "Soramfr aujourd'hui"
+          good: false
+          language: java
+          code: |
+            .orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable"));  // 404
+            if (!encoder.matches(req.password, user.getPasswordHash())) {
+                throw new ValidationException("mot de passe incorrect");                // 400
+            }
+        right:
+          title: "Version corrigée"
+          good: true
+          language: java
+          code: |
+            .orElseThrow(() -> new InvalidCredentialsException("Identifiant ou mot de passe incorrect"));
+            if (!encoder.matches(req.password, user.getPasswordHash())) {
+                throw new InvalidCredentialsException("Identifiant ou mot de passe incorrect");
+            }
+            // + un @ExceptionHandler qui répond 401 UNAUTHORIZED
+      - type: question
+        ref: sor-er-q2
+        review: def-enumeration
+      - type: text
+        md: "Exercice guidé : associe chaque exception au bon statut HTTP."
+      - type: exercise
+        ref: sor-ex-erreurs-guide
+      - type: text
+        md: |
+          **Trouver et corriger un bug** : la connexion de Soramfr révèle quels comptes existent. Corrige le
+          service **et** le gestionnaire d'erreurs.
+      - type: exercise
+        ref: sor-ex-login-erreurs
+      - type: jury
+        items:
+          - q: "Comment gérez-vous les erreurs dans votre API ?"
+            a: |
+              « Avec une classe `@RestControllerAdvice` : chaque type d'exception est traduit en code HTTP et en
+              JSON homogène (statut, message, chemin). Les erreurs imprévues donnent un 500 générique, et le
+              détail n'est écrit que dans les journaux du serveur. »
+          - q: "Pourquoi un message identique pour « compte inconnu » et « mauvais mot de passe » ?"
+            a: "Pour ne pas révéler quels comptes existent. C'est une recommandation de l'OWASP contre l'énumération de comptes."
+      - type: quiz
+        items:
+          - ref: sor-er-q3
+            review: def-advice
+          - ref: sor-er-q4
+            review: def-enumeration
+          - ref: sor-er-q5
+    questions:
+      - code: sor-er-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Dans Soramfr, quelle réponse obtient-on pour `GET /api/users/999` si ce compte n'existe pas ?"
+        choices:
+          - label: "404, grâce à `EntityNotFoundException` et à `ErrorHondler`"
+            correct: true
+            why: "Oui : le service lance l'exception, le gestionnaire la traduit en 404."
+          - label: "500, car l'exception n'est pas gérée"
+            correct: false
+            why: "Elle est gérée par `@ExceptionHandler(EntityNotFoundException.class)`."
+          - label: "200 avec un corps vide"
+            correct: false
+            why: "`orElseThrow` lance une exception : pas de réponse 200."
+        explanation: "Exception lancée dans le service → attrapée par `@RestControllerAdvice` → réponse 404 en JSON."
+      - code: sor-er-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: securite-owasp
+        prompt: "Pourquoi les deux messages de connexion de Soramfr posent-ils un problème de sécurité ?"
+        choices:
+          - label: "Ils permettent de savoir si une adresse e-mail a un compte"
+            correct: true
+            why: "Oui : c'est l'énumération de comptes."
+          - label: "Ils affichent le mot de passe"
+            correct: false
+            why: "Aucun mot de passe n'est affiché."
+          - label: "Ils sont en français"
+            correct: false
+            why: "La langue n'a pas d'importance ici."
+        explanation: "Réponse unique, statut unique (401) : l'attaquant ne peut plus distinguer les comptes existants."
+      - code: sor-er-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Sans `@RestControllerAdvice`, il faudrait gérer les erreurs dans chaque contrôleur."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Oui : ou alors Spring renverrait ses réponses par défaut, peu adaptées."
+          - label: "Faux"
+            correct: false
+            why: "Le gestionnaire centralisé évite justement de répéter ce code partout."
+        explanation: "Centraliser la gestion des erreurs garantit des réponses homogènes et évite la répétition."
+      - code: sor-er-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quel code de statut convient pour « identifiant ou mot de passe incorrect » ?"
+        choices:
+          - label: "401 Unauthorized"
+            correct: true
+            why: "Oui : l'authentification a échoué."
+          - label: "400 Bad Request"
+            correct: false
+            why: "La requête est bien formée ; c'est l'identité qui n'est pas prouvée."
+          - label: "404 Not Found"
+            correct: false
+            why: "404 révélerait que le compte n'existe pas."
+        explanation: "Échec d'authentification → 401, avec un message qui ne dit pas quelle information est fausse."
+      - code: sor-er-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: "Soramfr a `app.errors.include-details=true`. Quel est le risque en production ?"
+        choices:
+          - label: "Les erreurs 500 exposent le nom de l'exception et la ligne du code"
+            correct: true
+            why: "Oui : ces indices aident un attaquant à comprendre le serveur."
+          - label: "Les mots de passe apparaissent dans les réponses"
+            correct: false
+            why: "Ce réglage ajoute la classe de l'exception et la première ligne de la trace, pas les mots de passe."
+          - label: "Aucun risque"
+            correct: false
+            why: "Toute information technique exposée est un risque."
+        explanation: "Les détails techniques vont dans les **journaux du serveur**, jamais dans la réponse envoyée au navigateur."
+    exercises:
+      - slug: sor-ex-erreurs-guide
+        kind: COMPLETER
+        title: "Associer chaque exception à son statut"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: "Complète avec le code de statut HTTP (un nombre)."
+        criteria: "Les quatre codes sont corrects."
+        hints:
+          - "Introuvable : quatre cent…"
+          - "Doublon : conflit. Identifiants faux : non authentifié."
+          - "404, 400, 409, 401."
+        solution: '["404", "400", "409", "401"]'
+        explanation: "Chaque situation prévue a son code. Le 500 est réservé aux erreurs **imprévues**."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            EntityNotFoundException ............ [[1]]
+            ValidationException ................ [[2]]
+            DuplicateResourceException ......... [[3]]
+            InvalidCredentialsException ........ [[4]]
+          blanks:
+            - ["404"]
+            - ["400"]
+            - ["409"]
+            - ["401"]
+      - slug: sor-ex-login-erreurs
+        kind: CORRIGER_ERREUR
+        title: "Corriger la connexion qui révèle les comptes"
+        difficulty: INTERMEDIAIRE
+        skill: securite-owasp
+        statement: |
+          Ce code est celui de Soramfr. Corrige-le :
+          1. dans `login`, remplace les **deux** exceptions par `InvalidCredentialsException` avec le **même**
+             message : `"Identifiant ou mot de passe incorrect"` ;
+          2. dans `ErrorHondler`, complète le gestionnaire pour qu'il réponde **401** (`HttpStatus.UNAUTHORIZED`).
+        criteria: "Aucun message ne révèle l'existence du compte ; réponse 401 identique dans les deux cas."
+        hints:
+          - "Les messages « Utilisateur introuvable » et « mot de passe incorrect » doivent disparaître."
+          - "`.orElseThrow(() -> new InvalidCredentialsException(\"Identifiant ou mot de passe incorrect\"))`"
+          - "`return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(\"status\", 401, \"message\", ex.getMessage()));`"
+        solution: |
+          public AuthResponse login(LoginRequest req) {
+              UserEntity user = userRepository.findByEmailOrUsername(req.identifier, req.identifier)
+                      .orElseThrow(() -> new InvalidCredentialsException("Identifiant ou mot de passe incorrect"));
+              if (!encoder.matches(req.password, user.getPasswordHash())) {
+                  throw new InvalidCredentialsException("Identifiant ou mot de passe incorrect");
+              }
+              // ... génération du jeton
+          }
+
+          // Dans ErrorHondler
+          @ExceptionHandler(InvalidCredentialsException.class)
+          public ResponseEntity<Map<String, Object>> unauthorized(InvalidCredentialsException ex) {
+              return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                      .body(Map.of("status", 401, "message", ex.getMessage()));
+          }
+        explanation: |
+          Compte inconnu ou mauvais mot de passe : la réponse est **strictement identique** (401, même message).
+          L'attaquant ne peut plus trier les adresses. Pour aller plus loin, on limite aussi le nombre d'essais
+          par minute (protection contre la force brute).
+        xp: 30
+        payload:
+          language: java
+          starter: |
+            public AuthResponse login(LoginRequest req) {
+                UserEntity user = userRepository.findByEmailOrUsername(req.identifier, req.identifier)
+                        .orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable"));
+                if (!encoder.matches(req.password, user.getPasswordHash())) {
+                    throw new ValidationException("mot de passe incorrect");
+                }
+                // ... génération du jeton
+            }
+
+            // Dans ErrorHondler
+            @ExceptionHandler(InvalidCredentialsException.class)
+            public ResponseEntity<Map<String, Object>> unauthorized(InvalidCredentialsException ex) {
+                // à compléter : réponse 401
+            }
+          checks:
+            - pattern: 'Utilisateur introuvable'
+              absent: true
+              message: "Le message « Utilisateur introuvable » révèle que le compte n'existe pas : remplace-le."
+            - pattern: 'EntityNotFoundException'
+              absent: true
+              message: "Pour la connexion, n'utilise plus EntityNotFoundException (elle donne un 404)."
+            - pattern: 'orElseThrow\s*\(\s*\(\s*\)\s*->\s*new\s+InvalidCredentialsException\s*\(\s*"Identifiant ou mot de passe incorrect"\s*\)\s*\)'
+              message: "Compte introuvable : .orElseThrow(() -> new InvalidCredentialsException(\"Identifiant ou mot de passe incorrect\"))."
+            - pattern: 'matches[\s\S]*throw\s+new\s+InvalidCredentialsException\s*\(\s*"Identifiant ou mot de passe incorrect"\s*\)'
+              message: "Mauvais mot de passe : throw new InvalidCredentialsException(\"Identifiant ou mot de passe incorrect\");"
+            - pattern: 'ValidationException\s*\(\s*"mot de passe'
+              absent: true
+              message: "Le mauvais mot de passe ne doit plus lever une ValidationException (400)."
+            - pattern: 'HttpStatus\.UNAUTHORIZED'
+              message: "Le gestionnaire doit répondre 401 : ResponseEntity.status(HttpStatus.UNAUTHORIZED)."
+            - pattern: 'unauthorized\s*\([^)]*\)\s*\{[\s\S]*return\s+ResponseEntity'
+              message: "Le gestionnaire doit renvoyer une ResponseEntity."
+
+bank:
+  - code: sor-c3-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-structure
+    prompt: "Qui crée l'objet `AuthService` utilisé par `AuthController` ?"
+    choices:
+      - label: "Spring, au démarrage, grâce à l'annotation `@Service`"
+        correct: true
+        why: "Oui : Spring crée les objets annotés et les injecte."
+      - label: "Le contrôleur, avec `new AuthService()`"
+        correct: false
+        why: "Le contrôleur le reçoit par son constructeur."
+      - label: "Angular"
+        correct: false
+        why: "Angular tourne dans le navigateur ; il ne crée pas d'objets Java."
+    explanation: "C'est l'**inversion de contrôle** : Spring fabrique les objets et les relie entre eux (injection de dépendances)."
+  - code: sor-c3-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-rest
+    prompt: "Quelle annotation lit la valeur `42` dans `DELETE /api/users/42` ?"
+    choices:
+      - label: "`@PathVariable`"
+        correct: true
+        why: "Oui : `{id}` fait partie de l'adresse."
+      - label: "`@RequestBody`"
+        correct: false
+        why: "`@RequestBody` lit le JSON du corps."
+      - label: "`@RequestParam`"
+        correct: false
+        why: "`@RequestParam` lit un paramètre après `?` (`?id=42`)."
+    explanation: "Adresse → `@PathVariable` ; `?cle=valeur` → `@RequestParam` ; corps JSON → `@RequestBody`."
+  - code: sor-c3-b3
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: securite-owasp
+    prompt: "Dans Soramfr, `UserService.toDto` fait `new UserDto(..., e.getPasswordHash())`. Quelle conséquence ?"
+    choices:
+      - label: "`GET /api/users` renvoie le hash du mot de passe de chaque compte"
+        correct: true
+        why: "Oui : le DTO contient un champ `password` rempli avec le hash."
+      - label: "Aucune, car `@JsonIgnore` est sur l'entité"
+        correct: false
+        why: "`@JsonIgnore` protège l'entité, pas le DTO : le hash est recopié dans `UserDto`."
+      - label: "Le mot de passe est effacé de la base"
+        correct: false
+        why: "`toDto` ne modifie pas la base."
+    explanation: "Un DTO de sortie ne doit jamais contenir de champ `password`, même haché."
+  - code: sor-c3-b4
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: spring-jpa
+    prompt: "`userRepository.save(entite)` peut servir à la fois à créer et à modifier une ligne."
+    choices:
+      - label: "Vrai"
+        correct: true
+        why: "Oui : sans id, c'est un INSERT ; avec un id existant, c'est un UPDATE."
+      - label: "Faux"
+        correct: false
+        why: "`save` gère les deux cas."
+    explanation: "C'est ce que fait `UserService.update` : il charge l'entité, la modifie, puis appelle `save`."
+  - code: sor-c3-b5
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: java-bases
+    prompt: "Quel type Java choisir pour un prix ?"
+    choices:
+      - label: "`BigDecimal`"
+        correct: true
+        why: "Oui : calcul exact en base 10."
+      - label: "`double`"
+        correct: false
+        why: "Les `double` produisent des erreurs d'arrondi."
+      - label: "`String`"
+        correct: false
+        why: "On ne pourrait pas calculer de total."
+    explanation: "`BigDecimal` en Java, `NUMERIC(10, 2)` en PostgreSQL."

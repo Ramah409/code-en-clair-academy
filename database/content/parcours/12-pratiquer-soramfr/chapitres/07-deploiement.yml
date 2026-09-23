@@ -1,0 +1,915 @@
+slug: soramfr-deploiement
+position: 7
+level: AVANCE
+title: "Déployer Soramfr proprement"
+summary: "Sortir les secrets du code avec les variables d'environnement, écrire un Dockerfile multi-étapes sûr, et assembler PostgreSQL, Spring et Angular avec Docker Compose."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sor-variables-env
+    title: "Variables d'environnement et secrets"
+    duration: 12
+    objective: "Savoir où mettre chaque réglage (code, fichier de configuration, variable d'environnement) et écrire un .env.example."
+    prerequisites: "Leçon « Le jeton JWT »."
+    skills: [docker-deploiement, rgpd-secrets]
+    xp: 20
+    memo: |
+      - Une **variable d'environnement** est un réglage donné à l'application **au démarrage**, par la machine qui la lance.
+      - Spring lit `${NOM}` ou `${NOM:valeur_par_defaut}` dans `application.properties`.
+      - Les **secrets** (mot de passe de la base, clé JWT) : variable d'environnement **sans** valeur par défaut.
+      - `.env` contient les vraies valeurs et **n'est jamais commité** (`.gitignore`) ; `.env.example` montre les noms, sans valeur réelle.
+      - Sur Render, les variables se saisissent dans l'onglet **Environment** du service.
+    commonMistakes: |
+      - Commiter le fichier `.env`.
+      - Donner une valeur par défaut « pratique » à un secret (`${DB_PASSWORD:postgres}`).
+      - Mettre un secret dans `environment.ts` d'Angular : tout ce qui est dans Angular est public.
+      - Oublier une variable en production : l'application démarre avec la valeur de développement.
+    blocks:
+      - type: text
+        md: |
+          Soramfr tourne sur ton ordinateur **et** en ligne (Render pour le backend, Netlify pour le
+          frontend). Les adresses, les mots de passe et les secrets ne sont pas les mêmes. Comment garder un
+          seul code ?
+      - type: definition
+        id: def-var-env
+        term: "Variable d'environnement"
+        md: |
+          Un **post-it** collé sur la machine qui lance l'application : « le mot de passe de la base est… ».
+          Le code ne contient pas la valeur, il sait seulement **lire le post-it**. Chaque machine (ton
+          ordinateur, Render) a ses propres post-it.
+      - type: code
+        id: code-env-properties
+        language: properties
+        title: "Lire des variables d'environnement dans Spring"
+        code: |
+          spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/gestion_utilisateurs}
+          spring.datasource.password=${DB_PASSWORD}
+          app.jwt.secret=${JWT_SECRET}
+          app.cors.allowed-origins=${CORS_ORIGINS:http://localhost:4200}
+        lines:
+          - n: 1
+            note: "`${DB_URL:...}` : la variable `DB_URL`, ou la valeur après `:` si elle n'existe pas. Acceptable pour une adresse locale."
+          - n: 2
+            note: "Pas de valeur par défaut pour un secret : si la variable manque, Spring refuse de démarrer."
+          - n: 4
+            note: "En production : `CORS_ORIGINS=https://…netlify.app`."
+      - type: question
+        ref: sor-v-q1
+        review: def-var-env
+      - type: compare
+        left:
+          title: ".env (jamais commité)"
+          good: true
+          language: bash
+          code: |
+            DB_PASSWORD=Xk3!f9-long-et-unique
+            JWT_SECRET=8f2c…64-caracteres-aleatoires…
+        right:
+          title: ".env.example (commité)"
+          good: true
+          language: bash
+          code: |
+            DB_PASSWORD=
+            JWT_SECRET=
+      - type: callout
+        variant: warning
+        title: "Et Angular ?"
+        md: |
+          `environment.prod.ts` contient l'adresse de l'API (`https://soramtfr-backend-2.onrender.com`). C'est
+          normal : cette adresse est publique. Mais **aucun secret** ne doit jamais aller dans Angular : tout
+          le code est téléchargé par le navigateur et lisible par tous.
+      - type: question
+        ref: sor-v-q2
+        review: code-env-properties
+      - type: text
+        md: "Exercice guidé : complète la configuration."
+      - type: exercise
+        ref: sor-ex-env-guide
+      - type: text
+        md: "En autonomie : écris le fichier `.env.example` de Soramfr."
+      - type: exercise
+        ref: sor-ex-env-example
+      - type: jury
+        items:
+          - q: "Comment gérez-vous les secrets ?"
+            a: "Par des variables d'environnement : un fichier `.env` en local (ignoré par Git) et les réglages du service sur Render en production. Le dépôt ne contient qu'un `.env.example` sans valeurs."
+          - q: "Peut-on mettre la clé JWT dans environment.ts ?"
+            a: "Non : tout le code Angular est envoyé au navigateur. N'importe qui pourrait la lire et fabriquer des jetons."
+      - type: quiz
+        items:
+          - ref: sor-v-q3
+            review: code-env-properties
+          - ref: sor-v-q4
+            review: def-var-env
+          - ref: sor-v-q5
+    questions:
+      - code: sor-v-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Pourquoi utiliser des variables d'environnement ?"
+        choices:
+          - label: "Pour garder le même code avec des réglages différents selon la machine, sans écrire les secrets dans le code"
+            correct: true
+            why: "Oui."
+          - label: "Pour rendre l'application plus rapide"
+            correct: false
+            why: "La vitesse n'est pas concernée."
+          - label: "Parce que Java ne sait pas lire les fichiers"
+            correct: false
+            why: "Java lit très bien les fichiers."
+        explanation: "Un code, plusieurs environnements (local, test, production) : les réglages viennent de l'extérieur."
+      - code: sor-v-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: "Que fait Spring avec `app.jwt.secret=${JWT_SECRET}` si la variable `JWT_SECRET` n'existe pas ?"
+        choices:
+          - label: "Il refuse de démarrer, faute de valeur"
+            correct: true
+            why: "Oui : c'est volontaire, pour ne jamais démarrer sans secret."
+          - label: "Il utilise un secret vide"
+            correct: false
+            why: "Sans valeur par défaut, la propriété ne peut pas être résolue."
+          - label: "Il génère un secret aléatoire"
+            correct: false
+            why: "Spring ne le fait pas pour une propriété à nous."
+        explanation: "Mieux vaut une panne visible au démarrage qu'une application qui tourne avec un secret faible."
+      - code: sor-v-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: rgpd-secrets
+        prompt: "Quel fichier peut être commité dans Git ?"
+        choices:
+          - label: "`.env.example`, qui contient les noms de variables sans valeurs réelles"
+            correct: true
+            why: "Oui : il documente ce qu'il faut configurer."
+          - label: "`.env`, avec les vrais mots de passe"
+            correct: false
+            why: "Jamais : il doit figurer dans `.gitignore`."
+          - label: "Les deux"
+            correct: false
+            why: "Le `.env` réel ne doit jamais être partagé."
+        explanation: "`.env` ignoré, `.env.example` partagé."
+      - code: sor-v-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: "Mettre un secret dans `environment.prod.ts` est sans risque car ce fichier n'est utilisé qu'en production."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : en production, il est justement envoyé à tous les navigateurs."
+          - label: "Faux"
+            correct: true
+            why: "Exact : le code Angular est public."
+        explanation: "Seules des valeurs publiques (adresse de l'API) vont dans Angular."
+      - code: sor-v-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Où saisir `JWT_SECRET` pour le backend déployé sur Render ?"
+        choices:
+          - label: "Dans les variables d'environnement du service, sur le tableau de bord de Render"
+            correct: true
+            why: "Oui : Render les fournit à l'application au démarrage."
+          - label: "Dans le README du dépôt"
+            correct: false
+            why: "Le README est public."
+          - label: "Dans `environment.prod.ts`"
+            correct: false
+            why: "Ce fichier concerne Angular et il est public."
+        explanation: "Chaque hébergeur a son écran de variables (Render, Railway, Heroku…) ; pour Docker, `environment:` ou `env_file:`."
+    exercises:
+      - slug: sor-ex-env-guide
+        kind: COMPLETER
+        title: "Compléter la configuration"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Complète avec les noms de variables d'environnement (en majuscules)."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot de passe de la base de données : DB_…"
+          - "Le secret de signature des jetons : JWT_…"
+          - "DB_PASSWORD, JWT_SECRET, CORS_ORIGINS."
+        solution: '["DB_PASSWORD", "JWT_SECRET", "CORS_ORIGINS"]'
+        explanation: "Chaque réglage sensible ou variable selon l'environnement vient d'une variable nommée clairement."
+        xp: 10
+        payload:
+          language: properties
+          template: |
+            spring.datasource.password=${[[1]]}
+            app.jwt.secret=${[[2]]}
+            app.cors.allowed-origins=${[[3]]:http://localhost:4200}
+          blanks:
+            - ["DB_PASSWORD"]
+            - ["JWT_SECRET"]
+            - ["CORS_ORIGINS"]
+      - slug: sor-ex-env-example
+        kind: CODE_LIBRE
+        title: "Écrire le .env.example de Soramfr"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Écris le fichier `.env.example`. Il liste, une par ligne, les variables `DB_URL`, `DB_USERNAME`,
+          `DB_PASSWORD`, `JWT_SECRET` et `CORS_ORIGINS`.
+          - `DB_URL` et `CORS_ORIGINS` peuvent avoir leur valeur locale d'exemple ;
+          - `DB_USERNAME` vaut `soramfr` ;
+          - `DB_PASSWORD` et `JWT_SECRET` restent **vides** (`NOM=`).
+        criteria: "Cinq variables ; les deux secrets sont vides."
+        hints:
+          - "Une ligne par variable : `NOM=valeur`."
+          - "`DB_URL=jdbc:postgresql://localhost:5432/soramfr` et `CORS_ORIGINS=http://localhost:4200`."
+          - "`DB_PASSWORD=` et `JWT_SECRET=` sans rien après le signe égal."
+        solution: |
+          DB_URL=jdbc:postgresql://localhost:5432/soramfr
+          DB_USERNAME=soramfr
+          DB_PASSWORD=
+          JWT_SECRET=
+          CORS_ORIGINS=http://localhost:4200
+        explanation: "Ce fichier sert de mode d'emploi : une nouvelle développeuse le copie en `.env` et remplit les secrets qu'on lui transmet par un canal sûr."
+        xp: 15
+        payload:
+          language: bash
+          starter: |
+            # Copier ce fichier en .env puis compléter les secrets
+          checks:
+            - pattern: '^DB_URL=\S+'
+              message: "Ajoute DB_URL avec une adresse locale d'exemple."
+            - pattern: '^DB_USERNAME=soramfr\s*$'
+              message: "Ajoute DB_USERNAME=soramfr."
+            - pattern: '^DB_PASSWORD=\s*$'
+              message: "DB_PASSWORD doit être présent et vide : DB_PASSWORD="
+            - pattern: '^JWT_SECRET=\s*$'
+              message: "JWT_SECRET doit être présent et vide : JWT_SECRET="
+            - pattern: '^CORS_ORIGINS=\S+'
+              message: "Ajoute CORS_ORIGINS avec l'adresse locale d'Angular."
+
+  # ===================================================================== LEÇON 2
+  - slug: sor-dockerfile
+    title: "TP — Un Dockerfile propre en deux étapes"
+    duration: 15
+    objective: "Comprendre image et conteneur, repérer les défauts du Dockerfile de Soramfr et le réécrire en multi-étapes, sans administrateur."
+    prerequisites: "Leçon « Variables d'environnement et secrets »."
+    skills: [docker-deploiement]
+    xp: 30
+    memo: |
+      - **Image** : le modèle figé (application + tout ce qu'il faut pour la lancer). **Conteneur** : une image en train de tourner.
+      - **Multi-étapes** : étape 1 avec le JDK et Maven pour **construire** le `.jar` ; étape 2 avec un **JRE** seul pour l'**exécuter**. L'image finale est plus petite et contient moins d'outils exploitables.
+      - `USER` : ne pas lancer l'application en `root` (administrateur).
+      - Ne pas sauter les tests (`-DskipTests`) sans qu'ils tournent ailleurs (intégration continue).
+      - Le nom du `.jar` doit correspondre au vrai fichier produit (Soramfr lance `mon-app.jar`, qui n'existe pas).
+    commonMistakes: |
+      - Une seule étape avec le JDK complet : image lourde, compilateur présent en production.
+      - Lancer l'application en root.
+      - `COPY . .` sans `.dockerignore` : on copie `target/`, `.git`, voire un `.env`.
+      - Un nom de `.jar` en dur qui ne correspond pas à l'`artifactId` du `pom.xml`.
+    blocks:
+      - type: text
+        md: |
+          Pour Render, Soramfr est livré sous forme d'**image Docker**. Le Dockerfile actuel fonctionne à
+          moitié et a plusieurs défauts. On les repère, puis on le réécrit.
+      - type: definition
+        id: def-image
+        term: "Image et conteneur"
+        md: |
+          Une **image**, c'est un **plat surgelé** : tout est dedans, prêt, figé. Un **conteneur**, c'est ce
+          plat **réchauffé et servi** : l'image qui tourne. On peut lancer plusieurs conteneurs à partir de la
+          même image.
+      - type: definition
+        id: def-dockerfile
+        term: "Dockerfile"
+        md: |
+          La **recette** de l'image : une suite d'instructions (`FROM` : partir de telle base, `COPY` : copier
+          des fichiers, `RUN` : exécuter une commande, `CMD` : ce qu'on lance au démarrage).
+      - type: code
+        id: code-dockerfile-soramfr
+        language: dockerfile
+        title: "Soramfr — Dockerfile"
+        code: |
+          FROM eclipse-temurin:21-jdk
+          WORKDIR /app
+          COPY . .
+          RUN chmod +x mvnw
+          RUN ./mvnw clean package -DskipTests
+          EXPOSE 8080
+          CMD ["java", "-jar", "/app/target/mon-app.jar"]
+        lines:
+          - n: 1
+            note: "Image de base avec le **JDK complet** : utile pour compiler, inutile (et plus risqué) pour exécuter."
+          - n: 3
+            note: "Copie **tout** le dossier (y compris `.git`, `target`…) : prévoir un `.dockerignore`."
+          - n: 5
+            note: "Construction **sans les tests** : une version cassée peut partir en production."
+          - n: 7
+            note: "`mon-app.jar` : Maven produit en réalité `<artifactId>-<version>.jar`. Le conteneur s'arrête avec « Unable to access jarfile »… sauf si `finalName` est configuré. Et aucune instruction `USER` : l'application tourne en **root**."
+      - type: question
+        ref: sor-d-q1
+        review: code-dockerfile-soramfr
+      - type: code
+        id: code-dockerfile-simple
+        language: dockerfile
+        title: "Exemple simple : servir une page statique"
+        code: |
+          FROM nginx:1.27-alpine
+          COPY index.html /usr/share/nginx/html/
+          EXPOSE 80
+        lines:
+          - n: 1
+            note: "On part d'une image qui contient déjà un serveur web (Nginx), version Alpine (très légère)."
+          - n: 2
+            note: "On y ajoute notre page."
+          - n: 3
+            note: "On documente le port écouté."
+      - type: definition
+        id: def-multi-etapes
+        term: "Construction multi-étapes"
+        md: |
+          Une **cuisine** et une **salle**. On cuisine (compile) dans une grande cuisine pleine d'outils
+          (JDK, Maven). Puis on apporte **seulement l'assiette** (le `.jar`) dans une salle dépouillée (un JRE).
+          Le client n'entre jamais dans la cuisine.
+      - type: question
+        ref: sor-d-q2
+        review: def-multi-etapes
+      - type: text
+        md: "Exercice guidé : remets le Dockerfile multi-étapes dans l'ordre."
+      - type: exercise
+        ref: sor-ex-dockerfile-ordre
+      - type: text
+        md: "TP en autonomie : réécris le Dockerfile de Soramfr."
+      - type: exercise
+        ref: sor-ex-dockerfile
+      - type: jury
+        items:
+          - q: "Quelle différence entre une image et un conteneur ?"
+            a: "L'image est un modèle figé, construit à partir du Dockerfile. Le conteneur est une instance de cette image en cours d'exécution."
+          - q: "Pourquoi un Dockerfile multi-étapes ?"
+            a: "Pour construire avec le JDK et Maven, puis ne garder dans l'image finale qu'un JRE et le `.jar`. L'image est plus légère et contient moins d'outils utilisables par un attaquant."
+          - q: "Pourquoi ne pas lancer l'application en root ?"
+            a: "Principe du moindre privilège : si l'application est compromise, l'attaquant n'a que les droits d'un utilisateur limité dans le conteneur."
+      - type: quiz
+        items:
+          - ref: sor-d-q3
+            review: def-image
+          - ref: sor-d-q4
+            review: def-dockerfile
+          - ref: sor-d-q5
+            review: code-dockerfile-soramfr
+    questions:
+      - code: sor-d-q1
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Quels défauts a le Dockerfile de Soramfr ?"
+        choices:
+          - label: "Il garde le JDK complet dans l'image finale"
+            correct: true
+            why: "Une seule étape, basée sur le JDK."
+          - label: "Il lance l'application en root"
+            correct: true
+            why: "Aucune instruction `USER`."
+          - label: "Il saute les tests"
+            correct: true
+            why: "`-DskipTests`."
+          - label: "Il utilise Java 21"
+            correct: false
+            why: "Java 21 est une version LTS récente : c'est un bon choix."
+        explanation: "Image lourde, root, tests sautés, nom de `.jar` incertain : quatre points à corriger."
+      - code: sor-d-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Dans un Dockerfile multi-étapes, que contient l'image finale ?"
+        choices:
+          - label: "Uniquement ce qui est copié dans la dernière étape (JRE + .jar)"
+            correct: true
+            why: "Oui : les étapes précédentes sont jetées."
+          - label: "Tout ce qui a été installé dans toutes les étapes"
+            correct: false
+            why: "Seule la dernière étape compose l'image finale."
+          - label: "Le code source Java"
+            correct: false
+            why: "Seulement s'il est copié dans la dernière étape, ce qu'on évite."
+        explanation: "`COPY --from=build` ne récupère que le fichier voulu depuis l'étape de construction."
+      - code: sor-d-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Un conteneur, c'est…"
+        choices:
+          - label: "une image en train de tourner"
+            correct: true
+            why: "Oui."
+          - label: "le fichier Dockerfile"
+            correct: false
+            why: "Le Dockerfile est la recette de l'image."
+          - label: "une machine virtuelle complète avec son propre système"
+            correct: false
+            why: "Un conteneur partage le noyau du système hôte : il est plus léger."
+        explanation: "Dockerfile → (build) → image → (run) → conteneur."
+      - code: sor-d-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Quelle instruction définit la commande lancée au démarrage du conteneur ?"
+        choices:
+          - label: "`CMD` (ou `ENTRYPOINT`)"
+            correct: true
+            why: "Oui."
+          - label: "`RUN`"
+            correct: false
+            why: "`RUN` s'exécute pendant la **construction** de l'image."
+          - label: "`FROM`"
+            correct: false
+            why: "`FROM` choisit l'image de base."
+        explanation: "`RUN` = pendant le build ; `CMD`/`ENTRYPOINT` = au démarrage du conteneur."
+      - code: sor-d-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: docker-deploiement
+        prompt: "Pourquoi `CMD [\"java\", \"-jar\", \"/app/target/mon-app.jar\"]` peut-il échouer ?"
+        choices:
+          - label: "Parce que Maven nomme le fichier `<artifactId>-<version>.jar`, pas `mon-app.jar`"
+            correct: true
+            why: "Oui : sans `finalName`, le fichier n'existe pas sous ce nom."
+          - label: "Parce que Java ne sait pas lancer un .jar"
+            correct: false
+            why: "`java -jar` est la façon standard."
+          - label: "Parce que le port 8080 est interdit"
+            correct: false
+            why: "Le port n'a rien à voir avec le nom du fichier."
+        explanation: "Solution simple : copier le `.jar` sous un nom fixe dans l'étape d'exécution (`COPY --from=build /app/target/*.jar app.jar`)."
+    exercises:
+      - slug: sor-ex-dockerfile-ordre
+        kind: REMETTRE_ORDRE
+        title: "Ordonner un Dockerfile multi-étapes"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Remets les lignes dans l'ordre."
+        criteria: "Étape de construction complète, puis étape d'exécution."
+        hints:
+          - "Chaque étape commence par `FROM`."
+          - "On copie le code et on construit dans la première étape."
+          - "`USER` avant `CMD`, dans la deuxième étape."
+        solution: |
+          FROM eclipse-temurin:21-jdk AS build
+          WORKDIR /app
+          COPY . .
+          RUN ./mvnw -B clean package
+          FROM eclipse-temurin:21-jre
+          COPY --from=build /app/target/*.jar /app/app.jar
+          USER 1001
+          CMD ["java", "-jar", "/app/app.jar"]
+        explanation: "Deux `FROM`, deux étapes. La seconde récupère seulement le `.jar` avec `COPY --from=build`."
+        xp: 10
+        payload:
+          language: dockerfile
+          lines:
+            - "FROM eclipse-temurin:21-jdk AS build"
+            - "WORKDIR /app"
+            - "COPY . ."
+            - "RUN ./mvnw -B clean package"
+            - "FROM eclipse-temurin:21-jre"
+            - "COPY --from=build /app/target/*.jar /app/app.jar"
+            - "USER 1001"
+            - "CMD [\"java\", \"-jar\", \"/app/app.jar\"]"
+      - slug: sor-ex-dockerfile
+        kind: CORRIGER_ERREUR
+        title: "TP — Réécrire le Dockerfile de Soramfr"
+        difficulty: DIFFICILE
+        skill: docker-deploiement
+        statement: |
+          Réécris ce Dockerfile :
+          1. **étape `build`** : `FROM eclipse-temurin:21-jdk AS build`, copie le projet, construit **avec** les tests
+             (`./mvnw -B clean package`, sans `-DskipTests`) ;
+          2. **étape d'exécution** : `FROM eclipse-temurin:21-jre`, copie seulement le `.jar` avec
+             `COPY --from=build /app/target/*.jar /app/app.jar` ;
+          3. crée ou utilise un utilisateur non administrateur (`USER 1001` ou un utilisateur créé avec `useradd`) ;
+          4. lance `/app/app.jar`.
+        criteria: "Deux étapes, JRE à l'exécution, tests non sautés, utilisateur non root, bon nom de .jar."
+        hints:
+          - "Deux instructions `FROM` : la première avec `AS build`."
+          - "`COPY --from=build /app/target/*.jar /app/app.jar`"
+          - "`USER 1001` puis `CMD [\"java\", \"-jar\", \"/app/app.jar\"]`."
+        solution: |
+          FROM eclipse-temurin:21-jdk AS build
+          WORKDIR /app
+          COPY . .
+          RUN chmod +x mvnw && ./mvnw -B clean package
+
+          FROM eclipse-temurin:21-jre
+          WORKDIR /app
+          COPY --from=build /app/target/*.jar /app/app.jar
+          USER 1001
+          EXPOSE 8080
+          CMD ["java", "-jar", "/app/app.jar"]
+        explanation: |
+          - L'image finale ne contient ni le JDK, ni Maven, ni le code source : seulement un JRE et `app.jar`.
+          - Les tests tournent pendant la construction : une version qui les casse ne produit pas d'image.
+          - `USER 1001` : l'application n'a pas les droits d'administrateur dans le conteneur.
+          - Le `.jar` est copié sous un nom fixe : plus de « Unable to access jarfile ».
+        xp: 40
+        payload:
+          language: dockerfile
+          starter: |
+            FROM eclipse-temurin:21-jdk
+            WORKDIR /app
+            COPY . .
+            RUN chmod +x mvnw
+            RUN ./mvnw clean package -DskipTests
+            EXPOSE 8080
+            CMD ["java", "-jar", "/app/target/mon-app.jar"]
+          checks:
+            - pattern: '(?i)^FROM\s+eclipse-temurin:21-jdk\s+AS\s+build\s*$'
+              message: "Première étape : FROM eclipse-temurin:21-jdk AS build"
+            - pattern: '(?i)^FROM\s+eclipse-temurin:21-jre\S*\s*$'
+              message: "Deuxième étape avec un JRE seulement : FROM eclipse-temurin:21-jre"
+            - pattern: 'skipTests'
+              absent: true
+              message: "Ne saute plus les tests : retire -DskipTests."
+            - pattern: 'mvnw[^\n]*package'
+              message: "Construis le projet : ./mvnw -B clean package"
+            - pattern: '(?i)^COPY\s+--from=build\s+/app/target/\*\.jar\s+/app/app\.jar\s*$'
+              message: "Copie seulement le .jar : COPY --from=build /app/target/*.jar /app/app.jar"
+            - pattern: '(?i)^USER\s+(?!root\b)(?!0\b)\S+'
+              message: "Ajoute un utilisateur non administrateur : USER 1001"
+            - pattern: '(?i)^USER[\s\S]*^CMD'
+              message: "L'instruction USER doit venir avant CMD."
+            - pattern: 'CMD\s*\[\s*"java"\s*,\s*"-jar"\s*,\s*"/app/app\.jar"\s*\]'
+              message: "Lance le bon fichier : CMD [\"java\", \"-jar\", \"/app/app.jar\"]"
+            - pattern: 'mon-app\.jar'
+              absent: true
+              message: "mon-app.jar n'existe pas : utilise /app/app.jar."
+
+  # ===================================================================== LEÇON 3
+  - slug: sor-compose
+    title: "Docker Compose et mise en ligne"
+    duration: 14
+    objective: "Assembler PostgreSQL et le backend avec Docker Compose, puis comprendre le déploiement Render + Netlify."
+    prerequisites: "Leçon « TP — Un Dockerfile propre en deux étapes »."
+    skills: [docker-deploiement]
+    xp: 30
+    memo: |
+      - **Docker Compose** décrit plusieurs conteneurs qui travaillent ensemble dans un seul fichier `compose.yaml`.
+      - Chaque **service** : une image (ou un `build`), des variables (`environment`), des ports, des volumes.
+      - Entre conteneurs, on s'appelle par le **nom du service** : `jdbc:postgresql://db:5432/soramfr`.
+      - Un **volume** garde les données de PostgreSQL quand le conteneur est recréé.
+      - `depends_on` avec `condition: service_healthy` attend que la base soit prête.
+      - En ligne : backend sur Render (Docker), frontend sur Netlify (`ng build`), base PostgreSQL hébergée ; CORS réglé sur l'adresse Netlify exacte.
+    commonMistakes: |
+      - Écrire `localhost` pour joindre la base depuis le conteneur du backend : `localhost` désigne le conteneur lui-même.
+      - Oublier le volume : toutes les données disparaissent à chaque redémarrage.
+      - Écrire les mots de passe directement dans `compose.yaml` commité.
+      - Publier le port de PostgreSQL sur Internet sans nécessité.
+    blocks:
+      - type: text
+        md: |
+          Soramfr a besoin de **deux** programmes au minimum : PostgreSQL et le backend. Docker Compose les
+          démarre ensemble, avec une seule commande : `docker compose up`.
+      - type: definition
+        id: def-compose
+        term: "Docker Compose"
+        md: |
+          Le **chef d'orchestre** : un fichier décrit tous les musiciens (les conteneurs), leurs réglages et
+          l'ordre d'entrée. `docker compose up` lance tout l'orchestre.
+      - type: definition
+        id: def-volume
+        term: "Volume"
+        md: |
+          Un **disque dur externe** branché sur le conteneur. Le conteneur peut être jeté et recréé, les
+          données (les tables PostgreSQL) restent sur le volume.
+      - type: code
+        id: code-compose
+        language: yaml
+        title: "compose.yaml pour Soramfr"
+        code: |
+          services:
+            db:
+              image: postgres:16-alpine
+              environment:
+                POSTGRES_DB: soramfr
+                POSTGRES_USER: soramfr
+                POSTGRES_PASSWORD: ${DB_PASSWORD}
+              volumes:
+                - donnees:/var/lib/postgresql/data
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U soramfr -d soramfr"]
+                interval: 5s
+
+            backend:
+              build: .
+              environment:
+                DB_URL: jdbc:postgresql://db:5432/soramfr
+                DB_USERNAME: soramfr
+                DB_PASSWORD: ${DB_PASSWORD}
+                JWT_SECRET: ${JWT_SECRET}
+              ports:
+                - "8080:8080"
+              depends_on:
+                db:
+                  condition: service_healthy
+
+          volumes:
+            donnees:
+        lines:
+          - n: 2
+            note: "Le service `db` : son nom sert d'adresse réseau pour les autres conteneurs."
+          - n: 7
+            note: "`${DB_PASSWORD}` est lu dans le fichier `.env` à côté : aucun mot de passe écrit ici."
+          - n: 9
+            note: "Les données PostgreSQL vont sur le volume `donnees`."
+          - n: 11
+            note: "Le test de santé : `pg_isready` répond quand la base accepte les connexions."
+          - n: 15
+            note: "`build: .` : l'image est construite avec le Dockerfile du dossier."
+          - n: 17
+            note: "`db:5432` : on joint la base par le **nom du service**, pas par `localhost`."
+          - n: 22
+            note: "Port 8080 du conteneur publié sur le port 8080 de la machine."
+          - n: 25
+            note: "Le backend attend que la base soit **en bonne santé**."
+      - type: question
+        ref: sor-cp-q1
+        review: code-compose
+      - type: steps
+        id: etapes-mise-en-ligne
+        title: "Mettre Soramfr en ligne"
+        items:
+          - "**Base** : créer une base PostgreSQL hébergée (Render, Neon…) et noter son adresse."
+          - "**Backend (Render)** : service de type Docker relié au dépôt GitHub ; renseigner `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `CORS_ORIGINS`."
+          - "**Frontend (Netlify)** : commande `ng build`, dossier publié `dist/<projet>/browser`, `environment.prod.ts` pointant vers l'adresse Render."
+          - "**Routage Angular** : fichier `_redirects` avec `/* /index.html 200`, sinon rafraîchir `/produits` donne une erreur 404."
+          - "**Vérifier** : inscription, connexion et route admin depuis l'adresse Netlify ; aucune erreur CORS dans la console."
+      - type: question
+        ref: sor-cp-q2
+        review: etapes-mise-en-ligne
+      - type: text
+        md: "Exercice guidé : complète le service backend."
+      - type: exercise
+        ref: sor-ex-compose-guide
+      - type: text
+        md: "En autonomie : écris le service `db` du fichier Compose."
+      - type: exercise
+        ref: sor-ex-compose-db
+      - type: jury
+        items:
+          - q: "Comment avez-vous déployé votre application ?"
+            a: |
+              « Le backend est une image Docker déployée sur Render, avec les secrets en variables
+              d'environnement. Le frontend est construit avec `ng build` et publié sur Netlify. La base est un
+              PostgreSQL hébergé. En local, Docker Compose lance la base et le backend ensemble. »
+          - q: "Pourquoi le backend ne peut-il pas utiliser localhost pour joindre la base dans Docker Compose ?"
+            a: "Parce que chaque conteneur a son propre réseau : localhost désigne le conteneur lui-même. On utilise le nom du service, `db`."
+      - type: quiz
+        items:
+          - ref: sor-cp-q3
+            review: def-volume
+          - ref: sor-cp-q4
+            review: def-compose
+          - ref: sor-cp-q5
+            review: etapes-mise-en-ligne
+    questions:
+      - code: sor-cp-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Dans Compose, quelle adresse le backend utilise-t-il pour joindre PostgreSQL ?"
+        choices:
+          - label: "`jdbc:postgresql://db:5432/soramfr`"
+            correct: true
+            why: "Oui : `db` est le nom du service."
+          - label: "`jdbc:postgresql://localhost:5432/soramfr`"
+            correct: false
+            why: "`localhost` désigne le conteneur du backend lui-même."
+          - label: "`http://db:8080`"
+            correct: false
+            why: "C'est le port du backend, et le protocole n'est pas JDBC."
+        explanation: "Compose crée un réseau où chaque service est joignable par son nom."
+      - code: sor-cp-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: docker-deploiement
+        prompt: "Sur Netlify, rafraîchir la page `/produits` donne une erreur 404. Pourquoi ?"
+        choices:
+          - label: "Le serveur cherche un fichier `/produits` qui n'existe pas ; il faut renvoyer toutes les adresses vers `index.html`"
+            correct: true
+            why: "Oui : c'est Angular qui gère les routes, dans le navigateur."
+          - label: "Le backend est éteint"
+            correct: false
+            why: "La page elle-même n'est pas trouvée, avant tout appel à l'API."
+          - label: "La route `/produits` n'existe pas dans Angular"
+            correct: false
+            why: "Elle existe : la navigation interne fonctionne."
+        explanation: "Règle de réécriture `/* /index.html 200` (fichier `_redirects` sur Netlify)."
+      - code: sor-cp-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Sans volume, les comptes enregistrés dans PostgreSQL disparaissent quand on recrée le conteneur."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Oui : les données sont dans le conteneur, qui est jeté."
+          - label: "Faux"
+            correct: false
+            why: "Sans volume, rien ne survit à la suppression du conteneur."
+        explanation: "Un volume sépare les données de la vie du conteneur."
+      - code: sor-cp-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "À quoi sert `depends_on` avec `condition: service_healthy` ?"
+        choices:
+          - label: "À démarrer le backend seulement quand la base répond au test de santé"
+            correct: true
+            why: "Oui : on évite des erreurs de connexion au démarrage."
+          - label: "À redémarrer la base chaque minute"
+            correct: false
+            why: "Ce n'est pas son rôle."
+          - label: "À copier la base dans le backend"
+            correct: false
+            why: "Chaque service reste séparé."
+        explanation: "L'ordre de démarrage ne suffit pas : la base doit être **prête**."
+      - code: sor-cp-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Après le déploiement, la console du navigateur affiche une erreur CORS. Que vérifier en premier ?"
+        choices:
+          - label: "Que `CORS_ORIGINS` contient l'adresse Netlify exacte (orthographe, https)"
+            correct: true
+            why: "Oui : c'est la cause la plus fréquente, et Soramfr mélange deux orthographes."
+          - label: "Que PostgreSQL est bien démarré"
+            correct: false
+            why: "Une erreur CORS vient des en-têtes de l'API, pas de la base."
+          - label: "Que le mot de passe de l'utilisatrice est correct"
+            correct: false
+            why: "CORS intervient avant toute logique de connexion."
+        explanation: "L'origine autorisée doit correspondre exactement : protocole, nom de domaine, port."
+    exercises:
+      - slug: sor-ex-compose-guide
+        kind: COMPLETER
+        title: "Compléter le service backend"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Complète le service backend."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le nom du service PostgreSQL sert d'adresse."
+          - "Le secret de signature vient du fichier .env."
+          - "db, JWT_SECRET, service_healthy."
+        solution: '["db", "JWT_SECRET", "service_healthy"]'
+        explanation: "Adresse `db`, secret lu dans `.env`, démarrage quand la base est prête."
+        xp: 10
+        payload:
+          language: yaml
+          template: |
+            backend:
+              build: .
+              environment:
+                DB_URL: jdbc:postgresql://[[1]]:5432/soramfr
+                JWT_SECRET: ${[[2]]}
+              depends_on:
+                db:
+                  condition: [[3]]
+          blanks:
+            - ["db"]
+            - ["JWT_SECRET"]
+            - ["service_healthy"]
+      - slug: sor-ex-compose-db
+        kind: CODE_LIBRE
+        title: "Écrire le service db"
+        difficulty: INTERMEDIAIRE
+        skill: docker-deploiement
+        statement: |
+          Écris le début d'un `compose.yaml` avec un service `db` :
+          - image `postgres:16-alpine` ;
+          - variables `POSTGRES_DB: soramfr`, `POSTGRES_USER: soramfr`, `POSTGRES_PASSWORD: ${DB_PASSWORD}` ;
+          - un volume nommé `donnees` monté sur `/var/lib/postgresql/data` (et déclaré en bas du fichier) ;
+          - un `healthcheck` qui utilise `pg_isready`.
+        criteria: "Service db complet, mot de passe lu dans l'environnement, volume déclaré, test de santé."
+        hints:
+          - "Commence par `services:` puis `  db:` (indentation de deux espaces)."
+          - "`volumes:` dans le service : `- donnees:/var/lib/postgresql/data` ; et en bas : `volumes:` / `  donnees:`."
+          - "`healthcheck:` / `  test: [\"CMD-SHELL\", \"pg_isready -U soramfr -d soramfr\"]`"
+        solution: |
+          services:
+            db:
+              image: postgres:16-alpine
+              environment:
+                POSTGRES_DB: soramfr
+                POSTGRES_USER: soramfr
+                POSTGRES_PASSWORD: ${DB_PASSWORD}
+              volumes:
+                - donnees:/var/lib/postgresql/data
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U soramfr -d soramfr"]
+                interval: 5s
+
+          volumes:
+            donnees:
+        explanation: "La base démarre avec son mot de passe lu dans `.env`, garde ses données sur le volume `donnees` et signale quand elle est prête."
+        xp: 30
+        payload:
+          language: yaml
+          starter: |
+            services:
+          checks:
+            - pattern: '^services:\s*$'
+              message: "Le fichier commence par services:"
+            - pattern: '^\s+db:\s*$'
+              message: "Déclare le service db:"
+            - pattern: '^\s+image:\s*"?postgres:16-alpine"?\s*$'
+              message: "Utilise l'image postgres:16-alpine."
+            - pattern: '^\s+POSTGRES_DB:\s*"?soramfr"?\s*$'
+              message: "Ajoute POSTGRES_DB: soramfr."
+            - pattern: '^\s+POSTGRES_USER:\s*"?soramfr"?\s*$'
+              message: "Ajoute POSTGRES_USER: soramfr."
+            - pattern: '^\s+POSTGRES_PASSWORD:\s*"?\$\{DB_PASSWORD\}"?\s*$'
+              message: "Le mot de passe vient de l'environnement : POSTGRES_PASSWORD: ${DB_PASSWORD}"
+            - pattern: '^\s+-\s*"?donnees:/var/lib/postgresql/data"?\s*$'
+              message: "Monte le volume : - donnees:/var/lib/postgresql/data"
+            - pattern: '^volumes:\s*\n\s+donnees:'
+              message: "Déclare le volume en bas du fichier : volumes: puis donnees:"
+            - pattern: 'healthcheck:[\s\S]*pg_isready'
+              message: "Ajoute un healthcheck qui utilise pg_isready."
+
+bank:
+  - code: sor-c7-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: docker-deploiement
+    prompt: "Quelle commande démarre tous les services d'un fichier Compose en arrière-plan ?"
+    choices:
+      - label: "`docker compose up -d`"
+        correct: true
+        why: "Oui : `-d` pour détaché."
+      - label: "`docker build .`"
+        correct: false
+        why: "Construit une image, sans rien démarrer."
+      - label: "`ng serve`"
+        correct: false
+        why: "Lance le serveur de développement Angular."
+    explanation: "`docker compose up -d` ; `docker compose logs -f backend` pour suivre les logs ; `docker compose down` pour tout arrêter."
+  - code: sor-c7-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: docker-deploiement
+    prompt: "À quoi sert un fichier `.dockerignore` ?"
+    choices:
+      - label: "À exclure des fichiers de la copie vers l'image (`.git`, `target`, `.env`…)"
+        correct: true
+        why: "Oui : image plus légère et pas de secret embarqué."
+      - label: "À ignorer les erreurs de Docker"
+        correct: false
+        why: "Il ne concerne que les fichiers copiés."
+      - label: "À masquer les conteneurs de `docker ps`"
+        correct: false
+        why: "Il n'a rien à voir avec l'affichage."
+    explanation: "Avec `COPY . .`, un `.dockerignore` est indispensable."
+  - code: sor-c7-b3
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: docker-deploiement
+    prompt: "Une image Docker construite une fois peut être lancée à l'identique sur l'ordinateur de n'importe quel membre de l'équipe."
+    choices:
+      - label: "Vrai"
+        correct: true
+        why: "Oui : c'est l'intérêt principal de Docker (« ça marche chez moi » disparaît)."
+      - label: "Faux"
+        correct: false
+        why: "L'image contient tout ce qu'il faut pour tourner."
+    explanation: "Même image en local, en test et en production : moins de surprises."
+  - code: sor-c7-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: docker-deploiement
+    prompt: "Pourquoi éviter `ports: - \"5432:5432\"` sur la base en production ?"
+    choices:
+      - label: "Cela expose PostgreSQL au réseau alors que seul le backend doit y accéder"
+        correct: true
+        why: "Oui : le backend la joint par le réseau interne de Compose."
+      - label: "PostgreSQL ne fonctionne pas sur le port 5432"
+        correct: false
+        why: "5432 est son port par défaut."
+      - label: "Docker l'interdit"
+        correct: false
+        why: "Docker l'autorise, c'est un choix de sécurité."
+    explanation: "Moindre exposition : on ne publie que ce qui doit être joint de l'extérieur."
+  - code: sor-c7-b5
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: docker-deploiement
+    prompt: "Quelle commande Angular produit les fichiers à publier sur Netlify ?"
+    choices:
+      - label: "`ng build` (configuration production)"
+        correct: true
+        why: "Oui : fichiers optimisés dans `dist/`."
+      - label: "`ng serve`"
+        correct: false
+        why: "Serveur de développement, pas de fichiers à publier."
+      - label: "`ng generate component`"
+        correct: false
+        why: "Crée un composant dans le code."
+    explanation: "`ng build` applique aussi le remplacement `environment.prod.ts`."

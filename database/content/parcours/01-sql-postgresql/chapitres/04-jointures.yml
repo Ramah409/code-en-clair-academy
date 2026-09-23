@@ -30,6 +30,7 @@ lessons:
           afficher son **nom** (« Livres », « Informatique »…), il faut aller le chercher dans la table
           `categories`. Relier deux tables de cette façon s'appelle une **jointure**.
       - type: definition
+        id: def-cle-etrangere
         term: "Clé étrangère"
         md: |
           Colonne dont les valeurs **font référence** à la clé primaire d'une autre table. `produits.categorie_id`
@@ -82,6 +83,12 @@ lessons:
         ref: sql-ex-commandes-clients
       - type: question
         ref: sql-c4l1-q4
+      - type: quiz
+        items:
+          - ref: sqlq-inner-1
+            review: def-cle-etrangere
+          - ref: sqlq-inner-2
+          - ref: sqlq-inner-3
     questions:
       - code: sql-c4l1-q1
         kind: CHOIX_UNIQUE
@@ -140,6 +147,51 @@ lessons:
         language: sql
         answers: ["p.id = a.produit_id", "a.produit_id = p.id"]
         explanation: "La table avis contient la clé étrangère `produit_id`, qui référence `produits.id`."
+      - code: sqlq-inner-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-jointures
+        prompt: À quoi sert une jointure ?
+        choices:
+          - label: À combiner des lignes de plusieurs tables grâce à une colonne commune
+            correct: true
+            why: 'Oui : souvent clé étrangère = clé primaire.'
+          - label: À fusionner deux tables en une seule, définitivement
+            correct: false
+            why: Une jointure ne modifie aucune table.
+          - label: À supprimer les doublons
+            correct: false
+            why: C'est DISTINCT.
+        explanation: '`JOIN categories c ON c.id = p.categorie_id` : on relie chaque produit à sa catégorie.'
+      - code: sqlq-inner-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: Avec INNER JOIN, que devient un produit dont `categorie_id` est NULL ?
+        choices:
+          - label: Il disparaît du résultat
+            correct: true
+            why: "Oui : il n'a pas de correspondance."
+          - label: Il apparaît avec une catégorie vide
+            correct: false
+            why: C'est le comportement de LEFT JOIN.
+          - label: Il provoque une erreur
+            correct: false
+            why: Aucune erreur, il est simplement écarté.
+        explanation: INNER JOIN ne garde que les lignes qui ont une correspondance des deux côtés.
+      - code: sqlq-inner-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-jointures
+        prompt: Les alias de tables (`produits p`) évitent de répéter le nom complet et lèvent les ambiguïtés.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : `p.id` et `c.id` ne se confondent plus.'
+          - label: Faux
+            correct: false
+            why: C'est précisément leur rôle.
+        explanation: Préfixer les colonnes par l'alias rend la requête lisible et sans ambiguïté.
     exercises:
       - slug: sql-ex-commandes-clients
         kind: SQL
@@ -194,6 +246,7 @@ lessons:
           disparaissent justement parce qu'ils n'ont pas de correspondance. La **jointure externe gauche**
           (`LEFT JOIN`) les conserve.
       - type: definition
+        id: def-left-join-jointure-externe-gauche
         term: "LEFT JOIN (jointure externe gauche)"
         md: |
           Conserve **toutes les lignes de la table de gauche** (celle du FROM). Quand aucune ligne de droite ne
@@ -252,6 +305,12 @@ lessons:
         ref: sql-ex-nb-commandes-par-client
       - type: question
         ref: sql-c4l2-q4
+      - type: quiz
+        items:
+          - ref: sqlq-left-1
+            review: def-left-join-jointure-externe-gauche
+          - ref: sqlq-left-2
+          - ref: sqlq-left-3
     questions:
       - code: sql-c4l2-q1
         kind: RESULTAT_CODE
@@ -322,6 +381,51 @@ lessons:
             correct: true
             why: "Le WHERE transforme de fait la jointure externe en jointure interne."
         explanation: "Pour filtrer la table de droite sans perdre les lignes de gauche, place la condition dans le ON : `LEFT JOIN commandes co ON co.client_id = cl.id AND co.statut = 'LIVREE'`."
+      - code: sqlq-left-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: Que garde `clients LEFT JOIN commandes` ?
+        choices:
+          - label: Tous les clients, même ceux sans commande
+            correct: true
+            why: 'Oui : la table de gauche est gardée entière.'
+          - label: Seulement les clients qui ont commandé
+            correct: false
+            why: Ce serait INNER JOIN.
+          - label: Toutes les commandes, même sans client
+            correct: false
+            why: Ce serait RIGHT JOIN.
+        explanation: "LEFT JOIN : toute la table de gauche ; colonnes de droite à NULL quand il n'y a pas de correspondance."
+      - code: sqlq-left-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: Comment trouver les clients qui n'ont **aucune** commande ?
+        choices:
+          - label: '`LEFT JOIN commandes co ON co.client_id = c.id WHERE co.id IS NULL`'
+            correct: true
+            why: 'Oui : pas de commande → colonnes de commandes à NULL.'
+          - label: '`INNER JOIN commandes ... WHERE co.id IS NULL`'
+            correct: false
+            why: INNER JOIN a déjà retiré les clients sans commande.
+          - label: '`WHERE commandes = 0`'
+            correct: false
+            why: Il n'existe pas de colonne commandes dans clients.
+        explanation: 'LEFT JOIN + IS NULL sur la table de droite : le schéma « anti-jointure ».'
+      - code: sqlq-left-3
+        kind: VRAI_FAUX
+        difficulty: 3
+        skill: sql-jointures
+        prompt: Pour compter les commandes de chaque client en affichant 0, on utilise `COUNT(co.id)` plutôt que `COUNT(*)`.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : COUNT(*) compterait 1 pour la ligne « vide » du LEFT JOIN.'
+          - label: Faux
+            correct: false
+            why: COUNT(*) donnerait 1 au lieu de 0 pour un client sans commande.
+        explanation: COUNT(colonne) ignore les NULL produits par le LEFT JOIN.
     exercises:
       - slug: sql-ex-nb-commandes-par-client
         kind: SQL
@@ -373,6 +477,7 @@ lessons:
           commandes. Aucune des deux tables ne peut contenir une seule clé étrangère vers l'autre : on crée une
           table intermédiaire, `lignes_commande`, qui relie une commande et un produit, avec la quantité.
       - type: definition
+        id: def-table-d-association
         term: "Table d'association"
         md: |
           Table dont la clé primaire est composée de deux clés étrangères (`commande_id`, `produit_id`). Elle
@@ -465,6 +570,12 @@ lessons:
         ref: sql-ex-montant-commandes
       - type: question
         ref: sql-c4l3-q4
+      - type: quiz
+        items:
+          - ref: sqlq-multi-1
+            review: def-table-d-association
+          - ref: sqlq-multi-2
+          - ref: sqlq-multi-3
     questions:
       - code: sql-c4l3-q1
         kind: CHOIX_UNIQUE
@@ -529,6 +640,51 @@ lessons:
         language: sql
         answers: ["DISTINCT"]
         explanation: "Ici chaque couple (commande, produit) est unique, mais `COUNT(DISTINCT ...)` est un réflexe sûr dès qu'une jointure peut dupliquer des lignes."
+      - code: sqlq-multi-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: Pour relier `commandes` et `produits`, par quelle table faut-il passer ?
+        choices:
+          - label: "`lignes_commande`, la table d'association"
+            correct: true
+            why: 'Oui : elle contient commande_id et produit_id.'
+          - label: '`clients`'
+            correct: false
+            why: clients n'a pas de lien direct avec produits.
+          - label: 'Aucune : on les relie directement'
+            correct: false
+            why: Il n'y a pas de colonne commune directe.
+        explanation: Relation plusieurs-à-plusieurs = une table d'association entre les deux.
+      - code: sqlq-multi-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: Combien de JOIN faut-il pour relier 4 tables en chaîne ?
+        choices:
+          - label: '3'
+            correct: true
+            why: 'Oui : un JOIN de moins que le nombre de tables.'
+          - label: '4'
+            correct: false
+            why: La première table est dans FROM.
+          - label: '2'
+            correct: false
+            why: Une table resterait isolée.
+        explanation: 'FROM t1 JOIN t2 JOIN t3 JOIN t4 : trois jointures, chacune avec sa condition ON.'
+      - code: sqlq-multi-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-jointures
+        prompt: Oublier une condition ON produit un produit cartésien (toutes les combinaisons de lignes).
+        choices:
+          - label: Vrai
+            correct: true
+            why: "Oui : chaque ligne est associée à toutes les lignes de l'autre table."
+          - label: Faux
+            correct: false
+            why: Sans condition, toutes les combinaisons sont produites.
+        explanation: Un résultat anormalement grand signale souvent une condition de jointure oubliée.
     exercises:
       - slug: sql-ex-montant-commandes
         kind: SQL
@@ -617,6 +773,11 @@ lessons:
         ref: sql-ex-equipe-karim
       - type: question
         ref: sql-c4l4-q3
+      - type: quiz
+        items:
+          - ref: sqlq-self-1
+          - ref: sqlq-self-2
+          - ref: sqlq-self-3
     questions:
       - code: sql-c4l4-q1
         kind: CHOIX_UNIQUE
@@ -660,6 +821,51 @@ lessons:
         language: sql
         answers: ["e.salaire > m.salaire", "m.salaire < e.salaire"]
         explanation: "Une fois la table jointe à elle-même, on compare librement les colonnes des deux rôles. Dans notre base, la requête ne renvoie aucune ligne : aucun employé ne gagne plus que son manager. Vérifie-le dans le laboratoire !"
+      - code: sqlq-self-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: Qu'est-ce qu'une auto-jointure ?
+        choices:
+          - label: Une jointure d'une table avec elle-même, grâce à deux alias
+            correct: true
+            why: 'Oui : par exemple employé et manager.'
+          - label: Une jointure créée automatiquement par PostgreSQL
+            correct: false
+            why: Elle s'écrit à la main.
+          - label: Une jointure sans condition
+            correct: false
+            why: Elle a bien une condition ON.
+        explanation: '`employes e LEFT JOIN employes m ON m.id = e.manager_id`.'
+      - code: sqlq-self-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: Dans `employes e JOIN employes m ON m.id = e.manager_id`, que représente `m` ?
+        choices:
+          - label: Le manager de l'employé e
+            correct: true
+            why: 'Oui : m.id est égal au manager_id de e.'
+          - label: Les employés gérés par e
+            correct: false
+            why: Il faudrait `m.manager_id = e.id`.
+          - label: Une autre table
+            correct: false
+            why: C'est la même table, vue une deuxième fois.
+        explanation: Deux alias = deux rôles pour la même table.
+      - code: sqlq-self-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-jointures
+        prompt: La directrice (sans manager) apparaît avec un INNER JOIN employé → manager.
+        choices:
+          - label: Vrai
+            correct: false
+            why: 'Non : son manager_id est NULL, pas de correspondance.'
+          - label: Faux
+            correct: true
+            why: 'Exact : il faut un LEFT JOIN pour la garder.'
+        explanation: Relation facultative (manager_id NULL) → LEFT JOIN.
     exercises:
       - slug: sql-ex-equipe-karim
         kind: SQL

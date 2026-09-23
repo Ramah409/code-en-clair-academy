@@ -29,7 +29,7 @@ import {
   SubmitResult,
 } from './models';
 
-/** Accès typé à l'API REST de CDA Academy. */
+/** Accès typé à l'API REST de Code en Clair Academy. */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);

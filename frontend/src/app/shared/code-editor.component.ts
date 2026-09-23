@@ -182,6 +182,7 @@ export class CodeEditorComponent implements AfterViewInit, OnDestroy {
         return javascript({ typescript: true });
       case 'javascript':
       case 'js':
+      case 'json':
         return javascript();
       case 'html':
         return html();

@@ -38,6 +38,7 @@ lessons:
           Ensemble de données sur un même sujet, organisé en **colonnes** et en **lignes**.
           Exemple : la table `clients` de notre boutique.
       - type: definition
+        id: def-colonne-ou-attribut
         term: "Colonne (ou attribut)"
         md: |
           Une information décrite pour chaque ligne, avec un **type** précis : `prenom` (texte),
@@ -47,6 +48,7 @@ lessons:
         md: |
           Un élément concret de la table : **une** cliente, **un** produit, **une** commande.
       - type: definition
+        id: def-cle-primaire
         term: "Clé primaire"
         md: |
           Colonne (ou groupe de colonnes) dont la valeur est **unique** et **jamais vide** pour chaque ligne.
@@ -66,6 +68,7 @@ lessons:
       - type: question
         ref: sql-l1-q1
       - type: definition
+        id: def-sgbd-et-sql
         term: "SGBD et SQL"
         md: |
           Le **SGBD** (Système de Gestion de Base de Données) est le logiciel qui stocke les données et les
@@ -106,6 +109,14 @@ lessons:
         ref: sql-ex-select-services
       - type: question
         ref: sql-l1-q4
+      - type: quiz
+        items:
+          - ref: sqlq-bases-1
+            review: def-colonne-ou-attribut
+          - ref: sqlq-bases-2
+            review: def-sgbd-et-sql
+          - ref: sqlq-bases-3
+            review: def-cle-primaire
     questions:
       - code: sql-l1-q1
         kind: CHOIX_UNIQUE
@@ -163,6 +174,51 @@ lessons:
             correct: false
             why: "Des outils comme JPA génèrent du SQL, mais le SGBD, lui, se contente de l'exécuter."
         explanation: "SQL est le langage ; PostgreSQL est le SGBD qui comprend ce langage et gère les données."
+      - code: sqlq-bases-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Dans la table `produits`, la colonne `prix` représente…
+        choices:
+          - label: une information décrite pour chaque produit
+            correct: true
+            why: 'Oui : chaque ligne (produit) a une valeur de prix.'
+          - label: un produit précis
+            correct: false
+            why: Un produit précis, c'est une ligne.
+          - label: l'ensemble des tables
+            correct: false
+            why: L'ensemble des tables, c'est la base de données.
+        explanation: Colonne = une information ; ligne = un élément ; table = le tableau entier.
+      - code: sqlq-bases-2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: SQL, c'est…
+        choices:
+          - label: le langage pour interroger et modifier une base de données
+            correct: true
+            why: 'Oui : on écrit des requêtes en SQL.'
+          - label: le logiciel qui stocke les données
+            correct: false
+            why: Ça, c'est le SGBD (PostgreSQL).
+          - label: une table particulière
+            correct: false
+            why: SQL est un langage, pas une table.
+        explanation: Le SGBD (PostgreSQL) garde les données ; SQL est la langue qu'on utilise pour lui parler.
+      - code: sqlq-bases-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: La clé primaire d'une ligne peut rester vide.
+        choices:
+          - label: Vrai
+            correct: false
+            why: 'Non : une clé primaire est toujours renseignée.'
+          - label: Faux
+            correct: true
+            why: 'Exact : unique et jamais vide.'
+        explanation: Clé primaire = unique + obligatoire. Elle désigne chaque ligne sans ambiguïté.
     exercises:
       - slug: sql-ex-select-services
         kind: SQL
@@ -232,6 +288,7 @@ lessons:
       - type: question
         ref: sql-l2-q1
       - type: definition
+        id: def-alias-as
         term: "Alias (AS)"
         md: |
           Nom temporaire donné à une colonne (ou à une table) **dans le résultat**. Il rend le résultat plus
@@ -280,6 +337,12 @@ lessons:
         ref: sql-l2-q4
       - type: exercise
         ref: sql-ex-nom-complet
+      - type: quiz
+        items:
+          - ref: sqlq-select-1
+          - ref: sqlq-select-2
+            review: def-alias-as
+          - ref: sqlq-select-3
     questions:
       - code: sql-l2-q1
         kind: CHOIX_UNIQUE
@@ -348,6 +411,51 @@ lessons:
         language: sql
         answers: ["AS"]
         explanation: "`AS` introduit l'alias. Il est techniquement facultatif en PostgreSQL, mais l'écrire rend la requête beaucoup plus lisible."
+      - code: sqlq-select-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Que signifie `*` dans `SELECT * FROM clients;` ?
+        choices:
+          - label: Toutes les colonnes
+            correct: true
+            why: "Oui : l'étoile remplace la liste de toutes les colonnes."
+          - label: Toutes les tables
+            correct: false
+            why: La table est indiquée après FROM.
+          - label: Une multiplication
+            correct: false
+            why: Juste après SELECT, `*` veut dire « toutes les colonnes ».
+        explanation: "En production, on préfère lister les colonnes utiles : c'est plus clair et plus léger."
+      - code: sqlq-select-2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: À quoi sert `AS` dans `SELECT prix * 1.2 AS prix_ttc FROM produits;` ?
+        choices:
+          - label: À donner un nom lisible à la colonne calculée
+            correct: true
+            why: "Oui : c'est un alias."
+          - label: À enregistrer la colonne dans la table
+            correct: false
+            why: SELECT ne modifie jamais la table.
+          - label: À trier le résultat
+            correct: false
+            why: Le tri se fait avec ORDER BY.
+        explanation: Un alias renomme une colonne (ou une table) dans le résultat seulement.
+      - code: sqlq-select-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: Dans SELECT, les noms de colonnes sont séparés par des virgules.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : `SELECT prenom, nom, ville`.'
+          - label: Faux
+            correct: false
+            why: 'Si : une virgule entre chaque colonne, pas après la dernière.'
+        explanation: 'Oublier une virgule transforme le deuxième nom en alias du premier : erreur discrète et fréquente.'
     exercises:
       - slug: sql-ex-clients-contact
         kind: SQL
@@ -443,6 +551,7 @@ lessons:
           FROM clients
           WHERE ville = 'Paris';
       - type: definition
+        id: def-condition-predicat
         term: "Condition (prédicat)"
         md: |
           Expression qui vaut **vrai** ou **faux** pour chaque ligne, par exemple `prix > 50`. PostgreSQL
@@ -486,6 +595,12 @@ lessons:
         ref: sql-l3-q4
       - type: exercise
         ref: sql-ex-commandes-annulees
+      - type: quiz
+        items:
+          - ref: sqlq-where-1
+            review: def-condition-predicat
+          - ref: sqlq-where-2
+          - ref: sqlq-where-3
     questions:
       - code: sql-l3-q1
         kind: CHOIX_UNIQUE
@@ -559,6 +674,51 @@ lessons:
             correct: false
             why: "L'ordre des clauses est imposé : WHERE vient après FROM."
         explanation: "Retiens l'ordre d'écriture : **SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY → LIMIT**. Tu découvriras les autres clauses au fil du parcours."
+      - code: sqlq-where-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Quelle requête affiche les produits dont le stock vaut exactement 0 ?
+        choices:
+          - label: '`SELECT * FROM produits WHERE stock = 0;`'
+            correct: true
+            why: 'Oui : `=` compare en SQL.'
+          - label: '`SELECT * FROM produits WHERE stock == 0;`'
+            correct: false
+            why: "`==` n'existe pas en SQL."
+          - label: '`SELECT * FROM produits IF stock = 0;`'
+            correct: false
+            why: Le filtre s'écrit avec WHERE.
+        explanation: En SQL, l'égalité s'écrit avec un seul `=`, et la différence avec `<>`.
+      - code: sqlq-where-2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Comment écrire « différent de Paris » ?
+        choices:
+          - label: "`ville <> 'Paris'`"
+            correct: true
+            why: Oui (on peut aussi écrire `!=`).
+          - label: "`ville NOT 'Paris'`"
+            correct: false
+            why: NOT s'utilise devant une condition complète.
+          - label: "`ville =/ 'Paris'`"
+            correct: false
+            why: Cet opérateur n'existe pas.
+        explanation: '`<>` (norme SQL) ou `!=` (accepté par PostgreSQL).'
+      - code: sqlq-where-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: Un WHERE modifie les données de la table.
+        choices:
+          - label: Vrai
+            correct: false
+            why: 'Non : il filtre seulement ce qui est affiché.'
+          - label: Faux
+            correct: true
+            why: 'Exact : SELECT ... WHERE ne fait que lire.'
+        explanation: WHERE filtre les lignes lues (ou modifiées, dans un UPDATE/DELETE) sans rien changer par lui-même.
     exercises:
       - slug: sql-ex-rupture-stock
         kind: SQL
@@ -674,6 +834,7 @@ lessons:
           WHERE ville IS NOT NULL
           ORDER BY ville ASC, nom ASC;
       - type: definition
+        id: def-limit-et-offset
         term: "LIMIT et OFFSET"
         md: |
           `LIMIT n` ne garde que les n premières lignes **après le tri**. `OFFSET k` saute les k premières.
@@ -709,6 +870,12 @@ lessons:
         ref: sql-l4-q4
       - type: exercise
         ref: sql-ex-ordre-clauses
+      - type: quiz
+        items:
+          - ref: sqlq-order-1
+          - ref: sqlq-order-2
+            review: def-limit-et-offset
+          - ref: sqlq-order-3
     questions:
       - code: sql-l4-q1
         kind: CHOIX_UNIQUE
@@ -770,6 +937,51 @@ lessons:
         language: sql
         answers: ["DESC"]
         explanation: "Pour des dates, l'ordre décroissant (`DESC`) place les plus récentes en premier."
+      - code: sqlq-order-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Quel mot-clé trie du plus grand au plus petit ?
+        choices:
+          - label: '`DESC`'
+            correct: true
+            why: 'Oui : descendant.'
+          - label: '`ASC`'
+            correct: false
+            why: ASC trie du plus petit au plus grand (c'est le défaut).
+          - label: '`LIMIT`'
+            correct: false
+            why: LIMIT limite le nombre de lignes.
+        explanation: '`ORDER BY prix DESC` : du plus cher au moins cher.'
+      - code: sqlq-order-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: Que renvoie `ORDER BY nom LIMIT 5 OFFSET 10` ?
+        choices:
+          - label: Les lignes 11 à 15 du résultat trié
+            correct: true
+            why: 'Oui : on saute 10 lignes, puis on en garde 5.'
+          - label: Les lignes 5 à 10
+            correct: false
+            why: OFFSET indique combien de lignes sauter.
+          - label: Les 15 premières lignes
+            correct: false
+            why: LIMIT en garde seulement 5.
+        explanation: "C'est le principe de la pagination : page 3 de 5 éléments = OFFSET 10."
+      - code: sqlq-order-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-select
+        prompt: Sans ORDER BY, PostgreSQL garantit l'ordre d'insertion des lignes.
+        choices:
+          - label: Vrai
+            correct: false
+            why: "Non : l'ordre peut changer d'une exécution à l'autre."
+          - label: Faux
+            correct: true
+            why: 'Exact : seul ORDER BY garantit un ordre.'
+        explanation: Toujours écrire ORDER BY quand l'ordre compte (pagination, top 3…).
     exercises:
       - slug: sql-ex-derniers-clients
         kind: SQL

@@ -89,6 +89,27 @@ class LearningFlowIntegrationTest extends PostgresIntegrationTest {
         assertThat(solved.at("/reward/xpEarned").asInt()).isPositive();
         assertThat(solved.get("explanation").asText()).isNotBlank();
 
+        // Le QCM de fin de leçon est obligatoire : sans lui, la leçon n'est pas validée
+        JsonNode pending = call("POST", "/api/lessons/sql-bases-relationnelles/complete", null,
+                status().isUnprocessableEntity());
+        assertThat(pending.get("message").asText()).contains("QCM de fin de leçon");
+        JsonNode quiz = null;
+        for (JsonNode block : call("GET", "/api/lessons/sql-bases-relationnelles", null, status().isOk()).get("blocks")) {
+            if (block.get("type").asText().equals("quiz")) {
+                quiz = block;
+            }
+        }
+        assertThat(quiz).isNotNull();
+        assertThat(quiz.get("items")).hasSize(3);
+        assertThat(quiz.at("/items/0/review").asText()).isEqualTo("def-colonne-ou-attribut");
+        assertThat(quiz.at("/items/0/question/prompt").asText()).isNotBlank();
+        call("POST", "/api/lessons/sql-bases-relationnelles/questions/sqlq-bases-1/answer", "{\"choices\":[1]}",
+                status().isOk());
+        call("POST", "/api/lessons/sql-bases-relationnelles/questions/sqlq-bases-2/answer", "{\"choices\":[1]}",
+                status().isOk());
+        call("POST", "/api/lessons/sql-bases-relationnelles/questions/sqlq-bases-3/answer", "{\"choices\":[2]}",
+                status().isOk());
+
         JsonNode done = call("POST", "/api/lessons/sql-bases-relationnelles/complete", "{\"secondsSpent\":300}",
                 status().isOk());
         assertThat(done.at("/next/slug").asText()).isEqualTo("sql-select-colonnes");

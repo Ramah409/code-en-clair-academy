@@ -1107,6 +1107,138 @@
   display: none;
 }
 
+.qcard__review-hint {
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+// ---------------------------------------------------------------- QCM de fin de leçon et jury
+
+.passage-anchor {
+  display: block;
+  scroll-margin-top: var(--space-6);
+}
+
+.blk--flash {
+  outline: 3px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: var(--radius-md);
+  transition: outline-color 0.4s;
+}
+
+.lquiz {
+  padding: var(--space-4);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-lg);
+  background: var(--primary-soft);
+}
+
+.lquiz__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.lquiz__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+}
+
+.lquiz__score {
+  margin: 0;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.lquiz__intro {
+  margin: var(--space-2) 0 var(--space-4);
+  color: var(--text-muted);
+}
+
+.lquiz__list {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lquiz__num {
+  margin: 0 0 var(--space-1);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.lquiz__done {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  font-weight: 600;
+}
+
+.jury {
+  padding: var(--space-4);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+}
+
+.jury__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-weight: 700;
+}
+
+.jury__intro {
+  margin: var(--space-1) 0 var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.jury__item {
+  margin-top: var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+
+  summary {
+    padding: var(--space-3);
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  &[open] summary {
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.jury__a {
+  padding: var(--space-3);
+}
+
+.jury__tip {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
 // ---------------------------------------------------------------- exercices
 .exo {
   display: grid;

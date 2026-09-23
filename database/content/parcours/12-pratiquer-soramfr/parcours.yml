@@ -1,0 +1,134 @@
+slug: pratiquer-soramfr
+version: 1
+position: 12
+title: "Pratiquer avec mon projet Soramfr"
+category: PROJET
+icon: target
+summary: "Revisiter ton propre projet Soramfr, pas à pas : comprendre chaque ligne, corriger ses défauts et savoir l'expliquer au jury."
+description: |
+  **Soramfr** est ton projet de fin d'études : une boutique en ligne d'accessoires de sécurité personnelle
+  (alarmes de poche, coques SOS, sacs antivol…). Les clientes créent un compte, se connectent, parcourent le
+  catalogue et remplissent leur panier. L'administratrice gère les comptes.
+
+  Ce parcours se sert de **ton vrai code** (Angular, Spring Boot, PostgreSQL) comme fil rouge. Pour chaque
+  notion, tu vas :
+
+  1. comprendre l'idée avec des mots simples et une comparaison de tous les jours ;
+  2. regarder un **exemple plus simple**, puis le **vrai extrait de Soramfr**, expliqué ligne par ligne ;
+  3. faire un **exercice guidé**, puis un **exercice en autonomie**, directement dans l'éditeur de code ;
+  4. répondre à un **QCM de fin de leçon** ;
+  5. relire la **fiche de révision**, les **erreurs fréquentes** et les **questions possibles du jury**.
+
+  Tu vas aussi découvrir les **points faibles** du projet (il y en a, comme dans tout premier projet) et
+  apprendre à les corriger. Savoir dire « voici une limite, et voici comment je l'améliorerais » est un
+  vrai atout le jour de la soutenance.
+
+  Aucune connaissance préalable n'est exigée pour commencer : chaque mot technique est expliqué la
+  première fois qu'il apparaît.
+examQuestionCount: 30
+examTimeLimitMinutes: 40
+project:
+  slug: projet-soramfr-securise
+  title: "Reconstruire Soramfr en version sécurisée"
+  difficulty: DIFFICILE
+  statement: |
+    Tu reprends Soramfr comme si une entreprise te demandait d'en faire une **version 2** fiable et sûre.
+    Tu ne repars pas de zéro : tu corriges, étape par étape, les faiblesses repérées pendant le parcours,
+    et tu gardes une trace de chaque décision pour pouvoir l'expliquer au jury.
+  needs: |
+    - Une base de données modélisée proprement (MCD Merise, MLD, script SQL).
+    - Une inscription et une connexion sûres (mots de passe hachés, erreurs qui ne révèlent rien).
+    - Des routes d'administration réellement protégées, côté serveur **et** côté Angular.
+    - Une image Docker légère, qui ne tourne pas en administrateur et ne contient aucun secret.
+  businessRules: |
+    - RG1 : l'adresse e-mail et le pseudo sont uniques.
+    - RG2 : le mot de passe fait au moins 8 caractères, côté Angular **et** côté Spring.
+    - RG3 : le rôle (USER ou ADMIN) est enregistré en base et décidé par le serveur, jamais par le formulaire.
+    - RG4 : seule une personne ADMIN peut lister ou supprimer des comptes.
+    - RG5 : une commande appartient à une seule cliente et contient au moins un produit.
+  userStories: |
+    - En tant que visiteuse, je crée un compte avec mon nom, mon e-mail, un pseudo et un mot de passe.
+    - En tant que cliente, je me connecte et j'ajoute des produits à mon panier.
+    - En tant qu'administratrice, je consulte et je supprime des comptes.
+    - En tant qu'équipe technique, je déploie l'application sans exposer aucun secret.
+  mockup: |
+    Accueil → Catalogue (recherche, ajout au panier) → Panier (quantités, total) → Profil.
+    Espace administration : tableau des comptes avec recherche et suppression confirmée.
+  mcd: |
+    UTILISATEUR (id_utilisateur, nom, email, pseudo, mot_de_passe_hash, role, date_creation)
+    PRODUIT (id_produit, nom, description, prix, image)
+    COMMANDE (id_commande, date_commande, statut)
+    UTILISATEUR 0,n — PASSER — 1,1 COMMANDE
+    COMMANDE 1,n — CONTENIR (quantite, prix_unitaire) — 0,n PRODUIT
+  mld: |
+    utilisateur (<u>id_utilisateur</u>, nom, email, pseudo, mot_de_passe_hash, role, date_creation)
+    produit (<u>id_produit</u>, nom, description, prix, image)
+    commande (<u>id_commande</u>, date_commande, statut, #id_utilisateur)
+    contenir (<u>#id_commande, #id_produit</u>, quantite, prix_unitaire)
+  acceptanceCriteria: |
+    - Le MCD et le MLD sont validés par l'éditeur de modélisation.
+    - Le script SQL crée les tables avec clés primaires, clés étrangères et contraintes.
+    - `AuthService.register` refuse les doublons et hache le mot de passe.
+    - `GET /api/users` répond 401 sans jeton, 403 avec un jeton USER, 200 avec un jeton ADMIN.
+    - Le garde de rôle Angular lit bien la liste `roles` de la route.
+    - Le Dockerfile est multi-étapes et lance l'application avec un utilisateur non administrateur.
+  tests: |
+    - Postman : inscription (201), doublon (409), connexion (200), mauvais mot de passe (401),
+      route admin sans jeton (401), avec jeton USER (403), avec jeton ADMIN (200).
+    - JUnit : `AuthService.register` refuse un e-mail déjà utilisé (test avec Mockito).
+  correction: |
+    Chaque étape renvoie vers l'exercice corrigé correspondant du parcours. Relis la correction détaillée
+    de chaque exercice : elle explique le « pourquoi » de chaque ligne.
+  improvements: |
+    - Remplacer le stockage du jeton dans `localStorage` par un cookie `HttpOnly` (protection contre le XSS).
+    - Ajouter une vraie déconnexion côté serveur (liste de jetons révoqués ou jetons courts + jeton de rafraîchissement).
+    - Gérer les produits et les commandes en base (aujourd'hui, le catalogue est écrit en dur dans Angular).
+    - Écrire des tests d'intégration automatisés et les lancer dans une intégration continue.
+  steps:
+    - title: "Modéliser la base de Soramfr"
+      instructions: "Construis le MCD Merise corrigé : utilisatrices, commandes, produits et les deux associations."
+      deliverable: "MCD validé dans l'éditeur."
+      checklist:
+        - "Chaque entité a un identifiant souligné."
+        - "Les attributs calculés (total, sous-total) ne sont pas stockés."
+        - "La quantité est portée par l'association CONTENIR."
+      exercise: sor-ex-mcd-soramfr
+    - title: "Créer les tables et la relation"
+      instructions: "Écris le script SQL des tables `soram_utilisateurs` et `soram_commandes` avec leur clé étrangère."
+      deliverable: "Script SQL accepté par le laboratoire."
+      checklist:
+        - "Clés primaires générées automatiquement."
+        - "E-mail et pseudo uniques."
+        - "La clé étrangère relie chaque commande à une utilisatrice."
+      exercise: sor-ex-relation-commandes
+    - title: "Reconstruire l'inscription côté serveur"
+      instructions: "Réécris la méthode `register` du service : contrôles, doublons, hachage, sauvegarde."
+      deliverable: "Méthode `register` validée."
+      checklist:
+        - "Les champs vides sont refusés."
+        - "Les doublons déclenchent une erreur 409."
+        - "Seul le hash du mot de passe est enregistré."
+      exercise: sor-ex-register-service
+    - title: "Protéger les routes d'administration"
+      instructions: "Dans `SecurityConfig`, réserve `/api/users/**` au rôle ADMIN."
+      deliverable: "Configuration de sécurité validée."
+      checklist:
+        - "Les routes d'authentification restent publiques."
+        - "`/api/users/**` exige le rôle ADMIN."
+        - "Toutes les autres routes exigent une connexion."
+      exercise: sor-ex-proteger-admin
+    - title: "Corriger le garde de rôle Angular"
+      instructions: "Trouve pourquoi `roleGuard` laisse passer tout le monde, puis corrige-le."
+      deliverable: "Garde de rôle corrigé."
+      checklist:
+        - "Le garde lit la clé `roles` déclarée dans les routes."
+        - "Une cliente ne peut plus ouvrir la page d'administration."
+      exercise: sor-ex-role-guard
+    - title: "Préparer une image Docker propre"
+      instructions: "Réécris le Dockerfile en deux étapes, sans secret, avec un utilisateur non administrateur."
+      deliverable: "Dockerfile validé."
+      checklist:
+        - "Étape 1 : construction avec le JDK et Maven."
+        - "Étape 2 : exécution avec un JRE seulement."
+        - "Instruction `USER` avant le lancement."
+      exercise: sor-ex-dockerfile

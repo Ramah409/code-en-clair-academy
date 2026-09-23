@@ -13,8 +13,8 @@
     <groupId>fr.cdaacademy</groupId>
     <artifactId>cda-academy-api</artifactId>
     <version>1.0.0</version>
-    <name>CDA Academy API</name>
-    <description>API REST de la plateforme d'apprentissage CDA Academy</description>
+    <name>Code en Clair Academy API</name>
+    <description>API REST de la plateforme d'apprentissage Code en Clair Academy</description>
 
     <properties>
         <java.version>21</java.version>

@@ -1,0 +1,1118 @@
+slug: soramfr-tests
+position: 6
+level: INTERMEDIAIRE
+title: "Tester et déboguer Soramfr"
+summary: "Tester l'API avec Postman, écrire de vrais tests unitaires JUnit et Mockito, un test d'intégration MockMvc, et lire une trace d'erreur."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sor-postman
+    title: "TP — Tester l'API avec Postman"
+    duration: 14
+    objective: "Construire un scénario de tests Postman complet (inscription, doublon, connexion, route protégée) avec des variables et des vérifications automatiques."
+    prerequisites: "Chapitre « Sécuriser Soramfr »."
+    skills: [tests-strategie, spring-rest]
+    xp: 25
+    memo: |
+      - **Postman** envoie des requêtes HTTP à l'API sans passer par Angular.
+      - Une **collection** regroupe les requêtes ; un **environnement** contient des variables (`{{baseUrl}}`, `{{token}}`).
+      - Onglet **Tests** : un petit script JavaScript vérifie la réponse (`pm.test`, `pm.response.to.have.status(201)`).
+      - `pm.environment.set("token", ...)` garde le jeton pour les requêtes suivantes.
+      - Tester **le cas normal ET les cas d'erreur** : 201, 409, 400, 401, 403, 404.
+    commonMistakes: |
+      - Tester seulement le cas où tout va bien.
+      - Copier-coller le jeton à la main dans chaque requête au lieu d'une variable.
+      - Appeler « tests unitaires » des appels Postman (c'est ce que fait le rapport) : ce sont des tests **manuels d'API**, de niveau intégration.
+    blocks:
+      - type: text
+        md: |
+          Le rapport de Soramfr présente des captures Postman : inscription, connexion, liste des comptes.
+          C'est un bon début. On va en faire un **scénario complet**, avec des vérifications automatiques.
+      - type: definition
+        id: def-postman
+        term: "Postman"
+        md: |
+          Une **télécommande** pour l'API : tu choisis le verbe (GET, POST…), l'adresse, les en-têtes et le
+          JSON, tu appuies sur **Send**, et tu vois la réponse brute. Pas besoin que l'interface Angular soit
+          terminée pour tester le backend.
+      - type: definition
+        id: def-variable-postman
+        term: "Variable d'environnement Postman"
+        md: |
+          Une **étiquette** qui remplace une valeur : `{{baseUrl}}/api/auth/login`. On change `baseUrl` une
+          fois (local ou production), toutes les requêtes suivent. `{{token}}` garde le jeton reçu.
+      - type: steps
+        id: etapes-scenario
+        title: "Le scénario de tests de Soramfr"
+        items:
+          - "`POST {{baseUrl}}/api/auth/register` avec un nouvel e-mail → **201**."
+          - "Même requête une deuxième fois → **409** (doublon)."
+          - "`POST /api/auth/register` avec un mot de passe de 5 caractères → **400**."
+          - "`POST /api/auth/login` avec les bons identifiants → **200**, et on enregistre `token`."
+          - "`POST /api/auth/login` avec un mauvais mot de passe → **401** (après correction)."
+          - "`GET /api/users` sans jeton → **401** ; avec le jeton USER → **403** (après correction)."
+      - type: code
+        id: code-postman-test
+        language: javascript
+        title: "Onglet Tests de la requête d'inscription"
+        code: |
+          pm.test("Statut 201 Created", function () {
+              pm.response.to.have.status(201);
+          });
+
+          pm.test("La réponse ne contient pas de mot de passe", function () {
+              const data = pm.response.json();
+              pm.expect(data.password).to.be.undefined;
+          });
+        lines:
+          - n: 1
+            note: "`pm.test(nom, fonction)` : un test, avec un nom lisible dans le rapport de Postman."
+          - n: 2
+            note: "On vérifie le code de statut."
+          - n: 6
+            note: "`pm.response.json()` transforme la réponse en objet JavaScript."
+          - n: 7
+            note: "`pm.expect(...)` : une vérification. Ici, aucun champ `password` ne doit sortir de l'API."
+      - type: question
+        ref: sor-pm-q1
+        review: etapes-scenario
+      - type: text
+        md: "Exercice guidé : remets le scénario de tests dans un ordre qui fonctionne."
+      - type: exercise
+        ref: sor-ex-scenario-ordre
+      - type: text
+        md: |
+          TP en autonomie : **teste avec Postman**. Écris le script de l'onglet Tests de la requête de
+          connexion.
+      - type: exercise
+        ref: sor-ex-postman-login
+      - type: jury
+        items:
+          - q: "Comment avez-vous testé votre API ?"
+            a: |
+              « Avec une collection Postman : pour chaque route, le cas normal et les cas d'erreur, avec des
+              scripts qui vérifient le code de statut et le contenu. Le jeton est gardé dans une variable. »
+          - q: "Vos tests Postman sont-ils des tests unitaires ?"
+            a: "Non : ils appellent l'application entière (HTTP, sécurité, base). Ce sont des tests d'API, de niveau intégration. Les tests unitaires testent une classe seule, avec JUnit."
+            tip: "Le rapport les appelle « tests unitaires » : corrige-le toi-même devant le jury."
+      - type: quiz
+        items:
+          - ref: sor-pm-q2
+            review: def-postman
+          - ref: sor-pm-q3
+            review: def-variable-postman
+          - ref: sor-pm-q4
+            review: code-postman-test
+    questions:
+      - code: sor-pm-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Pourquoi envoyer deux fois la même inscription dans le scénario ?"
+        choices:
+          - label: "Pour vérifier que le doublon est refusé avec 409"
+            correct: true
+            why: "Oui : on teste un cas d'erreur prévu."
+          - label: "Pour créer deux comptes identiques"
+            correct: false
+            why: "C'est justement ce qui doit être impossible."
+          - label: "Parce que la première requête échoue toujours"
+            correct: false
+            why: "La première doit réussir (201)."
+        explanation: "Un bon scénario teste les règles métier, donc aussi les refus."
+      - code: sor-pm-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Postman permet de tester le backend avant que les pages Angular soient terminées."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Oui : il parle directement à l'API."
+          - label: "Faux"
+            correct: false
+            why: "Postman n'a pas besoin d'Angular."
+        explanation: "Le backend se teste indépendamment du frontend : c'est l'un des intérêts d'une API REST."
+      - code: sor-pm-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "À quoi sert `{{token}}` dans l'en-tête `Authorization: Bearer {{token}}` ?"
+        choices:
+          - label: "À réutiliser automatiquement le jeton enregistré après la connexion"
+            correct: true
+            why: "Oui : pas de copier-coller."
+          - label: "À chiffrer le jeton"
+            correct: false
+            why: "Postman ne chiffre rien ici."
+          - label: "À générer un nouveau jeton"
+            correct: false
+            why: "Seul le serveur fabrique les jetons."
+        explanation: "`pm.environment.set(\"token\", ...)` dans la connexion, puis `{{token}}` partout ailleurs."
+      - code: sor-pm-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Que vérifie `pm.response.to.have.status(201)` ?"
+        choices:
+          - label: "Que le code de statut de la réponse vaut 201"
+            correct: true
+            why: "Oui."
+          - label: "Que la réponse contient 201 caractères"
+            correct: false
+            why: "Il s'agit du code HTTP."
+          - label: "Que la requête a pris moins de 201 ms"
+            correct: false
+            why: "Ce serait `pm.expect(pm.response.responseTime).to.be.below(201)`."
+        explanation: "Chaque requête du scénario vérifie au minimum son code de statut."
+    exercises:
+      - slug: sor-ex-scenario-ordre
+        kind: REMETTRE_ORDRE
+        title: "Ordonner le scénario de tests"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: "Remets les requêtes dans un ordre où chacune a ce dont elle a besoin."
+        criteria: "Le compte existe avant la connexion ; le jeton existe avant la route protégée."
+        hints:
+          - "On ne peut pas tester le doublon avant d'avoir créé le compte."
+          - "Le jeton vient de la connexion."
+          - "Inscription, doublon, connexion, route protégée."
+        solution: |
+          1. POST /api/auth/register → 201
+          2. POST /api/auth/register (même e-mail) → 409
+          3. POST /api/auth/login → 200 + enregistrer le jeton
+          4. GET /api/users avec le jeton → 200 ou 403 selon le rôle
+        explanation: "Chaque étape prépare la suivante : le compte, puis le jeton, puis l'accès protégé."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "POST /api/auth/register → 201"
+            - "POST /api/auth/register (même e-mail) → 409"
+            - "POST /api/auth/login → 200 + enregistrer le jeton"
+            - "GET /api/users avec le jeton → 200 ou 403 selon le rôle"
+      - slug: sor-ex-postman-login
+        kind: CODE_LIBRE
+        title: "TP — Script de test Postman pour la connexion"
+        difficulty: INTERMEDIAIRE
+        skill: tests-strategie
+        statement: |
+          Écris le script de l'onglet **Tests** de `POST /api/auth/login` :
+          1. un test « Statut 200 » qui vérifie le code **200** ;
+          2. lis la réponse avec `pm.response.json()` ;
+          3. un test qui vérifie que `token` est une chaîne (`pm.expect(data.token).to.be.a('string')`) ;
+          4. enregistre le jeton dans la variable d'environnement `token`.
+        criteria: "Deux pm.test, le statut 200, la lecture du JSON, la vérification du jeton et son enregistrement."
+        hints:
+          - "`pm.test(\"Statut 200\", function () { pm.response.to.have.status(200); });`"
+          - "`const data = pm.response.json();`"
+          - "`pm.environment.set(\"token\", data.token);`"
+        solution: |
+          pm.test("Statut 200", function () {
+              pm.response.to.have.status(200);
+          });
+
+          const data = pm.response.json();
+
+          pm.test("Un jeton est renvoyé", function () {
+              pm.expect(data.token).to.be.a('string');
+          });
+
+          pm.environment.set("token", data.token);
+        explanation: |
+          Après cette requête, toutes les suivantes peuvent utiliser `Authorization: Bearer {{token}}`. Lance
+          la collection entière avec le **Collection Runner** : tu obtiens un rapport vert/rouge en un clic.
+        xp: 25
+        payload:
+          language: javascript
+          starter: |
+            // Script de l'onglet Tests de POST /api/auth/login
+          checks:
+            - pattern: '\A(?>[\s\S]*?pm\.test\s*\(){2}'
+              message: "Écris au moins deux tests avec pm.test(\"nom\", function () { ... })."
+            - pattern: 'pm\.response\.to\.have\.status\(\s*200\s*\)'
+              message: "Vérifie le statut : pm.response.to.have.status(200);"
+            - pattern: 'pm\.response\.json\(\s*\)'
+              message: "Lis la réponse : const data = pm.response.json();"
+            - pattern: "pm\\.expect\\(\\s*\\w+\\.token\\s*\\)\\.to\\.be\\.a\\(\\s*['\"]string['\"]\\s*\\)"
+              message: "Vérifie le jeton : pm.expect(data.token).to.be.a('string');"
+            - pattern: "pm\\.environment\\.set\\(\\s*['\"]token['\"]\\s*,\\s*\\w+\\.token\\s*\\)"
+              message: "Enregistre le jeton : pm.environment.set(\"token\", data.token);"
+
+  # ===================================================================== LEÇON 2
+  - slug: sor-junit
+    title: "Du test manuel au test unitaire : JUnit et Mockito"
+    duration: 15
+    objective: "Écrire un vrai test unitaire de AuthService.register avec JUnit 5 et Mockito."
+    prerequisites: "Leçon « TP — Tester l'API avec Postman »."
+    skills: [java-tests, spring-tests]
+    xp: 30
+    memo: |
+      - **Test unitaire** : teste **une** classe, seule, en quelques millisecondes, sans base ni réseau.
+      - Structure **AAA** : *Arrange* (préparer), *Act* (agir), *Assert* (vérifier).
+      - `@Test` marque une méthode de test ; `assertEquals`, `assertThrows`… vérifient.
+      - **Mockito** fabrique des **doublures** : `when(repo.existsByEmail("a@b.fr")).thenReturn(true)`.
+      - `verify(repo, never()).save(any())` : vérifie qu'une méthode n'a **pas** été appelée.
+      - Soramfr n'a que le test par défaut `contextLoads()` : c'est un point à améliorer.
+    commonMistakes: |
+      - Tester plusieurs choses sans rapport dans un seul test.
+      - Utiliser la vraie base dans un test unitaire (lent, fragile).
+      - Oublier de vérifier ce qui **ne doit pas** se passer (aucune sauvegarde en cas de doublon).
+      - Des noms de tests vagues (`test1`) : le nom doit dire le comportement attendu.
+    blocks:
+      - type: text
+        md: |
+          Le dossier Soramfr contient un seul test Java : `contextLoads()`, qui vérifie que l'application
+          démarre. On va écrire un **vrai** test unitaire du service d'inscription.
+      - type: definition
+        id: def-test-unitaire
+        term: "Test unitaire"
+        md: |
+          Tester **une pièce seule**, comme on teste les freins d'un vélo sur un banc, sans partir en balade.
+          C'est rapide et précis : si le test échoue, on sait exactement quelle pièce est en cause.
+      - type: definition
+        id: def-mock
+        term: "Mock (doublure)"
+        md: |
+          Un **cascadeur** qui remplace l'acteur. Pour tester `AuthService` sans base, on lui donne un faux
+          `UserRepository` dont on programme les réponses : « si on te demande si cet e-mail existe, réponds
+          oui ». Mockito fabrique ces doublures.
+      - type: code
+        id: code-test-simple
+        language: java
+        title: "Exemple simple : tester une méthode de calcul"
+        code: |
+          class PanierTest {
+
+              @Test
+              void totalAdditionneLesLignes() {
+                  Panier panier = new Panier();
+                  panier.ajouter(new Ligne(20, 2));
+                  panier.ajouter(new Ligne(15, 1));
+
+                  int total = panier.total();
+
+                  assertEquals(55, total);
+              }
+          }
+        lines:
+          - n: 3
+            note: "`@Test` : JUnit exécutera cette méthode."
+          - n: 4
+            note: "Le nom décrit le comportement attendu, en français si tu veux."
+          - n: 5
+            note: "**Arrange** : on prépare un panier avec deux lignes."
+          - n: 9
+            note: "**Act** : on appelle la méthode testée."
+          - n: 11
+            note: "**Assert** : on vérifie le résultat. Si `total` ne vaut pas 55, le test échoue et affiche la différence."
+      - type: question
+        ref: sor-ju-q1
+        review: def-test-unitaire
+      - type: code
+        id: code-test-authservice
+        language: java
+        title: "Tester AuthService.register avec Mockito"
+        code: |
+          @ExtendWith(MockitoExtension.class)
+          class AuthServiceTest {
+
+              @Mock
+              UserRepository userRepository;
+
+              @InjectMocks
+              AuthService authService;
+
+              @Test
+              void registerHacheLeMotDePasse() {
+                  RegisterRequest req = requete("awa@exemple.fr");
+                  when(userRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+                  authService.register(req);
+
+                  ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
+                  verify(userRepository).save(captor.capture());
+                  assertNotEquals("Soleil2025!", captor.getValue().getPasswordHash());
+              }
+          }
+        lines:
+          - n: 1
+            note: "On active Mockito pour cette classe de test."
+          - n: 4
+            note: "`@Mock` : un faux repository, qui ne touche aucune base."
+          - n: 7
+            note: "`@InjectMocks` : un vrai `AuthService`, qui reçoit le faux repository."
+          - n: 13
+            note: "On programme la doublure : `save` renvoie l'objet qu'on lui donne."
+          - n: 17
+            note: "Un **capteur** récupère l'entité passée à `save`."
+          - n: 19
+            note: "Le hash enregistré ne doit pas être le mot de passe en clair."
+      - type: question
+        ref: sor-ju-q2
+        review: def-mock
+      - type: text
+        md: "Exercice guidé : complète le test du doublon d'e-mail."
+      - type: exercise
+        ref: sor-ex-junit-guide
+      - type: text
+        md: "En autonomie : écris un test unitaire complet."
+      - type: exercise
+        ref: sor-ex-junit-doublon
+      - type: jury
+        items:
+          - q: "Quelle différence entre un test unitaire et un test d'intégration ?"
+            a: "Le test unitaire vérifie une classe seule, avec des doublures pour ses dépendances. Le test d'intégration vérifie plusieurs couches ensemble (HTTP, sécurité, base)."
+          - q: "Qu'est-ce qu'un mock ?"
+            a: "Une doublure d'une dépendance, programmée pour renvoyer des réponses choisies. Elle permet de tester une classe sans base de données et de vérifier les appels effectués."
+          - q: "Quels tests auriez-vous aimé écrire ?"
+            a: "« Des tests unitaires d'AuthService (doublons, hachage, mauvais mot de passe) et des tests MockMvc sur les codes 401 et 403 des routes protégées. »"
+      - type: quiz
+        items:
+          - ref: sor-ju-q3
+            review: code-test-simple
+          - ref: sor-ju-q4
+            review: code-test-authservice
+          - ref: sor-ju-q5
+            review: def-test-unitaire
+    questions:
+      - code: sor-ju-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-tests
+        prompt: "Dans quel ordre écrit-on un test selon la méthode AAA ?"
+        choices:
+          - label: "Préparer, agir, vérifier"
+            correct: true
+            why: "Oui : Arrange, Act, Assert."
+          - label: "Vérifier, préparer, agir"
+            correct: false
+            why: "On ne peut pas vérifier avant d'avoir agi."
+          - label: "Agir, agir, agir"
+            correct: false
+            why: "Un test sans vérification ne teste rien."
+        explanation: "AAA rend chaque test lisible en trois blocs."
+      - code: sor-ju-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-tests
+        prompt: "Pourquoi utiliser un mock de `UserRepository` dans un test unitaire d'`AuthService` ?"
+        choices:
+          - label: "Pour tester le service seul, sans base de données, et choisir les réponses du repository"
+            correct: true
+            why: "Oui : rapide, isolé et maîtrisé."
+          - label: "Pour que le test écrive dans la vraie base"
+            correct: false
+            why: "C'est justement ce qu'on évite."
+          - label: "Parce que JUnit l'exige"
+            correct: false
+            why: "JUnit n'exige rien de tel."
+        explanation: "Le mock isole la classe testée de ses dépendances."
+      - code: sor-ju-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-tests
+        prompt: "Quelle annotation marque une méthode de test JUnit 5 ?"
+        choices:
+          - label: "`@Test`"
+            correct: true
+            why: "Oui."
+          - label: "`@Service`"
+            correct: false
+            why: "C'est une annotation Spring pour la logique métier."
+          - label: "`@Entity`"
+            correct: false
+            why: "C'est une annotation JPA."
+        explanation: "`@Test` (org.junit.jupiter.api.Test)."
+      - code: sor-ju-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-tests
+        prompt: "Que vérifie `verify(userRepository, never()).save(any())` ?"
+        choices:
+          - label: "Que `save` n'a jamais été appelée"
+            correct: true
+            why: "Oui : utile pour un doublon, où rien ne doit être enregistré."
+          - label: "Que `save` a été appelée une fois"
+            correct: false
+            why: "Ce serait `verify(userRepository).save(any())`."
+          - label: "Que la base est vide"
+            correct: false
+            why: "Le mock ne connaît aucune base."
+        explanation: "`verify` contrôle les appels faits à une doublure ; `never()` exige zéro appel."
+      - code: sor-ju-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Le test `contextLoads()` suffit à garantir que l'inscription de Soramfr fonctionne."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : il vérifie seulement que l'application démarre."
+          - label: "Faux"
+            correct: true
+            why: "Exact : aucune règle métier n'est testée."
+        explanation: "Il faut des tests ciblés sur chaque règle : doublons, hachage, longueur du mot de passe…"
+    exercises:
+      - slug: sor-ex-junit-guide
+        kind: COMPLETER
+        title: "Compléter le test du doublon"
+        difficulty: FACILE
+        skill: java-tests
+        statement: "Complète le test. Respecte les majuscules."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "L'annotation d'une méthode de test."
+          - "Programmer une doublure : `when(...).then…(true)`."
+          - "@Test, thenReturn, assertThrows, never."
+        solution: '["@Test", "thenReturn", "assertThrows", "never"]'
+        explanation: "On programme le doublon, on vérifie que l'exception est levée, puis qu'aucune sauvegarde n'a eu lieu."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            [[1]]
+            void registerRefuseUnEmailDejaUtilise() {
+                when(userRepository.existsByEmail("awa@exemple.fr")).[[2]](true);
+
+                [[3]](DuplicateResourceException.class, () -> authService.register(requete("awa@exemple.fr")));
+
+                verify(userRepository, [[4]]()).save(any());
+            }
+          blanks:
+            - ["@Test"]
+            - ["thenReturn"]
+            - ["assertThrows"]
+            - ["never"]
+      - slug: sor-ex-junit-doublon
+        kind: CODE_LIBRE
+        title: "Écrire le test « pseudo déjà utilisé »"
+        difficulty: INTERMEDIAIRE
+        skill: java-tests
+        statement: |
+          Dans `AuthServiceTest` (les champs `@Mock UserRepository userRepository` et
+          `@InjectMocks AuthService authService` existent déjà), écris la méthode de test
+          `registerRefuseUnPseudoDejaUtilise` :
+          1. **Arrange** : l'e-mail est libre (`existsByEmail` → `false`), le pseudo `awa` est pris
+             (`existsByUsername("awa")` → `true`) ;
+          2. **Act + Assert** : `register` lève une `DuplicateResourceException` ;
+          3. **Assert** : `save` n'a jamais été appelée.
+
+          Une méthode utilitaire `requete(String email)` crée un `RegisterRequest` valide avec le pseudo `awa`.
+        criteria: "Méthode @Test, deux doublures programmées, assertThrows sur DuplicateResourceException, verify never save."
+        hints:
+          - "`when(userRepository.existsByEmail(anyString())).thenReturn(false);`"
+          - "`when(userRepository.existsByUsername(\"awa\")).thenReturn(true);`"
+          - "`assertThrows(DuplicateResourceException.class, () -> authService.register(requete(\"awa@exemple.fr\")));` puis `verify(userRepository, never()).save(any());`"
+        solution: |
+          @Test
+          void registerRefuseUnPseudoDejaUtilise() {
+              when(userRepository.existsByEmail(anyString())).thenReturn(false);
+              when(userRepository.existsByUsername("awa")).thenReturn(true);
+
+              assertThrows(DuplicateResourceException.class,
+                      () -> authService.register(requete("awa@exemple.fr")));
+
+              verify(userRepository, never()).save(any());
+          }
+        explanation: |
+          Le test raconte une règle métier en trois temps. S'il échoue un jour (par exemple si quelqu'un
+          supprime le contrôle du pseudo), il le signale immédiatement, avant la mise en production.
+        xp: 30
+        payload:
+          language: java
+          starter: |
+            // Dans la classe AuthServiceTest
+
+          checks:
+            - pattern: '@Test\s+(public\s+)?void\s+registerRefuseUnPseudoDejaUtilise\s*\(\s*\)'
+              message: "Déclare la méthode : @Test void registerRefuseUnPseudoDejaUtilise() { ... }"
+            - pattern: 'when\(\s*userRepository\.existsByEmail\((?:[^()]|\([^()]*\))*\)\s*\)\s*\.thenReturn\(\s*false\s*\)'
+              message: "Programme l'e-mail libre : when(userRepository.existsByEmail(anyString())).thenReturn(false);"
+            - pattern: 'when\(\s*userRepository\.existsByUsername\(\s*"awa"\s*\)\s*\)\s*\.thenReturn\(\s*true\s*\)'
+              message: "Programme le pseudo pris : when(userRepository.existsByUsername(\"awa\")).thenReturn(true);"
+            - pattern: 'assertThrows\(\s*(ErrorHondler\.)?DuplicateResourceException\.class\s*,\s*\(\s*\)\s*->\s*authService\.register\('
+              message: "Vérifie l'exception : assertThrows(DuplicateResourceException.class, () -> authService.register(...));"
+            - pattern: 'verify\(\s*userRepository\s*,\s*never\(\)\s*\)\s*\.save\('
+              message: "Vérifie qu'aucune sauvegarde n'a eu lieu : verify(userRepository, never()).save(any());"
+
+  # ===================================================================== LEÇON 3
+  - slug: sor-mockmvc
+    title: "Tester la sécurité avec MockMvc"
+    duration: 13
+    objective: "Écrire des tests d'intégration qui vérifient les codes 201, 401 et 403 des routes de Soramfr."
+    prerequisites: "Leçon « Du test manuel au test unitaire »."
+    skills: [spring-tests, auth-jwt]
+    xp: 30
+    memo: |
+      - **Test d'intégration** : démarre l'application Spring (sécurité, contrôleurs, services) et envoie de fausses requêtes HTTP.
+      - `@SpringBootTest` + `@AutoConfigureMockMvc` ; on injecte `MockMvc`.
+      - `mockMvc.perform(get("/api/users")).andExpect(status().isUnauthorized())`.
+      - `.contentType(MediaType.APPLICATION_JSON).content("{...}")` pour envoyer du JSON.
+      - `.header("Authorization", "Bearer " + jeton)` pour tester avec un jeton.
+      - Ces tests automatisent le scénario Postman et tournent à chaque build.
+    commonMistakes: |
+      - Attendre `isForbidden()` (403) pour une requête sans jeton : c'est `isUnauthorized()` (401) une fois le point d'entrée corrigé.
+      - Oublier le `contentType` : Spring répond 415 (type de contenu non supporté).
+      - Des tests qui dépendent de l'ordre d'exécution ou de données laissées par un autre test.
+    blocks:
+      - type: text
+        md: |
+          Postman, c'est bien, mais il faut penser à le lancer. Un test **MockMvc** rejoue les mêmes
+          vérifications **automatiquement**, à chaque `mvn test`.
+      - type: definition
+        id: def-integration
+        term: "Test d'intégration"
+        md: |
+          Vérifier que **plusieurs pièces fonctionnent ensemble**. Après avoir testé les freins seuls (test
+          unitaire), on fait un tour de pâté de maisons avec le vélo entier. Ici : filtre JWT + règles de
+          sécurité + contrôleur + service.
+      - type: definition
+        id: def-mockmvc
+        term: "MockMvc"
+        md: |
+          Un **faux navigateur** fourni par Spring : il envoie des requêtes HTTP à ton application sans
+          ouvrir de vrai port réseau, et te laisse vérifier la réponse.
+      - type: code
+        id: code-mockmvc
+        language: java
+        title: "Tests de sécurité de Soramfr"
+        code: |
+          @SpringBootTest
+          @AutoConfigureMockMvc
+          class SecuriteTest {
+
+              @Autowired
+              MockMvc mockMvc;
+
+              @Test
+              void listeDesComptesSansJetonRepond401() throws Exception {
+                  mockMvc.perform(get("/api/users"))
+                         .andExpect(status().isUnauthorized());
+              }
+
+              @Test
+              void inscriptionValideRepond201() throws Exception {
+                  mockMvc.perform(post("/api/auth/register")
+                                  .contentType(MediaType.APPLICATION_JSON)
+                                  .content("""
+                                      {"name":"Awa","email":"awa@exemple.fr","username":"awa","password":"Soleil2025!"}
+                                      """))
+                         .andExpect(status().isCreated())
+                         .andExpect(jsonPath("$.password").doesNotExist());
+              }
+          }
+        lines:
+          - n: 1
+            note: "Démarre toute l'application Spring pour le test."
+          - n: 2
+            note: "Prépare un `MockMvc` prêt à l'emploi."
+          - n: 10
+            note: "`perform(get(...))` : on envoie `GET /api/users`, sans jeton."
+          - n: 11
+            note: "On attend **401**."
+          - n: 17
+            note: "On précise qu'on envoie du JSON."
+          - n: 18
+            note: "Un bloc de texte Java (`\"\"\"`) contient le JSON."
+          - n: 22
+            note: "`jsonPath(\"$.password\")` lit un champ de la réponse : il ne doit pas exister."
+      - type: question
+        ref: sor-mm-q1
+        review: code-mockmvc
+      - type: text
+        md: "Exercice guidé : remets les lignes du test dans l'ordre."
+      - type: exercise
+        ref: sor-ex-mockmvc-ordre
+      - type: text
+        md: "En autonomie : écris le test qui vérifie qu'une cliente reçoit **403** sur la liste des comptes."
+      - type: exercise
+        ref: sor-ex-mockmvc-403
+      - type: jury
+        items:
+          - q: "Comment vérifiez-vous que vos routes sont bien protégées ?"
+            a: "Par des tests d'intégration MockMvc : sans jeton → 401, avec un jeton USER → 403 sur les routes admin, avec un jeton ADMIN → 200. Ils tournent à chaque build."
+          - q: "Quelle est la pyramide des tests ?"
+            a: "Beaucoup de tests unitaires (rapides), moins de tests d'intégration, et quelques tests de bout en bout (navigateur réel), plus lents et fragiles."
+      - type: quiz
+        items:
+          - ref: sor-mm-q2
+            review: def-integration
+          - ref: sor-mm-q3
+            review: def-mockmvc
+          - ref: sor-mm-q4
+            review: code-mockmvc
+    questions:
+      - code: sor-mm-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-tests
+        prompt: "Que vérifie `status().isCreated()` ?"
+        choices:
+          - label: "Que la réponse a le code 201"
+            correct: true
+            why: "Oui."
+          - label: "Que la base contient une nouvelle ligne"
+            correct: false
+            why: "Il vérifie seulement le code HTTP."
+          - label: "Que le JSON est valide"
+            correct: false
+            why: "Le JSON se vérifie avec `jsonPath`."
+        explanation: "`isOk()` 200, `isCreated()` 201, `isUnauthorized()` 401, `isForbidden()` 403, `isNotFound()` 404."
+      - code: sor-mm-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Quel test est un test d'intégration ?"
+        choices:
+          - label: "Envoyer `GET /api/users` à l'application démarrée et vérifier le code 401"
+            correct: true
+            why: "Oui : filtre, règles de sécurité et contrôleur sont testés ensemble."
+          - label: "Appeler `panier.total()` sur un objet créé dans le test"
+            correct: false
+            why: "C'est un test unitaire."
+          - label: "Relire le code à voix haute"
+            correct: false
+            why: "C'est une revue de code, pas un test automatisé."
+        explanation: "Intégration = plusieurs composants réels ensemble."
+      - code: sor-mm-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-tests
+        prompt: "MockMvc a besoin qu'un vrai navigateur soit ouvert."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : il simule les requêtes HTTP à l'intérieur du test."
+          - label: "Faux"
+            correct: true
+            why: "Exact."
+        explanation: "Pour tester avec un vrai navigateur, on utilise des tests de bout en bout (Playwright, Cypress)."
+      - code: sor-mm-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: spring-tests
+        prompt: "Tu oublies `.contentType(MediaType.APPLICATION_JSON)` sur l'inscription. Quel code risques-tu d'obtenir ?"
+        choices:
+          - label: "415 Unsupported Media Type"
+            correct: true
+            why: "Oui : Spring ne sait pas comment lire le corps."
+          - label: "201"
+            correct: false
+            why: "Le corps n'est pas reconnu comme JSON."
+          - label: "500"
+            correct: false
+            why: "C'est une erreur prévue par Spring, pas un bug."
+        explanation: "Toujours préciser le type du corps envoyé."
+    exercises:
+      - slug: sor-ex-mockmvc-ordre
+        kind: REMETTRE_ORDRE
+        title: "Ordonner un test MockMvc"
+        difficulty: FACILE
+        skill: spring-tests
+        statement: "Remets les lignes du test dans l'ordre."
+        criteria: "Annotation, signature, requête, vérification, fermeture."
+        hints:
+          - "L'annotation `@Test` vient en premier."
+          - "`perform` avant `andExpect`."
+          - "L'accolade fermante termine la méthode."
+        solution: |
+          @Test
+          void listeDesComptesSansJetonRepond401() throws Exception {
+              mockMvc.perform(get("/api/users"))
+                     .andExpect(status().isUnauthorized());
+          }
+        explanation: "On envoie la requête (`perform`), puis on vérifie la réponse (`andExpect`)."
+        xp: 10
+        payload:
+          language: java
+          lines:
+            - "@Test"
+            - "void listeDesComptesSansJetonRepond401() throws Exception {"
+            - "    mockMvc.perform(get(\"/api/users\"))"
+            - "           .andExpect(status().isUnauthorized());"
+            - "}"
+      - slug: sor-ex-mockmvc-403
+        kind: CODE_LIBRE
+        title: "Tester le 403 d'une cliente sur /api/users"
+        difficulty: INTERMEDIAIRE
+        skill: spring-tests
+        statement: |
+          Dans `SecuriteTest`, écris le test `listeDesComptesAvecJetonUserRepond403` :
+          - une variable `jetonUser` contient déjà un jeton valide de rôle USER ;
+          - envoie `GET /api/users` avec l'en-tête `Authorization: Bearer <jetonUser>` ;
+          - attends **403**.
+        criteria: "Méthode @Test, GET /api/users, en-tête Authorization Bearer, attente isForbidden."
+        hints:
+          - "`@Test void listeDesComptesAvecJetonUserRepond403() throws Exception { ... }`"
+          - "`mockMvc.perform(get(\"/api/users\").header(\"Authorization\", \"Bearer \" + jetonUser))`"
+          - "`.andExpect(status().isForbidden());`"
+        solution: |
+          @Test
+          void listeDesComptesAvecJetonUserRepond403() throws Exception {
+              mockMvc.perform(get("/api/users").header("Authorization", "Bearer " + jetonUser))
+                     .andExpect(status().isForbidden());
+          }
+        explanation: "Ce test échoue sur le Soramfr d'origine (réponse 200) : il **prouve** la faille. Après la correction `hasRole(\"ADMIN\")`, il passe au vert."
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            // Dans la classe SecuriteTest (le champ jetonUser existe déjà)
+
+          checks:
+            - pattern: '@Test\s+(public\s+)?void\s+listeDesComptesAvecJetonUserRepond403\s*\(\s*\)'
+              message: "Déclare la méthode : @Test void listeDesComptesAvecJetonUserRepond403() throws Exception { ... }"
+            - pattern: 'mockMvc\.perform\(\s*get\(\s*"/api/users"\s*\)'
+              message: "Envoie la requête : mockMvc.perform(get(\"/api/users\")...)"
+            - pattern: '\.header\(\s*"Authorization"\s*,\s*"Bearer\s"\s*\+\s*jetonUser\s*\)'
+              message: "Ajoute l'en-tête : .header(\"Authorization\", \"Bearer \" + jetonUser)"
+            - pattern: '\.andExpect\(\s*status\(\)\.isForbidden\(\)\s*\)'
+              message: "Attends 403 : .andExpect(status().isForbidden());"
+
+  # ===================================================================== LEÇON 4
+  - slug: sor-debug
+    title: "Déboguer : lire une trace d'erreur et écrire de bons logs"
+    duration: 12
+    objective: "Trouver la cause d'une erreur dans une trace Java et remplacer les System.out par des logs sûrs."
+    prerequisites: "Leçon « Tester la sécurité avec MockMvc »."
+    skills: [java-exceptions, rgpd-secrets]
+    xp: 25
+    memo: |
+      - Une **trace** (stack trace) se lit : 1) le **type** et le **message** de l'exception ; 2) la première ligne qui vient de **ton** code (`com.example.projetfind…`) ; 3) le `Caused by:` le plus bas, la cause d'origine.
+      - Un **log** est un message écrit par l'application pour les équipes techniques, avec un **niveau** : ERROR, WARN, INFO, DEBUG.
+      - En Java : `private static final Logger log = LoggerFactory.getLogger(MaClasse.class);` puis `log.info("Connexion de {}", identifiant);`.
+      - Jamais de mot de passe, de jeton ou de donnée sensible dans les logs.
+      - Soramfr fait bien : `ErrorHondler` écrit l'erreur 500 dans les logs et renvoie un message neutre.
+    commonMistakes: |
+      - Lire seulement la dernière ligne de la trace.
+      - `e.printStackTrace()` ou `System.out.println` : pas de niveau, pas de date, impossible à filtrer.
+      - Coller les valeurs dans le message (`"Connexion de " + x`) au lieu d'utiliser `{}`.
+      - Écrire un mot de passe dans un log « pour déboguer ».
+    blocks:
+      - type: text
+        md: |
+          Un bug arrive toujours. Ce qui fait la différence, c'est la **méthode** pour trouver sa cause.
+          On apprend à lire une trace, puis à écrire des logs utiles et sûrs.
+      - type: definition
+        id: def-trace
+        term: "Trace d'erreur (stack trace)"
+        md: |
+          Le **fil d'Ariane** d'une erreur : la liste des méthodes qui s'appelaient les unes les autres au
+          moment du problème, de la plus récente à la plus ancienne. On y cherche la première ligne qui vient
+          de **notre** code.
+      - type: code
+        id: code-trace
+        language: text
+        title: "Une trace reçue en inscrivant deux fois le même e-mail en même temps"
+        code: |
+          org.springframework.dao.DataIntegrityViolationException: could not execute statement
+              at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(...)
+              at com.example.projetfind.etude.service.AuthService.register(AuthService.java:99)
+              at com.example.projetfind.etude.controller.AuthController.register(AuthController.java:30)
+          Caused by: org.postgresql.util.PSQLException: ERROR: duplicate key value violates unique constraint "uk_users_email"
+        lines:
+          - n: 1
+            note: "Le **type** de l'exception et son message : un problème d'intégrité des données."
+          - n: 3
+            note: "La première ligne de **notre** code : `AuthService.java`, ligne 99 (le `save`)."
+          - n: 4
+            note: "Qui l'a appelée : le contrôleur."
+          - n: 5
+            note: "`Caused by` : la cause d'origine. PostgreSQL a refusé un doublon d'e-mail grâce à la contrainte UNIQUE. Le service devrait traduire ce cas en 409."
+      - type: question
+        ref: sor-dbg-q1
+        review: code-trace
+      - type: definition
+        id: def-log
+        term: "Log (journal)"
+        md: |
+          Le **carnet de bord** de l'application : chaque événement important y est noté avec sa date et son
+          niveau de gravité. Quand une cliente dit « ça n'a pas marché hier à 18 h », on relit le carnet.
+          - `ERROR` : quelque chose a échoué ; `WARN` : situation anormale mais gérée ;
+          - `INFO` : événement normal important ; `DEBUG` : détails pour le développement.
+      - type: code
+        id: code-log-soramfr
+        language: java
+        title: "Soramfr — ErrorHondler, gestion des erreurs 500"
+        code: |
+          private static final Logger log = LoggerFactory.getLogger(ErrorHondler.class);
+
+          log.error("Erreur 500 sur {} {} : {}", request.getMethod(), request.getRequestURI(), ex.toString(), ex);
+        lines:
+          - n: 1
+            note: "Un logger SLF4J, un par classe."
+          - n: 3
+            note: "Les `{}` sont remplacés par les valeurs, dans l'ordre. L'exception en dernier argument ajoute la trace complète au log. Le client, lui, reçoit un message neutre."
+      - type: question
+        ref: sor-dbg-q2
+        review: def-log
+      - type: text
+        md: "Exercice guidé : décode la trace ci-dessus."
+      - type: exercise
+        ref: sor-ex-trace-guide
+      - type: text
+        md: "**Améliorer la sécurité et la qualité** : remplace les `System.out` du login par de vrais logs, sans donnée sensible."
+      - type: exercise
+        ref: sor-ex-logs
+      - type: jury
+        items:
+          - q: "Comment déboguez-vous une erreur 500 ?"
+            a: |
+              « Je relis le log du serveur : type d'exception, première ligne de mon code, puis le `Caused by`.
+              Je reproduis le cas avec Postman, je pose un point d'arrêt dans l'IDE si besoin, je corrige et
+              j'ajoute un test pour que le bug ne revienne pas. »
+          - q: "Que ne faut-il jamais écrire dans les logs ?"
+            a: "Les mots de passe, les jetons, les numéros de carte et plus largement les données personnelles non nécessaires (RGPD)."
+      - type: quiz
+        items:
+          - ref: sor-dbg-q3
+            review: def-trace
+          - ref: sor-dbg-q4
+            review: code-log-soramfr
+          - ref: sor-dbg-q5
+            review: def-log
+    questions:
+      - code: sor-dbg-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-exceptions
+        prompt: "Dans la trace, quelle ligne indique la cause d'origine ?"
+        choices:
+          - label: "`Caused by: org.postgresql.util.PSQLException: ... duplicate key ...`"
+            correct: true
+            why: "Oui : le `Caused by` le plus bas est la cause première."
+          - label: "La première ligne `DataIntegrityViolationException`"
+            correct: false
+            why: "C'est l'exception « enveloppe » ; la cause précise est plus bas."
+          - label: "La ligne `AuthController.register`"
+            correct: false
+            why: "C'est seulement l'appelant."
+        explanation: "Lire de haut en bas, puis descendre au dernier `Caused by`."
+      - code: sor-dbg-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-exceptions
+        prompt: "Quel niveau de log pour « un utilisateur a échoué à se connecter » ?"
+        choices:
+          - label: "WARN"
+            correct: true
+            why: "Oui : situation anormale, mais gérée."
+          - label: "ERROR"
+            correct: false
+            why: "Rien n'est cassé : l'application a fait son travail en refusant."
+          - label: "DEBUG"
+            correct: false
+            why: "C'est une information utile en production (surveillance des attaques)."
+        explanation: "ERROR pour les échecs techniques, WARN pour les situations suspectes gérées, INFO pour les événements normaux."
+      - code: sor-dbg-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-exceptions
+        prompt: "Dans une trace, quelle ligne regarder en priorité pour trouver où intervenir dans ton code ?"
+        choices:
+          - label: "La première ligne qui contient ton paquet (`com.example.projetfind…`)"
+            correct: true
+            why: "Oui : c'est là que ton code a déclenché le problème."
+          - label: "La dernière ligne de la trace"
+            correct: false
+            why: "Elle vient souvent du démarrage de Tomcat ou de Java."
+          - label: "La ligne la plus longue"
+            correct: false
+            why: "La longueur ne veut rien dire."
+        explanation: "Les lignes des bibliothèques (Spring, Hibernate) indiquent le chemin ; la tienne indique où agir."
+      - code: sor-dbg-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-exceptions
+        prompt: "Pourquoi écrire `log.info(\"Connexion de {}\", id)` plutôt que `log.info(\"Connexion de \" + id)` ?"
+        choices:
+          - label: "Le message n'est construit que si le niveau INFO est actif, et le format reste stable"
+            correct: true
+            why: "Oui : plus performant et plus lisible."
+          - label: "Parce que `+` est interdit en Java"
+            correct: false
+            why: "`+` fonctionne, mais c'est moins efficace."
+          - label: "Pour chiffrer la valeur"
+            correct: false
+            why: "`{}` ne chiffre rien."
+        explanation: "Les `{}` de SLF4J : message paramétré, construit seulement si nécessaire."
+      - code: sor-dbg-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: rgpd-secrets
+        prompt: "On peut écrire le mot de passe tapé dans les logs, tant que le fichier de logs reste sur le serveur."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : les logs sont lus par plusieurs personnes, copiés, archivés…"
+          - label: "Faux"
+            correct: true
+            why: "Exact : jamais de mot de passe dans les logs."
+        explanation: "Les logs sont une fuite fréquente de données sensibles."
+    exercises:
+      - slug: sor-ex-trace-guide
+        kind: COMPLETER
+        title: "Décoder la trace"
+        difficulty: FACILE
+        skill: java-exceptions
+        statement: "Relis la trace de la leçon et complète."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le nom de la classe de ton code qui apparaît en premier."
+          - "Le numéro de ligne entre parenthèses."
+          - "AuthService, 99, UNIQUE."
+        solution: '["AuthService", "99", "UNIQUE"]'
+        explanation: "La première ligne de notre code est `AuthService.java:99` ; la cause est la contrainte UNIQUE sur l'e-mail."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Classe de mon code en cause : [[1]]
+            Numéro de ligne : [[2]]
+            Contrainte de la base qui a refusé : [[3]]
+          blanks:
+            - ["AuthService"]
+            - ["99"]
+            - ["UNIQUE"]
+      - slug: sor-ex-logs
+        kind: CORRIGER_ERREUR
+        title: "Remplacer System.out par des logs sûrs"
+        difficulty: INTERMEDIAIRE
+        skill: rgpd-secrets
+        statement: |
+          Corrige ce code de débogage :
+          1. déclare `private static final Logger log = LoggerFactory.getLogger(AuthService.class);` ;
+          2. remplace le premier `System.out` par `log.info("Tentative de connexion de {}", req.identifier);` ;
+          3. remplace l'échec par `log.warn("Échec de connexion pour {}", req.identifier);` ;
+          4. aucun mot de passe ne doit apparaître dans les logs, et plus aucun `System.out` ni `printStackTrace`.
+        criteria: "Logger SLF4J déclaré, messages paramétrés, aucun mot de passe, aucun System.out."
+        hints:
+          - "Le logger est un champ `static final` de la classe."
+          - "`log.info(\"Tentative de connexion de {}\", req.identifier);`"
+          - "Supprime `req.password` de tous les messages."
+        solution: |
+          private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
+          public AuthResponse login(LoginRequest req) {
+              log.info("Tentative de connexion de {}", req.identifier);
+              UserEntity user = userRepository.findByEmailOrUsername(req.identifier, req.identifier)
+                      .orElseThrow(() -> new InvalidCredentialsException("Identifiant ou mot de passe incorrect"));
+              if (!encoder.matches(req.password, user.getPasswordHash())) {
+                  log.warn("Échec de connexion pour {}", req.identifier);
+                  throw new InvalidCredentialsException("Identifiant ou mot de passe incorrect");
+              }
+              // ...
+          }
+        explanation: "Le log garde la trace utile (qui, quand, résultat) sans jamais contenir de secret. Les échecs répétés en WARN permettent de repérer une attaque par force brute."
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            public AuthResponse login(LoginRequest req) {
+                System.out.println("Connexion de " + req.identifier + " avec le mot de passe " + req.password);
+                UserEntity user = userRepository.findByEmailOrUsername(req.identifier, req.identifier)
+                        .orElseThrow(() -> new InvalidCredentialsException("Identifiant ou mot de passe incorrect"));
+                if (!encoder.matches(req.password, user.getPasswordHash())) {
+                    System.out.println("ECHEC pour " + req.identifier + " / " + req.password);
+                    throw new InvalidCredentialsException("Identifiant ou mot de passe incorrect");
+                }
+                // ...
+            }
+          checks:
+            - pattern: 'System\.out'
+              absent: true
+              message: "Remplace tous les System.out par le logger."
+            - pattern: 'printStackTrace'
+              absent: true
+              message: "N'utilise pas printStackTrace : passe l'exception au logger."
+            - pattern: 'private\s+static\s+final\s+Logger\s+log\s*=\s*LoggerFactory\.getLogger\(\s*AuthService\.class\s*\)\s*;'
+              message: "Déclare le logger : private static final Logger log = LoggerFactory.getLogger(AuthService.class);"
+            - pattern: 'log\.info\(\s*"[^"]*\{\}[^"]*"\s*,\s*req\.identifier\s*\)'
+              message: "Tentative de connexion : log.info(\"Tentative de connexion de {}\", req.identifier);"
+            - pattern: 'log\.warn\(\s*"[^"]*\{\}[^"]*"\s*,\s*req\.identifier\s*\)'
+              message: "Échec : log.warn(\"Échec de connexion pour {}\", req.identifier);"
+            - pattern: 'log\.\w+\([^;]*password'
+              absent: true
+              message: "Aucun mot de passe dans les logs !"
+
+bank:
+  - code: sor-c6-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: tests-strategie
+    prompt: "Dans la pyramide des tests, lesquels sont les plus nombreux ?"
+    choices:
+      - label: "Les tests unitaires"
+        correct: true
+        why: "Oui : rapides et précis, on en écrit beaucoup."
+      - label: "Les tests de bout en bout"
+        correct: false
+        why: "Ils sont lents et fragiles : on en garde peu."
+      - label: "Les tests manuels"
+        correct: false
+        why: "On cherche à les automatiser."
+    explanation: "Base large : unitaires ; milieu : intégration ; sommet : bout en bout."
+  - code: sor-c6-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-tests
+    prompt: "Quelle annotation fournit un vrai `AuthService` qui reçoit les doublures déclarées avec `@Mock` ?"
+    choices:
+      - label: "`@InjectMocks`"
+        correct: true
+        why: "Oui."
+      - label: "`@Autowired`"
+        correct: false
+        why: "`@Autowired` est pour le contexte Spring, pas pour Mockito seul."
+      - label: "`@Spy`"
+        correct: false
+        why: "`@Spy` enveloppe un vrai objet pour observer ses appels."
+    explanation: "`@Mock` crée les doublures ; `@InjectMocks` crée l'objet testé et les lui injecte."
+  - code: sor-c6-b3
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: tests-strategie
+    prompt: "Un test qui échoue sur l'ancienne version de Soramfr puis réussit après correction prouve que la faille est corrigée."
+    choices:
+      - label: "Vrai"
+        correct: true
+        why: "Oui : c'est un test de non-régression."
+      - label: "Faux"
+        correct: false
+        why: "C'est justement la démarche recommandée : écrire le test qui montre le bug, puis corriger."
+    explanation: "Test de non-régression : il empêche le bug de revenir."
+  - code: sor-c6-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: tests-strategie
+    prompt: "Quelle commande lance les tests d'un projet Maven comme Soramfr ?"
+    choices:
+      - label: "`./mvnw test`"
+        correct: true
+        why: "Oui."
+      - label: "`ng serve`"
+        correct: false
+        why: "C'est pour lancer Angular en développement."
+      - label: "`docker ps`"
+        correct: false
+        why: "Liste les conteneurs Docker."
+    explanation: "`./mvnw test` compile et exécute tous les tests JUnit du projet."
+  - code: sor-c6-b5
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: tests-strategie
+    prompt: "Le Dockerfile de Soramfr construit avec `-DskipTests`. Quel est le risque ?"
+    choices:
+      - label: "Une version qui casse les tests peut être mise en production sans que personne ne le voie"
+        correct: true
+        why: "Oui : les tests ne servent que s'ils sont exécutés."
+      - label: "L'image Docker est plus lourde"
+        correct: false
+        why: "Sauter les tests ne change pas la taille de l'image."
+      - label: "Aucun"
+        correct: false
+        why: "Les tests doivent passer avant tout déploiement (idéalement en intégration continue)."
+    explanation: "Les tests tournent dans l'intégration continue (GitHub Actions…) avant la construction de l'image."

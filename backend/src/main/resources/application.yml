@@ -1,4 +1,4 @@
-# CDA Academy API — configuration
+# Code en Clair Academy API — configuration
 # Toutes les valeurs sensibles viennent de variables d'environnement (voir .env.example).
 spring:
   application:

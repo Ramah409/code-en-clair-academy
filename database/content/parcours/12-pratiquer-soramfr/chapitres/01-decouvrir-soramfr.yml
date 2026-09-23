@@ -1,0 +1,951 @@
+slug: soramfr-decouvrir
+position: 1
+level: DEBUTANT
+title: "Découvrir Soramfr et son architecture"
+summary: "Présenter le projet en quelques phrases, comprendre ses trois étages (Angular, Spring Boot, PostgreSQL) et suivre le voyage d'une inscription."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sor-projet-en-bref
+    title: "Soramfr en quelques mots"
+    duration: 8
+    objective: "Savoir présenter Soramfr simplement : à quoi sert l'application, pour qui, et ce qu'on peut y faire."
+    prerequisites: "Aucun : c'est le point de départ."
+    skills: [gestion-projet]
+    xp: 10
+    memo: |
+      - **Soramfr** : boutique en ligne d'accessoires de sécurité personnelle.
+      - Une **application web** s'utilise dans un navigateur (Chrome, Firefox…), sans rien installer.
+      - Une **fonctionnalité** = une action que l'application permet : s'inscrire, se connecter, ajouter au panier…
+      - Deux **rôles** : `USER` (la cliente, qui achète) et `ADMIN` (l'administratrice, qui gère les comptes).
+      - Présentation en une phrase : « Soramfr permet d'acheter en ligne des accessoires de sécurité ; les clientes gèrent leur panier et l'administratrice gère les comptes. »
+    commonMistakes: |
+      - Présenter la technique avant le besoin : on dit d'abord **à quoi sert** l'application, ensuite **comment** elle est construite.
+      - Confondre **rôle** et **personne** : une même personne a un seul rôle, mais plusieurs personnes peuvent avoir le même rôle.
+      - Oublier les fonctionnalités de l'administratrice (lister et supprimer des comptes).
+    blocks:
+      - type: text
+        md: |
+          Bienvenue dans ton propre projet ! Avant de regarder le code, on commence par l'essentiel :
+          **à quoi sert Soramfr ?**
+
+          Soramfr est une **boutique en ligne** d'accessoires de sécurité personnelle : alarmes de poche,
+          coques de téléphone avec bouton SOS, sacs antivol… Une personne peut créer un compte, se connecter,
+          regarder les produits et les mettre dans son panier.
+      - type: definition
+        id: def-appli-web
+        term: "Application web"
+        md: |
+          Un programme que l'on utilise **dans un navigateur** (Chrome, Firefox, Safari), sans rien installer.
+          C'est comme un magasin que l'on visite par la fenêtre de son écran : tout se passe sur Internet.
+      - type: definition
+        id: def-fonctionnalite
+        term: "Fonctionnalité"
+        md: |
+          Une **action** que l'application permet de faire. Dans un distributeur de billets, « retirer de
+          l'argent » et « consulter son solde » sont deux fonctionnalités.
+      - type: steps
+        title: "Les fonctionnalités de Soramfr"
+        items:
+          - "**S'inscrire** : créer un compte avec un nom, un e-mail, un pseudo et un mot de passe."
+          - "**Se connecter** : entrer son e-mail (ou son pseudo) et son mot de passe."
+          - "**Parcourir le catalogue** : voir les produits et les chercher par mot-clé."
+          - "**Gérer son panier** : ajouter, retirer, changer les quantités, voir le total."
+          - "**Consulter son profil**."
+          - "**Administrer** (réservé à l'administratrice) : lister et supprimer des comptes."
+      - type: question
+        ref: sor-l1-q1
+        review: def-fonctionnalite
+      - type: definition
+        id: def-role
+        term: "Rôle"
+        md: |
+          Une **étiquette** qui dit ce qu'une personne a le droit de faire. C'est comme un badge dans une
+          entreprise : le badge « visiteur » ouvre l'accueil, le badge « direction » ouvre aussi les bureaux.
+
+          Soramfr a deux rôles :
+          - `USER` : la cliente. Elle achète.
+          - `ADMIN` : l'administratrice. Elle gère les comptes.
+      - type: compare
+        left:
+          title: "Exemple simple : une bibliothèque"
+          md: |
+            - Fonctionnalités : emprunter un livre, rendre un livre, chercher un titre.
+            - Rôles : **lecteur** (emprunte) et **bibliothécaire** (gère le fonds et les inscriptions).
+        right:
+          title: "Soramfr"
+          md: |
+            - Fonctionnalités : s'inscrire, se connecter, chercher un produit, gérer son panier.
+            - Rôles : **USER** (achète) et **ADMIN** (gère les comptes).
+      - type: callout
+        variant: exam
+        title: "Le jour de la soutenance"
+        md: |
+          Le jury te demandera presque toujours de **présenter ton projet**. Commence par le besoin (à quoi ça
+          sert, pour qui), puis les fonctionnalités, et **seulement ensuite** la technique.
+      - type: text
+        md: "Exercice guidé : complète la présentation de Soramfr avec les bons mots."
+      - type: exercise
+        ref: sor-ex-pitch
+      - type: text
+        md: |
+          En autonomie : remets dans l'ordre le parcours d'une nouvelle cliente, de sa première visite
+          jusqu'à la validation de son panier.
+      - type: exercise
+        ref: sor-ex-parcours-cliente
+      - type: jury
+        items:
+          - q: "Présentez votre projet en une minute."
+            a: |
+              « Soramfr est une boutique en ligne d'accessoires de sécurité personnelle. Les clientes créent un
+              compte, se connectent, cherchent des produits et gèrent leur panier. Une administratrice gère les
+              comptes. J'ai développé le frontend en Angular, le backend en Spring Boot et la base en PostgreSQL. »
+            tip: "Besoin d'abord, fonctionnalités ensuite, technique à la fin."
+          - q: "Pourquoi avez-vous prévu deux rôles ?"
+            a: |
+              Parce que les deux publics n'ont pas les mêmes droits. Une cliente ne doit pas pouvoir supprimer
+              les comptes des autres : seul le rôle ADMIN y a accès.
+      - type: quiz
+        items:
+          - ref: sor-l1-q2
+            review: def-appli-web
+          - ref: sor-l1-q3
+            review: def-role
+          - ref: sor-l1-q4
+            review: def-role
+          - ref: sor-l1-q5
+    questions:
+      - code: sor-l1-q1
+        kind: CHOIX_MULTIPLE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Lesquelles de ces actions sont des **fonctionnalités** de Soramfr ?"
+        choices:
+          - label: "Ajouter un produit au panier"
+            correct: true
+            why: "Oui : c'est une action que la cliente peut faire."
+          - label: "Se connecter avec son e-mail ou son pseudo"
+            correct: true
+            why: "Oui : la connexion accepte l'un ou l'autre."
+          - label: "Le langage Java"
+            correct: false
+            why: "Java est un outil de fabrication, pas une action proposée à l'utilisatrice."
+          - label: "Supprimer un compte (pour l'administratrice)"
+            correct: true
+            why: "Oui : c'est une fonctionnalité réservée au rôle ADMIN."
+        explanation: "Une fonctionnalité est une **action** offerte à la personne qui utilise l'application. Les langages et les outils servent à la fabriquer."
+      - code: sor-l1-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Pour utiliser Soramfr, une cliente doit d'abord installer un logiciel sur son ordinateur."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : Soramfr est une application web, elle s'ouvre dans le navigateur."
+          - label: "Faux"
+            correct: true
+            why: "Exact : un navigateur suffit."
+        explanation: "Une application **web** s'utilise dans un navigateur. Rien à installer."
+      - code: sor-l1-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Quel rôle permet de **supprimer un compte** dans Soramfr ?"
+        choices:
+          - label: "ADMIN"
+            correct: true
+            why: "Oui : c'est la personne qui gère les comptes."
+          - label: "USER"
+            correct: false
+            why: "Non : la cliente achète, elle ne gère pas les comptes des autres."
+          - label: "Tout le monde, même sans compte"
+            correct: false
+            why: "Ce serait dangereux : n'importe qui pourrait effacer les comptes."
+        explanation: "Le rôle `ADMIN` donne accès à l'administration des comptes. Le rôle `USER` donne accès au catalogue et au panier."
+      - code: sor-l1-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Un rôle, c'est un peu comme…"
+        choices:
+          - label: "un badge qui ouvre certaines portes et pas d'autres"
+            correct: true
+            why: "C'est la bonne image : le rôle décide des droits."
+          - label: "un mot de passe"
+            correct: false
+            why: "Le mot de passe prouve **qui** tu es ; le rôle dit **ce que** tu as le droit de faire."
+          - label: "une page du site"
+            correct: false
+            why: "Une page est un écran ; le rôle est une autorisation."
+        explanation: "S'authentifier (mot de passe) prouve son identité. Le rôle sert ensuite à l'**autorisation** : ce que l'on a le droit de faire."
+      - code: sor-l1-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Pour présenter Soramfr au jury, par quoi vaut-il mieux commencer ?"
+        choices:
+          - label: "Le besoin : à quoi sert l'application et pour qui"
+            correct: true
+            why: "Oui : le jury comprend ensuite pourquoi tes choix techniques sont utiles."
+          - label: "La liste des dépendances Maven"
+            correct: false
+            why: "Trop technique pour une introduction : le jury ne sait pas encore à quoi sert le projet."
+          - label: "Les bugs que tu n'as pas eu le temps de corriger"
+            correct: false
+            why: "Les limites se présentent à la fin, avec les améliorations prévues."
+        explanation: "L'ordre classique : **besoin → fonctionnalités → architecture → démonstration → limites et améliorations**."
+    exercises:
+      - slug: sor-ex-pitch
+        kind: COMPLETER
+        title: "Compléter la présentation de Soramfr"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: |
+          Complète la présentation. Chaque trou attend **un seul mot** (en minuscules, ou le nom du rôle en
+          majuscules).
+        criteria: "Les trois trous sont correctement remplis."
+        hints:
+          - "Soramfr vend des produits sur Internet : c'est une … en ligne."
+          - "Le rôle de la cliente s'écrit en anglais, en majuscules : quatre lettres."
+          - "Réponses : boutique, USER, ADMIN."
+        solution: '["boutique", "USER", "ADMIN"]'
+        explanation: |
+          Soramfr est une **boutique** en ligne. Le rôle `USER` correspond à la cliente, le rôle `ADMIN` à
+          l'administratrice. Ces deux noms de rôles sont ceux utilisés dans le code (jeton JWT, gardes Angular).
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Soramfr est une [[1]] en ligne d'accessoires de sécurité.
+            Les clientes ont le rôle [[2]] : elles achètent.
+            L'administratrice a le rôle [[3]] : elle gère les comptes.
+          blanks:
+            - ["boutique"]
+            - ["USER"]
+            - ["ADMIN"]
+      - slug: sor-ex-parcours-cliente
+        kind: REMETTRE_ORDRE
+        title: "Le parcours d'une nouvelle cliente"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: "Remets les étapes dans l'ordre où une nouvelle cliente les vit."
+        criteria: "Les six étapes sont dans l'ordre chronologique."
+        hints:
+          - "On ne peut pas se connecter sans compte."
+          - "Le panier se remplit après avoir vu les produits."
+          - "Ordre : arriver, s'inscrire, se connecter, chercher, ajouter, valider."
+        solution: |
+          1. Elle arrive sur la page d'accueil.
+          2. Elle crée son compte (inscription).
+          3. Elle se connecte.
+          4. Elle cherche un produit dans le catalogue.
+          5. Elle l'ajoute à son panier.
+          6. Elle valide son panier.
+        explanation: "On suit l'ordre logique : un compte avant la connexion, la connexion avant le catalogue (réservé aux clientes connectées), le panier avant la validation."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Elle arrive sur la page d'accueil."
+            - "Elle crée son compte (inscription)."
+            - "Elle se connecte."
+            - "Elle cherche un produit dans le catalogue."
+            - "Elle l'ajoute à son panier."
+            - "Elle valide son panier."
+
+  # ===================================================================== LEÇON 2
+  - slug: sor-trois-etages
+    title: "Les trois étages : Angular, Spring Boot, PostgreSQL"
+    duration: 12
+    objective: "Savoir dire le rôle du frontend, du backend et de la base de données, et comment ils se parlent (HTTP, JSON)."
+    prerequisites: "Leçon « Soramfr en quelques mots »."
+    skills: [full-stack, uml-architecture]
+    xp: 15
+    memo: |
+      - **Frontend** (Angular) : ce que la personne voit et touche, dans le navigateur. C'est la salle du restaurant.
+      - **Backend** (Spring Boot) : applique les règles et parle à la base. C'est la cuisine.
+      - **Base de données** (PostgreSQL) : garde les informations pour toujours. C'est le garde-manger.
+      - Ils communiquent par **HTTP** (une demande, une réponse) avec des données au format **JSON**.
+      - Une **API REST** = la liste des adresses (URL) que le backend accepte, par exemple `POST /api/auth/register`.
+      - On appelle ça une **architecture trois tiers** (trois couches séparées).
+    commonMistakes: |
+      - Croire que le frontend parle directement à la base : il passe **toujours** par le backend.
+      - Confondre **JSON** (un format de texte pour échanger des données) et **Java** (un langage).
+      - Mettre les règles importantes (mot de passe assez long, rôle) seulement dans Angular : le backend doit toujours revérifier.
+    blocks:
+      - type: text
+        md: |
+          Une application comme Soramfr est construite en **trois étages**. Pour bien les comprendre,
+          imagine un **restaurant**.
+      - type: definition
+        id: def-frontend
+        term: "Frontend (Angular)"
+        md: |
+          La partie **visible** : les pages, les boutons, les formulaires. Elle tourne dans le navigateur.
+          C'est la **salle** du restaurant : les clients s'y installent et passent commande.
+          Soramfr utilise **Angular**, un outil (on dit un *framework*) pour fabriquer ces pages.
+      - type: definition
+        id: def-backend
+        term: "Backend (Spring Boot)"
+        md: |
+          La partie **cachée** qui tourne sur un serveur. Elle vérifie les règles (« ce mot de passe est-il
+          assez long ? ») et lit ou écrit dans la base. C'est la **cuisine** : le client ne la voit pas, mais
+          tout s'y prépare. Soramfr utilise **Spring Boot**, un framework Java.
+      - type: definition
+        id: def-bdd
+        term: "Base de données (PostgreSQL)"
+        md: |
+          L'endroit où les informations sont **gardées durablement** : les comptes, les produits… C'est le
+          **garde-manger** : la cuisine y prend et y range les ingrédients. Soramfr utilise **PostgreSQL**.
+      - type: question
+        ref: sor-l2-q1
+        review: def-backend
+      - type: definition
+        id: def-http
+        term: "HTTP, requête et réponse"
+        md: |
+          **HTTP** est la façon dont le navigateur et le serveur se parlent. Le navigateur envoie une
+          **requête** (une demande), le serveur renvoie une **réponse**. C'est comme un bon de commande
+          que la serveuse apporte en cuisine, puis l'assiette qui revient.
+      - type: definition
+        id: def-json
+        term: "JSON"
+        md: |
+          Un format de **texte** pour écrire des données, avec des paires `"nom": valeur` entre accolades
+          `{ }`. C'est la **fiche de commande** remplie : chacun sait où lire chaque information.
+      - type: code
+        id: code-json-simple
+        language: json
+        title: "Exemple simple : une commande au restaurant, en JSON"
+        code: |
+          {
+            "plat": "lasagnes",
+            "quantite": 2,
+            "sansFromage": false
+          }
+        lines:
+          - n: 1
+            note: "L'accolade ouvre l'objet JSON : tout ce qui suit décrit **une** commande."
+          - n: 2
+            note: "Un **nom** entre guillemets, deux-points, puis la **valeur**. Ici un texte, donc entre guillemets aussi."
+          - n: 3
+            note: "Un nombre s'écrit sans guillemets. Les paires sont séparées par des virgules."
+          - n: 4
+            note: "`true` ou `false` : une valeur oui/non. Pas de virgule après la dernière paire."
+      - type: code
+        id: code-json-inscription
+        language: json
+        title: "Le vrai JSON envoyé par Soramfr à l'inscription"
+        code: |
+          {
+            "name": "Ramata",
+            "email": "ramata@exemple.fr",
+            "username": "mai",
+            "password": "MotDePasse2025"
+          }
+        lines:
+          - n: 2
+            note: "`name` : le nom complet saisi dans le formulaire Angular."
+          - n: 3
+            note: "`email` : il devra être **unique** en base."
+          - n: 4
+            note: "`username` : le pseudo, lui aussi unique."
+          - n: 5
+            note: "`password` : le mot de passe voyage en clair **dans** la connexion HTTPS, puis le backend le **hache** avant de l'enregistrer."
+      - type: definition
+        id: def-api
+        term: "API REST"
+        md: |
+          La **carte du restaurant** côté cuisine : la liste des demandes que le backend sait traiter.
+          Chaque demande a une **adresse** (URL) et un **verbe** : `GET` pour lire, `POST` pour créer,
+          `PUT` pour modifier, `DELETE` pour supprimer.
+
+          Dans Soramfr : `POST /api/auth/register` (inscription), `POST /api/auth/login` (connexion),
+          `GET /api/users` (liste des comptes).
+      - type: code
+        id: code-environment
+        language: typescript
+        title: "Soramfr — src/environments/environment.ts"
+        code: |
+          export const environment = {
+              production: false,
+              // url de mon bakend pour que ca tourne en local
+              apiUrl: 'http://localhost:8080'
+          };
+        lines:
+          - n: 1
+            note: "`export` rend cet objet utilisable dans les autres fichiers Angular."
+          - n: 2
+            note: "`production: false` : on est en développement, sur ton ordinateur."
+          - n: 4
+            note: "`apiUrl` : **l'adresse du backend**. Angular sait ainsi où envoyer ses requêtes. En production, un autre fichier donne l'adresse du serveur en ligne."
+      - type: callout
+        variant: warning
+        title: "Un point à améliorer dans Soramfr"
+        md: |
+          Ce fichier existe, mais `auth.service.ts` et `user-api.service.ts` écrivent quand même
+          `http://localhost:8080` **en dur**. Résultat : une fois en ligne, l'application appellerait encore
+          ton ordinateur ! On corrigera ça dans le chapitre Angular.
+      - type: question
+        ref: sor-l2-q2
+        review: def-json
+      - type: text
+        md: "Exercice guidé : complète le JSON envoyé par Soramfr quand une personne **se connecte**."
+      - type: exercise
+        ref: sor-ex-json-login
+      - type: text
+        md: "En autonomie : écris toi-même le JSON d'une inscription."
+      - type: exercise
+        ref: sor-ex-json-inscription
+      - type: jury
+        items:
+          - q: "Décrivez l'architecture de votre application."
+            a: |
+              « C'est une architecture **trois tiers** : un frontend Angular dans le navigateur, un backend
+              Spring Boot qui expose une API REST, et une base PostgreSQL. Le frontend appelle l'API en HTTP
+              avec du JSON ; seul le backend accède à la base. »
+          - q: "Pourquoi ne pas faire parler Angular directement à la base ?"
+            a: |
+              Parce que le code Angular est visible par tout le monde dans le navigateur. Il faudrait y mettre
+              le mot de passe de la base : n'importe qui pourrait le lire. Le backend protège la base et
+              applique les règles.
+      - type: quiz
+        items:
+          - ref: sor-l2-q3
+            review: def-frontend
+          - ref: sor-l2-q4
+            review: def-api
+          - ref: sor-l2-q5
+            review: code-environment
+          - ref: sor-l2-q6
+            review: def-http
+    questions:
+      - code: sor-l2-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: full-stack
+        prompt: "Dans Soramfr, qui vérifie qu'un e-mail n'est pas déjà utilisé avant de créer le compte ?"
+        choices:
+          - label: "Le backend Spring Boot"
+            correct: true
+            why: "Oui : il interroge la base (`existsByEmail`) avant d'enregistrer."
+          - label: "Le navigateur, tout seul"
+            correct: false
+            why: "Le navigateur ne connaît pas les comptes des autres : ils sont en base."
+          - label: "Le fichier JSON"
+            correct: false
+            why: "Le JSON transporte les données ; il ne vérifie rien."
+        explanation: "Les règles qui dépendent des données enregistrées (doublons, droits) sont appliquées par le **backend**, qui seul accède à la base."
+      - code: sor-l2-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: full-stack
+        prompt: "Lequel de ces textes est un JSON **valide** ?"
+        choices:
+          - label: '`{ "identifier": "mai", "password": "Secret123" }`'
+            correct: true
+            why: "Accolades, noms entre guillemets, deux-points, virgule entre les paires : tout est bon."
+          - label: "`{ identifier = mai; password = Secret123 }`"
+            correct: false
+            why: "En JSON, on utilise `:` (pas `=`), des virgules (pas `;`) et des guillemets autour des textes."
+          - label: '`( "identifier": "mai" )`'
+            correct: false
+            why: "Un objet JSON s'écrit entre accolades `{ }`, pas entre parenthèses."
+        explanation: "Un objet JSON : `{ \"nom\": valeur, \"nom2\": valeur2 }`. Les textes sont entre guillemets doubles."
+      - code: sor-l2-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Dans l'image du restaurant, le **frontend** Angular correspond à…"
+        choices:
+          - label: "la salle, où les clients voient la carte et commandent"
+            correct: true
+            why: "Oui : c'est la partie visible."
+          - label: "la cuisine"
+            correct: false
+            why: "La cuisine, c'est le backend : on ne la voit pas, mais tout s'y prépare."
+          - label: "le garde-manger"
+            correct: false
+            why: "Le garde-manger, c'est la base de données."
+        explanation: "Salle = frontend (visible), cuisine = backend (règles), garde-manger = base de données (stockage)."
+      - code: sor-l2-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Quel verbe HTTP utilise Soramfr pour **créer** un compte (`/api/auth/register`) ?"
+        choices:
+          - label: "POST"
+            correct: true
+            why: "Oui : POST sert à créer une nouvelle ressource."
+          - label: "GET"
+            correct: false
+            why: "GET sert à lire, sans rien modifier."
+          - label: "DELETE"
+            correct: false
+            why: "DELETE sert à supprimer."
+        explanation: "GET lit, POST crée, PUT modifie, DELETE supprime."
+      - code: sor-l2-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-services
+        prompt: "À quoi sert `apiUrl` dans `environment.ts` ?"
+        choices:
+          - label: "À indiquer à Angular l'adresse du backend"
+            correct: true
+            why: "Oui : chaque requête HTTP part vers cette adresse."
+          - label: "À stocker le mot de passe de la base"
+            correct: false
+            why: "Surtout pas : ce fichier finit dans le navigateur, lisible par tous."
+          - label: "À choisir la couleur du site"
+            correct: false
+            why: "Les couleurs sont dans les fichiers CSS."
+        explanation: "`environment.ts` centralise les réglages qui changent entre ton ordinateur et la production, comme l'adresse de l'API."
+      - code: sor-l2-q6
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: web-fondamentaux
+        prompt: "Avec HTTP, c'est toujours le navigateur qui envoie la demande, et le serveur qui répond."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Oui : le serveur attend les requêtes et y répond."
+          - label: "Faux"
+            correct: false
+            why: "Dans le modèle HTTP classique, le serveur ne parle jamais le premier."
+        explanation: "HTTP fonctionne en **requête → réponse**. C'est le client (le navigateur) qui commence."
+    exercises:
+      - slug: sor-ex-json-login
+        kind: COMPLETER
+        title: "Le JSON de connexion"
+        difficulty: FACILE
+        skill: full-stack
+        statement: |
+          Dans Soramfr, le DTO `LoginRequest` contient deux champs : `identifier` (e-mail ou pseudo) et
+          `password`. Complète le JSON envoyé par Angular.
+        criteria: "Les deux noms de champs sont exacts."
+        hints:
+          - "Les noms doivent être **exactement** ceux du DTO Java."
+          - "Le premier accepte l'e-mail ou le pseudo : il ne s'appelle ni `email` ni `username`."
+          - "Réponses : identifier, password."
+        solution: '["identifier", "password"]'
+        explanation: |
+          Spring transforme le JSON en objet Java en cherchant des champs **du même nom**. Si Angular envoyait
+          `login` au lieu de `identifier`, le champ resterait vide et Soramfr répondrait « Identifiant obligatoire ».
+        xp: 10
+        payload:
+          language: json
+          template: |
+            {
+              "[[1]]": "mai",
+              "[[2]]": "MotDePasse2025"
+            }
+          blanks:
+            - ["identifier"]
+            - ["password"]
+      - slug: sor-ex-json-inscription
+        kind: CODE_LIBRE
+        title: "Écrire le JSON d'une inscription"
+        difficulty: FACILE
+        skill: full-stack
+        statement: |
+          Écris le JSON qu'Angular envoie à `POST /api/auth/register` pour une personne nommée **Awa Diallo**,
+          e-mail `awa@exemple.fr`, pseudo `awa`, mot de passe `Soleil2025!`.
+
+          Les quatre champs attendus par `RegisterRequest` : `name`, `email`, `username`, `password`.
+        criteria: "Un objet JSON avec les quatre champs et les bonnes valeurs."
+        hints:
+          - "Commence par `{` et termine par `}`."
+          - "Chaque ligne : `\"champ\": \"valeur\",` — pas de virgule après la dernière."
+          - '`{ "name": "Awa Diallo", "email": "awa@exemple.fr", "username": "awa", "password": "Soleil2025!" }`'
+        solution: |
+          {
+            "name": "Awa Diallo",
+            "email": "awa@exemple.fr",
+            "username": "awa",
+            "password": "Soleil2025!"
+          }
+        explanation: |
+          Les noms des champs correspondent exactement aux attributs de `RegisterRequest` en Java. Les valeurs
+          sont des textes, donc entre guillemets doubles.
+        xp: 15
+        payload:
+          language: json
+          starter: |
+            {
+
+            }
+          checks:
+            - pattern: '^\s*\{[\s\S]*\}\s*$'
+              message: "Un objet JSON commence par { et se termine par }."
+            - pattern: '"name"\s*:\s*"Awa Diallo"'
+              message: "Il manque le champ \"name\" avec la valeur \"Awa Diallo\"."
+            - pattern: '"email"\s*:\s*"awa@exemple\.fr"'
+              message: "Il manque le champ \"email\" avec la valeur \"awa@exemple.fr\"."
+            - pattern: '"username"\s*:\s*"awa"'
+              message: "Il manque le champ \"username\" avec la valeur \"awa\"."
+            - pattern: '"password"\s*:\s*"Soleil2025!"'
+              message: "Il manque le champ \"password\" avec la valeur \"Soleil2025!\"."
+            - pattern: ',\s*\}'
+              absent: true
+              message: "Pas de virgule juste avant l'accolade fermante : le JSON serait invalide."
+            - pattern: "'"
+              absent: true
+              message: "En JSON, les textes s'écrivent entre guillemets doubles \" et non simples '."
+
+  # ===================================================================== LEÇON 3
+  - slug: sor-voyage-requete
+    title: "Le voyage d'une inscription, d'Angular à PostgreSQL"
+    duration: 14
+    objective: "Savoir raconter, étape par étape, ce qui se passe entre le clic sur « Créer mon compte » et l'enregistrement en base."
+    prerequisites: "Leçon « Les trois étages »."
+    skills: [full-stack, spring-rest]
+    xp: 20
+    memo: |
+      1. **Angular** : `InscriptionComponent.onSubmit()` vérifie le formulaire.
+      2. **Angular** : `UserApiService.register()` envoie `POST /api/auth/register` avec le JSON.
+      3. **Spring Security** laisse passer (`/api/auth/**` est public).
+      4. **Contrôleur** : `AuthController.register()` reçoit le JSON transformé en `RegisterRequest`.
+      5. **Service** : `AuthService.register()` vérifie les champs et les doublons, hache le mot de passe.
+      6. **Repository** : `userRepository.save()` fait un `INSERT INTO users`.
+      7. **Réponse** : code **201 Created** avec les infos publiques (sans mot de passe).
+      8. **Angular** redirige vers la page de connexion.
+    commonMistakes: |
+      - Oublier le passage par le **service** : le contrôleur ne doit pas contenir les règles métier.
+      - Dire que le mot de passe est « crypté » : il est **haché** (on ne peut pas revenir en arrière).
+      - Oublier que la réponse peut être une **erreur** (400, 409) et qu'Angular doit l'afficher.
+    blocks:
+      - type: text
+        md: |
+          Tu cliques sur **« Créer mon compte »**. Une seconde plus tard, ton compte existe en base.
+          Entre les deux, les données font un vrai **voyage** à travers les trois étages. Savoir le raconter
+          est l'une des questions préférées du jury.
+      - type: definition
+        id: def-code-statut
+        term: "Code de statut HTTP"
+        md: |
+          Un **nombre** que le serveur ajoute à chaque réponse pour dire comment ça s'est passé. C'est comme
+          le ticket de caisse : « payé », « refusé », « en attente ».
+          - `200` OK, `201` Created (créé) : tout va bien ;
+          - `400` : la demande est mal remplie ; `401` : il faut se connecter ; `403` : c'est interdit pour toi ;
+          - `404` : introuvable ; `409` : conflit (par exemple un doublon) ;
+          - `500` : erreur imprévue côté serveur.
+      - type: steps
+        id: etapes-voyage
+        title: "Le voyage, étape par étape"
+        items:
+          - "**Angular — le composant.** `InscriptionComponent.onSubmit()` vérifie que tous les champs sont remplis et que les deux mots de passe sont identiques."
+          - "**Angular — le service.** `UserApiService.register(body)` envoie la requête `POST /api/auth/register` avec le JSON."
+          - "**Spring Security.** La règle `/api/auth/**` est publique (`permitAll`) : la requête passe sans jeton."
+          - "**Le contrôleur.** `AuthController.register()` reçoit le JSON, que Spring a transformé en objet `RegisterRequest`."
+          - "**Le service.** `AuthService.register()` vérifie les champs, cherche les doublons, **hache** le mot de passe avec BCrypt."
+          - "**Le repository.** `userRepository.save()` demande à JPA d'écrire `INSERT INTO users (...)` dans PostgreSQL."
+          - "**La réponse.** Le contrôleur renvoie **201 Created** avec l'id, le nom, l'e-mail et le pseudo (jamais le mot de passe)."
+          - "**Retour dans Angular.** Le `subscribe` reçoit la réponse : message de succès et redirection vers `/connexion`."
+      - type: question
+        ref: sor-l3-q1
+        review: etapes-voyage
+      - type: code
+        id: code-controller
+        language: java
+        title: "Soramfr — AuthController.java (extrait)"
+        code: |
+          @RestController
+          @RequestMapping("/api/auth")
+          public class AuthController {
+
+              private final AuthService authService;
+
+              public AuthController(AuthService authService){
+                  this.authService = authService;
+              }
+
+              @PostMapping("/register")
+              public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest req){
+                  return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(req));
+              }
+          }
+        lines:
+          - n: 1
+            note: "`@RestController` : cette classe répond aux requêtes HTTP et renvoie du JSON."
+          - n: 2
+            note: "`@RequestMapping(\"/api/auth\")` : toutes les adresses de la classe commencent par `/api/auth`."
+          - n: 5
+            note: "Le contrôleur **délègue** le travail au service. Il ne contient pas de règle métier."
+          - n: 7
+            note: "Le **constructeur** reçoit le service : Spring le fournit tout seul (on parle d'**injection de dépendances**)."
+          - n: 11
+            note: "`@PostMapping(\"/register\")` : cette méthode traite `POST /api/auth/register`."
+          - n: 12
+            note: "`@RequestBody` : Spring lit le JSON du corps de la requête et remplit un objet `RegisterRequest`."
+          - n: 13
+            note: "On appelle le service, puis on répond avec le statut **201 Created** et l'objet `AuthResponse` en JSON."
+      - type: callout
+        variant: info
+        title: "Injection de dépendances, en une image"
+        md: |
+          Le contrôleur a besoin d'un service, comme un cuisinier a besoin d'un four. Il ne le fabrique pas
+          lui-même : on le lui **livre** à l'arrivée (par le constructeur). C'est Spring qui fait la livraison.
+      - type: question
+        ref: sor-l3-q2
+        review: code-controller
+      - type: text
+        md: "Exercice guidé : remets dans l'ordre le voyage d'une inscription."
+      - type: exercise
+        ref: sor-ex-voyage-ordre
+      - type: text
+        md: "En autonomie : associe chaque situation au bon code de statut HTTP renvoyé par Soramfr."
+      - type: exercise
+        ref: sor-ex-codes-statut
+      - type: jury
+        items:
+          - q: "Expliquez ce qui se passe quand un utilisateur clique sur « Créer mon compte »."
+            a: |
+              Le composant Angular vérifie le formulaire, puis le service envoie `POST /api/auth/register` avec
+              un JSON. Côté Spring, la route est publique ; le contrôleur reçoit un `RegisterRequest` et appelle
+              `AuthService`, qui vérifie les champs et les doublons, hache le mot de passe avec BCrypt et
+              enregistre l'utilisateur via le repository. Le contrôleur répond 201 avec les données publiques,
+              et Angular redirige vers la connexion.
+            tip: "Cite les vrais noms de tes classes : c'est la preuve que tu connais ton code."
+          - q: "Pourquoi renvoyer 201 et pas 200 ?"
+            a: "201 Created indique précisément qu'une nouvelle ressource a été créée. 200 veut seulement dire « OK »."
+      - type: quiz
+        items:
+          - ref: sor-l3-q3
+            review: etapes-voyage
+          - ref: sor-l3-q4
+            review: def-code-statut
+          - ref: sor-l3-q5
+            review: code-controller
+          - ref: sor-l3-q6
+            review: etapes-voyage
+    questions:
+      - code: sor-l3-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: full-stack
+        prompt: "Quelle classe **hache** le mot de passe dans Soramfr ?"
+        choices:
+          - label: "AuthService"
+            correct: true
+            why: "Oui : `encoder.encode(req.password)` est appelé dans le service."
+          - label: "AuthController"
+            correct: false
+            why: "Le contrôleur reçoit la requête et délègue ; il ne contient pas de règle métier."
+          - label: "InscriptionComponent (Angular)"
+            correct: false
+            why: "Le hachage doit se faire côté serveur : le navigateur n'est pas un endroit de confiance."
+        explanation: "Le **service** contient la logique métier : contrôles, doublons, hachage. Le contrôleur ne fait que recevoir et répondre."
+      - code: sor-l3-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Que fait l'annotation `@RequestBody` ?"
+        choices:
+          - label: "Elle transforme le JSON reçu en objet Java"
+            correct: true
+            why: "Oui : Spring remplit un `RegisterRequest` à partir du JSON."
+          - label: "Elle renvoie la réponse au navigateur"
+            correct: false
+            why: "C'est le `return` avec `ResponseEntity` qui renvoie la réponse."
+          - label: "Elle protège la route par un mot de passe"
+            correct: false
+            why: "La protection des routes est dans `SecurityConfig`."
+        explanation: "`@RequestBody` = « lis le corps de la requête et convertis-le dans ce type Java »."
+      - code: sor-l3-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Quelle instruction écrit réellement le nouveau compte dans PostgreSQL ?"
+        choices:
+          - label: "`userRepository.save(nouvelutilisateur)`"
+            correct: true
+            why: "Oui : JPA traduit cet appel en `INSERT INTO users (...)`."
+          - label: "`this.router.navigate(['/connexion'])`"
+            correct: false
+            why: "C'est une redirection Angular, qui arrive **après** l'enregistrement."
+          - label: "`@PostMapping(\"/register\")`"
+            correct: false
+            why: "Cette annotation relie une adresse à une méthode ; elle n'écrit rien en base."
+        explanation: "Le **repository** est la seule couche qui parle à la base. `save()` produit un INSERT (ou un UPDATE si l'objet existe déjà)."
+      - code: sor-l3-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Une personne s'inscrit avec un e-mail **déjà utilisé**. Quel code Soramfr renvoie-t-il ?"
+        choices:
+          - label: "409 Conflict"
+            correct: true
+            why: "Oui : `DuplicateResourceException` est traduite en 409 par le gestionnaire d'erreurs."
+          - label: "201 Created"
+            correct: false
+            why: "Rien n'a été créé : le compte existe déjà."
+          - label: "500"
+            correct: false
+            why: "500 signale un bug imprévu ; un doublon est une situation prévue."
+        explanation: "Un doublon est un **conflit** avec une donnée existante : 409."
+      - code: sor-l3-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Dans Soramfr, c'est le contrôleur qui crée lui-même son `AuthService` avec `new AuthService()`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : il le reçoit par son constructeur, et c'est Spring qui le fournit."
+          - label: "Faux"
+            correct: true
+            why: "Exact : c'est l'injection de dépendances."
+        explanation: "Spring crée les objets `@Service`, `@RestController`… une seule fois et les **injecte** là où on en a besoin."
+      - code: sor-l3-q6
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: full-stack
+        prompt: "Que contient la réponse d'une inscription réussie ?"
+        choices:
+          - label: "L'id, le nom, l'e-mail et le pseudo, sans le mot de passe"
+            correct: true
+            why: "Oui : `AuthResponse` ne contient que des informations publiques."
+          - label: "Le mot de passe haché, pour qu'Angular le garde"
+            correct: false
+            why: "Jamais : même haché, un mot de passe ne sort pas du serveur."
+          - label: "Rien du tout"
+            correct: false
+            why: "Le corps contient un `AuthResponse` en JSON."
+        explanation: "On ne renvoie que le strict nécessaire. Le hash du mot de passe reste en base."
+    exercises:
+      - slug: sor-ex-voyage-ordre
+        kind: REMETTRE_ORDRE
+        title: "Remettre le voyage d'une inscription dans l'ordre"
+        difficulty: FACILE
+        skill: full-stack
+        statement: "Remets les étapes du voyage d'une inscription dans le bon ordre."
+        criteria: "Les huit étapes sont dans l'ordre réel d'exécution."
+        hints:
+          - "Tout commence dans le navigateur, et tout y revient à la fin."
+          - "Côté Spring : sécurité, puis contrôleur, puis service, puis repository."
+          - "Le hachage a lieu dans le service, **avant** l'enregistrement."
+        solution: |
+          1. InscriptionComponent.onSubmit() vérifie le formulaire
+          2. UserApiService.register() envoie POST /api/auth/register
+          3. SecurityConfig laisse passer /api/auth/** (permitAll)
+          4. AuthController.register() reçoit un RegisterRequest
+          5. AuthService.register() vérifie les champs et les doublons
+          6. AuthService hache le mot de passe avec BCrypt
+          7. userRepository.save() exécute INSERT INTO users
+          8. Réponse 201 Created, puis redirection vers /connexion
+        explanation: "Le trajet aller traverse les couches de haut en bas (front → sécurité → contrôleur → service → repository → base), puis la réponse remonte jusqu'au navigateur."
+        xp: 15
+        payload:
+          language: text
+          lines:
+            - "InscriptionComponent.onSubmit() vérifie le formulaire"
+            - "UserApiService.register() envoie POST /api/auth/register"
+            - "SecurityConfig laisse passer /api/auth/** (permitAll)"
+            - "AuthController.register() reçoit un RegisterRequest"
+            - "AuthService.register() vérifie les champs et les doublons"
+            - "AuthService hache le mot de passe avec BCrypt"
+            - "userRepository.save() exécute INSERT INTO users"
+            - "Réponse 201 Created, puis redirection vers /connexion"
+      - slug: sor-ex-codes-statut
+        kind: COMPLETER
+        title: "Le bon code de statut pour chaque situation"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: "Complète chaque ligne avec le code de statut HTTP (un nombre à trois chiffres)."
+        criteria: "Les quatre codes sont corrects."
+        hints:
+          - "Création réussie : ce n'est pas 200, c'est plus précis."
+          - "Doublon = conflit ; champ vide = requête mal remplie."
+          - "201, 409, 400, 404."
+        solution: '["201", "409", "400", "404"]'
+        explanation: |
+          - **201** : un compte vient d'être créé.
+          - **409** : l'e-mail ou le pseudo existe déjà (conflit).
+          - **400** : la requête est incomplète (champ vide, mot de passe trop court).
+          - **404** : l'utilisateur demandé n'existe pas (par exemple `GET /api/users/999`).
+        xp: 10
+        payload:
+          language: text
+          template: |
+            Inscription réussie ................................ [[1]]
+            E-mail déjà utilisé ................................ [[2]]
+            Nom laissé vide .................................... [[3]]
+            GET /api/users/999 (cet id n'existe pas) ........... [[4]]
+          blanks:
+            - ["201"]
+            - ["409"]
+            - ["400"]
+            - ["404"]
+
+bank:
+  - code: sor-c1-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: uml-architecture
+    prompt: "Comment appelle-t-on une architecture séparée en frontend, backend et base de données ?"
+    choices:
+      - label: "Une architecture trois tiers"
+        correct: true
+        why: "Oui : trois couches, chacune avec son rôle."
+      - label: "Une architecture monolithique à une couche"
+        correct: false
+        why: "Soramfr sépare justement ses trois étages."
+      - label: "Une architecture pair-à-pair"
+        correct: false
+        why: "Le pair-à-pair relie des ordinateurs égaux entre eux, sans serveur central."
+    explanation: "Présentation (Angular), logique métier (Spring Boot), données (PostgreSQL) : trois tiers."
+  - code: sor-c1-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-rest
+    prompt: "Quelle adresse appelle Angular pour **se connecter** à Soramfr ?"
+    choices:
+      - label: "`POST /api/auth/login`"
+        correct: true
+        why: "Oui : c'est la route de connexion d'`AuthController`."
+      - label: "`GET /api/users`"
+        correct: false
+        why: "Cette route liste les comptes : elle est réservée à l'administration."
+      - label: "`DELETE /api/auth/login`"
+        correct: false
+        why: "DELETE sert à supprimer, pas à se connecter."
+    explanation: "Inscription : `POST /api/auth/register`. Connexion : `POST /api/auth/login`."
+  - code: sor-c1-b3
+    kind: VRAI_FAUX
+    difficulty: 1
+    skill: full-stack
+    prompt: "Dans Soramfr, le frontend Angular peut lire directement la table `users` de PostgreSQL."
+    choices:
+      - label: "Vrai"
+        correct: false
+        why: "Non : seul le backend est connecté à la base."
+      - label: "Faux"
+        correct: true
+        why: "Exact : Angular passe toujours par l'API."
+    explanation: "Le navigateur n'a jamais accès à la base : il demande au backend, qui vérifie les droits."
+  - code: sor-c1-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-structure
+    prompt: "Dans quel ordre une requête traverse-t-elle les couches du backend ?"
+    choices:
+      - label: "Contrôleur → service → repository"
+        correct: true
+        why: "Oui : le contrôleur reçoit, le service décide, le repository accède à la base."
+      - label: "Repository → contrôleur → service"
+        correct: false
+        why: "Le repository est la dernière couche, celle qui touche la base."
+      - label: "Service → base → contrôleur"
+        correct: false
+        why: "C'est toujours le contrôleur qui reçoit la requête en premier."
+    explanation: "Chaque couche a un seul métier : recevoir (contrôleur), décider (service), stocker (repository)."
+  - code: sor-c1-b5
+    kind: TEXTE
+    difficulty: 2
+    skill: spring-rest
+    prompt: "Quel code de statut HTTP signifie « il faut d'abord te connecter » ? (réponds par le nombre)"
+    answers: ["401"]
+    explanation: "**401 Unauthorized** : aucune identité prouvée (pas de jeton, ou jeton invalide). **403** signifie « connu, mais pas autorisé »."

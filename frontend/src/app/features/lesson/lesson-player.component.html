@@ -25,6 +25,7 @@
       @for (step of visibleSteps(); track $index; let si = $index) {
         <section class="step" #stepEl tabindex="-1" [attr.aria-label]="'Étape ' + (si + 1)">
           @for (b of step.blocks; track $index) {
+            @if (asAny(b).id) { <span class="passage-anchor" [id]="'passage-' + asAny(b).id"></span> }
             @switch (b.type) {
               @case ('text') {
                 <div class="blk blk--text"><app-markdown [md]="asAny(b).md" /></div>
@@ -92,10 +93,65 @@
                                      [feedback]="feedbacks()[asQuestion(b).ref] ?? null"
                                      [disabled]="passed().has(asQuestion(b).ref) && !feedbacks()[asQuestion(b).ref]"
                                      [busy]="answering() === asQuestion(b).ref"
+                                     [reviewable]="true"
                                      (answer)="answer(asQuestion(b).ref, $event)"
-                                     (retry)="retry(asQuestion(b).ref)" />
+                                     (retry)="retry(asQuestion(b).ref)"
+                                     (review)="review(asQuestion(b).review, si)" />
                   @if (passed().has(asQuestion(b).ref) && !feedbacks()[asQuestion(b).ref]) {
                     <p class="interaction__done"><app-icon name="check" [size]="16" /> Question déjà réussie.</p>
+                  }
+                </div>
+              }
+              @case ('quiz') {
+                <div class="blk blk--wide lquiz" role="group" [attr.aria-labelledby]="'lquiz-' + si">
+                  <header class="lquiz__head">
+                    <p class="lquiz__title" [id]="'lquiz-' + si"><app-icon name="target" [size]="20" /> {{ asQuiz(b).title || 'QCM de fin de leçon' }}</p>
+                    @if (quizScore(asQuiz(b).items); as sc) {
+                      <p class="lquiz__score" aria-live="polite">{{ sc.passed }} / {{ sc.total }} réussie{{ sc.passed > 1 ? 's' : '' }}</p>
+                    }
+                  </header>
+                  <p class="lquiz__intro">Vérifie que tu as bien compris. Si tu te trompes, l'explication te dit pourquoi et tu peux relire le passage, puis réessayer.</p>
+                  <ol class="lquiz__list">
+                    @for (item of asQuiz(b).items; track item.ref; let qi = $index) {
+                      <li class="lquiz__item">
+                        <p class="lquiz__num">Question {{ qi + 1 }} sur {{ asQuiz(b).items.length }}</p>
+                        <app-question-card [question]="item.question"
+                                           [feedback]="feedbacks()[item.ref] ?? null"
+                                           [disabled]="passed().has(item.ref) && !feedbacks()[item.ref]"
+                                           [busy]="answering() === item.ref"
+                                           [reviewable]="true"
+                                           (answer)="answer(item.ref, $event)"
+                                           (retry)="retry(item.ref)"
+                                           (review)="review(item.review, 0)" />
+                        @if (passed().has(item.ref) && !feedbacks()[item.ref]) {
+                          <p class="interaction__done"><app-icon name="check" [size]="16" /> Question déjà réussie.</p>
+                        }
+                      </li>
+                    }
+                  </ol>
+                  @if (quizScore(asQuiz(b).items); as sc) {
+                    @if (sc.passed === sc.total) {
+                      <p class="lquiz__done" role="status">
+                        <app-icon name="star" [size]="18" />
+                        QCM terminé : {{ sc.firstTry }} bonne{{ sc.firstTry > 1 ? 's' : '' }} réponse{{ sc.firstTry > 1 ? 's' : '' }} du premier coup sur {{ sc.total }}.
+                        @if (sc.firstTry < sc.total) { Les questions ratées reviendront dans « Mes erreurs » pour t'entraîner. }
+                      </p>
+                    }
+                  }
+                </div>
+              }
+              @case ('jury') {
+                <div class="blk blk--wide jury">
+                  <p class="jury__title"><app-icon name="graduation" [size]="20" /> {{ asAny(b).title || 'Questions possibles du jury' }}</p>
+                  <p class="jury__intro">Essaie de répondre à voix haute avant d'ouvrir la réponse.</p>
+                  @for (item of asAny(b).items; track $index) {
+                    <details class="jury__item">
+                      <summary><span class="jury__q">{{ item.q }}</span></summary>
+                      <div class="jury__a">
+                        <app-markdown [md]="item.a" />
+                        @if (item.tip) { <p class="jury__tip"><app-icon name="lightbulb" [size]="16" /> {{ item.tip }}</p> }
+                      </div>
+                    </details>
                   }
                 </div>
               }
@@ -114,7 +170,7 @@
               } @else {
                 <p class="step__lock">
                   <app-icon name="lock" [size]="16" />
-                  {{ step.gate?.type === 'exercise' ? 'Valide cet exercice pour continuer.' : 'Trouve la bonne réponse pour continuer.' }}
+                  {{ step.gate?.type === 'exercise' ? 'Valide cet exercice pour continuer.' : step.gate?.type === 'quiz' ? 'Réussis chaque question du QCM pour terminer la leçon.' : 'Trouve la bonne réponse pour continuer.' }}
                 </p>
               }
             </div>

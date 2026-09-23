@@ -36,7 +36,7 @@ public class ContentLoader {
     static final Set<String> TEXT_KINDS = Set.of("TEXTE", "COMPLETER_CODE");
     static final Set<String> LEVELS = Set.of("DEBUTANT", "INTERMEDIAIRE", "AVANCE", "EXAMEN");
     static final Set<String> BLOCK_TYPES = Set.of(
-            "text", "definition", "code", "demo", "callout", "question", "exercise", "steps", "compare");
+            "text", "definition", "code", "demo", "callout", "question", "exercise", "steps", "compare", "quiz", "jury");
 
     private final ObjectMapper yaml = new ObjectMapper(new YAMLFactory())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
@@ -110,12 +110,37 @@ public class ContentLoader {
                 require(exerciseSlugs.add(ex.slug()), file, "exercice en double : " + ex.slug());
                 lessonExercises.add(ex.slug());
             }
+            Set<String> anchors = new HashSet<>();
+            for (JsonNode block : nullSafe(lesson.blocks())) {
+                if (block.hasNonNull("id")) {
+                    require(anchors.add(block.path("id").asText()), file,
+                            "identifiant de bloc en double dans " + lesson.slug() + " : " + block.path("id"));
+                }
+            }
             for (JsonNode block : nullSafe(lesson.blocks())) {
                 String type = block.path("type").asText();
                 require(BLOCK_TYPES.contains(type), file, "type de bloc inconnu dans " + lesson.slug() + " : " + type);
                 if (type.equals("question")) {
                     require(lessonQuestions.contains(block.path("ref").asText()), file,
                             "la leçon " + lesson.slug() + " référence une question absente : " + block.path("ref"));
+                    requireAnchor(block, anchors, file, lesson.slug());
+                }
+                if (type.equals("quiz")) {
+                    require(block.path("items").isArray() && block.path("items").size() >= 2, file,
+                            "le QCM de fin de leçon " + lesson.slug() + " doit contenir au moins deux questions");
+                    for (JsonNode item : block.path("items")) {
+                        require(lessonQuestions.contains(item.path("ref").asText()), file,
+                                "le QCM de " + lesson.slug() + " référence une question absente : " + item.path("ref"));
+                        requireAnchor(item, anchors, file, lesson.slug());
+                    }
+                }
+                if (type.equals("jury")) {
+                    require(block.path("items").isArray() && !block.path("items").isEmpty(), file,
+                            "bloc jury vide dans " + lesson.slug());
+                    for (JsonNode item : block.path("items")) {
+                        require(item.hasNonNull("q") && item.hasNonNull("a"), file,
+                                "question de jury sans q ou a dans " + lesson.slug());
+                    }
                 }
                 if (type.equals("exercise")) {
                     require(lessonExercises.contains(block.path("ref").asText()), file,
@@ -168,6 +193,14 @@ public class ContentLoader {
         if ("MCD".equals(ex.kind()) || "MCD_VERS_MLD".equals(ex.kind())) {
             require(ex.payload().has("expected") && ex.payload().has("solutionModel"), file,
                     where + " : un exercice de modélisation demande payload.expected et payload.solutionModel");
+        }
+    }
+
+    /** Le lien « Revoir le passage » d'une question doit viser un bloc identifié de la même leçon. */
+    private static void requireAnchor(JsonNode node, Set<String> anchors, Path file, String lesson) {
+        if (node.hasNonNull("review")) {
+            require(anchors.contains(node.path("review").asText()), file,
+                    "la leçon " + lesson + " renvoie vers un passage inexistant : " + node.path("review"));
         }
     }
 

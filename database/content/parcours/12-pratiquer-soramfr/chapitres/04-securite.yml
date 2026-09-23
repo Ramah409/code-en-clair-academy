@@ -1,0 +1,1581 @@
+slug: soramfr-securite
+position: 4
+level: INTERMEDIAIRE
+title: "Sécuriser Soramfr : BCrypt, JWT et Spring Security"
+summary: "Hacher les mots de passe, fabriquer et vérifier un jeton JWT, protéger les routes par rôle, et corriger les failles CORS, XSS et de configuration du projet."
+quizQuestionCount: 12
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sor-bcrypt
+    title: "Hacher les mots de passe avec BCrypt"
+    duration: 12
+    objective: "Expliquer la différence entre hacher et chiffrer, et vérifier qu'aucun hash ne sort de l'API."
+    prerequisites: "Chapitre « Le backend Spring Boot de Soramfr »."
+    skills: [auth-jwt, rgpd-secrets]
+    xp: 20
+    memo: |
+      - **Hacher** : transformer un texte en empreinte, **sans retour possible**. **Chiffrer** : on peut déchiffrer avec la clé.
+      - Un mot de passe se **hache**, il ne se chiffre pas.
+      - BCrypt ajoute un **sel** (un morceau aléatoire) : deux mots de passe identiques donnent deux hash différents.
+      - BCrypt est **lent exprès** (le « coût ») : essayer des milliards de mots de passe devient trop long.
+      - `encoder.encode(motDePasse)` à l'inscription ; `encoder.matches(motDePasse, hash)` à la connexion.
+      - Un hash ne doit **jamais** sortir de l'API (Soramfr le renvoie dans `UserDto` : à corriger).
+    commonMistakes: |
+      - Dire « crypter » ou « chiffrer » le mot de passe : on le **hache**.
+      - Comparer deux hash avec `equals` : à cause du sel, il faut `encoder.matches(...)`.
+      - Utiliser MD5 ou SHA-256 seuls : trop rapides, donc faciles à attaquer.
+      - Écrire « BCcrypt » dans le rapport (faute de frappe relevée dans le dossier).
+    blocks:
+      - type: text
+        md: |
+          Si un pirate volait la base de Soramfr, trouverait-il les mots de passe ? Non, grâce au
+          **hachage**. Voyons pourquoi, et vérifions qu'aucune fuite n'existe ailleurs.
+      - type: definition
+        id: def-hachage
+        term: "Hacher (hachage)"
+        md: |
+          Transformer un texte en une **empreinte** de taille fixe, **sans pouvoir revenir en arrière**.
+          C'est comme passer une carotte au mixeur : facile de faire la purée, impossible de reconstituer la
+          carotte. Pour vérifier un mot de passe, on refait la purée et on compare.
+      - type: definition
+        id: def-chiffrer
+        term: "Chiffrer"
+        md: |
+          Transformer un texte avec une **clé**, de façon **réversible** : avec la clé, on retrouve le texte.
+          C'est un coffre-fort. Pour un mot de passe, c'est dangereux : qui vole la clé ouvre tous les coffres.
+      - type: definition
+        id: def-sel
+        term: "Sel"
+        md: |
+          Un morceau de texte **aléatoire** ajouté au mot de passe avant de le hacher. Deux personnes qui ont
+          choisi « Soleil2025 » obtiennent deux hash **différents**. Les listes de hash déjà calculés
+          deviennent inutiles.
+      - type: code
+        id: code-bcrypt-hash
+        language: text
+        title: "À quoi ressemble un hash BCrypt (60 caractères)"
+        code: |
+          $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+        lines:
+          - n: 1
+            note: "`$2a` : la version de BCrypt. `$10` : le coût (2¹⁰ tours). Les 22 caractères suivants : le **sel**. Le reste : l'empreinte."
+      - type: question
+        ref: sor-b-q1
+        review: def-hachage
+      - type: code
+        id: code-bcrypt-soramfr
+        language: java
+        title: "Soramfr — AuthService.java (extraits)"
+        code: |
+          private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+          nouvelutilisateur.setPasswordHash(encoder.encode(req.password));
+
+          if (!encoder.matches(req.password, nouvelutilisateur.getPasswordHash())) {
+              throw new ValidationException("mot de passe incorrect");
+          }
+        lines:
+          - n: 1
+            note: "L'outil BCrypt de Spring Security. (Mieux : le déclarer comme `@Bean` pour le partager.)"
+          - n: 3
+            note: "Inscription : on stocke le résultat de `encode`, jamais `req.password`."
+          - n: 5
+            note: "Connexion : `matches` relit le sel dans le hash, rehache le mot de passe tapé et compare."
+      - type: callout
+        variant: warning
+        title: "Une fuite dans Soramfr"
+        md: |
+          `UserService.toDto` fait `new UserDto(e.getId(), e.getName(), e.getEmail(), e.getUsername(),
+          e.getPasswordHash())`. Le DTO a un champ `password` : **`GET /api/users` renvoie le hash de chaque
+          compte**. `@JsonIgnore` protège l'entité, mais pas le DTO, qui recopie la valeur.
+      - type: question
+        ref: sor-b-q2
+        review: code-bcrypt-soramfr
+      - type: text
+        md: "Exercice guidé : complète l'inscription et la connexion."
+      - type: exercise
+        ref: sor-ex-bcrypt-guide
+      - type: text
+        md: "**Trouver et corriger un bug** : supprime la fuite du hash dans `UserDto` et `toDto`."
+      - type: exercise
+        ref: sor-ex-userdto-hash
+      - type: jury
+        items:
+          - q: "Comment stockez-vous les mots de passe ?"
+            a: "Hachés avec BCrypt, qui ajoute un sel aléatoire et un coût de calcul. Même en volant la base, on ne peut pas retrouver les mots de passe."
+          - q: "Quelle différence entre hacher et chiffrer ?"
+            a: "Le chiffrement est réversible avec une clé ; le hachage ne l'est pas. Pour un mot de passe, on n'a jamais besoin de le relire : on le hache."
+          - q: "Pourquoi pas SHA-256 ?"
+            a: "Il est conçu pour être rapide : un attaquant teste des milliards de mots de passe par seconde. BCrypt est volontairement lent et salé."
+      - type: quiz
+        items:
+          - ref: sor-b-q3
+            review: def-sel
+          - ref: sor-b-q4
+            review: def-chiffrer
+          - ref: sor-b-q5
+            review: code-bcrypt-soramfr
+    questions:
+      - code: sor-b-q1
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: auth-jwt
+        prompt: "Avec le hash BCrypt stocké en base, l'administratrice peut retrouver le mot de passe d'une cliente."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : un hash ne se « déhache » pas."
+          - label: "Faux"
+            correct: true
+            why: "Exact : personne ne peut retrouver le mot de passe, pas même l'administratrice."
+        explanation: "Le hachage est à sens unique. En cas d'oubli, on propose de **réinitialiser** le mot de passe, jamais de le renvoyer."
+      - code: sor-b-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Pourquoi utiliser `encoder.matches(motTapé, hash)` plutôt que `encoder.encode(motTapé).equals(hash)` ?"
+        choices:
+          - label: "Parce que `encode` tire un nouveau sel à chaque fois : le résultat change"
+            correct: true
+            why: "Oui : `matches` réutilise le sel contenu dans le hash stocké."
+          - label: "Parce que `equals` n'existe pas pour les textes"
+            correct: false
+            why: "`equals` existe, mais il comparerait deux hash avec des sels différents."
+          - label: "Il n'y a aucune différence"
+            correct: false
+            why: "La comparaison avec `equals` échouerait toujours."
+        explanation: "Chaque `encode` produit un hash différent (sel aléatoire). `matches` sait extraire le sel et refaire le calcul."
+      - code: sor-b-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "À quoi sert le **sel** de BCrypt ?"
+        choices:
+          - label: "À donner des hash différents pour deux mots de passe identiques"
+            correct: true
+            why: "Oui : les tables de hash précalculés deviennent inutiles."
+          - label: "À pouvoir déchiffrer le mot de passe"
+            correct: false
+            why: "Un hash ne se déchiffre pas, avec ou sans sel."
+          - label: "À raccourcir le hash"
+            correct: false
+            why: "Le hash BCrypt fait toujours 60 caractères."
+        explanation: "Sel aléatoire + coût élevé : les deux protections de BCrypt."
+      - code: sor-b-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: rgpd-secrets
+        prompt: "Quel mot est juste pour un mot de passe stocké avec BCrypt ?"
+        choices:
+          - label: "Haché"
+            correct: true
+            why: "Oui : transformation à sens unique."
+          - label: "Chiffré"
+            correct: false
+            why: "Chiffré sous-entend réversible avec une clé."
+          - label: "Crypté"
+            correct: false
+            why: "Terme impropre en français ; et ce n'est pas un chiffrement."
+        explanation: "Mot de passe → **haché**. Donnée qu'on doit relire (un numéro de carte…) → **chiffrée**."
+      - code: sor-b-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: rgpd-secrets
+        prompt: "`UserEntity.passwordHash` porte `@JsonIgnore`. Pourquoi le hash sort-il quand même de `GET /api/users` ?"
+        choices:
+          - label: "Parce que `toDto` le recopie dans le champ `password` de `UserDto`"
+            correct: true
+            why: "Oui : `@JsonIgnore` ne protège que l'entité."
+          - label: "Parce que `@JsonIgnore` ne marche pas avec PostgreSQL"
+            correct: false
+            why: "`@JsonIgnore` concerne le JSON, pas la base."
+          - label: "Parce qu'Angular le demande"
+            correct: false
+            why: "Angular ne choisit pas ce que le serveur renvoie."
+        explanation: "La protection doit être dans le **DTO** : pas de champ `password` du tout."
+    exercises:
+      - slug: sor-ex-bcrypt-guide
+        kind: COMPLETER
+        title: "Compléter l'utilisation de BCrypt"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: "Complète les deux méthodes de BCrypt."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "À l'inscription, on transforme le mot de passe : en anglais, « encoder »."
+          - "À la connexion, on vérifie qu'il « correspond » : en anglais, « matches »."
+          - "encode, matches."
+        solution: '["encode", "matches"]'
+        explanation: "`encode` fabrique le hash à stocker ; `matches` vérifie un mot de passe tapé contre le hash stocké."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            // Inscription
+            user.setPasswordHash(encoder.[[1]](req.password));
+
+            // Connexion
+            if (!encoder.[[2]](req.password, user.getPasswordHash())) { ... }
+          blanks:
+            - ["encode"]
+            - ["matches"]
+      - slug: sor-ex-userdto-hash
+        kind: CORRIGER_ERREUR
+        title: "Supprimer la fuite du hash dans UserDto"
+        difficulty: INTERMEDIAIRE
+        skill: rgpd-secrets
+        statement: |
+          Ce code vient de Soramfr (simplifié). Corrige-le pour que **plus aucun mot de passe ni hash** ne
+          sorte de l'API :
+          1. transforme `UserDto` en `record UserDto(Long id, String name, String email, String username)` ;
+          2. corrige `toDto` en conséquence.
+        criteria: "UserDto n'a plus de champ password ; toDto ne lit plus le hash."
+        hints:
+          - "Le champ `password` doit disparaître du DTO."
+          - "`public record UserDto(Long id, String name, String email, String username) { }`"
+          - "`return new UserDto(e.getId(), e.getName(), e.getEmail(), e.getUsername());`"
+        solution: |
+          public record UserDto(Long id, String name, String email, String username) {
+          }
+
+          // Dans UserService
+          private UserDto toDto(UserEntity e) {
+              return new UserDto(e.getId(), e.getName(), e.getEmail(), e.getUsername());
+          }
+        explanation: |
+          Le DTO de sortie ne contient que les informations publiques. Pour la **création** d'un compte, on
+          utilise un autre DTO d'entrée (`RegisterRequest`), qui, lui, reçoit le mot de passe.
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            public class UserDto {
+                private Long id;
+                private String name;
+                private String email;
+                private String username;
+                private String password;
+                // constructeur, getters et setters…
+            }
+
+            // Dans UserService
+            private UserDto toDto(UserEntity e) {
+                return new UserDto(e.getId(), e.getName(), e.getEmail(), e.getUsername(), e.getPasswordHash());
+            }
+          checks:
+            - pattern: 'getPasswordHash'
+              absent: true
+              message: "toDto ne doit plus lire le hash du mot de passe."
+            - pattern: 'String\s+password'
+              absent: true
+              message: "UserDto ne doit plus avoir de champ password."
+            - pattern: 'record\s+UserDto\s*\(\s*Long\s+id\s*,\s*String\s+name\s*,\s*String\s+email\s*,\s*String\s+username\s*\)'
+              message: "Déclare public record UserDto(Long id, String name, String email, String username) { }"
+            - pattern: 'new\s+UserDto\s*\(\s*e\.getId\(\)\s*,\s*e\.getName\(\)\s*,\s*e\.getEmail\(\)\s*,\s*e\.getUsername\(\)\s*\)'
+              message: "toDto : return new UserDto(e.getId(), e.getName(), e.getEmail(), e.getUsername());"
+
+  # ===================================================================== LEÇON 2
+  - slug: sor-jwt
+    title: "Le jeton JWT : fabriquer, signer, vérifier"
+    duration: 14
+    objective: "Lire JwtService ligne par ligne et sortir le secret du code."
+    prerequisites: "Leçon « Hacher les mots de passe avec BCrypt »."
+    skills: [auth-jwt, rgpd-secrets]
+    xp: 25
+    memo: |
+      - Un **JWT** = trois parties séparées par des points : `en-tête.contenu.signature`.
+      - Le contenu (les **claims**) est lisible par tout le monde (encodé en Base64, **pas chiffré**).
+      - La **signature** (HMAC-SHA256 avec un secret) prouve que personne n'a modifié le jeton.
+      - Soramfr met dans le jeton : `sub` (id), `username`, `role`, `iat` (création), `exp` (expiration, 120 min).
+      - Le **secret** ne doit jamais être écrit dans le code ni dans Git : variable d'environnement `JWT_SECRET`.
+      - Le serveur ne garde pas de session : on parle d'authentification **sans état** (stateless).
+    commonMistakes: |
+      - Mettre des données sensibles dans le jeton (il est lisible).
+      - Écrire le secret dans `application.properties` et le pousser sur GitHub (c'est le cas de Soramfr).
+      - Utiliser un secret court : HS256 demande au moins 256 bits (32 caractères aléatoires).
+      - `secret.getBytes()` sans préciser l'encodage : préférer `getBytes(StandardCharsets.UTF_8)`.
+      - Croire que la déconnexion Angular « tue » le jeton : il reste valable jusqu'à son expiration.
+    blocks:
+      - type: text
+        md: |
+          Après la connexion, Soramfr renvoie un **jeton**. Angular le joint ensuite à chaque requête. Mais
+          comment le serveur sait-il que ce jeton est authentique ?
+      - type: definition
+        id: def-jwt
+        term: "JWT (JSON Web Token)"
+        md: |
+          Un **bracelet de festival**. À l'entrée (la connexion), on te le pose après avoir vérifié ton
+          billet. Ensuite, les vigiles regardent seulement le bracelet : pas besoin de revérifier ton billet
+          à chaque scène. Le bracelet porte ton nom, ta catégorie (USER ou ADMIN) et une date de fin.
+      - type: definition
+        id: def-signature
+        term: "Signature"
+        md: |
+          Le **sceau** du festival sur le bracelet. Il est fabriqué avec un **secret** que seul le serveur
+          connaît. Si quelqu'un modifie le bracelet (par exemple change USER en ADMIN), le sceau ne
+          correspond plus : le jeton est refusé.
+      - type: code
+        id: code-jwt-structure
+        language: text
+        title: "Un jeton, découpé en trois"
+        code: |
+          eyJhbGciOiJIUzI1NiJ9
+          .eyJzdWIiOiI3IiwidXNlcm5hbWUiOiJtYWkiLCJyb2xlIjoiVVNFUiIsImV4cCI6MTc2MDAwMDAwMH0
+          .3vXq9…signature…
+        lines:
+          - n: 1
+            note: "En-tête, décodé : `{\"alg\":\"HS256\"}` — l'algorithme de signature."
+          - n: 2
+            note: "Contenu, décodé : `{\"sub\":\"7\",\"username\":\"mai\",\"role\":\"USER\",\"exp\":…}`. **Lisible par tous.**"
+          - n: 3
+            note: "Signature : calculée avec le secret. Impossible à refaire sans lui."
+      - type: question
+        ref: sor-j-q1
+        review: def-signature
+      - type: code
+        id: code-jwtservice
+        language: java
+        title: "Soramfr — JwtService.java (extrait)"
+        code: |
+          @Value("${app.jwt.secret}")
+          private String secret;
+
+          @Value("${app.jwt.exp-minutes:120}")
+          private long expMinutes;
+
+          public String generateToken(Long userId, String username, String role){
+              Instant now = Instant.now();
+              Instant exp = now.plusSeconds(expMinutes * 60);
+              return Jwts.builder()
+                  .setSubject(String.valueOf(userId))
+                  .addClaims(Map.of("username", username, "role", role))
+                  .setIssuedAt(Date.from(now))
+                  .setExpiration(Date.from(exp))
+                  .signWith(Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS256)
+                  .compact();
+          }
+        lines:
+          - n: 1
+            note: "`@Value` lit le secret dans la configuration. Bonne idée… mais dans Soramfr, la valeur est écrite en clair dans `application.properties`."
+          - n: 4
+            note: "Durée de vie : 120 minutes par défaut."
+          - n: 11
+            note: "`sub` (subject) : l'id de l'utilisateur."
+          - n: 12
+            note: "Claims personnalisés : pseudo et rôle. Lisibles par tous, donc jamais de donnée secrète ici."
+          - n: 14
+            note: "`exp` : après cette date, le jeton est refusé."
+          - n: 15
+            note: "Signature HMAC-SHA256. `getBytes()` sans encodage dépend du système : préférer `getBytes(StandardCharsets.UTF_8)`. Ces méthodes (`setSubject`, `SignatureAlgorithm`) sont aussi dépréciées dans les versions récentes de JJWT."
+          - n: 16
+            note: "`compact()` assemble les trois parties en une chaîne."
+      - type: callout
+        variant: warning
+        title: "Le secret est dans GitHub"
+        md: |
+          Le fichier `application.properties` de Soramfr contient la ligne `app.jwt.secret=…` avec la vraie
+          valeur, et le dépôt est public. Toute personne qui lit le dépôt peut **fabriquer un jeton ADMIN
+          valide**. Il faut : 1) changer le secret, 2) le lire depuis une variable d'environnement,
+          3) ne jamais le recommiter.
+      - type: question
+        ref: sor-j-q2
+        review: code-jwtservice
+      - type: text
+        md: "Exercice guidé : complète la fabrication du jeton."
+      - type: exercise
+        ref: sor-ex-jwt-guide
+      - type: text
+        md: "**Améliorer la sécurité** : nettoie le fichier de configuration de Soramfr."
+      - type: exercise
+        ref: sor-ex-properties
+      - type: jury
+        items:
+          - q: "Comment fonctionne votre authentification ?"
+            a: |
+              « À la connexion, le serveur vérifie le mot de passe avec BCrypt et renvoie un JWT signé en
+              HMAC-SHA256, valable 2 heures, qui contient l'id, le pseudo et le rôle. Angular l'envoie dans
+              l'en-tête `Authorization: Bearer`. Un filtre Spring vérifie la signature et l'expiration à chaque
+              requête. Le serveur ne garde aucune session. »
+          - q: "Un utilisateur peut-il modifier son rôle dans le jeton ?"
+            a: "Il peut lire et modifier le contenu, mais la signature ne correspondra plus : le serveur refusera le jeton."
+          - q: "Où est stocké le secret de signature ?"
+            a: "« Dans la version rendue, dans application.properties : c'est une erreur. Il doit venir d'une variable d'environnement, et le secret exposé doit être changé. »"
+      - type: quiz
+        items:
+          - ref: sor-j-q3
+            review: def-jwt
+          - ref: sor-j-q4
+            review: code-jwt-structure
+          - ref: sor-j-q5
+            review: code-jwtservice
+          - ref: sor-j-q6
+    questions:
+      - code: sor-j-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Quelqu'un remplace `\"role\":\"USER\"` par `\"role\":\"ADMIN\"` dans son jeton. Que se passe-t-il ?"
+        choices:
+          - label: "Le serveur refuse le jeton : la signature ne correspond plus"
+            correct: true
+            why: "Oui : la signature dépend du contenu."
+          - label: "Il devient administrateur"
+            correct: false
+            why: "Seulement si le serveur ne vérifiait pas la signature."
+          - label: "Le jeton est automatiquement corrigé"
+            correct: false
+            why: "Le serveur ne corrige rien ; il accepte ou refuse."
+        explanation: "La signature protège l'**intégrité** du jeton. Sans le secret, impossible de fabriquer une signature valide."
+      - code: sor-j-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: "Pourquoi le secret JWT de Soramfr publié sur GitHub est-il grave ?"
+        choices:
+          - label: "N'importe qui peut fabriquer un jeton ADMIN accepté par le serveur"
+            correct: true
+            why: "Oui : avec le secret, on peut signer n'importe quel contenu."
+          - label: "GitHub peut supprimer le dépôt"
+            correct: false
+            why: "Le problème est la sécurité de l'application, pas le dépôt."
+          - label: "Ce n'est pas grave si le dépôt est ancien"
+            correct: false
+            why: "Un secret publié doit toujours être considéré comme compromis et changé."
+        explanation: "Un secret publié = un secret perdu. On le **change** (rotation) et on le fournit par variable d'environnement."
+      - code: sor-j-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Le contenu d'un JWT est chiffré : personne ne peut le lire sans le secret."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : il est seulement encodé en Base64. Le site jwt.io l'affiche en clair."
+          - label: "Faux"
+            correct: true
+            why: "Exact : il est signé, pas chiffré."
+        explanation: "Signé = infalsifiable. Chiffré = illisible. Un JWT classique (JWS) est signé mais lisible."
+      - code: sor-j-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: auth-jwt
+        prompt: "Combien de parties, séparées par des points, contient un JWT ?"
+        choices:
+          - label: "Trois : en-tête, contenu, signature"
+            correct: true
+            why: "Oui."
+          - label: "Deux : identifiant et mot de passe"
+            correct: false
+            why: "Le mot de passe n'est jamais dans le jeton."
+          - label: "Une seule"
+            correct: false
+            why: "On voit bien deux points dans un jeton."
+        explanation: "`xxxxx.yyyyy.zzzzz` : header, payload, signature."
+      - code: sor-j-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: auth-jwt
+        prompt: "Une cliente clique sur « Se déconnecter » dans Soramfr. Son jeton est-il encore valable ?"
+        choices:
+          - label: "Oui, jusqu'à son expiration : la déconnexion efface seulement le jeton du navigateur"
+            correct: true
+            why: "Oui : le serveur ne garde aucune liste de jetons révoqués."
+          - label: "Non, le serveur l'annule immédiatement"
+            correct: false
+            why: "Soramfr n'a aucun appel serveur à la déconnexion."
+          - label: "Non, il expire à la fermeture de l'onglet"
+            correct: false
+            why: "Il est dans `localStorage`, qui survit à la fermeture."
+        explanation: "Limite classique des JWT sans état. Solutions : jetons courts + jeton de rafraîchissement révocable, ou liste noire côté serveur."
+      - code: sor-j-q6
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Quelles informations Soramfr met-il dans son jeton ?"
+        choices:
+          - label: "L'id de l'utilisateur (`sub`)"
+            correct: true
+            why: "Oui : `setSubject(String.valueOf(userId))`."
+          - label: "Le rôle"
+            correct: true
+            why: "Oui : claim `role`."
+          - label: "La date d'expiration"
+            correct: true
+            why: "Oui : `setExpiration(...)`."
+          - label: "Le hash du mot de passe"
+            correct: false
+            why: "Heureusement non : le jeton est lisible par tous."
+        explanation: "`sub`, `username`, `role`, `iat`, `exp`. Rien de secret."
+    exercises:
+      - slug: sor-ex-jwt-guide
+        kind: COMPLETER
+        title: "Compléter la fabrication du jeton"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: "Complète les méthodes du constructeur de jeton. Respecte les majuscules."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le « sujet » du jeton : l'id de l'utilisateur. En anglais : subject."
+          - "La date limite : expiration."
+          - "setSubject, setExpiration, compact."
+        solution: '["setSubject", "setExpiration", "compact"]'
+        explanation: "`setSubject` (qui), `setExpiration` (jusqu'à quand), `compact` (assembler le jeton final)."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            return Jwts.builder()
+                .[[1]](String.valueOf(userId))
+                .addClaims(Map.of("username", username, "role", role))
+                .setIssuedAt(Date.from(now))
+                .[[2]](Date.from(exp))
+                .signWith(cle, SignatureAlgorithm.HS256)
+                .[[3]]();
+          blanks:
+            - ["setSubject"]
+            - ["setExpiration"]
+            - ["compact"]
+      - slug: sor-ex-properties
+        kind: CORRIGER_ERREUR
+        title: "Nettoyer application.properties"
+        difficulty: INTERMEDIAIRE
+        skill: rgpd-secrets
+        statement: |
+          Voici la configuration de Soramfr (le secret a été remplacé par un exemple). Rends-la sûre pour la
+          production :
+          1. le secret JWT vient de la variable d'environnement `JWT_SECRET`, **sans valeur par défaut** ;
+          2. le mot de passe de la base vient de `DB_PASSWORD`, **sans** valeur par défaut `postgres` ;
+          3. Hibernate **vérifie** le schéma au lieu de le modifier (`validate`) ;
+          4. les requêtes SQL ne sont plus affichées ;
+          5. les détails techniques ne sont plus envoyés dans les erreurs.
+        criteria: "Aucun secret en clair ; configuration prudente pour la production."
+        hints:
+          - "Syntaxe d'une variable d'environnement dans Spring : `${NOM_DE_LA_VARIABLE}`."
+          - "`app.jwt.secret=${JWT_SECRET}` et `spring.datasource.password=${DB_PASSWORD}`."
+          - "`spring.jpa.hibernate.ddl-auto=validate`, `spring.jpa.show-sql=false`, `app.errors.include-details=false`."
+        solution: |
+          spring.application.name=projetfind-etude
+          spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/gestion_utilisateurs}
+          spring.datasource.username=${DB_USERNAME:postgres}
+          spring.datasource.password=${DB_PASSWORD}
+          spring.jpa.hibernate.ddl-auto=validate
+          spring.jpa.show-sql=false
+          server.port=${PORT:8080}
+          app.errors.include-details=false
+          app.jwt.secret=${JWT_SECRET}
+          app.jwt.exp-minutes=120
+        explanation: |
+          - `${JWT_SECRET}` sans valeur par défaut : si la variable manque, l'application **refuse de démarrer**.
+            C'est voulu : mieux vaut une panne visible qu'un secret faible.
+          - `ddl-auto=validate` : Hibernate vérifie que les tables correspondent aux entités, sans jamais les
+            modifier. Les changements de schéma passent par des migrations versionnées (Flyway).
+          - `show-sql=false` et `include-details=false` : pas d'informations techniques exposées.
+        xp: 30
+        payload:
+          language: properties
+          starter: |
+            spring.application.name=projetfind-etude
+            spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/gestion_utilisateurs}
+            spring.datasource.username=${DB_USERNAME:postgres}
+            spring.datasource.password=${DB_PASSWORD:postgres}
+            spring.jpa.hibernate.ddl-auto=update
+            spring.jpa.show-sql=true
+            server.port=${PORT:8080}
+            app.errors.include-details=true
+            app.jwt.secret=une-longue-phrase-secrete-ecrite-en-clair-dans-le-depot
+            app.jwt.exp-minutes=120
+          checks:
+            - pattern: '^app\.jwt\.secret\s*=\s*\$\{JWT_SECRET\}\s*$'
+              message: "Le secret JWT doit venir de la variable d'environnement : app.jwt.secret=${JWT_SECRET}"
+            - pattern: 'ecrite-en-clair'
+              absent: true
+              message: "Le secret en clair doit disparaître du fichier."
+            - pattern: '^spring\.datasource\.password\s*=\s*\$\{DB_PASSWORD\}\s*$'
+              message: "Le mot de passe de la base : spring.datasource.password=${DB_PASSWORD} (sans valeur par défaut)."
+            - pattern: '^spring\.jpa\.hibernate\.ddl-auto\s*=\s*validate\s*$'
+              message: "En production, Hibernate vérifie le schéma : spring.jpa.hibernate.ddl-auto=validate"
+            - pattern: '^spring\.jpa\.show-sql\s*=\s*false\s*$'
+              message: "N'affiche plus les requêtes SQL : spring.jpa.show-sql=false"
+            - pattern: '^app\.errors\.include-details\s*=\s*false\s*$'
+              message: "Ne renvoie plus les détails techniques : app.errors.include-details=false"
+
+  # ===================================================================== LEÇON 3
+  - slug: sor-proteger-routes
+    title: "TP — Protéger une route avec JWT"
+    duration: 15
+    objective: "Comprendre JwtAuthFilter et SecurityConfig, puis réserver /api/users aux administratrices."
+    prerequisites: "Leçon « Le jeton JWT »."
+    skills: [auth-jwt, spring-structure]
+    xp: 30
+    memo: |
+      - `JwtAuthFilter` lit `Authorization: Bearer <jeton>`, vérifie le jeton et dépose l'identité (avec `ROLE_USER` ou `ROLE_ADMIN`) dans le **contexte de sécurité**.
+      - `SecurityConfig` fixe les règles, **dans l'ordre** : la première règle qui correspond gagne.
+      - `permitAll()` : ouvert à tous ; `authenticated()` : connecté ; `hasRole("ADMIN")` : rôle ADMIN (Spring cherche `ROLE_ADMIN`).
+      - Soramfr n'a aucune règle `hasRole` : toute personne connectée peut lister et supprimer les comptes.
+      - 401 = pas connecté ; 403 = connecté mais interdit. Sans point d'entrée configuré, Spring renvoie 403 dans les deux cas.
+    commonMistakes: |
+      - Mettre `.requestMatchers("/api/**").authenticated()` **avant** la règle admin : elle ne sera jamais atteinte.
+      - Écrire `hasRole("ROLE_ADMIN")` : Spring ajoute déjà `ROLE_` (il chercherait `ROLE_ROLE_ADMIN`).
+      - Protéger seulement côté Angular : un appel direct à l'API (Postman, curl) contourne le garde.
+    blocks:
+      - type: text
+        md: |
+          Le jeton existe. Il reste à l'utiliser pour **filtrer** les requêtes. Deux classes s'en chargent :
+          un **filtre** qui lit le jeton, et une **configuration** qui décide qui peut aller où.
+      - type: definition
+        id: def-filtre
+        term: "Filtre"
+        md: |
+          Un **contrôle à l'entrée**, avant que la requête n'atteigne le contrôleur. Comme le vigile qui
+          regarde les bracelets avant l'entrée d'une salle de concert.
+      - type: code
+        id: code-jwtfilter
+        language: java
+        title: "Soramfr — JwtAuthFilter.java (extrait)"
+        code: |
+          String header = req.getHeader(HttpHeaders.AUTHORIZATION);
+          if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
+              String token = header.substring(7);
+              try {
+                  String role = jwt.getRole(token);
+                  String username = jwt.getUsername(token);
+                  var auth = new UsernamePasswordAuthenticationToken(
+                      username, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                  SecurityContextHolder.getContext().setAuthentication(auth);
+              } catch (Exception e) {
+                  SecurityContextHolder.clearContext();
+              }
+          }
+          chain.doFilter(req, res);
+        lines:
+          - n: 1
+            note: "On lit l'en-tête `Authorization`."
+          - n: 2
+            note: "Il doit commencer par `Bearer ` (avec l'espace)."
+          - n: 3
+            note: "`substring(7)` enlève les 7 caractères de `Bearer ` : il reste le jeton."
+          - n: 5
+            note: "`getRole` **vérifie la signature et l'expiration** avant de lire le rôle (il appelle `parse`)."
+          - n: 8
+            note: "`ROLE_` + `ADMIN` = `ROLE_ADMIN` : la forme attendue par `hasRole(\"ADMIN\")`."
+          - n: 9
+            note: "L'identité est déposée dans le **contexte de sécurité** : Spring sait qui fait la requête."
+          - n: 11
+            note: "Jeton invalide ou expiré : aucune identité. La règle `authenticated()` refusera ensuite."
+          - n: 14
+            note: "Dans tous les cas, la requête continue vers le filtre suivant."
+      - type: question
+        ref: sor-p-q1
+        review: code-jwtfilter
+      - type: code
+        id: code-securityconfig
+        language: java
+        title: "Soramfr — SecurityConfig.java (règles actuelles)"
+        code: |
+          .authorizeHttpRequests(auth -> auth
+              .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+              .requestMatchers("/api/auth/**").permitAll()
+              .requestMatchers("/api/**").authenticated()
+              .anyRequest().authenticated()
+          );
+        lines:
+          - n: 2
+            note: "Les requêtes `OPTIONS` (le « pré-vol » CORS du navigateur) passent toujours."
+          - n: 3
+            note: "Inscription et connexion : publiques (on n'a pas encore de jeton)."
+          - n: 4
+            note: "Tout le reste de l'API : il suffit d'être connecté… **quel que soit le rôle**."
+          - n: 5
+            note: "Toute autre adresse : connectée aussi."
+      - type: definition
+        id: def-401-403
+        term: "401 ou 403 ?"
+        md: |
+          - **401 Unauthorized** : « Je ne sais pas qui tu es » (pas de jeton, jeton faux ou expiré).
+          - **403 Forbidden** : « Je sais qui tu es, mais tu n'as pas le droit » (USER sur une route ADMIN).
+
+          Soramfr renvoie **403** même sans jeton : Spring utilise ce code par défaut quand aucun
+          « point d'entrée » n'est configuré. On ajoute `.exceptionHandling(e -> e.authenticationEntryPoint(new
+          HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))`.
+      - type: question
+        ref: sor-p-q2
+        review: def-401-403
+      - type: text
+        md: "Exercice guidé : remets les règles de sécurité dans le bon ordre."
+      - type: exercise
+        ref: sor-ex-regles-ordre
+      - type: text
+        md: |
+          TP en autonomie : **protège la route d'administration avec JWT**. Ajoute la règle ADMIN et le
+          point d'entrée 401.
+      - type: exercise
+        ref: sor-ex-proteger-admin
+      - type: steps
+        id: etapes-verif-postman
+        title: "Vérifier la protection avec Postman"
+        items:
+          - "`GET /api/users` **sans** jeton → attendu **401**."
+          - "Connexion avec un compte USER, puis `GET /api/users` avec son jeton → attendu **403**."
+          - "Connexion avec un compte ADMIN, puis `GET /api/users` avec son jeton → attendu **200**."
+          - "`POST /api/auth/login` sans jeton → toujours **200** (route publique)."
+      - type: jury
+        items:
+          - q: "Comment protégez-vous les routes d'administration ?"
+            a: |
+              « Côté serveur, dans `SecurityConfig` : `.requestMatchers(\"/api/users/**\").hasRole(\"ADMIN\")`,
+              placé avant la règle générale. Le filtre JWT dépose le rôle `ROLE_ADMIN` lu dans le jeton signé.
+              Côté Angular, un garde de rôle masque la page, mais c'est le serveur qui fait foi. »
+          - q: "Quelle différence entre 401 et 403 ?"
+            a: "401 : on ne sait pas qui tu es. 403 : on sait qui tu es, mais tu n'as pas le droit."
+      - type: quiz
+        items:
+          - ref: sor-p-q3
+            review: code-securityconfig
+          - ref: sor-p-q4
+            review: def-filtre
+          - ref: sor-p-q5
+            review: etapes-verif-postman
+    questions:
+      - code: sor-p-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Que fait le filtre si le jeton est expiré ?"
+        choices:
+          - label: "Il n'enregistre aucune identité ; la route protégée sera refusée"
+            correct: true
+            why: "Oui : `parse` lève une exception, le `catch` vide le contexte."
+          - label: "Il prolonge le jeton"
+            correct: false
+            why: "Le filtre ne fabrique jamais de jeton."
+          - label: "Il laisse passer en tant qu'ADMIN"
+            correct: false
+            why: "Heureusement non."
+        explanation: "Pas d'identité → la règle `authenticated()` ou `hasRole(...)` bloque la requête."
+      - code: sor-p-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Une cliente connectée (USER) appelle une route réservée ADMIN. Quel code est correct ?"
+        choices:
+          - label: "403"
+            correct: true
+            why: "Oui : on sait qui elle est, mais elle n'a pas le droit."
+          - label: "401"
+            correct: false
+            why: "Elle est bien authentifiée."
+          - label: "404"
+            correct: false
+            why: "La route existe."
+        explanation: "401 = identité inconnue ; 403 = identité connue, droit refusé."
+      - code: sor-p-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: auth-jwt
+        prompt: "Pourquoi la règle `/api/users/**` doit-elle être écrite **avant** `/api/**` ?"
+        choices:
+          - label: "Parce que Spring applique la première règle qui correspond"
+            correct: true
+            why: "Oui : `/api/**` correspond aussi à `/api/users` et laisserait passer tout le monde."
+          - label: "Parce que les règles sont triées par ordre alphabétique"
+            correct: false
+            why: "Spring ne trie pas les règles : il les lit dans l'ordre écrit."
+          - label: "L'ordre n'a aucune importance"
+            correct: false
+            why: "Il est essentiel."
+        explanation: "Du plus précis au plus général : routes publiques, routes admin, puis le reste."
+      - code: sor-p-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Quel en-tête HTTP transporte le jeton dans Soramfr ?"
+        choices:
+          - label: "`Authorization: Bearer <jeton>`"
+            correct: true
+            why: "Oui : c'est ce que lit `JwtAuthFilter`."
+          - label: "`Cookie: token=<jeton>`"
+            correct: false
+            why: "Soramfr n'utilise pas de cookie pour le jeton."
+          - label: "`Content-Type: <jeton>`"
+            correct: false
+            why: "`Content-Type` indique le format du corps (JSON…)."
+        explanation: "L'intercepteur Angular ajoute `Authorization: Bearer ...` à chaque requête."
+      - code: sor-p-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: angular-routage
+        prompt: "Un garde Angular sur la page d'administration suffit à protéger `GET /api/users`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : on peut appeler l'API directement avec Postman, sans passer par Angular."
+          - label: "Faux"
+            correct: true
+            why: "Exact : seule la règle côté serveur protège réellement les données."
+        explanation: "Le garde Angular améliore l'expérience ; la **sécurité** est toujours côté serveur."
+    exercises:
+      - slug: sor-ex-regles-ordre
+        kind: REMETTRE_ORDRE
+        title: "Remettre les règles de sécurité dans l'ordre"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: "Remets les règles dans l'ordre : du plus précis au plus général."
+        criteria: "Les routes publiques d'abord, la règle ADMIN avant la règle générale."
+        hints:
+          - "Les requêtes OPTIONS et l'authentification sont publiques : elles viennent en premier."
+          - "`/api/users/**` est plus précis que `/api/**`."
+          - "`anyRequest()` est toujours la dernière règle."
+        solution: |
+          .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+          .requestMatchers("/api/auth/**").permitAll()
+          .requestMatchers("/api/users/**").hasRole("ADMIN")
+          .requestMatchers("/api/**").authenticated()
+          .anyRequest().authenticated()
+        explanation: "La première règle qui correspond gagne. Si `/api/**` passait avant `/api/users/**`, une cliente connectée pourrait lister les comptes."
+        xp: 10
+        payload:
+          language: java
+          lines:
+            - ".requestMatchers(HttpMethod.OPTIONS, \"/**\").permitAll()"
+            - ".requestMatchers(\"/api/auth/**\").permitAll()"
+            - ".requestMatchers(\"/api/users/**\").hasRole(\"ADMIN\")"
+            - ".requestMatchers(\"/api/**\").authenticated()"
+            - ".anyRequest().authenticated()"
+          alternatives:
+            - [1, 0, 2, 3, 4]
+      - slug: sor-ex-proteger-admin
+        kind: CORRIGER_ERREUR
+        title: "TP — Réserver /api/users aux administratrices"
+        difficulty: INTERMEDIAIRE
+        skill: auth-jwt
+        statement: |
+          Voici les règles de Soramfr. Corrige-les :
+          1. ajoute la règle qui réserve `/api/users/**` au rôle **ADMIN**, au bon endroit ;
+          2. ajoute le point d'entrée qui répond **401** quand il n'y a pas de jeton :
+             `.exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))`.
+        criteria: "La règle ADMIN précède la règle générale ; les routes d'authentification restent publiques ; 401 sans jeton."
+        hints:
+          - "`.requestMatchers(\"/api/users/**\").hasRole(\"ADMIN\")`"
+          - "Place-la **après** `/api/auth/**` et **avant** `/api/**`."
+          - "Ajoute `.exceptionHandling(...)` sur `http`, par exemple juste après `.sessionManagement(...)`."
+        solution: |
+          http
+              .cors(cors -> { })
+              .csrf(csrf -> csrf.disable())
+              .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+              .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+              .addFilterBefore(new JwtAuthFilter(jwt), UsernamePasswordAuthenticationFilter.class)
+              .authorizeHttpRequests(auth -> auth
+                  .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                  .requestMatchers("/api/auth/**").permitAll()
+                  .requestMatchers("/api/users/**").hasRole("ADMIN")
+                  .requestMatchers("/api/**").authenticated()
+                  .anyRequest().authenticated()
+              );
+          return http.build();
+        explanation: |
+          - La règle ADMIN est placée avant la règle générale : sinon `/api/**` la masquerait.
+          - `hasRole("ADMIN")` cherche l'autorité `ROLE_ADMIN`, justement celle que dépose `JwtAuthFilter`.
+          - Le point d'entrée transforme « pas de jeton » en **401** au lieu du 403 par défaut.
+        xp: 35
+        payload:
+          language: java
+          starter: |
+            http
+                .cors(cors -> { })
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(new JwtAuthFilter(jwt), UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/**").authenticated()
+                    .anyRequest().authenticated()
+                );
+            return http.build();
+          checks:
+            - pattern: 'requestMatchers\(\s*"/api/users/\*\*"\s*\)\s*\.(hasRole\(\s*"ADMIN"\s*\)|hasAuthority\(\s*"ROLE_ADMIN"\s*\))'
+              message: "Ajoute la règle : .requestMatchers(\"/api/users/**\").hasRole(\"ADMIN\")"
+            - pattern: 'hasRole\(\s*"ROLE_ADMIN"\s*\)'
+              absent: true
+              message: "hasRole ajoute déjà le préfixe ROLE_ : écris hasRole(\"ADMIN\")."
+            - pattern: 'requestMatchers\(\s*"/api/users/\*\*"\s*\)[\s\S]*requestMatchers\(\s*"/api/\*\*"\s*\)\s*\.authenticated\(\)'
+              message: "La règle ADMIN doit être placée AVANT .requestMatchers(\"/api/**\").authenticated()."
+            - pattern: 'requestMatchers\(\s*"/api/auth/\*\*"\s*\)\s*\.permitAll\(\)'
+              message: "Les routes /api/auth/** (inscription, connexion) doivent rester publiques."
+            - pattern: 'authenticationEntryPoint\(\s*new\s+HttpStatusEntryPoint\(\s*HttpStatus\.UNAUTHORIZED\s*\)\s*\)'
+              message: "Ajoute le point d'entrée 401 : .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))"
+            - pattern: 'anyRequest\(\)\s*\.permitAll\(\)'
+              absent: true
+              message: "Ne laisse pas passer toutes les requêtes : anyRequest() doit rester authenticated()."
+
+  # ===================================================================== LEÇON 4
+  - slug: sor-roles
+    title: "Un rôle décidé par le serveur, stocké en base"
+    duration: 12
+    objective: "Remplacer le rôle calculé à partir du pseudo par un rôle stocké en base."
+    prerequisites: "Leçon « TP — Protéger une route avec JWT »."
+    skills: [auth-jwt, securite-owasp]
+    xp: 25
+    memo: |
+      - Soramfr calcule le rôle à la connexion : ADMIN si le pseudo vaut `admin` ou si l'e-mail est une adresse précise écrite dans le code.
+      - Risques : n'importe qui peut créer le pseudo `admin` ; une adresse personnelle est publiée dans le dépôt ; changer d'administratrice impose de modifier le code.
+      - Solution : colonne `role` (`USER` par défaut) dans l'entité et en base ; le service lit `user.getRole()`.
+      - Le rôle n'est **jamais** choisi dans un formulaire : la maquette de connexion du rapport a un sélecteur USER/ADMIN, à retirer.
+    commonMistakes: |
+      - Laisser l'inscription accepter un champ `role` envoyé par le navigateur (élévation de privilèges).
+      - Garder un sélecteur de rôle sur la page de connexion (même « pour la démo »).
+      - Écrire des adresses e-mail personnelles dans le code source public.
+    blocks:
+      - type: text
+        md: |
+          Qui décide qu'une personne est administratrice ? Dans Soramfr, c'est… son **pseudo**. Regardons
+          le code, puis corrigeons-le.
+      - type: code
+        id: code-role-soramfr
+        language: java
+        title: "Soramfr — AuthService.login (extrait, adresse anonymisée)"
+        code: |
+          String role = (
+              "admin".equalsIgnoreCase(nouvelutilisateur.getUsername())
+              || "prenom.nom@exemple.fr".equalsIgnoreCase(nouvelutilisateur.getEmail())
+          ) ? "ADMIN" : "USER";
+        lines:
+          - n: 2
+            note: "Quiconque s'inscrit avec le pseudo `admin` (s'il est libre) devient administrateur."
+          - n: 3
+            note: "Une adresse précise est écrite **en dur** (dans Soramfr, une vraie adresse personnelle, publiée sur GitHub)."
+          - n: 4
+            note: "L'opérateur `? :` choisit entre deux valeurs : « condition ? si vrai : si faux »."
+      - type: definition
+        id: def-elevation
+        term: "Élévation de privilèges"
+        md: |
+          Une attaque où une personne obtient **plus de droits** qu'elle ne devrait. C'est comme se
+          fabriquer un badge « direction » avec un feutre. Ici, il suffit de choisir le bon pseudo.
+      - type: question
+        ref: sor-ro-q1
+        review: code-role-soramfr
+      - type: compare
+        left:
+          title: "Maquette de connexion du rapport"
+          good: false
+          md: |
+            Un sélecteur « Utilisateur / Administrateur » sur la page de connexion. Même s'il ne sert qu'à
+            l'affichage (`demoViewRole`), il laisse croire que l'on **choisit** son rôle.
+        right:
+          title: "Ce qu'il faut"
+          good: true
+          md: |
+            Un simple formulaire identifiant + mot de passe. Le serveur lit le rôle **en base** et le met
+            dans le jeton signé.
+      - type: code
+        id: code-role-corrige
+        language: java
+        title: "Version corrigée"
+        code: |
+          // UserEntity
+          @Column(nullable = false, length = 10)
+          private String role = "USER";
+
+          // AuthService.login
+          String role = user.getRole();
+          String token = jwtService.generateToken(user.getId(), user.getUsername(), role);
+        lines:
+          - n: 2
+            note: "Nouvelle colonne obligatoire, 10 caractères."
+          - n: 3
+            note: "Valeur par défaut : toute nouvelle inscription est `USER`."
+          - n: 6
+            note: "Le rôle vient de la base. Pour nommer une administratrice, on modifie sa ligne en base (ou via une route réservée ADMIN)."
+      - type: question
+        ref: sor-ro-q2
+        review: code-role-corrige
+      - type: text
+        md: "Exercice guidé : complète la déclaration de la colonne `role`."
+      - type: exercise
+        ref: sor-ex-role-guide
+      - type: text
+        md: "**Améliorer la sécurité** : corrige le calcul du rôle."
+      - type: exercise
+        ref: sor-ex-role-serveur
+      - type: jury
+        items:
+          - q: "Comment un compte devient-il administrateur ?"
+            a: |
+              « Dans la version rendue, par son pseudo ou une adresse e-mail codée en dur : c'est une faille.
+              Dans la version corrigée, le rôle est une colonne en base, USER par défaut, que seule une
+              administratrice peut modifier. »
+          - q: "Pourquoi la maquette de connexion a-t-elle un sélecteur de rôle ?"
+            a: "« C'était un mode démonstration pour tester les deux interfaces. Il ne doit pas exister en production : le rôle est décidé par le serveur. »"
+      - type: quiz
+        items:
+          - ref: sor-ro-q3
+            review: def-elevation
+          - ref: sor-ro-q4
+            review: code-role-corrige
+          - ref: sor-ro-q5
+    questions:
+      - code: sor-ro-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quelle attaque permet le calcul du rôle à partir du pseudo ?"
+        choices:
+          - label: "Une élévation de privilèges : s'inscrire avec le pseudo `admin`"
+            correct: true
+            why: "Oui : si ce pseudo est libre, on devient administrateur."
+          - label: "Une injection SQL"
+            correct: false
+            why: "Aucune requête SQL n'est construite à la main ici."
+          - label: "Aucune"
+            correct: false
+            why: "Le rôle dépend d'une donnée choisie par l'utilisateur : c'est dangereux."
+        explanation: "Un droit ne doit jamais dépendre d'une valeur que l'utilisateur choisit librement."
+      - code: sor-ro-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Dans la version corrigée, quel rôle reçoit une personne qui vient de s'inscrire ?"
+        choices:
+          - label: "USER, la valeur par défaut de la colonne"
+            correct: true
+            why: "Oui : `private String role = \"USER\";`."
+          - label: "Le rôle qu'elle a choisi dans le formulaire"
+            correct: false
+            why: "Le formulaire ne propose plus de rôle."
+          - label: "ADMIN si elle est la première"
+            correct: false
+            why: "Aucune règle de ce genre."
+        explanation: "Toute inscription publique donne `USER`. Les administratrices sont nommées par une administratrice."
+      - code: sor-ro-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Accepter un champ `role` dans le JSON d'inscription est sans danger si Angular ne l'envoie jamais."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : n'importe qui peut appeler l'API avec Postman et ajouter `\"role\": \"ADMIN\"`."
+          - label: "Faux"
+            correct: true
+            why: "Exact : le serveur ne doit jamais lire le rôle dans une requête d'inscription."
+        explanation: "Tout ce qui vient du client peut être modifié. Le DTO d'inscription ne doit pas avoir de champ `role`."
+      - code: sor-ro-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Quelle contrainte SQL empêche d'enregistrer un rôle inconnu ?"
+        choices:
+          - label: "`CHECK (role IN ('USER', 'ADMIN'))`"
+            correct: true
+            why: "Oui : la base refuse toute autre valeur."
+          - label: "`UNIQUE (role)`"
+            correct: false
+            why: "Il ne pourrait y avoir qu'un seul USER !"
+          - label: "`DEFAULT 'USER'`"
+            correct: false
+            why: "`DEFAULT` choisit une valeur si rien n'est fourni, mais n'interdit rien."
+        explanation: "`DEFAULT` + `NOT NULL` + `CHECK` : valeur par défaut, obligatoire, et limitée à la liste."
+      - code: sor-ro-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: rgpd-secrets
+        prompt: "Pourquoi ne faut-il pas écrire une adresse e-mail personnelle dans le code d'un dépôt public ?"
+        choices:
+          - label: "C'est une donnée personnelle exposée à tous (spam, hameçonnage) et un indice pour les attaquants"
+            correct: true
+            why: "Oui : elle désigne en plus le compte administrateur."
+          - label: "Parce que Java n'accepte pas le caractère @"
+            correct: false
+            why: "Java accepte ce caractère dans un texte."
+          - label: "Il n'y a aucun problème"
+            correct: false
+            why: "C'est à la fois une question de RGPD et de sécurité."
+        explanation: "Données personnelles et secrets n'ont rien à faire dans le code source."
+    exercises:
+      - slug: sor-ex-role-guide
+        kind: COMPLETER
+        title: "Déclarer la colonne role"
+        difficulty: FACILE
+        skill: spring-jpa
+        statement: "Complète la déclaration. Respecte les majuscules."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La colonne est obligatoire : `nullable = …`."
+          - "Valeur par défaut : le rôle le plus faible."
+          - "false, USER, getRole."
+        solution: '["false", "USER", "getRole"]'
+        explanation: "Colonne obligatoire, `USER` par défaut, et le service lit ce rôle pour fabriquer le jeton."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @Column(nullable = [[1]], length = 10)
+            private String role = "[[2]]";
+
+            String role = user.[[3]]();
+          blanks:
+            - ["false"]
+            - ["USER"]
+            - ["getRole"]
+      - slug: sor-ex-role-serveur
+        kind: CORRIGER_ERREUR
+        title: "Corriger le calcul du rôle"
+        difficulty: INTERMEDIAIRE
+        skill: securite-owasp
+        statement: |
+          Corrige ce code :
+          1. dans l'entité, ajoute la colonne `role` obligatoire (10 caractères), `"USER"` par défaut,
+             avec son getter `getRole()` ;
+          2. dans `login`, le rôle doit venir de `user.getRole()` : supprime la comparaison avec le pseudo et
+             l'adresse e-mail écrite en dur.
+        criteria: "Le rôle est une donnée de l'entité ; aucun pseudo ni e-mail codé en dur."
+        hints:
+          - "`@Column(nullable = false, length = 10) private String role = \"USER\";`"
+          - "`public String getRole() { return role; }`"
+          - "Dans login : `String role = user.getRole();`"
+        solution: |
+          // UserEntity
+          @Column(nullable = false, length = 10)
+          private String role = "USER";
+
+          public String getRole() {
+              return role;
+          }
+
+          // AuthService.login
+          String role = user.getRole();
+          String token = jwtService.generateToken(user.getId(), user.getUsername(), role);
+        explanation: "Le rôle devient une **donnée**, pas une règle codée en dur. Nommer une nouvelle administratrice ne demande plus de redéployer."
+        xp: 30
+        payload:
+          language: java
+          starter: |
+            // UserEntity
+            @Column(nullable = false, unique = true)
+            private String username;
+
+            // AuthService.login
+            String role = (
+                "admin".equalsIgnoreCase(user.getUsername())
+                || "prenom.nom@exemple.fr".equalsIgnoreCase(user.getEmail())
+            ) ? "ADMIN" : "USER";
+            String token = jwtService.generateToken(user.getId(), user.getUsername(), role);
+          checks:
+            - pattern: '"admin"\s*\.equalsIgnoreCase'
+              absent: true
+              message: "Le rôle ne doit plus dépendre du pseudo « admin »."
+            - pattern: '"[^"\s]+@[^"\s]+"'
+              absent: true
+              message: "Aucune adresse e-mail ne doit rester écrite dans le code."
+            - pattern: '@Column\((?=[^)]*nullable\s*=\s*false)(?=[^)]*length\s*=\s*10)[^)]*\)\s*private\s+String\s+role\s*=\s*"USER"\s*;'
+              message: "Ajoute la colonne : @Column(nullable = false, length = 10) private String role = \"USER\";"
+            - pattern: 'public\s+String\s+getRole\s*\(\s*\)\s*\{\s*return\s+(this\.)?role\s*;\s*\}'
+              message: "Ajoute le getter : public String getRole() { return role; }"
+            - pattern: 'String\s+role\s*=\s*user\.getRole\(\)\s*;'
+              message: "Dans login : String role = user.getRole();"
+
+  # ===================================================================== LEÇON 5
+  - slug: sor-owasp
+    title: "CORS, CSRF, XSS et injection SQL dans Soramfr"
+    duration: 15
+    objective: "Expliquer les quatre notions avec l'exemple de Soramfr et corriger la configuration CORS."
+    prerequisites: "Leçon « Un rôle décidé par le serveur »."
+    skills: [securite-owasp]
+    xp: 25
+    memo: |
+      - **CORS** : le navigateur n'autorise une page à appeler une API d'un **autre domaine** que si l'API le permet (`allowedOrigins`).
+      - **CSRF** : un site piégé fait envoyer une requête par ton navigateur avec **tes cookies**. Soramfr envoie le jeton dans un en-tête (pas un cookie) : désactiver la protection CSRF est acceptable.
+      - **XSS** : du JavaScript malveillant injecté dans une page. Angular échappe l'affichage par défaut ; mais un jeton dans `localStorage` peut être volé par un script injecté.
+      - **Injection SQL** : du SQL glissé dans une donnée. Spring Data JPA utilise des requêtes paramétrées : protégé.
+      - CORS de Soramfr : deux blocs, une faute de frappe `"/api//auth/**"`, deux orthographes du domaine Netlify.
+    commonMistakes: |
+      - Croire que CORS protège le serveur : il protège l'utilisatrice **dans son navigateur**. Postman l'ignore.
+      - Mettre `allowedOrigins("*")` avec `allowCredentials(true)` : refusé par Spring, et dangereux.
+      - Utiliser `innerHTML` ou `bypassSecurityTrustHtml` avec des données saisies par les utilisateurs.
+      - Construire une requête SQL par concaténation : `"... WHERE email = '" + email + "'"`.
+    blocks:
+      - type: text
+        md: |
+          Quatre mots reviennent toujours au jury : **CORS, CSRF, XSS, injection SQL**. On les explique avec
+          des images simples, puis on regarde où en est Soramfr.
+      - type: definition
+        id: def-cors
+        term: "CORS (partage de ressources entre origines)"
+        md: |
+          Par défaut, une page chargée depuis `soramfr.netlify.app` n'a pas le droit de lire les réponses
+          d'une API située ailleurs (`…onrender.com`). C'est le **navigateur** qui bloque. L'API peut dire
+          « j'accepte cette origine » : c'est la **liste des invités** à l'entrée d'une soirée.
+      - type: code
+        id: code-cors-soramfr
+        language: java
+        title: "Soramfr — CorsConfig.java (extrait)"
+        code: |
+          registry.addMapping("/api/**")
+                  .allowedOrigins("http://localhost:4200", "https://soramtfr-projet.netlify.app")
+                  .allowedMethods("GET","POST","PUT", "DELETE", "OPTIONS")
+                  .allowCredentials(true);
+
+          registry.addMapping("/api//auth/**")
+                  .allowedOrigins("http://localhost:4200", "https://soramfr-projet.netlify.app")
+                  .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                  .allowCredentials(true);
+        lines:
+          - n: 1
+            note: "Règle pour toute l'API."
+          - n: 2
+            note: "Le domaine s'écrit `soramtfr`…"
+          - n: 6
+            note: "Deuxième bloc inutile (`/api/**` couvre déjà `/api/auth/**`), avec une **double barre** `//` : il ne correspond à aucune adresse réelle."
+          - n: 7
+            note: "…et ici `soramfr` : une seule des deux orthographes est la bonne. Le rapport mélange aussi AlertMe, Soramfr et Soramtfr."
+      - type: question
+        ref: sor-o-q1
+        review: def-cors
+      - type: definition
+        id: def-csrf
+        term: "CSRF (falsification de requête)"
+        md: |
+          Un site piégé contient un formulaire caché qui envoie « supprime mon compte » à Soramfr. Si Soramfr
+          reconnaissait les gens grâce à un **cookie**, le navigateur l'enverrait automatiquement : l'attaque
+          marcherait. Soramfr exige un en-tête `Authorization` que le site piégé ne connaît pas : c'est pour
+          ça que `csrf.disable()` est acceptable ici.
+      - type: definition
+        id: def-xss
+        term: "XSS (script injecté)"
+        md: |
+          Un pirate réussit à faire exécuter **son** JavaScript dans **ta** page (par exemple via un
+          commentaire contenant `<script>`). Ce script peut lire `localStorage`… où Soramfr range le jeton.
+          Angular protège l'affichage (`{{ }}` échappe le HTML), mais il faut éviter `innerHTML` avec des
+          données saisies, et idéalement ranger le jeton dans un cookie `HttpOnly`, illisible par JavaScript.
+      - type: definition
+        id: def-injection
+        term: "Injection SQL"
+        md: |
+          Glisser du SQL dans une donnée : un « pseudo » comme `' OR '1'='1`. Si la requête est construite en
+          **collant** les textes, ce morceau devient du code. Avec des **paramètres** (`WHERE email = ?`), la
+          valeur reste une valeur. Spring Data JPA paramètre toujours : Soramfr est protégé.
+      - type: compare
+        left:
+          title: "Vulnérable"
+          good: false
+          language: java
+          code: |
+            String sql = "SELECT * FROM users WHERE email = '" + email + "'";
+        right:
+          title: "Protégé"
+          good: true
+          language: java
+          code: |
+            userRepository.findByEmailOrUsername(email, email);
+            // ou : jdbc.query("SELECT * FROM users WHERE email = ?", mapper, email);
+      - type: question
+        ref: sor-o-q2
+        review: def-injection
+      - type: text
+        md: "Exercice guidé : associe chaque attaque à sa protection."
+      - type: exercise
+        ref: sor-ex-owasp-guide
+      - type: text
+        md: "**Améliorer la sécurité** : réécris `CorsConfig` proprement."
+      - type: exercise
+        ref: sor-ex-cors
+      - type: jury
+        items:
+          - q: "Pourquoi avez-vous désactivé la protection CSRF ?"
+            a: "Parce que l'API est sans état et que le jeton est envoyé dans l'en-tête Authorization, pas dans un cookie. Un site tiers ne peut pas l'ajouter à une requête forgée."
+          - q: "Votre application est-elle protégée contre le XSS ?"
+            a: |
+              « Angular échappe les données affichées avec `{{ }}`. Le point faible est le jeton dans
+              `localStorage` : en cas de XSS, il serait lisible. Amélioration : cookie HttpOnly, SameSite,
+              et une politique de sécurité du contenu (CSP). »
+          - q: "À quoi sert CORS ?"
+            a: "À autoriser explicitement le frontend (une autre origine) à appeler l'API depuis le navigateur. Il faut lister précisément les origines de confiance."
+      - type: quiz
+        items:
+          - ref: sor-o-q3
+            review: def-csrf
+          - ref: sor-o-q4
+            review: def-xss
+          - ref: sor-o-q5
+            review: code-cors-soramfr
+          - ref: sor-o-q6
+            review: def-cors
+    questions:
+      - code: sor-o-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Qui bloque une requête refusée par CORS ?"
+        choices:
+          - label: "Le navigateur"
+            correct: true
+            why: "Oui : c'est une protection du navigateur. Postman ou curl ne l'appliquent pas."
+          - label: "La base de données"
+            correct: false
+            why: "La base n'est pas concernée."
+          - label: "Le pare-feu du serveur"
+            correct: false
+            why: "CORS est une règle appliquée par le navigateur à partir des en-têtes de l'API."
+        explanation: "CORS protège l'utilisatrice contre des pages malveillantes ; ce n'est pas un mécanisme d'authentification."
+      - code: sor-o-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Pourquoi `findByEmailOrUsername` est-il protégé contre l'injection SQL ?"
+        choices:
+          - label: "Parce que Spring Data passe les valeurs en paramètres, séparées du texte SQL"
+            correct: true
+            why: "Oui : la valeur ne peut jamais devenir du code."
+          - label: "Parce que PostgreSQL refuse les apostrophes"
+            correct: false
+            why: "PostgreSQL accepte les apostrophes dans les données."
+          - label: "Parce qu'Angular vérifie les e-mails"
+            correct: false
+            why: "Le serveur ne doit jamais compter sur le frontend."
+        explanation: "Requête paramétrée = la structure SQL est fixée avant d'y placer les valeurs."
+      - code: sor-o-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: securite-owasp
+        prompt: "Pourquoi `csrf.disable()` est-il acceptable dans Soramfr ?"
+        choices:
+          - label: "Parce que l'authentification repose sur un en-tête Authorization, pas sur un cookie envoyé automatiquement"
+            correct: true
+            why: "Oui : un site tiers ne peut pas ajouter cet en-tête."
+          - label: "Parce que le CSRF n'existe plus"
+            correct: false
+            why: "Il existe toujours, dès qu'on s'authentifie par cookie."
+          - label: "Parce que CORS remplace la protection CSRF"
+            correct: false
+            why: "Ce sont deux mécanismes différents."
+        explanation: "Si Soramfr passait à un cookie HttpOnly pour le jeton, il faudrait réactiver une protection CSRF (ou SameSite=Strict)."
+      - code: sor-o-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quel risque crée le stockage du jeton dans `localStorage` ?"
+        choices:
+          - label: "Un script injecté (XSS) peut le lire et l'envoyer au pirate"
+            correct: true
+            why: "Oui : `localStorage` est accessible à tout JavaScript de la page."
+          - label: "Le jeton expire plus vite"
+            correct: false
+            why: "L'expiration est dans le jeton lui-même."
+          - label: "Aucun"
+            correct: false
+            why: "C'est un risque connu, à mentionner au jury."
+        explanation: "Alternative : cookie `HttpOnly` (illisible par JavaScript) + `Secure` + `SameSite`."
+      - code: sor-o-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Que se passe-t-il avec `addMapping(\"/api//auth/**\")` ?"
+        choices:
+          - label: "Rien d'utile : aucune adresse réelle ne contient `//`, la règle ne s'applique jamais"
+            correct: true
+            why: "Oui : c'est du code mort, heureusement couvert par `/api/**`."
+          - label: "Elle bloque la connexion"
+            correct: false
+            why: "La règle `/api/**` s'applique déjà à `/api/auth/login`."
+          - label: "Elle ouvre l'API à tout Internet"
+            correct: false
+            why: "Elle ne s'applique à rien."
+        explanation: "Une seule règle `/api/**` suffit. Le code mort est source de confusion : on le supprime."
+      - code: sor-o-q6
+        kind: VRAI_FAUX
+        difficulty: 3
+        skill: securite-owasp
+        prompt: "`allowedOrigins(\"*\")` avec `allowCredentials(true)` est une bonne configuration pour aller vite."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : Spring la refuse, et elle ouvrirait l'API authentifiée à n'importe quel site."
+          - label: "Faux"
+            correct: true
+            why: "Exact : on liste les origines de confiance."
+        explanation: "On liste précisément les origines autorisées, idéalement depuis la configuration (variable d'environnement)."
+    exercises:
+      - slug: sor-ex-owasp-guide
+        kind: COMPLETER
+        title: "Une protection pour chaque attaque"
+        difficulty: FACILE
+        skill: securite-owasp
+        statement: "Complète avec le nom de l'attaque (en majuscules) ou le mot demandé."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Un script injecté dans la page : trois lettres."
+          - "Requêtes paramétrées contre l'injection…"
+          - "XSS, SQL, CORS, HttpOnly."
+        solution: '["XSS", "SQL", "CORS", "HttpOnly"]'
+        explanation: "Échappement Angular contre le XSS, requêtes paramétrées contre l'injection SQL, liste d'origines pour CORS, cookie HttpOnly pour protéger le jeton."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Angular échappe les {{ }} : protection contre le [[1]].
+            Les requêtes paramétrées protègent contre l'injection [[2]].
+            allowedOrigins(...) règle le [[3]].
+            Un cookie [[4]] est illisible par JavaScript.
+          blanks:
+            - ["XSS"]
+            - ["SQL"]
+            - ["CORS"]
+            - ["HttpOnly"]
+      - slug: sor-ex-cors
+        kind: CORRIGER_ERREUR
+        title: "Réécrire CorsConfig proprement"
+        difficulty: INTERMEDIAIRE
+        skill: securite-owasp
+        statement: |
+          Corrige `CorsConfig` :
+          1. une **seule** règle `/api/**` (supprime le bloc `"/api//auth/**"`) ;
+          2. les origines viennent de la configuration :
+             `@Value("${app.cors.allowed-origins}") private String[] origines;` puis `.allowedOrigins(origines)` ;
+          3. garde les méthodes et `allowCredentials(true)`.
+        criteria: "Une seule règle, origines lues depuis la configuration, aucun domaine écrit en dur."
+        hints:
+          - "Supprime entièrement le deuxième `registry.addMapping(...)`."
+          - "Ajoute le champ `@Value(\"${app.cors.allowed-origins}\") private String[] origines;`."
+          - "`.allowedOrigins(origines)` à la place de la liste écrite en dur."
+        solution: |
+          @Configuration
+          public class CorsConfig implements WebMvcConfigurer {
+
+              @Value("${app.cors.allowed-origins}")
+              private String[] origines;
+
+              @Override
+              public void addCorsMappings(CorsRegistry registry) {
+                  registry.addMapping("/api/**")
+                          .allowedOrigins(origines)
+                          .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                          .allowedHeaders("Authorization", "Content-Type")
+                          .allowCredentials(true);
+              }
+          }
+        explanation: |
+          Dans `application.properties` : `app.cors.allowed-origins=${CORS_ORIGINS:http://localhost:4200}`.
+          En production, la variable `CORS_ORIGINS` contient l'adresse Netlify exacte. Plus de faute de
+          frappe possible dans le code, et un seul endroit à modifier.
+        xp: 30
+        payload:
+          language: java
+          starter: |
+            @Configuration
+            public class CorsConfig implements WebMvcConfigurer {
+
+                @Override
+                public void addCorsMappings(CorsRegistry registry) {
+                    registry.addMapping("/api/**")
+                            .allowedOrigins("http://localhost:4200", "https://soramtfr-projet.netlify.app")
+                            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                            .allowedHeaders("Authorization", "Content-Type")
+                            .allowCredentials(true);
+
+                    registry.addMapping("/api//auth/**")
+                            .allowedOrigins("http://localhost:4200", "https://soramfr-projet.netlify.app")
+                            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                            .allowCredentials(true);
+                }
+            }
+          checks:
+            - pattern: '/api//'
+              absent: true
+              message: "Supprime la règle \"/api//auth/**\" : elle contient une double barre et ne sert à rien."
+            - pattern: 'addMapping[\s\S]*addMapping'
+              absent: true
+              message: "Une seule règle registry.addMapping(\"/api/**\") suffit."
+            - pattern: 'addMapping\(\s*"/api/\*\*"\s*\)'
+              message: "Garde la règle registry.addMapping(\"/api/**\")."
+            - pattern: '@Value\(\s*"\$\{app\.cors\.allowed-origins\}"\s*\)\s*private\s+String\[\]\s+origines\s*;'
+              message: "Lis les origines dans la configuration : @Value(\"${app.cors.allowed-origins}\") private String[] origines;"
+            - pattern: 'allowedOrigins\(\s*origines\s*\)'
+              message: "Utilise .allowedOrigins(origines)."
+            - pattern: 'netlify\.app'
+              absent: true
+              message: "Aucun domaine ne doit rester écrit en dur dans le code."
+            - pattern: 'allowCredentials\(\s*true\s*\)'
+              message: "Garde .allowCredentials(true)."
+
+bank:
+  - code: sor-c4-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: auth-jwt
+    prompt: "Que signifie « authentification sans état (stateless) » dans Soramfr ?"
+    choices:
+      - label: "Le serveur ne garde aucune session : chaque requête apporte son jeton"
+        correct: true
+        why: "Oui : `SessionCreationPolicy.STATELESS`."
+      - label: "Les utilisateurs n'ont pas de compte"
+        correct: false
+        why: "Les comptes sont en base."
+      - label: "Le jeton n'expire jamais"
+        correct: false
+        why: "Il expire après 120 minutes."
+    explanation: "Sans état : pas de session côté serveur, donc facile à répartir sur plusieurs serveurs ; mais révoquer un jeton est plus difficile."
+  - code: sor-c4-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: auth-jwt
+    prompt: "`hasRole(\"ADMIN\")` cherche quelle autorité dans le contexte de sécurité ?"
+    choices:
+      - label: "`ROLE_ADMIN`"
+        correct: true
+        why: "Oui : Spring ajoute le préfixe `ROLE_`."
+      - label: "`ADMIN`"
+        correct: false
+        why: "C'est `hasAuthority(\"ADMIN\")` qui chercherait exactement `ADMIN`."
+      - label: "`admin`"
+        correct: false
+        why: "La casse compte, et le préfixe est ajouté."
+    explanation: "C'est pour ça que `JwtAuthFilter` crée `new SimpleGrantedAuthority(\"ROLE_\" + role)`."
+  - code: sor-c4-b3
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: rgpd-secrets
+    prompt: "Après avoir supprimé le secret JWT du dépôt, on peut garder la même valeur de secret."
+    choices:
+      - label: "Vrai"
+        correct: false
+        why: "Non : l'historique Git l'a conservé, et d'autres ont pu le copier."
+      - label: "Faux"
+        correct: true
+        why: "Exact : un secret publié doit être remplacé."
+    explanation: "Un secret exposé est compromis pour toujours : rotation obligatoire."
+  - code: sor-c4-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: securite-owasp
+    prompt: "Quel réglage de cookie limite le CSRF en empêchant son envoi depuis un autre site ?"
+    choices:
+      - label: "`SameSite=Strict`"
+        correct: true
+        why: "Oui : le cookie n'est envoyé que pour les requêtes venant du même site."
+      - label: "`Max-Age=0`"
+        correct: false
+        why: "Cela supprime le cookie."
+      - label: "`Path=/`"
+        correct: false
+        why: "`Path` limite les adresses du site, pas l'origine de la requête."
+    explanation: "Cookie de session sûr : `HttpOnly` (anti-XSS), `Secure` (HTTPS seulement), `SameSite` (anti-CSRF)."
+  - code: sor-c4-b5
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: auth-jwt
+    prompt: "Dans Soramfr, sans jeton, `GET /api/users` renvoie 403 au lieu de 401. Pourquoi ?"
+    choices:
+      - label: "Aucun point d'entrée d'authentification n'est configuré : Spring utilise 403 par défaut"
+        correct: true
+        why: "Oui : on ajoute `HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)`."
+      - label: "Parce que la route n'existe pas"
+        correct: false
+        why: "Ce serait 404."
+      - label: "Parce que la base est éteinte"
+        correct: false
+        why: "Ce serait 500."
+    explanation: "Configurer `authenticationEntryPoint` pour distinguer « non connecté » (401) de « interdit » (403)."

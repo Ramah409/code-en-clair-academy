@@ -26,6 +26,9 @@ public class CodeChecksValidator implements ExerciseValidator {
     private static final Pattern HTML_COMMENT = Pattern.compile("<!--.*?-->", Pattern.DOTALL);
     private static final Pattern HASH_COMMENT = Pattern.compile("(?m)^\\s*#.*$");
 
+    /** Limite la taille du code analysé par les expressions régulières des vérifications. */
+    static final int MAX_CODE_LENGTH = 20_000;
+
     private final ObjectMapper json;
 
     public CodeChecksValidator(ObjectMapper json) {
@@ -51,6 +54,10 @@ public class CodeChecksValidator implements ExerciseValidator {
         String code = answer == null ? "" : answer.asText("");
         if (code.isBlank()) {
             return ValidationResult.ko("Écris ton code avant de le valider.", List.of(), null);
+        }
+        if (code.length() > MAX_CODE_LENGTH) {
+            return ValidationResult.ko("Ton code dépasse " + MAX_CODE_LENGTH + " caractères : garde seulement ce que "
+                    + "demande l'énoncé.", List.of(), null);
         }
         String language = ex.payload().path("language").asText("text");
         String cleaned = stripComments(code, language);

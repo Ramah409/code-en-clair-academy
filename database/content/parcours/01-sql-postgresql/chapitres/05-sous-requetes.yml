@@ -61,6 +61,7 @@ lessons:
           - n: 3
             note: "La sous-requête renvoie la liste des clients ayant laissé un avis ; IN garde les clients qui en font partie."
       - type: definition
+        id: def-sous-requete-correlee
         term: "Sous-requête corrélée"
         md: |
           Sous-requête qui **fait référence à la ligne en cours** de la requête principale. Elle est
@@ -88,6 +89,12 @@ lessons:
         ref: sql-ex-salaire-superieur-moyenne
       - type: question
         ref: sql-c5l1-q4
+      - type: quiz
+        items:
+          - ref: sqlq-sub-1
+          - ref: sqlq-sub-2
+            review: def-sous-requete-correlee
+          - ref: sqlq-sub-3
     questions:
       - code: sql-c5l1-q1
         kind: CHOIX_UNIQUE
@@ -149,6 +156,51 @@ lessons:
         language: sql
         answers: ["IN"]
         explanation: "La sous-requête renvoie la liste des produits commandés ; IN teste l'appartenance à cette liste."
+      - code: sqlq-sub-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: Une sous-requête utilisée avec `=` doit renvoyer…
+        choices:
+          - label: une seule valeur (une ligne, une colonne)
+            correct: true
+            why: 'Oui : sinon PostgreSQL lève une erreur.'
+          - label: plusieurs lignes
+            correct: false
+            why: Pour plusieurs lignes, on utilise IN.
+          - label: une table entière
+            correct: false
+            why: Une table se place dans FROM.
+        explanation: '`=` attend une valeur ; `IN` accepte une liste.'
+      - code: sqlq-sub-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: Pourquoi une sous-requête corrélée est-elle souvent plus lente ?
+        choices:
+          - label: Elle est réévaluée pour chaque ligne de la requête principale
+            correct: true
+            why: 'Oui : elle dépend de la ligne courante.'
+          - label: Elle ne peut pas utiliser d'index
+            correct: false
+            why: Elle peut utiliser des index.
+          - label: Elle est toujours interdite en PostgreSQL
+            correct: false
+            why: Elle est autorisée et utile.
+        explanation: Corrélée = qui fait référence à la ligne en cours de la requête principale.
+      - code: sqlq-sub-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-agregation
+        prompt: On peut placer une sous-requête dans FROM, à condition de lui donner un alias.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : `FROM (SELECT ...) AS t`.'
+          - label: Faux
+            correct: false
+            why: C'est autorisé (table dérivée).
+        explanation: Sous-requête dans FROM = table temporaire ; dans WHERE = filtre ; dans SELECT = valeur calculée.
     exercises:
       - slug: sql-ex-salaire-superieur-moyenne
         kind: SQL
@@ -246,6 +298,11 @@ lessons:
         ref: sql-c5l2-q3
       - type: exercise
         ref: sql-ex-clients-sans-avis
+      - type: quiz
+        items:
+          - ref: sqlq-exists-1
+          - ref: sqlq-exists-2
+          - ref: sqlq-exists-3
     questions:
       - code: sql-c5l2-q1
         kind: CHOIX_UNIQUE
@@ -288,6 +345,51 @@ lessons:
         language: sql
         answers: ["EXISTS"]
         explanation: "EXISTS avec une sous-requête corrélée : pour chaque catégorie, existe-t-il un produit à stock nul ?"
+      - code: sqlq-exists-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: Que teste `NOT EXISTS (SELECT 1 FROM avis a WHERE a.produit_id = p.id)` ?
+        choices:
+          - label: Que le produit p n'a aucun avis
+            correct: true
+            why: Oui.
+          - label: Que la table avis est vide
+            correct: false
+            why: La condition dépend du produit p (corrélée).
+          - label: Que le produit a exactement un avis
+            correct: false
+            why: EXISTS teste l'existence, pas un nombre précis.
+        explanation: 'EXISTS / NOT EXISTS : « existe-t-il au moins une ligne qui… ? »'
+      - code: sqlq-exists-2
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: sql-agregation
+        prompt: Pourquoi préférer NOT EXISTS à NOT IN quand la sous-requête peut contenir NULL ?
+        choices:
+          - label: Parce que NOT IN renvoie alors zéro ligne
+            correct: true
+            why: 'Oui : une comparaison avec NULL rend tout le NOT IN « inconnu ».'
+          - label: Parce que NOT IN est interdit
+            correct: false
+            why: NOT IN est permis, mais piégeux avec NULL.
+          - label: Il n'y a aucune différence
+            correct: false
+            why: La présence d'un NULL change tout.
+        explanation: NOT EXISTS n'est pas piégé par les NULL.
+      - code: sqlq-exists-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-agregation
+        prompt: Dans une sous-requête EXISTS, on écrit souvent `SELECT 1` car seules les lignes comptent, pas leurs colonnes.
+        choices:
+          - label: Vrai
+            correct: true
+            why: "Oui : EXISTS ne regarde que s'il y a au moins une ligne."
+          - label: Faux
+            correct: false
+            why: Les colonnes renvoyées ne sont pas utilisées par EXISTS.
+        explanation: "`SELECT 1` rend l'intention claire : on teste l'existence."
     exercises:
       - slug: sql-ex-clients-sans-avis
         kind: SQL
@@ -381,6 +483,7 @@ lessons:
       - type: question
         ref: sql-c5l3-q1
       - type: definition
+        id: def-fonction-de-fenetrage-over
         term: "Fonction de fenêtrage (OVER)"
         md: |
           Fonction calculée sur une « fenêtre » de lignes liées à la ligne courante, **sans fusionner les
@@ -421,6 +524,12 @@ lessons:
         ref: sql-ex-top2-par-categorie
       - type: question
         ref: sql-c5l3-q4
+      - type: quiz
+        items:
+          - ref: sqlq-cte-1
+          - ref: sqlq-cte-2
+            review: def-fonction-de-fenetrage-over
+          - ref: sqlq-cte-3
     questions:
       - code: sql-c5l3-q1
         kind: CHOIX_UNIQUE
@@ -487,6 +596,51 @@ lessons:
             correct: true
             why: "Il faut calculer le rang dans une CTE (ou sous-requête), puis filtrer dessus."
         explanation: "Motif classique : `WITH classement AS (SELECT ..., RANK() OVER (...) AS rang FROM ...) SELECT * FROM classement WHERE rang <= 3`."
+      - code: sqlq-cte-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: Comment commence une CTE ?
+        choices:
+          - label: '`WITH nom AS ( SELECT ... )`'
+            correct: true
+            why: Oui.
+          - label: '`CREATE CTE nom`'
+            correct: false
+            why: Cette syntaxe n'existe pas.
+          - label: '`SELECT ... INTO nom`'
+            correct: false
+            why: SELECT INTO crée une table.
+        explanation: Une CTE nomme un résultat intermédiaire utilisable dans la requête qui suit.
+      - code: sqlq-cte-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: Que fait `ROW_NUMBER() OVER (ORDER BY prix DESC)` ?
+        choices:
+          - label: Numérote les lignes 1, 2, 3… du plus cher au moins cher
+            correct: true
+            why: 'Oui : un numéro unique par ligne.'
+          - label: Compte le nombre de produits
+            correct: false
+            why: Ce serait COUNT.
+          - label: Regroupe les produits de même prix
+            correct: false
+            why: Aucune ligne n'est regroupée avec OVER.
+        explanation: Les fonctions de fenêtrage calculent sur un ensemble de lignes sans les fusionner.
+      - code: sqlq-cte-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-avance
+        prompt: Contrairement à GROUP BY, une fonction de fenêtrage garde toutes les lignes du résultat.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : chaque ligne reçoit sa valeur calculée.'
+          - label: Faux
+            correct: false
+            why: C'est la différence principale avec GROUP BY.
+        explanation: GROUP BY réduit à une ligne par groupe ; OVER ajoute une colonne calculée à chaque ligne.
     exercises:
       - slug: sql-ex-top2-par-categorie
         kind: SQL

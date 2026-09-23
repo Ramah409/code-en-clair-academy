@@ -1,0 +1,1453 @@
+slug: soramfr-frontend-angular
+position: 5
+level: INTERMEDIAIRE
+title: "Le frontend Angular de Soramfr"
+summary: "Reconstruire le formulaire d'inscription, appeler l'API avec un service, protéger les pages avec des gardes, gérer le jeton et corriger les bugs du panier."
+quizQuestionCount: 12
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sor-composant-inscription
+    title: "TP — Reconstruire le formulaire d'inscription"
+    duration: 15
+    objective: "Comprendre un composant Angular (classe + template) et réécrire le formulaire d'inscription de Soramfr."
+    prerequisites: "Chapitre « Découvrir Soramfr »."
+    skills: [angular-composants, angular-formulaires]
+    xp: 30
+    memo: |
+      - Un **composant** = une classe TypeScript (les données et les actions) + un **template** HTML (l'affichage).
+      - `{{ variable }}` : afficher une valeur. `(evenement)="methode()"` : réagir à une action.
+      - `[(ngModel)]="champ"` : lien **dans les deux sens** entre un champ du formulaire et une variable.
+      - `(ngSubmit)="onSubmit()"` : appelé à l'envoi du formulaire.
+      - `@if (condition) { ... }` : afficher un bloc seulement si la condition est vraie.
+      - Chaque champ a une **étiquette** (`<label>`) lisible : un `placeholder` ne suffit pas.
+    commonMistakes: |
+      - Oublier l'attribut `name` sur un champ avec `ngModel` dans un `<form>` : Angular affiche une erreur.
+      - Oublier d'importer `FormsModule` dans le composant.
+      - Des `<label>` vides avec seulement un `placeholder` (cas de Soramfr) : les lecteurs d'écran n'annoncent rien de clair.
+      - Des couleurs écrites dans `style="color: red"` : mieux vaut une classe CSS et un rôle `alert`.
+    blocks:
+      - type: text
+        md: |
+          Le formulaire d'inscription est la première chose que voit une nouvelle cliente. Tu vas comprendre
+          comment Angular le construit, puis le **réécrire** toi-même, en mieux.
+      - type: definition
+        id: def-composant
+        term: "Composant"
+        md: |
+          Une **brique d'écran**, comme une pièce de Lego : un formulaire, une carte produit, une barre de
+          menu. Chaque composant a deux faces : une **classe** TypeScript (ce qu'il sait et ce qu'il fait) et
+          un **template** HTML (ce qu'il affiche).
+      - type: definition
+        id: def-liaison
+        term: "Liaison de données (binding)"
+        md: |
+          Le **fil** entre la classe et l'écran :
+          - `{{ error }}` : la classe → l'écran (afficher) ;
+          - `(click)="valider()"` : l'écran → la classe (réagir) ;
+          - `[(ngModel)]="email"` : dans les **deux sens**. Taper dans le champ modifie `email` ; changer
+            `email` dans le code modifie le champ. C'est la « boîte à double sens ».
+      - type: code
+        id: code-simple-form
+        language: html
+        title: "Exemple simple : un formulaire de newsletter"
+        code: |
+          <form (ngSubmit)="inscrire()">
+            <label for="mail">Ton e-mail</label>
+            <input id="mail" type="email" name="mail" [(ngModel)]="mail" required />
+            <button type="submit">S'inscrire</button>
+          </form>
+          @if (merci) {
+            <p role="status">Merci, {{ mail }} !</p>
+          }
+        lines:
+          - n: 1
+            note: "`(ngSubmit)` : quand on valide le formulaire, Angular appelle `inscrire()`."
+          - n: 2
+            note: "Une vraie étiquette, reliée au champ par `for` / `id`."
+          - n: 3
+            note: "`[(ngModel)]=\"mail\"` relie le champ à la variable `mail`. `name` est obligatoire dans un formulaire."
+          - n: 6
+            note: "`@if` : le message n'apparaît que si `merci` vaut `true`."
+      - type: question
+        ref: sor-fa-q1
+        review: def-liaison
+      - type: code
+        id: code-inscription-ts
+        language: typescript
+        title: "Soramfr — inscription.component.ts (extrait)"
+        code: |
+          onSubmit(): void {
+            if (this.password !== this.password2) {
+              this.error = 'Les mots de passe ne correspondent pas';
+              return;
+            }
+            if (this.password.length < 6) {
+              this.error = 'Le mot de passe doit contenir au moins 6 caractères';
+              return;
+            }
+            this.userApi.register(body).subscribe({
+              next: () => this.router.navigate(['/connexion']),
+              error: (err) => this.error = err?.error?.message || 'Inscription impossible'
+            });
+          }
+        lines:
+          - n: 2
+            note: "`!==` : « est différent de ». Les deux mots de passe doivent être identiques."
+          - n: 6
+            note: "**Incohérence** : 6 caractères ici, 8 côté Spring. À aligner sur 8."
+          - n: 10
+            note: "`register` renvoie un Observable ; `subscribe` déclenche l'appel HTTP."
+          - n: 11
+            note: "`next` : la réponse est arrivée (201). Redirection vers la connexion (sans `?registered=1` : le message de bienvenue prévu ne s'affiche jamais)."
+          - n: 12
+            note: "`error` : on affiche le message renvoyé par le serveur (409, 400…)."
+      - type: question
+        ref: sor-fa-q2
+        review: code-inscription-ts
+      - type: text
+        md: "Exercice guidé : corrige et complète `onSubmit`."
+      - type: exercise
+        ref: sor-ex-inscription-ts
+      - type: text
+        md: |
+          TP en autonomie : **reconstruis le template** du formulaire d'inscription, avec de vraies étiquettes
+          et un message d'erreur accessible.
+      - type: exercise
+        ref: sor-ex-inscription-html
+      - type: jury
+        items:
+          - q: "Qu'est-ce qu'un composant Angular ?"
+            a: "Une brique d'interface composée d'une classe TypeScript (données et méthodes) et d'un template HTML. On assemble les composants pour construire les pages."
+          - q: "Quelle différence entre formulaire template (ngModel) et formulaire réactif ?"
+            a: |
+              « Avec `ngModel`, la logique est dans le template : simple pour de petits formulaires. Avec les
+              formulaires réactifs (`FormGroup`), la structure et les validations sont dans la classe : plus
+              facile à tester et à faire grandir. »
+          - q: "Pourquoi vérifier le mot de passe côté Angular s'il est revérifié côté serveur ?"
+            a: "Pour le confort : l'utilisatrice est prévenue tout de suite. Mais la vraie règle est côté serveur, et les deux doivent être identiques."
+      - type: quiz
+        items:
+          - ref: sor-fa-q3
+            review: def-composant
+          - ref: sor-fa-q4
+            review: code-simple-form
+          - ref: sor-fa-q5
+            review: code-inscription-ts
+    questions:
+      - code: sor-fa-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Que fait `[(ngModel)]=\"email\"` ?"
+        choices:
+          - label: "Il relie le champ et la variable `email` dans les deux sens"
+            correct: true
+            why: "Oui : taper met à jour la variable, et inversement."
+          - label: "Il envoie l'e-mail au serveur"
+            correct: false
+            why: "L'envoi se fait avec un service HTTP."
+          - label: "Il vérifie que l'e-mail est valide"
+            correct: false
+            why: "La validation vient d'attributs comme `type=\"email\"` ou `required`."
+        explanation: "`[( )]` (la « banane dans une boîte ») = liaison bidirectionnelle."
+      - code: sor-fa-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-services
+        prompt: "Dans `onSubmit`, quand l'appel HTTP part-il vraiment ?"
+        choices:
+          - label: "Au moment du `subscribe`"
+            correct: true
+            why: "Oui : un Observable HTTP ne fait rien tant qu'on ne s'y abonne pas."
+          - label: "Dès l'appel `this.userApi.register(body)`"
+            correct: false
+            why: "Cet appel prépare seulement l'Observable."
+          - label: "Au chargement de la page"
+            correct: false
+            why: "Rien n'est envoyé avant la validation du formulaire."
+        explanation: "Les Observables HTTP d'Angular sont « froids » : `subscribe` déclenche la requête."
+      - code: sor-fa-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Un composant Angular, c'est…"
+        choices:
+          - label: "une classe TypeScript et un template HTML qui forment une brique d'écran"
+            correct: true
+            why: "Oui."
+          - label: "une table de la base de données"
+            correct: false
+            why: "Ça, c'est une entité côté Spring."
+          - label: "un fichier de configuration"
+            correct: false
+            why: "La configuration est dans `app.config.ts`, `angular.json`…"
+        explanation: "Composant = classe + template (+ styles)."
+      - code: sor-fa-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: accessibilite
+        prompt: "Un `placeholder` suffit à rendre un champ de formulaire accessible."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : il disparaît dès qu'on tape et n'est pas toujours lu comme une étiquette."
+          - label: "Faux"
+            correct: true
+            why: "Exact : il faut un `<label>` associé au champ."
+        explanation: "Chaque champ a une étiquette visible, reliée par `for`/`id` (ou en entourant le champ)."
+      - code: sor-fa-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-formulaires
+        prompt: "Quelle longueur minimale de mot de passe faut-il vérifier dans Angular ?"
+        choices:
+          - label: "8 caractères, comme le serveur"
+            correct: true
+            why: "Oui : les deux règles doivent être identiques."
+          - label: "6 caractères, comme aujourd'hui"
+            correct: false
+            why: "Le serveur refuserait les mots de passe de 6 ou 7 caractères."
+          - label: "Aucune : le serveur s'en charge"
+            correct: false
+            why: "Le contrôle côté Angular évite un aller-retour inutile et guide l'utilisatrice."
+        explanation: "Même règle des deux côtés : Angular pour le confort, le serveur pour la sécurité."
+    exercises:
+      - slug: sor-ex-inscription-ts
+        kind: COMPLETER
+        title: "Corriger et compléter onSubmit"
+        difficulty: FACILE
+        skill: angular-formulaires
+        statement: "Complète `onSubmit` : longueur alignée sur le serveur, appel HTTP et gestion de la réponse."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "La même longueur que dans `AuthService` côté Spring."
+          - "On s'abonne à l'Observable pour lancer la requête."
+          - "8, subscribe, next, error."
+        solution: '["8", "subscribe", "next", "error"]'
+        explanation: "`subscribe({ next, error })` : `next` reçoit la réponse réussie, `error` reçoit les erreurs HTTP (400, 409…)."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            if (this.password.length < [[1]]) {
+              this.error = 'Le mot de passe doit contenir au moins 8 caractères';
+              return;
+            }
+            this.userApi.register(body).[[2]]({
+              [[3]]: () => this.router.navigate(['/connexion'], { queryParams: { registered: 1 } }),
+              [[4]]: (err) => this.error = err?.error?.message || 'Inscription impossible'
+            });
+          blanks:
+            - ["8"]
+            - ["subscribe"]
+            - ["next"]
+            - ["error"]
+      - slug: sor-ex-inscription-html
+        kind: CODE_LIBRE
+        title: "TP — Écrire le template d'inscription"
+        difficulty: INTERMEDIAIRE
+        skill: angular-formulaires
+        statement: |
+          Écris le template du formulaire d'inscription :
+          - un `<form>` qui appelle `onSubmit()` à l'envoi ;
+          - quatre champs reliés à `name`, `email`, `username`, `password`, **plus** `password2` (confirmation) ;
+          - chaque champ a un attribut `name` et une **étiquette** `<label>` ;
+          - le champ e-mail est de type `email`, les deux mots de passe de type `password` ;
+          - un bouton de type `submit` ;
+          - si `error` n'est pas vide, un paragraphe avec `role="alert"` affiche `{{ error }}`.
+        criteria: "Formulaire relié à onSubmit, cinq champs liés par ngModel avec name et label, types corrects, bouton submit, erreur accessible."
+        hints:
+          - "`<form (ngSubmit)=\"onSubmit()\"> ... </form>`"
+          - "`<label for=\"email\">E-mail</label> <input id=\"email\" type=\"email\" name=\"email\" [(ngModel)]=\"email\" required />`"
+          - "`@if (error) { <p role=\"alert\">{{ error }}</p> }` et `<button type=\"submit\">Créer mon compte</button>`"
+        solution: |
+          @if (error) {
+            <p class="erreur" role="alert">{{ error }}</p>
+          }
+          <form (ngSubmit)="onSubmit()">
+            <label for="name">Nom complet</label>
+            <input id="name" name="name" [(ngModel)]="name" required />
+
+            <label for="email">E-mail</label>
+            <input id="email" type="email" name="email" [(ngModel)]="email" required />
+
+            <label for="username">Pseudo</label>
+            <input id="username" name="username" [(ngModel)]="username" required />
+
+            <label for="password">Mot de passe (8 caractères minimum)</label>
+            <input id="password" type="password" name="password" [(ngModel)]="password" required minlength="8" />
+
+            <label for="password2">Confirme le mot de passe</label>
+            <input id="password2" type="password" name="password2" [(ngModel)]="password2" required />
+
+            <button type="submit">Créer mon compte</button>
+          </form>
+        explanation: |
+          Chaque champ a une étiquette reliée par `for`/`id` : un lecteur d'écran annonce « E-mail, champ de
+          saisie ». Le message d'erreur a `role="alert"` : il est lu dès qu'il apparaît. `type="email"` et
+          `type="password"` adaptent le clavier sur mobile et masquent la saisie.
+        xp: 35
+        payload:
+          language: html
+          starter: |
+            <!-- Message d'erreur -->
+
+            <!-- Formulaire -->
+          checks:
+            - pattern: '<form[^>]*\(ngSubmit\)\s*=\s*"onSubmit\(\)"'
+              message: "Le formulaire appelle onSubmit() à l'envoi : <form (ngSubmit)=\"onSubmit()\">."
+            - pattern: '\[\(ngModel\)\]\s*=\s*"name"'
+              message: "Il manque le champ relié à name : [(ngModel)]=\"name\"."
+            - pattern: '\[\(ngModel\)\]\s*=\s*"email"'
+              message: "Il manque le champ relié à email."
+            - pattern: '\[\(ngModel\)\]\s*=\s*"username"'
+              message: "Il manque le champ relié à username."
+            - pattern: '\[\(ngModel\)\]\s*=\s*"password"'
+              message: "Il manque le champ relié à password."
+            - pattern: '\[\(ngModel\)\]\s*=\s*"password2"'
+              message: "Il manque le champ de confirmation relié à password2."
+            - pattern: '\A(?>[\s\S]*?<input\b(?=[^>]*\bname\s*=\s*"[^"]+")[^>]*>){5}'
+              message: "Chaque champ avec ngModel doit avoir un attribut name."
+            - pattern: '<input(?=[^>]*type\s*=\s*"email")(?=[^>]*"email")[^>]*>'
+              message: "Le champ e-mail est de type email : type=\"email\"."
+            - pattern: '\A(?>[\s\S]*?type\s*=\s*"password"){2}'
+              message: "Les deux mots de passe sont de type password (saisie masquée)."
+            - pattern: '\A(?>[\s\S]*?<label\b[^>]*>\s*[^<\s]){5}'
+              message: "Chaque champ doit avoir une étiquette <label> avec un texte (cinq au total)."
+            - pattern: '<button[^>]*type\s*=\s*"submit"'
+              message: "Ajoute un bouton <button type=\"submit\">."
+            - pattern: '@if\s*\(\s*error\s*\)\s*\{[\s\S]*role\s*=\s*"alert"[\s\S]*\{\{\s*error\s*\}\}'
+              message: "Affiche l'erreur seulement si elle existe : @if (error) { <p role=\"alert\">{{ error }}</p> }."
+
+  # ===================================================================== LEÇON 2
+  - slug: sor-service-http
+    title: "Appeler l'API : services, HttpClient et Observables"
+    duration: 12
+    objective: "Comprendre UserApiService, utiliser environment.apiUrl et supprimer l'en-tête ajouté deux fois."
+    prerequisites: "Leçon « TP — Reconstruire le formulaire d'inscription »."
+    skills: [angular-services]
+    xp: 25
+    memo: |
+      - Un **service** Angular (`@Injectable({ providedIn: 'root' })`) regroupe le code partagé, comme les appels HTTP.
+      - `HttpClient.post<T>(url, corps)` renvoie un **Observable** : une réponse qui arrivera plus tard.
+      - L'adresse de l'API vient de `environment.apiUrl`, jamais écrite en dur.
+      - L'intercepteur ajoute déjà le jeton : inutile de le rajouter dans chaque service.
+    commonMistakes: |
+      - Écrire `http://localhost:8080` dans le code (cas de Soramfr) : en production, l'application appelle… l'ordinateur de la cliente.
+      - Ajouter l'en-tête `Authorization` à la main **et** dans l'intercepteur.
+      - Oublier de s'abonner : aucune requête ne part.
+      - Mettre des appels HTTP directement dans les composants au lieu d'un service.
+    blocks:
+      - type: text
+        md: |
+          Les composants ne parlent pas directement au serveur : ils passent par un **service**. Dans
+          Soramfr, c'est `UserApiService`.
+      - type: definition
+        id: def-service-angular
+        term: "Service Angular"
+        md: |
+          Un **employé spécialisé** que tous les composants peuvent appeler. Le formulaire d'inscription et la
+          page d'administration ont tous deux besoin de parler à l'API : ils demandent au même service au lieu
+          de réécrire le code chacun de leur côté.
+      - type: definition
+        id: def-observable
+        term: "Observable"
+        md: |
+          Un **ticket de retrait** au pressing : tu le reçois tout de suite, le vêtement (la réponse) arrivera
+          plus tard. `subscribe` revient à dire « préviens-moi quand c'est prêt, ou s'il y a un problème ».
+      - type: code
+        id: code-userapi
+        language: typescript
+        title: "Soramfr — user-api.service.ts (extrait)"
+        code: |
+          const HOST = 'http://localhost:8080';
+          const API  = `${HOST}/api`;
+          const AUTH = `${API}/auth`;
+
+          @Injectable({ providedIn: 'root' })
+          export class UserApiService {
+            private readonly usersUrl = `${API}/users`;
+
+            constructor(private http: HttpClient) {}
+
+            register(payload: RegisterRequest): Observable<AuthResponse> {
+              return this.http.post<AuthResponse>(`${AUTH}/register`, payload);
+            }
+
+            getAll(): Observable<UserDto[]> {
+              return this.http.get<UserDto[]>(this.usersUrl, { headers: this.authHeaders() });
+            }
+
+            private authHeaders(): HttpHeaders {
+              const token = localStorage.getItem('token');
+              return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
+            }
+          }
+        lines:
+          - n: 1
+            note: "**Adresse écrite en dur.** `environment.ts` existe pourtant, avec `apiUrl`."
+          - n: 5
+            note: "`providedIn: 'root'` : un seul exemplaire du service pour toute l'application."
+          - n: 9
+            note: "Angular fournit `HttpClient` par le constructeur (injection de dépendances, comme dans Spring)."
+          - n: 12
+            note: "`post<AuthResponse>` : on annonce le type de la réponse attendue."
+          - n: 16
+            note: "On ajoute l'en-tête `Authorization` à la main…"
+          - n: 19
+            note: "…alors que `AuthInterceptor` l'ajoute déjà à **toutes** les requêtes. Double travail, deux endroits à maintenir."
+      - type: question
+        ref: sor-sh-q1
+        review: def-observable
+      - type: text
+        md: "Exercice guidé : complète un service qui utilise `environment.apiUrl`."
+      - type: exercise
+        ref: sor-ex-service-guide
+      - type: text
+        md: "**Trouver et corriger un bug** : remplace l'adresse en dur et supprime l'en-tête en double."
+      - type: exercise
+        ref: sor-ex-userapi-env
+      - type: jury
+        items:
+          - q: "Comment votre frontend communique-t-il avec le backend ?"
+            a: "Par des services Angular qui utilisent HttpClient. Ils renvoient des Observables auxquels les composants s'abonnent. Un intercepteur ajoute le jeton à chaque requête."
+          - q: "Comment gérez-vous l'adresse de l'API entre le développement et la production ?"
+            a: "Avec les fichiers `environment.ts` et `environment.prod.ts` ; Angular remplace l'un par l'autre au build de production (`fileReplacements`)."
+      - type: quiz
+        items:
+          - ref: sor-sh-q2
+            review: def-service-angular
+          - ref: sor-sh-q3
+            review: code-userapi
+          - ref: sor-sh-q4
+            review: code-userapi
+    questions:
+      - code: sor-sh-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-services
+        prompt: "Que renvoie `this.http.post<AuthResponse>(...)` ?"
+        choices:
+          - label: "Un Observable qui fournira la réponse plus tard"
+            correct: true
+            why: "Oui : la réponse n'est pas encore arrivée au moment du `return`."
+          - label: "Directement l'objet `AuthResponse`"
+            correct: false
+            why: "HTTP prend du temps : Angular ne bloque pas la page en attendant."
+          - label: "Le code de statut HTTP"
+            correct: false
+            why: "Le statut est dans la réponse, qui arrivera via l'Observable."
+        explanation: "HTTP est **asynchrone** : on reçoit un Observable, et on s'abonne pour être prévenu."
+      - code: sor-sh-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-services
+        prompt: "Pourquoi placer les appels HTTP dans un service plutôt que dans chaque composant ?"
+        choices:
+          - label: "Pour les partager entre plusieurs composants et ne les écrire qu'une fois"
+            correct: true
+            why: "Oui : un seul endroit à modifier et à tester."
+          - label: "Parce que les composants ne peuvent pas importer HttpClient"
+            correct: false
+            why: "Ils le pourraient, mais ce serait moins bien organisé."
+          - label: "Pour que les requêtes soient plus rapides"
+            correct: false
+            why: "La vitesse est la même."
+        explanation: "Composant = affichage ; service = logique partagée (HTTP, état…)."
+      - code: sor-sh-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Soramfr est déployé sur Netlify avec `HOST = 'http://localhost:8080'`. Que se passe-t-il pour une cliente ?"
+        choices:
+          - label: "Son navigateur essaie d'appeler un serveur sur son propre ordinateur : échec"
+            correct: true
+            why: "Oui : localhost désigne toujours la machine qui exécute le code, ici celle de la cliente."
+          - label: "Netlify redirige automatiquement vers le bon serveur"
+            correct: false
+            why: "Netlify ne connaît pas l'adresse de ton backend."
+          - label: "Tout fonctionne"
+            correct: false
+            why: "Seulement sur ton ordinateur, où le backend tourne."
+        explanation: "L'adresse de l'API doit venir de `environment.apiUrl`, remplacé par l'adresse de production au build."
+      - code: sor-sh-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: angular-routage
+        prompt: "Si `AuthInterceptor` ajoute déjà le jeton, la méthode `authHeaders()` de `UserApiService` est inutile."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Oui : l'intercepteur s'applique à toutes les requêtes de HttpClient."
+          - label: "Faux"
+            correct: false
+            why: "L'intercepteur couvre déjà ce cas."
+        explanation: "Une seule responsabilité, un seul endroit : l'intercepteur."
+    exercises:
+      - slug: sor-ex-service-guide
+        kind: COMPLETER
+        title: "Un service qui utilise environment.apiUrl"
+        difficulty: FACILE
+        skill: angular-services
+        statement: "Complète le service des produits. Respecte les majuscules."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La propriété de `environment` qui contient l'adresse du backend."
+          - "Lire une liste : verbe HTTP GET, méthode `get` de HttpClient."
+          - "apiUrl, get, Observable."
+        solution: '["apiUrl", "get", "Observable"]'
+        explanation: "`${environment.apiUrl}/api/produits` s'adapte au build ; `get<ProduitDto[]>` renvoie un `Observable<ProduitDto[]>`."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            @Injectable({ providedIn: 'root' })
+            export class ProduitApiService {
+              private readonly url = `${environment.[[1]]}/api/produits`;
+
+              constructor(private http: HttpClient) {}
+
+              lister(): [[3]]<ProduitDto[]> {
+                return this.http.[[2]]<ProduitDto[]>(this.url);
+              }
+            }
+          blanks:
+            - ["apiUrl"]
+            - ["get"]
+            - ["Observable"]
+      - slug: sor-ex-userapi-env
+        kind: CORRIGER_ERREUR
+        title: "Corriger UserApiService"
+        difficulty: INTERMEDIAIRE
+        skill: angular-services
+        statement: |
+          Corrige ce service de Soramfr :
+          1. importe `environment` depuis `'../environments/environment'` et construis `API` avec
+             `environment.apiUrl` (plus aucune adresse `localhost` en dur) ;
+          2. supprime la méthode `authHeaders()` et ses utilisations : l'intercepteur ajoute déjà le jeton.
+        criteria: "Adresse issue de environment.apiUrl ; plus d'en-tête ajouté à la main."
+        hints:
+          - "`import { environment } from '../environments/environment';`"
+          - "`const API = `${environment.apiUrl}/api`;`"
+          - "`return this.http.get<UserDto[]>(this.usersUrl);` sans second argument."
+        solution: |
+          import { Injectable } from '@angular/core';
+          import { HttpClient } from '@angular/common/http';
+          import { Observable } from 'rxjs';
+          import { environment } from '../environments/environment';
+
+          const API = `${environment.apiUrl}/api`;
+          const AUTH = `${API}/auth`;
+
+          @Injectable({ providedIn: 'root' })
+          export class UserApiService {
+            private readonly usersUrl = `${API}/users`;
+
+            constructor(private http: HttpClient) {}
+
+            register(payload: RegisterRequest): Observable<AuthResponse> {
+              return this.http.post<AuthResponse>(`${AUTH}/register`, payload);
+            }
+
+            getAll(): Observable<UserDto[]> {
+              return this.http.get<UserDto[]>(this.usersUrl);
+            }
+
+            delete(id: number): Observable<void> {
+              return this.http.delete<void>(`${this.usersUrl}/${id}`);
+            }
+          }
+        explanation: |
+          L'adresse vient maintenant du fichier d'environnement : `ng build` (configuration production) la
+          remplace par l'adresse Render. Le jeton est ajouté par l'intercepteur, à un seul endroit.
+        xp: 30
+        payload:
+          language: typescript
+          starter: |
+            import { Injectable } from '@angular/core';
+            import { HttpClient, HttpHeaders } from '@angular/common/http';
+            import { Observable } from 'rxjs';
+
+            const HOST = 'http://localhost:8080';
+            const API = `${HOST}/api`;
+            const AUTH = `${API}/auth`;
+
+            @Injectable({ providedIn: 'root' })
+            export class UserApiService {
+              private readonly usersUrl = `${API}/users`;
+
+              constructor(private http: HttpClient) {}
+
+              register(payload: RegisterRequest): Observable<AuthResponse> {
+                return this.http.post<AuthResponse>(`${AUTH}/register`, payload);
+              }
+
+              getAll(): Observable<UserDto[]> {
+                return this.http.get<UserDto[]>(this.usersUrl, { headers: this.authHeaders() });
+              }
+
+              delete(id: number): Observable<void> {
+                return this.http.delete<void>(`${this.usersUrl}/${id}`, { headers: this.authHeaders() });
+              }
+
+              private authHeaders(): HttpHeaders {
+                const token = localStorage.getItem('token');
+                return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
+              }
+            }
+          checks:
+            - pattern: 'localhost'
+              absent: true
+              message: "Plus aucune adresse localhost ne doit être écrite dans le service."
+            - pattern: "import\\s*\\{\\s*environment\\s*\\}\\s*from\\s*['\"]\\.\\./environments/environment['\"]"
+              message: "Importe environment : import { environment } from '../environments/environment';"
+            - pattern: '\$\{\s*environment\.apiUrl\s*\}'
+              message: "Construis l'adresse avec ${environment.apiUrl}."
+            - pattern: 'authHeaders'
+              absent: true
+              message: "Supprime authHeaders() et ses utilisations : l'intercepteur ajoute déjà le jeton."
+            - pattern: 'localStorage'
+              absent: true
+              message: "Le service ne doit plus lire le jeton lui-même."
+            - pattern: 'this\.http\.get<UserDto\[\]>\(\s*this\.usersUrl\s*\)'
+              message: "getAll : return this.http.get<UserDto[]>(this.usersUrl);"
+
+  # ===================================================================== LEÇON 3
+  - slug: sor-guards
+    title: "Routes et gardes : le bug du roleGuard"
+    duration: 13
+    objective: "Lire app.routes.ts, comprendre authGuard et roleGuard, puis trouver et corriger le bug qui laisse passer tout le monde."
+    prerequisites: "Leçon « Appeler l'API »."
+    skills: [angular-routage]
+    xp: 25
+    memo: |
+      - Une **route** associe une adresse (`/admin`) à un composant (`AdminComponent`).
+      - `canActivate: [authGuard, roleGuard]` : les gardes décident si on peut entrer.
+      - `data: { roles: ['ADMIN'] }` : des informations attachées à la route, lues par le garde.
+      - **Bug de Soramfr** : les routes écrivent `roles`, le garde lit `role` → la liste est toujours vide → tout le monde passe.
+      - Le garde améliore l'expérience ; la vraie sécurité reste côté serveur.
+    commonMistakes: |
+      - Une faute de nom de clé entre la route et le garde (le bug de Soramfr).
+      - Un garde qui fait confiance à une valeur modifiable à la main dans `localStorage` (`demoViewRole`).
+      - Oublier la route `**` pour les adresses inconnues.
+    blocks:
+      - type: text
+        md: |
+          La page `/admin` ne doit s'ouvrir qu'aux administratrices. Soramfr a prévu un **garde** pour ça…
+          mais il laisse passer tout le monde. Tu vas mener l'enquête.
+      - type: definition
+        id: def-route
+        term: "Route"
+        md: |
+          Le **panneau indicateur** de l'application : « adresse `/panier` → afficher `PanierComponent` ».
+          Angular change de page sans recharger le site.
+      - type: definition
+        id: def-garde
+        term: "Garde (guard)"
+        md: |
+          Le **portier** d'une page. Avant d'afficher la page, Angular lui demande « je peux entrer ? ». Il
+          répond `true` (entrée) ou `false` (et peut rediriger ailleurs).
+      - type: code
+        id: code-routes
+        language: typescript
+        title: "Soramfr — app.routes.ts (extrait)"
+        code: |
+          export const routes: Routes = [
+              { path: '', redirectTo: 'accueil', pathMatch: 'full' },
+              { path: 'connexion', component: ConnexionComponent },
+              { path: 'produits', component: ProduitsComponent, canActivate: [authGuard, roleGuard], data: { roles: ['USER'] } },
+              { path: 'admin', component: AdminComponent, canActivate: [authGuard, roleGuard], data: { roles: ['ADMIN'] } },
+              { path: '**', redirectTo: 'accueil' }
+          ];
+        lines:
+          - n: 2
+            note: "L'adresse vide redirige vers l'accueil."
+          - n: 4
+            note: "Deux gardes, puis `data: { roles: ['USER'] }` : la liste des rôles autorisés. La clé s'appelle **`roles`**."
+          - n: 5
+            note: "La page admin : réservée à `['ADMIN']`."
+          - n: 6
+            note: "`**` : toute adresse inconnue renvoie à l'accueil."
+      - type: code
+        id: code-roleguard
+        language: typescript
+        title: "Soramfr — role.guard.ts (extrait)"
+        code: |
+          export const roleGuard: CanActivateFn = (route, state) => {
+            const auth = inject(AuthService);
+            const router = inject(Router);
+            const expected = (route.data?.['role'] as Array<'ADMIN' | 'USER'>) ?? [];
+            const user = auth.getUser();
+            const view = (localStorage.getItem('demoViewRole') as 'ADMIN' | 'USER' | null);
+            const role = (user?.role as any) ?? view ?? null;
+            if (!role) {
+              router.navigate(['/connexion'], { queryParams: { redirect: state.url } });
+              return false;
+            }
+            if (expected.length && !expected.includes(role)) {
+              router.navigate([role === 'ADMIN' ? '/admin' : '/produits']);
+              return false;
+            }
+            return true;
+          };
+        lines:
+          - n: 2
+            note: "`inject(...)` : dans une fonction, on demande les services à Angular avec `inject`."
+          - n: 4
+            note: "Le garde lit `route.data['role']`… **sans s**. La route a écrit `roles`. Résultat : `undefined`, donc `?? []` → liste vide."
+          - n: 6
+            note: "Il lit aussi `demoViewRole`, une valeur que n'importe qui peut modifier dans les outils du navigateur."
+          - n: 12
+            note: "Avec une liste vide, `expected.length` vaut 0 : la condition est fausse… et on arrive au `return true`. **Tout le monde passe.**"
+      - type: question
+        ref: sor-g-q1
+        review: code-roleguard
+      - type: text
+        md: "Exercice guidé : complète la déclaration de la route d'administration."
+      - type: exercise
+        ref: sor-ex-route-guide
+      - type: text
+        md: "**Trouver et corriger un bug** : répare `roleGuard`."
+      - type: exercise
+        ref: sor-ex-role-guard
+      - type: jury
+        items:
+          - q: "Comment protégez-vous les pages côté Angular ?"
+            a: "Avec des gardes `canActivate` : `authGuard` vérifie la connexion, `roleGuard` compare le rôle de l'utilisateur à la liste `roles` déclarée dans la route."
+          - q: "Avez-vous rencontré des bugs ? Comment les avez-vous trouvés ?"
+            a: |
+              « Oui : mon garde de rôle lisait la clé `role` alors que mes routes déclaraient `roles`. La liste
+              était toujours vide, donc tout le monde passait. Je l'ai trouvé en testant la page admin avec un
+              compte USER, puis en affichant `route.data` dans la console. »
+            tip: "Raconter un vrai bug, avec la méthode pour le trouver, montre ta démarche de développeuse."
+      - type: quiz
+        items:
+          - ref: sor-g-q2
+            review: def-garde
+          - ref: sor-g-q3
+            review: code-routes
+          - ref: sor-g-q4
+            review: code-roleguard
+    questions:
+      - code: sor-g-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: angular-routage
+        prompt: "Pourquoi une cliente (USER) peut-elle ouvrir `/admin` dans Soramfr ?"
+        choices:
+          - label: "Le garde lit `data['role']` alors que la route déclare `roles` : la liste est vide, donc tout passe"
+            correct: true
+            why: "Oui : une simple lettre manquante."
+          - label: "La route `/admin` n'a aucun garde"
+            correct: false
+            why: "Elle a bien `[authGuard, roleGuard]`."
+          - label: "Le serveur renvoie le rôle ADMIN à tout le monde"
+            correct: false
+            why: "Le serveur renvoie USER à une cliente ordinaire."
+        explanation: "La route écrit `roles`, le garde lit `role` : `undefined ?? []` donne une liste vide, et `expected.length && …` est faux."
+      - code: sor-g-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-routage
+        prompt: "Que renvoie un garde pour **refuser** l'accès à une page ?"
+        choices:
+          - label: "`false` (ou une redirection)"
+            correct: true
+            why: "Oui."
+          - label: "`true`"
+            correct: false
+            why: "`true` autorise l'accès."
+          - label: "Un code HTTP 403"
+            correct: false
+            why: "Un garde Angular ne renvoie pas de code HTTP ; c'est le serveur qui le fait."
+        explanation: "`CanActivateFn` renvoie `true`, `false` ou un `UrlTree` (redirection)."
+      - code: sor-g-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-routage
+        prompt: "À quoi sert la route `{ path: '**', redirectTo: 'accueil' }` ?"
+        choices:
+          - label: "À renvoyer vers l'accueil toute adresse inconnue"
+            correct: true
+            why: "Oui : `**` correspond à tout ce qui n'a pas été trouvé avant."
+          - label: "À protéger toutes les pages"
+            correct: false
+            why: "Aucun garde n'est déclaré sur cette route."
+          - label: "À charger toutes les pages d'un coup"
+            correct: false
+            why: "Elle ne charge rien, elle redirige."
+        explanation: "La route joker se place toujours **en dernier**."
+      - code: sor-g-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: angular-routage
+        prompt: "Lire le rôle dans `localStorage.getItem('demoViewRole')` est fiable pour un garde."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : n'importe qui peut écrire `ADMIN` dans son `localStorage` via les outils du navigateur."
+          - label: "Faux"
+            correct: true
+            why: "Exact : cette valeur est modifiable à la main."
+        explanation: "Le garde doit s'appuyer sur le rôle reçu du serveur (dans le jeton), et le serveur doit revérifier."
+    exercises:
+      - slug: sor-ex-route-guide
+        kind: COMPLETER
+        title: "Déclarer la route d'administration"
+        difficulty: FACILE
+        skill: angular-routage
+        statement: "Complète la route. Respecte les majuscules."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La propriété qui liste les gardes : can…"
+          - "La clé de `data` lue par le garde corrigé (au pluriel)."
+          - "canActivate, roles, ADMIN."
+        solution: '["canActivate", "roles", "ADMIN"]'
+        explanation: "`canActivate` liste les gardes ; `data.roles` liste les rôles autorisés, lus par `roleGuard`."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            { path: 'admin', component: AdminComponent, [[1]]: [authGuard, roleGuard], data: { [[2]]: ['[[3]]'] } }
+          blanks:
+            - ["canActivate"]
+            - ["roles"]
+            - ["ADMIN"]
+      - slug: sor-ex-role-guard
+        kind: CORRIGER_ERREUR
+        title: "Réparer roleGuard"
+        difficulty: INTERMEDIAIRE
+        skill: angular-routage
+        statement: |
+          Corrige le garde :
+          1. il doit lire la clé **`roles`** déclarée dans les routes ;
+          2. il ne doit plus lire `demoViewRole` : le rôle vient uniquement de `auth.getUser()`.
+        criteria: "Le garde lit data['roles'] et n'utilise plus demoViewRole."
+        hints:
+          - "Une seule lettre manque dans `route.data?.['role']`."
+          - "Supprime la ligne `const view = ...` et le `?? view`."
+          - "`const role = auth.getUser()?.role ?? null;`"
+        solution: |
+          export const roleGuard: CanActivateFn = (route, state) => {
+            const auth = inject(AuthService);
+            const router = inject(Router);
+            const expected = (route.data?.['roles'] as Array<'ADMIN' | 'USER'>) ?? [];
+            const role = auth.getUser()?.role ?? null;
+            if (!role) {
+              router.navigate(['/connexion'], { queryParams: { redirect: state.url } });
+              return false;
+            }
+            if (expected.length && !expected.includes(role)) {
+              router.navigate([role === 'ADMIN' ? '/admin' : '/produits']);
+              return false;
+            }
+            return true;
+          };
+        explanation: |
+          Avec `roles`, la liste attendue n'est plus vide : une cliente qui tape `/admin` est renvoyée vers
+          `/produits`. Et le rôle ne dépend plus d'une valeur modifiable à la main. Rappel : c'est quand même le
+          serveur (`hasRole("ADMIN")`) qui protège réellement les données.
+        xp: 30
+        payload:
+          language: typescript
+          starter: |
+            export const roleGuard: CanActivateFn = (route, state) => {
+              const auth = inject(AuthService);
+              const router = inject(Router);
+              const expected = (route.data?.['role'] as Array<'ADMIN' | 'USER'>) ?? [];
+              const user = auth.getUser();
+              const view = (localStorage.getItem('demoViewRole') as 'ADMIN' | 'USER' | null);
+              const role = (user?.role as any) ?? view ?? null;
+              if (!role) {
+                router.navigate(['/connexion'], { queryParams: { redirect: state.url } });
+                return false;
+              }
+              if (expected.length && !expected.includes(role)) {
+                router.navigate([role === 'ADMIN' ? '/admin' : '/produits']);
+                return false;
+              }
+              return true;
+            };
+          checks:
+            - pattern: "data\\?\\.\\[\\s*['\"]roles['\"]\\s*\\]|data\\?\\.roles\\b|data\\[\\s*['\"]roles['\"]\\s*\\]"
+              message: "Le garde doit lire la clé roles (avec un s), comme dans les routes."
+            - pattern: "\\[\\s*['\"]role['\"]\\s*\\]"
+              absent: true
+              message: "La clé 'role' (sans s) n'existe pas dans les routes : remplace-la."
+            - pattern: 'demoViewRole'
+              absent: true
+              message: "Ne lis plus demoViewRole : cette valeur peut être modifiée à la main."
+            - pattern: 'auth\.getUser\(\)'
+              message: "Le rôle vient de auth.getUser()."
+            - pattern: 'expected\.includes\(\s*role\s*\)'
+              message: "Garde la comparaison expected.includes(role)."
+
+  # ===================================================================== LEÇON 4
+  - slug: sor-intercepteur
+    title: "L'intercepteur, le jeton et la déconnexion"
+    duration: 12
+    objective: "Comprendre AuthInterceptor et corriger la déconnexion incomplète de la page produits."
+    prerequisites: "Leçon « Routes et gardes »."
+    skills: [angular-routage, auth-jwt]
+    xp: 25
+    memo: |
+      - Un **intercepteur** modifie **toutes** les requêtes HTTP au passage : il ajoute `Authorization: Bearer <jeton>`.
+      - Il surveille aussi les réponses : sur **401**, il déconnecte et renvoie vers la connexion.
+      - `AuthService.logout()` efface `currentUser`, `demoViewRole` et `token`, puis redirige.
+      - **Bug de Soramfr** : `ProduitsComponent.logout()` efface seulement `demoViewRole` : le jeton et l'utilisateur restent, on est toujours « connecté ».
+      - Une seule méthode de déconnexion, appelée partout.
+    commonMistakes: |
+      - Réécrire la déconnexion dans chaque composant au lieu d'appeler le service.
+      - Considérer qu'on est connecté parce qu'une valeur existe dans `localStorage`, sans regarder si le jeton a expiré.
+      - Oublier que le serveur ne sait pas que l'on s'est déconnecté (jeton encore valable).
+    blocks:
+      - type: text
+        md: |
+          Comment le jeton arrive-t-il dans chaque requête sans qu'on l'ajoute à la main ? Grâce à
+          l'**intercepteur**. Et comment se déconnecte-t-on proprement ? Regardons.
+      - type: definition
+        id: def-intercepteur
+        term: "Intercepteur HTTP"
+        md: |
+          Le **service courrier** de l'entreprise : chaque lettre qui sort passe par lui, et il y colle
+          automatiquement le tampon officiel (le jeton). Il ouvre aussi les réponses : si l'une dit « accès
+          refusé, identité inconnue » (401), il te déconnecte.
+      - type: code
+        id: code-interceptor
+        language: typescript
+        title: "Soramfr — auth.interceptor.ts (extrait)"
+        code: |
+          intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+            const token = this.auth.getToken();
+            const authReq = token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
+            return next.handle(authReq).pipe(
+              catchError((err: HttpErrorResponse) => {
+                if (err.status === 401) {
+                  this.auth.logout();
+                }
+                return throwError(() => err);
+              })
+            );
+          }
+        lines:
+          - n: 2
+            note: "On lit le jeton rangé dans `localStorage`."
+          - n: 3
+            note: "Une requête HTTP ne se modifie pas : on la **clone** en ajoutant l'en-tête."
+          - n: 4
+            note: "`next.handle` envoie la requête ; `pipe` permet de traiter la réponse."
+          - n: 6
+            note: "Sur 401 : on nettoie et on renvoie vers la connexion. (Comme Soramfr répond 403 sans jeton, ce cas n'arrive presque jamais : d'où l'intérêt du point d'entrée 401 côté serveur.)"
+          - n: 9
+            note: "On relance l'erreur pour que le composant puisse aussi l'afficher."
+      - type: question
+        ref: sor-i-q1
+        review: code-interceptor
+      - type: compare
+        left:
+          title: "Soramfr — AuthService.logout()"
+          good: true
+          language: typescript
+          code: |
+            logout(): void {
+              localStorage.removeItem(this.KEY_USER);
+              localStorage.removeItem(this.KEY_VIEW);
+              localStorage.removeItem(this.KEY_TOKEN);
+              this.router.navigate(['/connexion']);
+            }
+        right:
+          title: "Soramfr — ProduitsComponent.logout()"
+          good: false
+          language: typescript
+          code: |
+            logout(){
+              localStorage.removeItem('demoViewRole');
+              this.router.navigate(['/connexion']);
+            }
+      - type: callout
+        variant: warning
+        title: "Le bug"
+        md: |
+          Après un clic sur « Se déconnecter » dans la page produits, `token` et `currentUser` restent dans
+          le navigateur. `isLoggedIn()` répond toujours `true`. Sur un ordinateur partagé, la personne suivante
+          retrouve la session ouverte.
+      - type: question
+        ref: sor-i-q2
+        review: code-interceptor
+      - type: text
+        md: "Exercice guidé : complète l'ajout de l'en-tête dans l'intercepteur."
+      - type: exercise
+        ref: sor-ex-intercepteur-guide
+      - type: text
+        md: "**Trouver et corriger un bug** : répare la déconnexion de la page produits."
+      - type: exercise
+        ref: sor-ex-logout
+      - type: jury
+        items:
+          - q: "À quoi sert votre intercepteur ?"
+            a: "À ajouter automatiquement l'en-tête `Authorization: Bearer` à chaque requête, et à déconnecter l'utilisateur si le serveur répond 401."
+          - q: "Que se passe-t-il à la déconnexion ?"
+            a: |
+              « Le jeton et les informations de l'utilisateur sont effacés du navigateur, puis on revient à la
+              page de connexion. Le jeton reste techniquement valable jusqu'à son expiration : une amélioration
+              serait une révocation côté serveur. »
+      - type: quiz
+        items:
+          - ref: sor-i-q3
+            review: def-intercepteur
+          - ref: sor-i-q4
+            review: code-interceptor
+          - ref: sor-i-q5
+    questions:
+      - code: sor-i-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-routage
+        prompt: "Pourquoi l'intercepteur utilise-t-il `req.clone(...)` ?"
+        choices:
+          - label: "Parce qu'une requête HTTP d'Angular ne peut pas être modifiée : on en crée une copie modifiée"
+            correct: true
+            why: "Oui : les objets `HttpRequest` sont immuables."
+          - label: "Pour envoyer la requête deux fois"
+            correct: false
+            why: "Seule la copie est envoyée."
+          - label: "Pour sauvegarder la requête dans `localStorage`"
+            correct: false
+            why: "Rien n'est sauvegardé."
+        explanation: "Immuabilité : on ne modifie pas, on copie en changeant ce qu'on veut."
+      - code: sor-i-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-routage
+        prompt: "Après le `logout()` de la page produits, que répond `auth.isLoggedIn()` ?"
+        choices:
+          - label: "`true`, car `currentUser` est toujours dans `localStorage`"
+            correct: true
+            why: "Oui : seule `demoViewRole` a été effacée."
+          - label: "`false`"
+            correct: false
+            why: "`isLoggedIn` regarde aussi `currentUser`, qui n'a pas été effacé."
+          - label: "Une erreur"
+            correct: false
+            why: "La méthode fonctionne, mais avec un résultat trompeur."
+        explanation: "Une déconnexion doit tout effacer : on appelle `auth.logout()`, écrit une seule fois."
+      - code: sor-i-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-routage
+        prompt: "À quelles requêtes s'applique un intercepteur HttpClient ?"
+        choices:
+          - label: "À toutes les requêtes faites avec HttpClient"
+            correct: true
+            why: "Oui : c'est tout son intérêt."
+          - label: "Seulement à la requête de connexion"
+            correct: false
+            why: "Il s'applique partout."
+          - label: "Seulement aux requêtes vers Google"
+            correct: false
+            why: "Il ne dépend pas de l'adresse, sauf si on le programme ainsi."
+        explanation: "Un seul endroit pour une règle commune à toutes les requêtes."
+      - code: sor-i-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-routage
+        prompt: "Pourquoi l'intercepteur relance-t-il l'erreur avec `throwError(() => err)` ?"
+        choices:
+          - label: "Pour que le composant qui a fait l'appel puisse aussi réagir (afficher un message)"
+            correct: true
+            why: "Oui : sinon l'erreur serait « avalée »."
+          - label: "Pour recommencer la requête"
+            correct: false
+            why: "Ce serait `retry`."
+          - label: "Pour fermer l'application"
+            correct: false
+            why: "Rien ne se ferme."
+        explanation: "L'intercepteur traite ce qui est commun (401) et laisse le reste au composant."
+      - code: sor-i-q5
+        kind: VRAI_FAUX
+        difficulty: 3
+        skill: auth-jwt
+        prompt: "Si le jeton est expiré, `isLoggedIn()` de Soramfr répond `false`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : il regarde seulement si des valeurs existent dans `localStorage`, pas la date d'expiration du jeton."
+          - label: "Faux"
+            correct: true
+            why: "Exact : l'interface croit la personne connectée jusqu'au premier refus du serveur."
+        explanation: "Amélioration : lire `exp` dans le jeton, ou demander au serveur (`/api/me`) au démarrage."
+    exercises:
+      - slug: sor-ex-intercepteur-guide
+        kind: COMPLETER
+        title: "Ajouter l'en-tête dans l'intercepteur"
+        difficulty: FACILE
+        skill: angular-routage
+        statement: "Complète l'intercepteur. Respecte les majuscules."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "On copie la requête : méthode `clone`."
+          - "Le nom de l'en-tête HTTP qui transporte le jeton."
+          - "clone, Authorization, Bearer."
+        solution: '["clone", "Authorization", "Bearer"]'
+        explanation: "`req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })` : copie de la requête avec l'en-tête."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            const authReq = token
+              ? req.[[1]]({ setHeaders: { [[2]]: `[[3]] ${token}` } })
+              : req;
+          blanks:
+            - ["clone"]
+            - ["Authorization"]
+            - ["Bearer"]
+      - slug: sor-ex-logout
+        kind: CORRIGER_ERREUR
+        title: "Réparer la déconnexion de la page produits"
+        difficulty: FACILE
+        skill: angular-routage
+        statement: |
+          Corrige `ProduitsComponent` :
+          1. injecte `AuthService` dans le constructeur (`private auth: AuthService`) ;
+          2. `logout()` appelle simplement `this.auth.logout()`, qui efface tout et redirige.
+        criteria: "La page produits utilise la déconnexion complète du service."
+        hints:
+          - "Ajoute `private auth: AuthService` dans les paramètres du constructeur."
+          - "Supprime le `localStorage.removeItem('demoViewRole')`."
+          - "`logout() { this.auth.logout(); }`"
+        solution: |
+          constructor(
+            private ps: ProductService,
+            private route: ActivatedRoute,
+            private auth: AuthService
+          ) {}
+
+          logout(): void {
+            this.auth.logout();
+          }
+        explanation: |
+          La déconnexion est écrite **une seule fois**, dans `AuthService`. Tous les composants l'appellent :
+          si on ajoute un jour une information à effacer, on ne modifie qu'un endroit.
+        xp: 20
+        payload:
+          language: typescript
+          starter: |
+            constructor(
+              private ps: ProductService,
+              private route: ActivatedRoute,
+              private router: Router
+            ) {}
+
+            logout() {
+              localStorage.removeItem('demoViewRole');
+              this.router.navigate(['/connexion']);
+            }
+          checks:
+            - pattern: 'private\s+auth\s*:\s*AuthService'
+              message: "Injecte le service : private auth: AuthService dans le constructeur."
+            - pattern: 'logout\s*\(\s*\)\s*(:\s*void\s*)?\{\s*this\.auth\.logout\(\)\s*;?\s*\}'
+              message: "logout() doit seulement appeler this.auth.logout();"
+            - pattern: 'localStorage'
+              absent: true
+              message: "Le composant ne doit plus toucher lui-même à localStorage."
+
+  # ===================================================================== LEÇON 5
+  - slug: sor-panier
+    title: "Le panier : un bug d'ajout et un total calculé"
+    duration: 12
+    objective: "Lire le composant panier, comprendre le getter total et corriger la méthode add."
+    prerequisites: "Leçon « L'intercepteur, le jeton et la déconnexion »."
+    skills: [angular-composants, typescript]
+    xp: 25
+    memo: |
+      - Le panier est stocké dans `localStorage` sous forme de liste « à plat » (un élément par unité), puis regroupé en lignes `{ produits, quantite }`.
+      - `get total()` : un **getter**, recalculé à chaque lecture avec `reduce`.
+      - **Bug de Soramfr** : `add()` n'augmente la quantité que si le produit est **déjà** dans le panier ; sinon, il ne fait rien.
+      - Le total est **calculé**, jamais stocké : il ne peut pas être faux.
+    commonMistakes: |
+      - Oublier le cas « l'élément n'existe pas encore » dans une fonction d'ajout.
+      - Stocker le total à part : il faut penser à le mettre à jour à chaque changement.
+      - `alert('commande confirmer !')` : une alerte bloquante et une faute d'accord ; préférer un message dans la page.
+    blocks:
+      - type: text
+        md: |
+          Le panier est une vraie petite mécanique. On va la lire, puis corriger une erreur de logique
+          classique : oublier un cas.
+      - type: definition
+        id: def-getter
+        term: "Getter"
+        md: |
+          Une méthode déguisée en propriété : on écrit `panier.total` sans parenthèses, mais le calcul se
+          refait à chaque lecture. C'est une **balance de cuisine** : elle affiche toujours le poids actuel,
+          on n'a jamais à le noter à la main.
+      - type: definition
+        id: def-reduce
+        term: "reduce"
+        md: |
+          Parcourt une liste en **accumulant** un résultat. Comme passer à la caisse : on part de 0, et à chaque
+          article on ajoute prix × quantité.
+      - type: code
+        id: code-panier
+        language: typescript
+        title: "Soramfr — panier.component.ts (extrait)"
+        code: |
+          panier: { produits: Product; quantite: number }[] = [];
+
+          get total(): number {
+            return this.panier.reduce((s, it) => s + it.produits.price * it.quantite, 0);
+          }
+
+          add(produits: Product): void {
+            const x = this.panier.find(i => i.produits.id === produits.id);
+            if (x) x.quantite++;
+            this.save();
+          }
+        lines:
+          - n: 1
+            note: "Chaque ligne du panier : un produit et sa quantité."
+          - n: 3
+            note: "`get total()` : on lira `this.total` comme une propriété."
+          - n: 4
+            note: "`reduce` : `s` est la somme en cours (départ : `0`), `it` la ligne courante."
+          - n: 8
+            note: "`find` cherche la ligne du produit ; renvoie `undefined` si elle n'existe pas."
+          - n: 9
+            note: "**Le bug** : si `x` n'existe pas, rien ne se passe. Le produit n'est jamais ajouté."
+      - type: question
+        ref: sor-pa-q1
+        review: code-panier
+      - type: text
+        md: "Exercice guidé : complète le calcul du total."
+      - type: exercise
+        ref: sor-ex-total-guide
+      - type: text
+        md: "**Trouver et corriger un bug** : répare `add()`."
+      - type: exercise
+        ref: sor-ex-panier-add
+      - type: jury
+        items:
+          - q: "Pourquoi le total n'est-il pas stocké ?"
+            a: "Parce qu'il se calcule à partir des lignes. Un getter le recalcule à chaque affichage : il est toujours juste. C'est la même idée qu'en base : on ne stocke pas une donnée calculable."
+          - q: "Où est enregistré le panier ?"
+            a: "« Dans le localStorage du navigateur. C'est simple, mais le panier est perdu si on change d'appareil ; l'évolution prévue est de l'enregistrer en base via une API. »"
+      - type: quiz
+        items:
+          - ref: sor-pa-q2
+            review: def-getter
+          - ref: sor-pa-q3
+            review: def-reduce
+          - ref: sor-pa-q4
+            review: code-panier
+    questions:
+      - code: sor-pa-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: typescript
+        prompt: "Le panier contient seulement l'alarme (id 6). On appelle `add(coqueSOS)` (id 7). Que se passe-t-il ?"
+        choices:
+          - label: "Rien : `find` renvoie `undefined`, et aucun `else` n'ajoute la coque"
+            correct: true
+            why: "Oui : c'est le bug."
+          - label: "La coque est ajoutée avec la quantité 1"
+            correct: false
+            why: "Il manque justement ce cas dans le code."
+          - label: "L'alarme passe à la quantité 2"
+            correct: false
+            why: "`find` cherche l'id 7, pas l'id 6."
+        explanation: "Toujours penser aux deux cas : l'élément existe déjà (on augmente) / il n'existe pas (on ajoute)."
+      - code: sor-pa-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: typescript
+        prompt: "Comment lit-on le total dans le template, avec `get total()` ?"
+        choices:
+          - label: "`{{ total }}`, sans parenthèses"
+            correct: true
+            why: "Oui : un getter se lit comme une propriété."
+          - label: "`{{ total() }}`"
+            correct: false
+            why: "Les parenthèses sont pour une méthode classique ou un signal."
+          - label: "`{{ get.total }}`"
+            correct: false
+            why: "`get` est un mot-clé de déclaration, pas un objet."
+        explanation: "`get total()` se lit `total`."
+      - code: sor-pa-q3
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: typescript
+        prompt: "Que renvoie ce code ?"
+        snippet: |
+          const lignes = [{ prix: 20, quantite: 2 }, { prix: 15, quantite: 1 }];
+          lignes.reduce((s, l) => s + l.prix * l.quantite, 0);
+        language: typescript
+        choices:
+          - label: "55"
+            correct: true
+            why: "0 + 20 × 2 + 15 × 1 = 55."
+          - label: "35"
+            correct: false
+            why: "C'est la somme des prix sans les quantités."
+          - label: "3"
+            correct: false
+            why: "C'est le nombre d'articles."
+        explanation: "`reduce` part de 0 et ajoute prix × quantité de chaque ligne."
+      - code: sor-pa-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: typescript
+        prompt: "`this.panier.find(...)` renvoie `undefined` quand aucun élément ne correspond."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Oui : c'est pour ça qu'il faut tester le résultat."
+          - label: "Faux"
+            correct: false
+            why: "`find` ne lève pas d'erreur : il renvoie `undefined`."
+        explanation: "Après un `find`, on gère toujours le cas `undefined`."
+    exercises:
+      - slug: sor-ex-total-guide
+        kind: COMPLETER
+        title: "Compléter le calcul du total"
+        difficulty: FACILE
+        skill: typescript
+        statement: "Complète le getter du total."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La méthode qui accumule un résultat sur une liste."
+          - "On multiplie le prix par la quantité."
+          - "reduce, quantite, 0."
+        solution: '["reduce", "quantite", "0"]'
+        explanation: "`reduce((somme, ligne) => somme + prix × quantité, 0)` : le `0` est la valeur de départ."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            get total(): number {
+              return this.panier.[[1]]((s, it) => s + it.produits.price * it.[[2]], [[3]]);
+            }
+          blanks:
+            - ["reduce"]
+            - ["quantite"]
+            - ["0"]
+      - slug: sor-ex-panier-add
+        kind: CORRIGER_ERREUR
+        title: "Réparer l'ajout au panier"
+        difficulty: FACILE
+        skill: typescript
+        statement: |
+          Corrige `add()` : si le produit est déjà dans le panier, sa quantité augmente de 1 ; **sinon**, ajoute
+          une nouvelle ligne `{ produits, quantite: 1 }` avec `this.panier.push(...)`. N'oublie pas `this.save()`.
+        criteria: "Les deux cas sont traités, puis le panier est sauvegardé."
+        hints:
+          - "Il manque un `else`."
+          - "`this.panier.push({ produits, quantite: 1 });`"
+          - "`if (x) { x.quantite++; } else { this.panier.push({ produits, quantite: 1 }); } this.save();`"
+        solution: |
+          add(produits: Product): void {
+            const x = this.panier.find(i => i.produits.id === produits.id);
+            if (x) {
+              x.quantite++;
+            } else {
+              this.panier.push({ produits, quantite: 1 });
+            }
+            this.save();
+          }
+        explanation: "La fonction traite maintenant les **deux** cas. `{ produits }` est un raccourci de `{ produits: produits }`."
+        xp: 20
+        payload:
+          language: typescript
+          starter: |
+            add(produits: Product): void {
+              const x = this.panier.find(i => i.produits.id === produits.id);
+              if (x) x.quantite++;
+              this.save();
+            }
+          checks:
+            - pattern: 'x\.quantite\s*(\+\+|\+=\s*1)'
+              message: "Si le produit existe déjà, augmente sa quantité : x.quantite++."
+            - pattern: 'this\.panier\.push\(\s*\{\s*produits(\s*:\s*produits)?\s*,\s*quantite\s*:\s*1\s*\}\s*\)'
+              message: "Sinon, ajoute une ligne : this.panier.push({ produits, quantite: 1 })."
+            - pattern: 'else'
+              message: "Utilise un else pour le cas où le produit n'est pas encore dans le panier."
+            - pattern: 'this\.save\(\)'
+              message: "Sauvegarde le panier à la fin : this.save();"
+
+bank:
+  - code: sor-c5-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: angular-composants
+    prompt: "Quelle syntaxe affiche la variable `nom` dans un template Angular ?"
+    choices:
+      - label: "`{{ nom }}`"
+        correct: true
+        why: "Oui : l'interpolation."
+      - label: "`${nom}`"
+        correct: false
+        why: "C'est la syntaxe des chaînes de caractères TypeScript, pas des templates."
+      - label: "`<nom>`"
+        correct: false
+        why: "Ce serait une balise HTML."
+    explanation: "`{{ }}` affiche une valeur, en échappant le HTML (protection XSS)."
+  - code: sor-c5-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: angular-routage
+    prompt: "Où Angular trouve-t-il la liste des rôles autorisés pour une route ?"
+    choices:
+      - label: "Dans `data` de la route, lu par le garde via `route.data`"
+        correct: true
+        why: "Oui : c'est une information libre attachée à la route."
+      - label: "Dans le jeton, automatiquement"
+        correct: false
+        why: "Le jeton contient le rôle de la personne, pas la liste des rôles de la page."
+      - label: "Dans `angular.json`"
+        correct: false
+        why: "Ce fichier configure le build, pas les routes."
+    explanation: "Route : `data: { roles: ['ADMIN'] }` ; garde : `route.data?.['roles']`."
+  - code: sor-c5-b3
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: angular-services
+    prompt: "Un Observable HTTP d'Angular envoie la requête même si personne ne s'y abonne."
+    choices:
+      - label: "Vrai"
+        correct: false
+        why: "Non : sans `subscribe` (ou `async`), rien n'est envoyé."
+      - label: "Faux"
+        correct: true
+        why: "Exact."
+    explanation: "Les Observables HTTP sont « froids » : l'abonnement déclenche l'appel."
+  - code: sor-c5-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: accessibilite
+    prompt: "Quel attribut fait lire un message d'erreur par les lecteurs d'écran dès son apparition ?"
+    choices:
+      - label: "`role=\"alert\"`"
+        correct: true
+        why: "Oui : le message est annoncé immédiatement."
+      - label: "`style=\"color: red\"`"
+        correct: false
+        why: "La couleur n'est pas perçue par un lecteur d'écran."
+      - label: "`title=\"erreur\"`"
+        correct: false
+        why: "`title` n'est pas annoncé de façon fiable."
+    explanation: "Ne jamais transmettre une information par la couleur seule ; `role=\"alert\"` pour les erreurs."
+  - code: sor-c5-b5
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: angular-services
+    prompt: "Quel fichier Angular remplace `environment.ts` lors d'un build de production ?"
+    choices:
+      - label: "`environment.prod.ts`, grâce à `fileReplacements` dans `angular.json`"
+        correct: true
+        why: "Oui : l'adresse de l'API change sans toucher au code."
+      - label: "`main.ts`"
+        correct: false
+        why: "`main.ts` démarre l'application."
+      - label: "Aucun : il faut modifier le fichier à la main avant chaque build"
+        correct: false
+        why: "C'est justement ce que `fileReplacements` évite."
+    explanation: "Chaque environnement a son fichier ; le build de production fait l'échange automatiquement."

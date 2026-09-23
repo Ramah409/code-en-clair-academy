@@ -1,0 +1,962 @@
+slug: soramfr-soutenance
+position: 8
+level: EXAMEN
+title: "Présenter Soramfr au jury"
+summary: "Relire son dossier comme un jury, expliquer son code avec une méthode claire, répondre aux questions techniques et présenter un plan d'amélioration crédible."
+quizQuestionCount: 15
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sor-relire-dossier
+    title: "Relire son dossier comme un jury"
+    duration: 13
+    objective: "Repérer et corriger les incohérences du dossier de Soramfr avant la soutenance."
+    prerequisites: "Chapitres précédents du parcours."
+    skills: [oral-cda]
+    xp: 25
+    memo: |
+      Les points du dossier à corriger :
+      - un **seul nom** de projet (le dossier mélange AlertMe, Soramfr et Soramtfr) ;
+      - la **numérotation** des parties et les « (Capture à insérer…) » oubliées ;
+      - le **MCD** en vraie notation Merise, un **MLD** en notation relationnelle, un MPD cohérent (colonne `role`) ;
+      - le **diagramme de cas d'utilisation** annoncé mais absent ;
+      - « MVC » → « API REST en couches » ; « tests unitaires » → « tests d'API avec Postman » (ou de vrais tests JUnit) ;
+      - les fautes techniques (« BCcrypt »), les codes HTTP annoncés (400 au lieu de 401, 403 au lieu de 401).
+    commonMistakes: |
+      - Laisser un texte « à compléter » ou une capture manquante : le jury le remarque immédiatement.
+      - Décrire dans le dossier ce que le code ne fait pas (rôle choisi « par le serveur » alors qu'un sélecteur existe).
+      - Cacher une limite connue : mieux vaut l'annoncer avec sa correction.
+    blocks:
+      - type: text
+        md: |
+          Le jury lit ton dossier **avant** la soutenance. Chaque incohérence devient une question. Relisons-le
+          ensemble, avec ses yeux.
+      - type: definition
+        id: def-coherence
+        term: "Cohérence du dossier"
+        md: |
+          Le dossier, le code et la démonstration doivent **raconter la même histoire**. Si le dossier dit
+          « le rôle est décidé par le serveur » mais que la maquette montre un choix de rôle, le jury doute de
+          tout le reste. C'est comme un CV dont les dates ne concordent pas.
+      - type: steps
+        id: etapes-incoherences
+        title: "Les incohérences relevées dans le dossier de Soramfr"
+        items:
+          - "**Nom du projet** : AlertMe, Soramfr et Soramtfr apparaissent ; le domaine Netlify s'écrit de deux façons dans `CorsConfig`."
+          - "**Plan** : numérotation des parties dans le désordre ; mentions « (Capture à insérer…) » restées dans le texte."
+          - "**Modélisation** : MCD en pattes de corbeau, sans identifiants, avec `total` et `sous_total` ; MLD dessiné comme un schéma, pas en notation relationnelle ; colonne `role` absente de l'image du MPD."
+          - "**UML** : diagramme de cas d'utilisation annoncé mais absent."
+          - "**Architecture** : « MVC » annoncé pour une API REST dont la vue est dans Angular."
+          - "**Sécurité** : maquette de connexion avec choix du rôle ; secret JWT dans `application.properties` ; erreurs 400/404 à la connexion ; 403 sans jeton."
+          - "**Tests** : la partie « tests unitaires » décrit des appels Postman."
+      - type: question
+        ref: sor-rd-q1
+        review: etapes-incoherences
+      - type: callout
+        variant: exam
+        title: "Transformer une faiblesse en point fort"
+        md: |
+          Tu ne peux plus modifier le dossier déposé ? Prépare une phrase pour chaque point : « Dans mon
+          dossier, j'ai écrit X. En relisant, j'ai compris que c'était Y. Voici comment je le corrige. » Le jury
+          évalue aussi ta capacité à **prendre du recul**.
+      - type: text
+        md: "Exercice guidé : remets le plan type d'un dossier de projet CDA dans l'ordre."
+      - type: exercise
+        ref: sor-ex-plan-dossier
+      - type: text
+        md: "En autonomie : corrige les phrases du dossier."
+      - type: exercise
+        ref: sor-ex-phrases-dossier
+      - type: jury
+        items:
+          - q: "Pourquoi trouve-t-on trois noms différents dans votre dossier ?"
+            a: "« Le projet s'appelait AlertMe au début, puis Soramfr. J'ai oublié d'harmoniser certaines parties et le nom de domaine. Le nom retenu est Soramfr. »"
+          - q: "Votre partie « tests unitaires » montre Postman. Est-ce correct ?"
+            a: "« Non : ce sont des tests d'API, manuels, de niveau intégration. Des tests unitaires utiliseraient JUnit et Mockito sur les services ; j'en ai écrit depuis. »"
+      - type: quiz
+        items:
+          - ref: sor-rd-q2
+            review: def-coherence
+          - ref: sor-rd-q3
+            review: etapes-incoherences
+          - ref: sor-rd-q4
+            review: etapes-incoherences
+    questions:
+      - code: sor-rd-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Le dossier annonce un diagramme de cas d'utilisation, mais il n'y figure pas. Que faire ?"
+        choices:
+          - label: "Le préparer pour la soutenance et le montrer en annexe ou à l'oral"
+            correct: true
+            why: "Oui : tu combles le manque et tu montres que tu sais le faire."
+          - label: "Espérer que le jury ne le remarque pas"
+            correct: false
+            why: "Le jury lit le dossier attentivement."
+          - label: "Dire qu'il est inutile"
+            correct: false
+            why: "C'est un livrable attendu en conception."
+        explanation: "Un manque signalé et comblé vaut mieux qu'un manque découvert par le jury."
+      - code: sor-rd-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Reconnaître une limite de son projet devant le jury fait forcément perdre des points."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : le jury apprécie le recul, surtout avec une solution."
+          - label: "Faux"
+            correct: true
+            why: "Exact : c'est une compétence attendue d'une professionnelle."
+        explanation: "Limite + correction proposée = preuve de maturité technique."
+      - code: sor-rd-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Comment décrire correctement l'architecture de Soramfr dans le dossier ?"
+        choices:
+          - label: "Une application trois tiers : frontend Angular, API REST Spring Boot en couches, base PostgreSQL"
+            correct: true
+            why: "Oui : c'est exact et complet."
+          - label: "Une application MVC en Spring avec des vues JSP"
+            correct: false
+            why: "Il n'y a pas de vue côté Spring."
+          - label: "Un site statique"
+            correct: false
+            why: "Il y a un backend et une base."
+        explanation: "Nommer précisément l'architecture montre que tu la comprends."
+      - code: sor-rd-q4
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "Qu'attend le jury pour la modélisation des données ?"
+        choices:
+          - label: "Un MCD Merise avec identifiants et cardinalités min,max"
+            correct: true
+            why: "Oui."
+          - label: "Un MLD en notation relationnelle (clé primaire soulignée, # pour les clés étrangères)"
+            correct: true
+            why: "Oui."
+          - label: "Un MPD cohérent avec le code (les mêmes colonnes)"
+            correct: true
+            why: "Oui : la colonne `role` doit y être… et dans le code."
+          - label: "Uniquement une capture de pgAdmin"
+            correct: false
+            why: "Une capture ne remplace pas les modèles."
+        explanation: "MCD → MLD → MPD : trois niveaux cohérents entre eux et avec le code."
+    exercises:
+      - slug: sor-ex-plan-dossier
+        kind: REMETTRE_ORDRE
+        title: "Le plan type du dossier de projet"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Remets les parties du dossier dans un ordre logique."
+        criteria: "Du contexte vers la technique, puis le bilan."
+        hints:
+          - "On commence par présenter le besoin."
+          - "La conception vient avant la réalisation."
+          - "Tests, puis bilan et perspectives à la fin."
+        solution: |
+          1. Présentation du projet et du besoin
+          2. Cahier des charges et fonctionnalités
+          3. Conception : UML, MCD, MLD, maquettes
+          4. Architecture et choix techniques
+          5. Réalisation : extraits de code commentés
+          6. Sécurité
+          7. Tests
+          8. Déploiement
+          9. Bilan, difficultés et perspectives
+        explanation: "Le dossier suit la vie du projet : besoin, conception, réalisation, vérification, bilan."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Présentation du projet et du besoin"
+            - "Cahier des charges et fonctionnalités"
+            - "Conception : UML, MCD, MLD, maquettes"
+            - "Architecture et choix techniques"
+            - "Réalisation : extraits de code commentés"
+            - "Sécurité"
+            - "Tests"
+            - "Déploiement"
+            - "Bilan, difficultés et perspectives"
+          alternatives:
+            - [0, 1, 3, 2, 4, 5, 6, 7, 8]
+            - [0, 1, 2, 3, 4, 6, 5, 7, 8]
+      - slug: sor-ex-phrases-dossier
+        kind: COMPLETER
+        title: "Corriger les phrases du dossier"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: "Complète chaque phrase corrigée avec le mot juste."
+        criteria: "Les cinq trous sont corrects."
+        hints:
+          - "Les tests d'une classe seule en Java se font avec… (un framework de tests)."
+          - "Un mauvais mot de passe renvoie le code… ; un accès sans jeton aussi."
+          - "JUnit, 401, 401, haché, BCrypt."
+        solution: '["JUnit", "401", "401", "haché", "BCrypt"]'
+        explanation: |
+          - Tests unitaires : **JUnit** (avec Mockito).
+          - Mauvais identifiants et absence de jeton : **401**.
+          - Le mot de passe est **haché** avec **BCrypt** (et non « crypté avec BCcrypt »).
+        xp: 15
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Les tests unitaires du service d'inscription sont écrits avec [[1]] et Mockito.
+            Un mauvais mot de passe renvoie le code [[2]].
+            Une requête sans jeton vers une route protégée renvoie le code [[3]].
+            Le mot de passe est [[4]] avec l'algorithme [[5]].
+          blanks:
+            - ["JUnit", "JUnit 5"]
+            - ["401"]
+            - ["401"]
+            - ["haché", "hache"]
+            - ["BCrypt"]
+
+  # ===================================================================== LEÇON 2
+  - slug: sor-expliquer-code
+    title: "Expliquer son code comme devant le jury"
+    duration: 14
+    objective: "Appliquer une méthode en six temps pour présenter n'importe quel extrait de code de Soramfr."
+    prerequisites: "Leçon « Relire son dossier comme un jury »."
+    skills: [oral-cda]
+    xp: 30
+    memo: |
+      La méthode en six temps :
+      1. **Contexte** : où est ce code, à quel moment il s'exécute.
+      2. **Rôle** : à quoi il sert, en une phrase.
+      3. **Lecture** : les lignes importantes, dans l'ordre d'exécution.
+      4. **Choix** : pourquoi cette solution plutôt qu'une autre.
+      5. **Limite** : ce qui pourrait être mieux.
+      6. **Amélioration** : ce que tu ferais ensuite.
+    commonMistakes: |
+      - Lire le code mot à mot sans dire à quoi il sert.
+      - Utiliser un mot technique qu'on ne sait pas définir (le jury demandera « c'est-à-dire ? »).
+      - Présenter un extrait qu'on n'a pas relu récemment.
+      - Parler trop vite : une idée par phrase.
+    blocks:
+      - type: text
+        md: |
+          Pendant la soutenance, le jury te montrera un extrait de ton code et te demandera : « Expliquez-nous
+          ce passage. » Voici une **méthode** qui marche à tous les coups.
+      - type: definition
+        id: def-methode
+        term: "La méthode en six temps"
+        md: |
+          **Contexte → Rôle → Lecture → Choix → Limite → Amélioration.** C'est comme présenter une pièce
+          d'une maison : où elle est, à quoi elle sert, ce qu'il y a dedans, pourquoi elle est ainsi, ce qui
+          manque, et les travaux prévus.
+      - type: code
+        id: code-exemple-methode
+        language: text
+        title: "Exemple : expliquer JwtAuthFilter"
+        code: |
+          Contexte  : c'est un filtre Spring Security, exécuté avant chaque contrôleur.
+          Rôle      : il reconnaît l'utilisateur grâce au jeton JWT.
+          Lecture   : il lit l'en-tête Authorization, enlève « Bearer », vérifie la signature
+                      et l'expiration avec JwtService, puis dépose l'identité et le rôle
+                      dans le contexte de sécurité.
+          Choix     : un jeton sans état, pour ne pas stocker de session sur le serveur.
+          Limite    : un jeton reste valable jusqu'à son expiration, même après déconnexion.
+          Amélioration : jetons courts et jeton de rafraîchissement révocable.
+        lines:
+          - n: 1
+            note: "On situe le code avant de le lire."
+          - n: 2
+            note: "Une phrase simple, compréhensible par un non-spécialiste."
+          - n: 3
+            note: "Seulement les étapes clés, dans l'ordre d'exécution."
+          - n: 6
+            note: "Le choix est justifié."
+          - n: 7
+            note: "On annonce soi-même la limite."
+          - n: 8
+            note: "Et on termine par une piste concrète."
+      - type: question
+        ref: sor-ec-q1
+        review: def-methode
+      - type: text
+        md: "Exercice guidé : remets l'explication de `AuthService.register` dans l'ordre de la méthode."
+      - type: exercise
+        ref: sor-ex-explication-ordre
+      - type: text
+        md: |
+          En autonomie : **explique un code comme pour un jury**. Rédige l'explication de
+          `SecurityConfig` (règles de sécurité) en suivant les six temps. La vérification contrôle que tu
+          cites les notions essentielles.
+      - type: exercise
+        ref: sor-ex-expliquer-securityconfig
+      - type: jury
+        items:
+          - q: "Expliquez-nous le rôle de la classe AuthService."
+            a: |
+              « C'est le service qui gère l'inscription et la connexion. À l'inscription, il contrôle les
+              champs, refuse les doublons, hache le mot de passe avec BCrypt et enregistre le compte. À la
+              connexion, il vérifie le mot de passe et fabrique un JWT. J'ai choisi de séparer cette logique du
+              contrôleur pour pouvoir la tester seule. Sa limite : le rôle était calculé depuis le pseudo ; je
+              l'ai déplacé dans une colonne en base. »
+          - q: "Pourquoi avoir choisi Angular et Spring Boot ?"
+            a: "Deux frameworks très utilisés en entreprise, bien documentés, et vus en formation. Angular structure bien une application à plusieurs pages ; Spring Boot fournit sécurité, JPA et tests prêts à l'emploi."
+      - type: quiz
+        items:
+          - ref: sor-ec-q2
+            review: code-exemple-methode
+          - ref: sor-ec-q3
+            review: def-methode
+          - ref: sor-ec-q4
+            review: code-exemple-methode
+    questions:
+      - code: sor-ec-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Par quoi commencer l'explication d'un extrait de code ?"
+        choices:
+          - label: "Le contexte : où est ce code et quand il s'exécute"
+            correct: true
+            why: "Oui : le jury sait alors de quoi on parle."
+          - label: "La première ligne du fichier, les imports"
+            correct: false
+            why: "Les imports n'apportent rien à la compréhension."
+          - label: "Les limites"
+            correct: false
+            why: "Elles viennent à la fin."
+        explanation: "Contexte → Rôle → Lecture → Choix → Limite → Amélioration."
+      - code: sor-ec-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Dans l'exemple sur JwtAuthFilter, quelle phrase correspond au temps « Choix » ?"
+        choices:
+          - label: "« Un jeton sans état, pour ne pas stocker de session sur le serveur »"
+            correct: true
+            why: "Oui : elle justifie une décision."
+          - label: "« Il lit l'en-tête Authorization »"
+            correct: false
+            why: "C'est la lecture du code."
+          - label: "« Jetons courts et jeton de rafraîchissement »"
+            correct: false
+            why: "C'est l'amélioration."
+        explanation: "Le « choix » répond à la question « pourquoi comme ça ? »."
+      - code: sor-ec-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Pour expliquer un code, il faut lire chaque ligne à voix haute, dans l'ordre du fichier."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : on sélectionne les lignes clés, dans l'ordre d'exécution, et on dit à quoi elles servent."
+          - label: "Faux"
+            correct: true
+            why: "Exact."
+        explanation: "Expliquer ≠ lire. On raconte ce que fait le code et pourquoi."
+      - code: sor-ec-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Le jury demande « c'est-à-dire ? » après le mot « stateless ». Que répondre ?"
+        choices:
+          - label: "« Le serveur ne garde aucune session : chaque requête apporte son jeton, qui suffit à reconnaître l'utilisateur. »"
+            correct: true
+            why: "Oui : une définition simple et exacte."
+          - label: "« C'est une bonne pratique. »"
+            correct: false
+            why: "Ce n'est pas une définition."
+          - label: "« C'est dans la documentation de Spring. »"
+            correct: false
+            why: "Le jury veut ta compréhension."
+        explanation: "Chaque mot technique utilisé à l'oral doit pouvoir être défini en une phrase simple."
+    exercises:
+      - slug: sor-ex-explication-ordre
+        kind: REMETTRE_ORDRE
+        title: "Ordonner une explication de AuthService.register"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Remets les phrases dans l'ordre de la méthode en six temps."
+        criteria: "Contexte, rôle, lecture, choix, limite, amélioration."
+        hints:
+          - "On situe d'abord la méthode dans l'application."
+          - "La limite et l'amélioration terminent l'explication."
+          - "Contexte → Rôle → Lecture → Choix → Limite → Amélioration."
+        solution: |
+          1. Cette méthode est dans AuthService, appelée par le contrôleur à chaque inscription.
+          2. Elle crée un compte en respectant les règles métier.
+          3. Elle contrôle les champs, refuse les doublons, hache le mot de passe puis enregistre le compte.
+          4. J'ai placé ces règles dans le service pour les tester sans HTTP.
+          5. Deux inscriptions simultanées avec le même e-mail peuvent passer le contrôle.
+          6. J'ajouterais la traduction de l'erreur d'unicité de la base en réponse 409.
+        explanation: "Chaque phrase répond à une question différente : où, quoi, comment, pourquoi, quelle limite, quelle suite."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Cette méthode est dans AuthService, appelée par le contrôleur à chaque inscription."
+            - "Elle crée un compte en respectant les règles métier."
+            - "Elle contrôle les champs, refuse les doublons, hache le mot de passe puis enregistre le compte."
+            - "J'ai placé ces règles dans le service pour les tester sans HTTP."
+            - "Deux inscriptions simultanées avec le même e-mail peuvent passer le contrôle."
+            - "J'ajouterais la traduction de l'erreur d'unicité de la base en réponse 409."
+      - slug: sor-ex-expliquer-securityconfig
+        kind: CODE_LIBRE
+        title: "Expliquer SecurityConfig comme devant le jury"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Rédige, en quelques phrases, l'explication de `SecurityConfig` (version corrigée). Structure-la avec
+          les six mots-clés en début de ligne : `Contexte :`, `Rôle :`, `Lecture :`, `Choix :`, `Limite :`,
+          `Amélioration :`.
+
+          Ton explication doit parler : du **filtre JWT**, des routes **publiques** (`/api/auth`), de la règle
+          **ADMIN** sur `/api/users`, de l'absence de **session** (stateless), et de la différence **401 / 403**.
+        criteria: "Les six temps sont présents et les notions essentielles sont citées."
+        hints:
+          - "Une ligne par temps, par exemple : `Contexte : c'est la configuration de Spring Security, lue au démarrage.`"
+          - "Dans « Lecture », cite `/api/auth` (public), `/api/users` (ADMIN), le filtre JWT et `STATELESS`."
+          - "Dans « Choix » ou « Limite », parle de 401 (pas de jeton) et 403 (rôle insuffisant)."
+        solution: |
+          Contexte : c'est la configuration de Spring Security, lue au démarrage de l'application.
+          Rôle : elle décide qui peut appeler chaque route de l'API.
+          Lecture : le filtre JWT est placé avant le filtre standard ; les routes /api/auth sont publiques ; /api/users exige le rôle ADMIN ; le reste exige d'être connecté ; aucune session n'est créée (STATELESS).
+          Choix : des règles du plus précis au plus général, et un point d'entrée qui répond 401 sans jeton et 403 quand le rôle ne suffit pas.
+          Limite : un jeton volé reste valable jusqu'à son expiration.
+          Amélioration : jetons plus courts avec rafraîchissement, et tests MockMvc sur chaque règle.
+        explanation: "Une explication structurée, avec les vrais noms, montre au jury que tu maîtrises ta sécurité."
+        xp: 30
+        payload:
+          language: text
+          starter: |
+            Contexte :
+            Rôle :
+            Lecture :
+            Choix :
+            Limite :
+            Amélioration :
+          checks:
+            - pattern: '(?im)^\s*Contexte\s*:\s*\S.{10,}'
+              message: "Écris une vraie phrase après « Contexte : »."
+            - pattern: '(?im)^\s*R[ôo]le\s*:\s*\S.{10,}'
+              message: "Écris une vraie phrase après « Rôle : »."
+            - pattern: '(?im)^\s*Lecture\s*:\s*\S.{10,}'
+              message: "Écris une vraie phrase après « Lecture : »."
+            - pattern: '(?im)^\s*Choix\s*:\s*\S.{10,}'
+              message: "Écris une vraie phrase après « Choix : »."
+            - pattern: '(?im)^\s*Limite\s*:\s*\S.{10,}'
+              message: "Écris une vraie phrase après « Limite : »."
+            - pattern: '(?im)^\s*Am[ée]lioration\s*:\s*\S.{10,}'
+              message: "Écris une vraie phrase après « Amélioration : »."
+            - pattern: '(?i)filtre\s+JWT|JWT\s*filter|JwtAuthFilter'
+              message: "Parle du filtre JWT."
+            - pattern: '/api/auth'
+              message: "Cite les routes publiques /api/auth."
+            - pattern: '(?i)/api/users[\s\S]{0,60}ADMIN|ADMIN[\s\S]{0,60}/api/users'
+              message: "Explique que /api/users est réservé au rôle ADMIN."
+            - pattern: '(?i)stateless|sans\s+(é|e)tat|aucune\s+session|pas\s+de\s+session'
+              message: "Explique qu'aucune session n'est gardée (stateless)."
+            - pattern: '401[\s\S]*403|403[\s\S]*401'
+              message: "Distingue 401 (pas de jeton) et 403 (rôle insuffisant)."
+
+  # ===================================================================== LEÇON 3
+  - slug: sor-questions-jury
+    title: "Les questions techniques du jury sur Soramfr"
+    duration: 15
+    objective: "S'entraîner à répondre simplement et précisément aux questions techniques les plus probables."
+    prerequisites: "Leçon « Expliquer son code comme devant le jury »."
+    skills: [oral-cda, auth-jwt, spring-rest]
+    xp: 30
+    memo: |
+      Pour chaque question :
+      - répondre d'abord en **une phrase** ;
+      - donner **un exemple tiré de Soramfr** ;
+      - si tu ne sais pas : « Je ne suis pas sûre ; voici comment je chercherais… » (jamais inventer).
+    commonMistakes: |
+      - Réciter une définition sans exemple.
+      - Répondre à une autre question que celle posée.
+      - Inventer une réponse : le jury creuse et le voit.
+    blocks:
+      - type: text
+        md: |
+          Voici les questions techniques les plus probables pour Soramfr. Réponds à voix haute **avant**
+          d'ouvrir chaque réponse. Chronomètre-toi : une réponse dure 30 secondes à 1 minute.
+      - type: jury
+        id: jury-architecture
+        title: "Architecture et conception"
+        items:
+          - q: "Qu'est-ce qu'une API REST ?"
+            a: "Une interface qui expose des ressources par des adresses (URL) et des verbes HTTP (GET, POST, PUT, DELETE), sans état, en échangeant du JSON. Exemple : `POST /api/auth/register`."
+          - q: "Qu'est-ce qu'un DTO et pourquoi en utiliser ?"
+            a: "Un objet de transfert : il contient seulement les données qui circulent dans l'API. Il évite d'exposer l'entité (et son hash de mot de passe) et découple l'API du modèle de base."
+          - q: "Qu'est-ce que l'injection de dépendances ?"
+            a: "Spring crée les objets (services, repositories) et les fournit à ceux qui en ont besoin, par le constructeur. `AuthController` reçoit `AuthService` sans le créer."
+          - q: "Quelles sont les cardinalités entre utilisateur et commande ?"
+            a: "Une utilisatrice passe 0 à n commandes ; une commande est passée par exactement une utilisatrice (1,1). La clé étrangère va dans la table commande."
+      - type: jury
+        id: jury-securite
+        title: "Sécurité"
+        items:
+          - q: "Comment sont protégés les mots de passe ?"
+            a: "Hachés avec BCrypt (sel aléatoire, coût élevé). On compare avec `matches`. Personne ne peut les relire."
+          - q: "Que contient votre JWT et comment est-il vérifié ?"
+            a: "L'id, le pseudo, le rôle, les dates de création et d'expiration, signés en HMAC-SHA256. Le filtre vérifie la signature et l'expiration à chaque requête."
+          - q: "Quelle différence entre authentification et autorisation ?"
+            a: "L'authentification prouve qui tu es (mot de passe, jeton). L'autorisation décide ce que tu as le droit de faire (rôle ADMIN pour `/api/users`)."
+          - q: "Qu'est-ce que l'OWASP Top 10 ?"
+            a: "La liste des dix risques de sécurité web les plus critiques, publiée par l'OWASP : contrôle d'accès défaillant, défaillances cryptographiques, injections… Soramfr était concerné par le contrôle d'accès (`/api/users`)."
+      - type: question
+        ref: sor-qj-q1
+        review: jury-securite
+      - type: jury
+        id: jury-tests-deploiement
+        title: "Tests, qualité et déploiement"
+        items:
+          - q: "Comment avez-vous testé l'application ?"
+            a: "Tests d'API avec Postman (cas normaux et d'erreur), puis tests unitaires JUnit/Mockito du service d'inscription et tests d'intégration MockMvc sur les codes 401/403."
+          - q: "Comment déployez-vous ?"
+            a: "Backend en image Docker multi-étapes sur Render, frontend `ng build` sur Netlify, base PostgreSQL hébergée, secrets en variables d'environnement."
+          - q: "Quelle a été votre plus grande difficulté ?"
+            a: "« La sécurité : comprendre le lien entre le jeton, le filtre et les règles de rôle. Je l'ai surmontée en testant chaque route avec Postman et en lisant la documentation de Spring Security. »"
+            tip: "Prépare une difficulté réelle, la façon dont tu l'as résolue, et ce que tu en as appris."
+      - type: text
+        md: "Exercice guidé : complète les définitions express."
+      - type: exercise
+        ref: sor-ex-definitions-express
+      - type: text
+        md: "En autonomie : rédige ta réponse à la question « Quelle amélioration prioritaire apporteriez-vous à Soramfr ? »."
+      - type: exercise
+        ref: sor-ex-reponse-amelioration
+      - type: quiz
+        items:
+          - ref: sor-qj-q2
+            review: jury-architecture
+          - ref: sor-qj-q3
+            review: jury-securite
+          - ref: sor-qj-q4
+            review: jury-tests-deploiement
+          - ref: sor-qj-q5
+    questions:
+      - code: sor-qj-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "« Authentification » ou « autorisation » : vérifier le rôle ADMIN avant `DELETE /api/users/5`, c'est…"
+        choices:
+          - label: "de l'autorisation"
+            correct: true
+            why: "Oui : on décide si la personne, déjà identifiée, a le droit."
+          - label: "de l'authentification"
+            correct: false
+            why: "L'authentification a eu lieu avant (jeton valide)."
+          - label: "du chiffrement"
+            correct: false
+            why: "Rien n'est chiffré ici."
+        explanation: "Authentification : qui es-tu ? Autorisation : as-tu le droit ?"
+      - code: sor-qj-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Quelle réponse illustre le mieux l'injection de dépendances dans Soramfr ?"
+        choices:
+          - label: "`AuthController` reçoit `AuthService` par son constructeur, fourni par Spring"
+            correct: true
+            why: "Oui."
+          - label: "Angular envoie un JSON au backend"
+            correct: false
+            why: "C'est une requête HTTP."
+          - label: "Hibernate crée la table users"
+            correct: false
+            why: "C'est la génération de schéma."
+        explanation: "Donner l'exemple concret tiré de son projet fait la différence à l'oral."
+      - code: sor-qj-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: securite-owasp
+        prompt: "Quel risque de l'OWASP Top 10 correspond à « une cliente peut lister et supprimer tous les comptes » ?"
+        choices:
+          - label: "Contrôle d'accès défaillant (Broken Access Control)"
+            correct: true
+            why: "Oui : c'est le risque n° 1 de l'OWASP Top 10 2021."
+          - label: "Injection"
+            correct: false
+            why: "Aucune donnée n'est interprétée comme du code."
+          - label: "Composants vulnérables"
+            correct: false
+            why: "Le problème vient de nos règles, pas d'une bibliothèque."
+        explanation: "Les droits doivent être vérifiés côté serveur, pour chaque route sensible."
+      - code: sor-qj-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Tu ne connais pas la réponse à une question du jury. Que fais-tu ?"
+        choices:
+          - label: "Je le dis honnêtement et j'explique comment je chercherais"
+            correct: true
+            why: "Oui : c'est professionnel et crédible."
+          - label: "J'invente une réponse qui paraît technique"
+            correct: false
+            why: "Le jury creuse et découvre l'invention."
+          - label: "Je change de sujet"
+            correct: false
+            why: "Le jury le remarque."
+        explanation: "« Je ne sais pas, mais voici comment je trouverais » est une vraie compétence."
+      - code: sor-qj-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Quel algorithme de signature utilise le JWT de Soramfr ? (réponds par son nom court)"
+        answers: ["HS256", "HMAC-SHA256", "HMAC SHA256", "HMACSHA256"]
+        explanation: "**HS256** = HMAC avec SHA-256 et un secret partagé. Le secret doit faire au moins 256 bits."
+    exercises:
+      - slug: sor-ex-definitions-express
+        kind: COMPLETER
+        title: "Définitions express"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Complète chaque définition d'un mot."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Le serveur ne garde aucune… (en anglais : session)."
+          - "Ce qui prouve qu'un jeton n'a pas été modifié."
+          - "session, signature, autorisation, DTO."
+        solution: '["session", "signature", "autorisation", "DTO"]'
+        explanation: "Des définitions courtes, prêtes à l'emploi pour l'oral."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Stateless : le serveur ne garde aucune [[1]].
+            La [[2]] prouve qu'un JWT n'a pas été modifié.
+            Vérifier qu'une personne a le droit d'agir, c'est l'[[3]].
+            Un [[4]] transporte seulement les données utiles dans l'API.
+          blanks:
+            - ["session"]
+            - ["signature"]
+            - ["autorisation"]
+            - ["DTO"]
+      - slug: sor-ex-reponse-amelioration
+        kind: CODE_LIBRE
+        title: "Répondre : l'amélioration prioritaire"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Rédige ta réponse (trois à six phrases) à : « Quelle amélioration prioritaire apporteriez-vous à
+          Soramfr ? »
+
+          Elle doit : nommer **une faille précise** (contrôle d'accès de `/api/users`, secret JWT exposé ou
+          rôle calculé depuis le pseudo), dire **pourquoi** elle est prioritaire (risque), décrire la
+          **correction** avec un élément de code (`hasRole`, variable d'environnement, colonne `role`…), et
+          dire comment tu la **vérifierais** (test Postman ou MockMvc, code attendu).
+        criteria: "Faille précise, risque, correction concrète et vérification."
+        hints:
+          - "Commence par : « La priorité serait… parce que… »."
+          - "Cite un élément de code concret : `hasRole(\"ADMIN\")`, `${JWT_SECRET}`, `getRole()`…"
+          - "Termine par la vérification : « Je vérifierais avec un test MockMvc qui attend 403 pour un jeton USER. »"
+        solution: |
+          La priorité serait de protéger /api/users, parce qu'aujourd'hui toute personne connectée peut lister et supprimer les comptes : c'est un contrôle d'accès défaillant.
+          J'ajouterais dans SecurityConfig la règle .requestMatchers("/api/users/**").hasRole("ADMIN"), placée avant la règle générale.
+          Je vérifierais avec un test MockMvc : un jeton USER doit recevoir 403, un jeton ADMIN 200, et une requête sans jeton 401.
+          Ensuite, je changerais le secret JWT exposé et je le passerais en variable d'environnement.
+        explanation: "Une bonne réponse suit la logique « risque → correction → preuve ». Le jury retient une professionnelle qui sait prioriser."
+        xp: 30
+        payload:
+          language: text
+          starter: |
+            La priorité serait
+          checks:
+            - pattern: '(?i)/api/users|secret|JWT_SECRET|r[ôo]le|pseudo'
+              message: "Nomme une faille précise de Soramfr (/api/users, secret JWT, rôle calculé depuis le pseudo)."
+            - pattern: '(?i)parce\s+qu|car\b|risque|permet|n.importe\s+qui|toute\s+personne'
+              message: "Explique pourquoi c'est prioritaire (le risque)."
+            - pattern: 'hasRole|\$\{JWT_SECRET\}|JWT_SECRET|getRole|variable\s+d.environnement|colonne\s+role'
+              message: "Décris la correction avec un élément de code concret (hasRole, ${JWT_SECRET}, getRole…)."
+            - pattern: '(?i)(test|postman|mockmvc)[\s\S]{0,120}(401|403|200)|(401|403|200)[\s\S]{0,120}(test|postman|mockmvc)'
+              message: "Dis comment tu vérifierais (test Postman ou MockMvc et code attendu)."
+            - pattern: '(?s).{150,}'
+              message: "Développe un peu plus : trois à six phrases."
+
+  # ===================================================================== LEÇON 4
+  - slug: sor-plan-amelioration
+    title: "Le plan d'amélioration de Soramfr"
+    duration: 12
+    objective: "Classer les faiblesses de Soramfr par priorité et présenter un plan d'action crédible."
+    prerequisites: "Leçon « Les questions techniques du jury »."
+    skills: [gestion-projet, securite-owasp]
+    xp: 25
+    memo: |
+      **Critique** (à corriger avant toute mise en ligne) :
+      - `/api/users` accessible à toute personne connectée ; secret JWT publié ; rôle ADMIN obtenu par le pseudo ; hash exposé dans `UserDto`.
+      **Haute** :
+      - énumération des comptes à la connexion ; 403 au lieu de 401 ; `roleGuard` inopérant ; configuration de production (`ddl-auto`, `show-sql`, détails d'erreurs).
+      **Moyenne** :
+      - jeton dans `localStorage` ; déconnexion seulement locale ; Dockerfile (root, JDK, tests sautés) ; CORS désordonné ; URL en dur dans Angular.
+      **Évolutions** :
+      - produits et commandes en base ; vrais tests automatisés ; intégration continue.
+    commonMistakes: |
+      - Tout mettre au même niveau : le jury attend une **priorisation**.
+      - Proposer une amélioration sans dire comment la vérifier.
+      - Oublier les évolutions fonctionnelles (catalogue en base, commandes).
+    blocks:
+      - type: text
+        md: |
+          Tu as découvert beaucoup de points à améliorer. C'est normal pour un premier projet. Ce que le jury
+          attend, c'est que tu saches **les classer** et **les traiter dans le bon ordre**.
+      - type: definition
+        id: def-priorite
+        term: "Prioriser"
+        md: |
+          Décider **par quoi commencer**. On croise deux questions : « quelle est la gravité si quelqu'un
+          l'exploite ? » et « est-ce facile à exploiter ? ». Comme aux urgences : on soigne d'abord ce qui met
+          la vie en danger.
+      - type: steps
+        id: etapes-plan
+        title: "Plan d'action proposé"
+        items:
+          - "**Semaine 1 — critique** : règle `hasRole(\"ADMIN\")` sur `/api/users`, rotation du secret JWT en variable d'environnement, colonne `role`, `UserDto` sans mot de passe."
+          - "**Semaine 2 — haute** : réponses de connexion identiques (401), point d'entrée 401, correction de `roleGuard`, configuration de production."
+          - "**Semaine 3 — moyenne** : Dockerfile multi-étapes non root, CORS configurable, `environment.apiUrl`, déconnexion unique."
+          - "**Ensuite — évolutions** : tables produits et commandes, API du panier, tests JUnit/MockMvc, intégration continue GitHub Actions."
+      - type: question
+        ref: sor-pl-q1
+        review: def-priorite
+      - type: callout
+        variant: exam
+        title: "À dire au jury"
+        md: |
+          « J'ai relu mon projet avec un regard sécurité. J'ai classé les défauts en trois niveaux. Les quatre
+          critiques sont corrigés dans ma version 2, avec des tests qui le prouvent. Voici ce qui reste à faire
+          et dans quel ordre. »
+      - type: text
+        md: "Exercice guidé : classe les corrections de la plus urgente à la moins urgente."
+      - type: exercise
+        ref: sor-ex-priorites-ordre
+      - type: text
+        md: "En autonomie : associe chaque faiblesse à son niveau de priorité."
+      - type: exercise
+        ref: sor-ex-priorites-niveaux
+      - type: jury
+        items:
+          - q: "Si vous aviez une semaine de plus, que feriez-vous ?"
+            a: "« Je corrigerais les quatre failles critiques : protection de `/api/users`, secret JWT, rôle en base, et suppression du hash dans le DTO, avec un test automatisé pour chacune. »"
+          - q: "Votre application est-elle prête pour la production ?"
+            a: "« Pas dans sa version rendue : j'ai identifié des failles critiques. Avec le plan de correction et les tests associés, elle le serait pour un usage réel limité. »"
+      - type: quiz
+        items:
+          - ref: sor-pl-q2
+            review: etapes-plan
+          - ref: sor-pl-q3
+            review: etapes-plan
+          - ref: sor-pl-q4
+            review: def-priorite
+    questions:
+      - code: sor-pl-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quelle correction est la plus urgente ?"
+        choices:
+          - label: "Protéger `/api/users` par le rôle ADMIN"
+            correct: true
+            why: "Oui : aujourd'hui, toute personne connectée peut supprimer des comptes."
+          - label: "Renommer `ErrorHondler` en `ErrorHandler`"
+            correct: false
+            why: "Utile pour la qualité, mais sans risque de sécurité."
+          - label: "Passer le panier en base"
+            correct: false
+            why: "C'est une évolution fonctionnelle, pas une faille."
+        explanation: "On traite d'abord ce qui est grave **et** facile à exploiter."
+      - code: sor-pl-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Dans quel niveau classer « le jeton est stocké dans localStorage » ?"
+        choices:
+          - label: "Moyenne : risque réel, mais qui suppose d'abord une faille XSS"
+            correct: true
+            why: "Oui : il faut une autre faille pour l'exploiter."
+          - label: "Critique"
+            correct: false
+            why: "Il n'est pas exploitable seul, contrairement à `/api/users`."
+          - label: "Aucun risque"
+            correct: false
+            why: "C'est un risque connu à mentionner."
+        explanation: "La priorité dépend de la gravité ET de la facilité d'exploitation."
+      - code: sor-pl-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: "Retirer le secret JWT du fichier suffit, sans changer sa valeur."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : l'ancien secret est dans l'historique Git public."
+          - label: "Faux"
+            correct: true
+            why: "Exact : rotation obligatoire."
+        explanation: "Secret publié = secret compromis : on en génère un nouveau."
+      - code: sor-pl-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Qu'est-ce qui rend un plan d'amélioration crédible pour le jury ?"
+        choices:
+          - label: "Des priorités claires, des actions concrètes et une façon de vérifier chaque correction"
+            correct: true
+            why: "Oui."
+          - label: "Une longue liste sans ordre"
+            correct: false
+            why: "Le jury attend une priorisation."
+          - label: "Promettre de tout refaire"
+            correct: false
+            why: "Ce n'est ni réaliste ni précis."
+        explanation: "Priorité → action → vérification."
+    exercises:
+      - slug: sor-ex-priorites-ordre
+        kind: REMETTRE_ORDRE
+        title: "Classer les corrections"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: "Remets les corrections de la plus urgente (en haut) à la moins urgente (en bas)."
+        criteria: "Les failles exploitables immédiatement passent en premier."
+        hints:
+          - "Qui peut supprimer des comptes aujourd'hui ?"
+          - "Un secret publié permet de fabriquer des jetons ADMIN."
+          - "Les évolutions fonctionnelles viennent en dernier."
+        solution: |
+          1. Réserver /api/users au rôle ADMIN
+          2. Changer le secret JWT et le passer en variable d'environnement
+          3. Stocker le rôle en base au lieu de le calculer depuis le pseudo
+          4. Renvoyer 401 avec un message unique à la connexion
+          5. Réécrire le Dockerfile en multi-étapes non root
+          6. Enregistrer les produits et les commandes en base
+        explanation: "Les trois premières failles donnent directement des droits d'administration : elles passent avant tout le reste."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Réserver /api/users au rôle ADMIN"
+            - "Changer le secret JWT et le passer en variable d'environnement"
+            - "Stocker le rôle en base au lieu de le calculer depuis le pseudo"
+            - "Renvoyer 401 avec un message unique à la connexion"
+            - "Réécrire le Dockerfile en multi-étapes non root"
+            - "Enregistrer les produits et les commandes en base"
+          alternatives:
+            - [1, 0, 2, 3, 4, 5]
+            - [0, 2, 1, 3, 4, 5]
+            - [1, 2, 0, 3, 4, 5]
+            - [2, 0, 1, 3, 4, 5]
+            - [2, 1, 0, 3, 4, 5]
+      - slug: sor-ex-priorites-niveaux
+        kind: COMPLETER
+        title: "Associer chaque faiblesse à sa priorité"
+        difficulty: INTERMEDIAIRE
+        skill: gestion-projet
+        statement: "Complète avec `critique`, `haute` ou `moyenne`."
+        criteria: "Les cinq niveaux sont corrects."
+        hints:
+          - "Critique : donne directement des droits ou des secrets."
+          - "Moyenne : demande une autre faille pour être exploitée, ou concerne l'hébergement."
+          - "critique, critique, haute, moyenne, moyenne."
+        solution: '["critique", "critique", "haute", "moyenne", "moyenne"]'
+        explanation: |
+          - Hash exposé et rôle par le pseudo : **critique** (données sensibles, droits d'administration).
+          - Messages de connexion différents : **haute** (énumération des comptes).
+          - Jeton dans `localStorage` et Dockerfile en root : **moyenne** (il faut une autre faille pour en profiter).
+        xp: 15
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Le hash du mot de passe est renvoyé par GET /api/users ........ [[1]]
+            Le pseudo « admin » donne le rôle ADMIN ........................ [[2]]
+            La connexion dit « Utilisateur introuvable » ................... [[3]]
+            Le jeton est stocké dans localStorage .......................... [[4]]
+            Le conteneur tourne en root ...................................... [[5]]
+          blanks:
+            - ["critique"]
+            - ["critique"]
+            - ["haute"]
+            - ["moyenne"]
+            - ["moyenne"]
+
+bank:
+  - code: sor-c8-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: oral-cda
+    prompt: "Combien de temps viser pour une réponse à une question technique du jury ?"
+    choices:
+      - label: "Entre 30 secondes et 1 minute"
+        correct: true
+        why: "Oui : assez pour être précise, assez court pour laisser d'autres questions."
+      - label: "5 minutes"
+        correct: false
+        why: "Trop long : le jury a d'autres questions."
+      - label: "Un seul mot"
+        correct: false
+        why: "Trop court : il faut une phrase et un exemple."
+    explanation: "Une phrase de réponse, un exemple tiré de ton projet, et tu t'arrêtes."
+  - code: sor-c8-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: uml-architecture
+    prompt: "Quel diagramme UML montre les acteurs (cliente, administratrice) et ce qu'ils peuvent faire ?"
+    choices:
+      - label: "Le diagramme de cas d'utilisation"
+        correct: true
+        why: "Oui : acteurs + cas d'utilisation (s'inscrire, gérer son panier, supprimer un compte)."
+      - label: "Le diagramme de classes"
+        correct: false
+        why: "Il montre les classes, leurs attributs et leurs liens."
+      - label: "Le diagramme de séquence"
+        correct: false
+        why: "Il montre l'ordre des messages entre objets dans un scénario."
+    explanation: "Cas d'utilisation : qui fait quoi. Classes : la structure. Séquence : le déroulé dans le temps."
+  - code: sor-c8-b3
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: uml-architecture
+    prompt: "Quel diagramme UML représente le mieux « le voyage d'une inscription » d'Angular à PostgreSQL ?"
+    choices:
+      - label: "Un diagramme de séquence"
+        correct: true
+        why: "Oui : il montre les échanges successifs entre composant, service, contrôleur, repository et base."
+      - label: "Un diagramme de cas d'utilisation"
+        correct: false
+        why: "Il ne montre pas l'ordre des échanges."
+      - label: "Un MCD"
+        correct: false
+        why: "Le MCD décrit les données, pas les échanges."
+    explanation: "Séquence = axe du temps vertical, messages horizontaux entre participants."
+  - code: sor-c8-b4
+    kind: VRAI_FAUX
+    difficulty: 1
+    skill: oral-cda
+    prompt: "Pendant la démonstration, il vaut mieux préparer des comptes de test (USER et ADMIN) à l'avance."
+    choices:
+      - label: "Vrai"
+        correct: true
+        why: "Oui : pas de saisie hésitante, pas de surprise."
+      - label: "Faux"
+        correct: false
+        why: "Une démonstration se prépare."
+    explanation: "Préparer : comptes, données, scénario, et un plan B (vidéo) si le réseau lâche."
+  - code: sor-c8-b5
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: securite-owasp
+    prompt: "Parmi ces défauts de Soramfr, lequel relève des « défaillances d'identification et d'authentification » (OWASP) ?"
+    choices:
+      - label: "Des messages de connexion qui révèlent si un compte existe"
+        correct: true
+        why: "Oui : ils facilitent l'énumération et la force brute."
+      - label: "Le catalogue écrit en dur dans Angular"
+        correct: false
+        why: "C'est un choix de conception, pas une faille d'authentification."
+      - label: "La faute de frappe dans ErrorHondler"
+        correct: false
+        why: "Aucun impact sur la sécurité."
+    explanation: "Messages génériques, limitation des essais, mots de passe robustes : les parades classiques."

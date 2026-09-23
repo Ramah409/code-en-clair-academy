@@ -96,9 +96,12 @@ const KIND_LABELS: Record<string, string> = {
         <div class="qcard__verdict" role="status">
           <p class="qcard__verdict-title">
             <app-icon [name]="fb.correct ? 'check' : 'lightbulb'" [size]="20" />
-            {{ fb.correct ? 'Bonne réponse' : 'Pas tout à fait' }}
+            {{ fb.correct ? 'Bonne réponse' : 'Pas encore : regardons pourquoi' }}
           </p>
           <app-markdown [md]="fb.explanation" />
+          @if (!fb.correct && reviewable()) {
+            <p class="qcard__review-hint">Relis le passage concerné, puis réessaie : ta réponse ne te fait perdre aucun point.</p>
+          }
         </div>
       }
 
@@ -109,6 +112,11 @@ const KIND_LABELS: Record<string, string> = {
               {{ busy() ? 'Vérification…' : 'Valider' }}
             </button>
           } @else if (!feedback()!.correct && allowRetry()) {
+            @if (reviewable()) {
+              <button type="button" class="btn btn--ghost" (click)="review.emit()">
+                <app-icon name="book" [size]="18" /> Revoir le passage
+              </button>
+            }
             <button type="button" class="btn btn--secondary" (click)="retry.emit()">
               <app-icon name="refresh" [size]="18" /> Réessayer
             </button>
@@ -130,9 +138,12 @@ export class QuestionCardComponent {
   readonly disabled = input(false);
   readonly allowRetry = input(true);
   readonly showMeta = input(false);
+  /** Affiche « Revoir le passage » après une erreur (la leçon sait où renvoyer). */
+  readonly reviewable = input(false);
 
   readonly answer = output<Answer>();
   readonly retry = output<void>();
+  readonly review = output<void>();
 
   readonly selected = signal<number[]>([]);
   readonly text = signal('');

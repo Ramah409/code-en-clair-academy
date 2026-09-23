@@ -265,8 +265,18 @@ export type LessonBlock =
   | { type: 'callout'; variant: 'info' | 'tip' | 'warning' | 'exam'; title?: string; md: string }
   | { type: 'steps'; title?: string; items: string[] }
   | { type: 'compare'; left: CompareSide; right: CompareSide }
-  | { type: 'question'; ref: string; question: PublicQuestion; answered: boolean }
-  | { type: 'exercise'; ref: string; exercise: ExerciseView };
+  | { type: 'question'; ref: string; question: PublicQuestion; answered: boolean; review?: string }
+  | { type: 'exercise'; ref: string; exercise: ExerciseView }
+  | { type: 'quiz'; title?: string; items: QuizItem[] }
+  | { type: 'jury'; title?: string; items: { q: string; a: string; tip?: string }[] };
+
+/** Question du QCM de fin de leçon ; `review` désigne le passage à relire en cas d'erreur. */
+export interface QuizItem {
+  ref: string;
+  review?: string;
+  question: PublicQuestion;
+  answered: boolean;
+}
 
 export interface CompareSide {
   title: string;

@@ -29,9 +29,11 @@ lessons:
           stock** », « les commandes **livrées** **ou** **expédiées** ». SQL combine les conditions avec trois
           opérateurs logiques : `AND`, `OR` et `NOT`.
       - type: definition
+        id: def-and-et
         term: "AND (et)"
         md: "La ligne est gardée si **toutes** les conditions reliées par AND sont vraies. Chaque AND ajouté rend le filtre **plus strict**."
       - type: definition
+        id: def-or-ou
         term: "OR (ou)"
         md: "La ligne est gardée si **au moins une** des conditions est vraie. Chaque OR ajouté rend le filtre **plus large**."
       - type: code
@@ -92,6 +94,13 @@ lessons:
         ref: sql-ex-commandes-2025-actives
       - type: question
         ref: sql-c2l1-q4
+      - type: quiz
+        items:
+          - ref: sqlq-andor-1
+            review: def-and-et
+          - ref: sqlq-andor-2
+          - ref: sqlq-andor-3
+            review: def-or-ou
     questions:
       - code: sql-c2l1-q1
         kind: CHOIX_UNIQUE
@@ -153,6 +162,51 @@ lessons:
         language: sql
         answers: ["(service_id = 2 OR service_id = 3)", "(service_id = 3 OR service_id = 2)", "service_id IN (2, 3)", "service_id IN (3, 2)"]
         explanation: "Il faut des **parenthèses** autour du OR (ou utiliser `IN (2, 3)`, que tu verras à la leçon suivante). Sans elles, le salaire ne serait filtré que pour le service 3."
+      - code: sqlq-andor-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Avec AND, une ligne est gardée quand…
+        choices:
+          - label: les deux conditions sont vraies
+            correct: true
+            why: 'Oui : les deux à la fois.'
+          - label: au moins une condition est vraie
+            correct: false
+            why: Ça, c'est OR.
+          - label: aucune condition n'est vraie
+            correct: false
+            why: Ce serait NOT (a OR b).
+        explanation: AND = les deux ; OR = au moins une ; NOT = le contraire.
+      - code: sqlq-andor-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: Pourquoi ajouter des parenthèses dans `WHERE ville = 'Paris' AND (prix < 10 OR prix > 100)` ?
+        choices:
+          - label: 'Parce que AND passe avant OR : sans parenthèses, le sens change'
+            correct: true
+            why: "Oui : les parenthèses imposent l'ordre voulu."
+          - label: Parce que SQL l'exige toujours
+            correct: false
+            why: Elles sont facultatives, mais changent le sens ici.
+          - label: Pour accélérer la requête
+            correct: false
+            why: Elles ne changent pas la vitesse.
+        explanation: Comme en maths (× avant +), AND est évalué avant OR. En cas de doute, mettre des parenthèses.
+      - code: sqlq-andor-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: '`WHERE service_id = 2 OR service_id = 3` garde les employés des services 2 et 3.'
+        choices:
+          - label: Vrai
+            correct: true
+            why: "Oui : chaque employé est dans l'un OU l'autre."
+          - label: Faux
+            correct: false
+            why: Avec AND, on ne trouverait personne (un employé n'est pas dans deux services).
+        explanation: 'Piège classique : « les services 2 et 3 » se traduit par OR (ou IN).'
     exercises:
       - slug: sql-ex-commandes-2025-actives
         kind: SQL
@@ -239,6 +293,7 @@ lessons:
       - type: question
         ref: sql-c2l2-q2
       - type: definition
+        id: def-like-et-ses-jokers
         term: "LIKE et ses jokers"
         md: |
           `LIKE` compare un texte à un **motif** :
@@ -272,6 +327,12 @@ lessons:
         ref: sql-c2l2-q4
       - type: exercise
         ref: sql-ex-produits-intervalle
+      - type: quiz
+        items:
+          - ref: sqlq-inlike-1
+            review: def-like-et-ses-jokers
+          - ref: sqlq-inlike-2
+          - ref: sqlq-inlike-3
     questions:
       - code: sql-c2l2-q1
         kind: CHOIX_UNIQUE
@@ -333,6 +394,51 @@ lessons:
         language: sql
         answers: ["'%@exemple.fr'"]
         explanation: "`%` au début signifie « n'importe quoi avant ». Le motif est un texte : il s'écrit entre apostrophes."
+      - code: sqlq-inlike-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Dans LIKE, que remplace le joker `%` ?
+        choices:
+          - label: N'importe quelle suite de caractères, même vide
+            correct: true
+            why: Oui.
+          - label: Exactement un caractère
+            correct: false
+            why: C'est le rôle de `_`.
+          - label: Un chiffre seulement
+            correct: false
+            why: '`%` accepte tout type de caractère.'
+        explanation: '`%` : zéro, un ou plusieurs caractères ; `_` : exactement un caractère.'
+      - code: sqlq-inlike-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: Quelle condition trouve « clavier », « Clavier » et « CLAVIER » dans PostgreSQL ?
+        choices:
+          - label: "`nom ILIKE '%clavier%'`"
+            correct: true
+            why: 'Oui : ILIKE ignore les majuscules.'
+          - label: "`nom LIKE '%clavier%'`"
+            correct: false
+            why: LIKE tient compte des majuscules.
+          - label: "`nom = 'clavier'`"
+            correct: false
+            why: Il faudrait le mot exact, sans rien autour.
+        explanation: ILIKE est propre à PostgreSQL ; ailleurs, on écrit `LOWER(nom) LIKE '%clavier%'`.
+      - code: sqlq-inlike-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: '`prix BETWEEN 10 AND 20` inclut les produits à 10 € et à 20 €.'
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : les bornes sont comprises.'
+          - label: Faux
+            correct: false
+            why: BETWEEN inclut les deux bornes.
+        explanation: '`BETWEEN a AND b` équivaut à `>= a AND <= b`.'
     exercises:
       - slug: sql-ex-clients-prenom-a
         kind: SQL
@@ -410,6 +516,7 @@ lessons:
           Trois clients n'ont pas renseigné leur ville. Que contient la colonne `ville` pour eux ? Ni un texte
           vide, ni le mot « inconnu » : elle contient **NULL**, le marqueur SQL de l'absence de valeur.
       - type: definition
+        id: def-null
         term: "NULL"
         md: |
           Marqueur signifiant « valeur inconnue ou non applicable ». NULL n'est pas une valeur comme les
@@ -440,6 +547,7 @@ lessons:
       - type: question
         ref: sql-c2l3-q1
       - type: definition
+        id: def-coalesce
         term: "COALESCE"
         md: "Fonction qui renvoie le **premier argument non NULL**. `COALESCE(ville, 'Non renseignée')` affiche « Non renseignée » à la place de NULL."
       - type: code
@@ -469,6 +577,13 @@ lessons:
         ref: sql-ex-avis-sans-commentaire
       - type: question
         ref: sql-c2l3-q4
+      - type: quiz
+        items:
+          - ref: sqlq-null-1
+            review: def-null
+          - ref: sqlq-null-2
+          - ref: sqlq-null-3
+            review: def-coalesce
     questions:
       - code: sql-c2l3-q1
         kind: CHOIX_UNIQUE
@@ -532,6 +647,54 @@ lessons:
         language: sql
         answers: ["COALESCE"]
         explanation: "`COALESCE(a, b)` renvoie `a` s'il n'est pas NULL, sinon `b`. Il accepte autant d'arguments que nécessaire."
+      - code: sqlq-null-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Que représente NULL ?
+        choices:
+          - label: L'absence de valeur (inconnue ou non renseignée)
+            correct: true
+            why: Oui.
+          - label: Le nombre zéro
+            correct: false
+            why: 0 est une vraie valeur.
+          - label: Un texte vide ''
+            correct: false
+            why: "'' est un texte, même vide."
+        explanation: "NULL n'est ni 0, ni '' : c'est « pas de valeur »."
+      - code: sqlq-null-2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Quelle condition est correcte pour trouver les clients sans ville ?
+        choices:
+          - label: '`WHERE ville IS NULL`'
+            correct: true
+            why: Oui.
+          - label: '`WHERE ville = NULL`'
+            correct: false
+            why: 'Toute comparaison avec NULL donne « inconnu » : aucune ligne.'
+          - label: "`WHERE ville = ''`"
+            correct: false
+            why: "'' n'est pas NULL."
+        explanation: On teste NULL avec `IS NULL` / `IS NOT NULL`, jamais avec `=`.
+      - code: sqlq-null-3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: Que renvoie `COALESCE(NULL, NULL, 'inconnue')` ?
+        choices:
+          - label: "'inconnue'"
+            correct: true
+            why: 'Oui : la première valeur non NULL.'
+          - label: 'NULL'
+            correct: false
+            why: COALESCE saute les NULL.
+          - label: Une erreur
+            correct: false
+            why: C'est un usage normal.
+        explanation: 'COALESCE renvoie le premier argument non NULL : pratique pour une valeur par défaut.'
     exercises:
       - slug: sql-ex-avis-sans-commentaire
         kind: SQL
@@ -603,6 +766,7 @@ lessons:
       - type: question
         ref: sql-c2l4-q1
       - type: definition
+        id: def-case
         term: "CASE"
         md: |
           Expression conditionnelle, l'équivalent SQL du « si… alors… sinon ». Les conditions sont testées
@@ -663,6 +827,12 @@ lessons:
         ref: sql-c2l4-q4
       - type: exercise
         ref: sql-ex-niveau-stock
+      - type: quiz
+        items:
+          - ref: sqlq-case-1
+          - ref: sqlq-case-2
+            review: def-case
+          - ref: sqlq-case-3
     questions:
       - code: sql-c2l4-q1
         kind: RESULTAT_CODE
@@ -734,6 +904,54 @@ lessons:
             correct: true
             why: "Deux lignes ne sont fusionnées que si ville ET prenom sont identiques."
         explanation: "DISTINCT supprime les **lignes** en double, en comparant toutes les colonnes du SELECT."
+      - code: sqlq-case-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: À quoi sert `DISTINCT` ?
+        choices:
+          - label: À supprimer les lignes en double du résultat
+            correct: true
+            why: Oui.
+          - label: À supprimer les doublons dans la table
+            correct: false
+            why: SELECT ne modifie jamais la table.
+          - label: À trier le résultat
+            correct: false
+            why: C'est ORDER BY.
+        explanation: '`SELECT DISTINCT ville FROM clients` : chaque ville une seule fois.'
+      - code: sqlq-case-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: Dans un CASE, que se passe-t-il si aucune condition WHEN n'est vraie et qu'il n'y a pas de ELSE ?
+        choices:
+          - label: La valeur est NULL
+            correct: true
+            why: Oui.
+          - label: Une erreur est levée
+            correct: false
+            why: 'Aucune erreur : le résultat est NULL.'
+          - label: La ligne est supprimée du résultat
+            correct: false
+            why: La ligne reste, avec NULL.
+        explanation: Pense au ELSE pour couvrir tous les cas.
+      - code: sqlq-case-3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Quelle fonction met un texte en majuscules ?
+        choices:
+          - label: '`UPPER(nom)`'
+            correct: true
+            why: Oui.
+          - label: '`LOWER(nom)`'
+            correct: false
+            why: LOWER met en minuscules.
+          - label: '`LENGTH(nom)`'
+            correct: false
+            why: LENGTH compte les caractères.
+        explanation: 'UPPER, LOWER, LENGTH, TRIM, CONCAT (ou `||`) : les fonctions de texte les plus courantes.'
     exercises:
       - slug: sql-ex-annees-inscription
         kind: SQL

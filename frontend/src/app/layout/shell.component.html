@@ -2,7 +2,7 @@
 
 <div class="app" [class.app--drawer]="drawerOpen()">
   <aside class="side" [class.side--open]="drawerOpen()" aria-label="Navigation principale">
-    <a routerLink="/accueil" class="side__logo">CDA<span>Academy</span></a>
+    <a routerLink="/accueil" class="side__logo">Code en Clair<span>Academy</span></a>
 
     <nav class="side__nav">
       <ul>
@@ -53,7 +53,7 @@
 
   <div class="main">
     <header class="topbar">
-      <a routerLink="/accueil" class="topbar__logo">CDA<span>Academy</span></a>
+      <a routerLink="/accueil" class="topbar__logo">Code en Clair<span>Academy</span></a>
       @if (user(); as u) {
         <span class="topbar__stat"><app-icon name="flame" [size]="16" /> {{ u.currentStreak }}</span>
         <span class="topbar__stat"><app-icon name="bolt" [size]="16" /> {{ u.xp }}</span>

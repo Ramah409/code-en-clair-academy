@@ -94,6 +94,11 @@ lessons:
         ref: sql-c8l1-q3
       - type: exercise
         ref: sql-ex-corriger-requete
+      - type: quiz
+        items:
+          - ref: sqlq-meth-1
+          - ref: sqlq-meth-2
+          - ref: sqlq-meth-3
     questions:
       - code: sql-c8l1-q1
         kind: CHOIX_UNIQUE
@@ -140,6 +145,51 @@ lessons:
             correct: false
             why: "Une requête qui s'exécute sans erreur n'est pas forcément correcte."
         explanation: "Une requête syntaxiquement valide peut donner un résultat faux (jointure qui duplique, NULL oubliés, commandes annulées comptées…)."
+      - code: sqlq-meth-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: Par quoi commencer face à une demande métier (« le chiffre d'affaires par ville ») ?
+        choices:
+          - label: Repérer les tables et les colonnes utiles, et les liens entre elles
+            correct: true
+            why: 'Oui : on sait alors quoi joindre et quoi agréger.'
+          - label: Écrire la requête d'un seul coup
+            correct: false
+            why: "Risque d'erreur : on construit étape par étape."
+          - label: Créer une nouvelle table
+            correct: false
+            why: La demande porte sur des données existantes.
+        explanation: 'Méthode : tables → jointures → filtres → regroupement → tri → vérification.'
+      - code: sqlq-meth-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: '« Pour chaque ville, le nombre de clients » : quelles clauses sont indispensables ?'
+        choices:
+          - label: COUNT et GROUP BY ville
+            correct: true
+            why: Oui.
+          - label: ORDER BY et LIMIT
+            correct: false
+            why: Utiles pour trier, mais pas indispensables ici.
+          - label: INSERT et UPDATE
+            correct: false
+            why: On lit seulement des données.
+        explanation: « Pour chaque X » → GROUP BY X ; « le nombre de » → COUNT.
+      - code: sqlq-meth-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: Construire une requête étape par étape (d'abord FROM et les jointures, puis les filtres) aide à trouver les erreurs.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : on vérifie le résultat à chaque étape.'
+          - label: Faux
+            correct: false
+            why: C'est une méthode recommandée.
+        explanation: 'On exécute souvent : chaque étape doit donner un résultat attendu.'
     exercises:
       - slug: sql-ex-note-moyenne-categorie
         kind: SQL
@@ -255,11 +305,12 @@ lessons:
             ResultSet rs = ps.executeQuery();
           md: "La requête et la valeur voyagent **séparément** : PostgreSQL traite la saisie comme une simple donnée, jamais comme du SQL."
       - type: definition
+        id: def-requete-parametree-ou-preparee
         term: "Requête paramétrée (ou préparée)"
         md: "Requête écrite avec des marqueurs (`?`, `:email`, `$1`) remplacés par des valeurs transmises à part. JPA et Spring Data génèrent toujours des requêtes paramétrées."
       - type: code
         language: java
-        title: "Avec Spring Data JPA (ce que fait CDA Academy)"
+        title: "Avec Spring Data JPA (ce que fait Code en Clair Academy)"
         code: |
           public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -278,9 +329,10 @@ lessons:
       - type: question
         ref: sql-c8l2-q1
       - type: definition
+        id: def-principe-du-moindre-privilege
         term: "Principe du moindre privilège"
         md: |
-          Chaque compte ne reçoit que les droits indispensables. Le laboratoire de CDA Academy l'applique :
+          Chaque compte ne reçoit que les droits indispensables. Le laboratoire de Code en Clair Academy l'applique :
           son rôle `cda_lab` ne voit que le schéma `lab`. Même une requête malveillante ne peut pas lire la
           table des comptes.
       - type: demo
@@ -297,6 +349,13 @@ lessons:
         ref: sql-c8l2-q3
       - type: question
         ref: sql-c8l2-q4
+      - type: quiz
+        items:
+          - ref: sqlq-secu-1
+            review: def-requete-parametree-ou-preparee
+          - ref: sqlq-secu-2
+            review: def-principe-du-moindre-privilege
+          - ref: sqlq-secu-3
     questions:
       - code: sql-c8l2-q1
         kind: CHOIX_UNIQUE
@@ -361,7 +420,52 @@ lessons:
           - label: "Faux"
             correct: true
             why: "Le hachage est à sens unique ; la vérification compare les empreintes."
-        explanation: "CDA Academy utilise BCrypt (coût 12). Même un administrateur ne peut pas lire les mots de passe."
+        explanation: "Code en Clair Academy utilise BCrypt (coût 12). Même un administrateur ne peut pas lire les mots de passe."
+      - code: sqlq-secu-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: Pourquoi une requête paramétrée empêche-t-elle l'injection SQL ?
+        choices:
+          - label: La structure SQL est fixée avant que la valeur soit ajoutée
+            correct: true
+            why: 'Oui : la valeur ne peut pas devenir du code.'
+          - label: Elle chiffre la requête
+            correct: false
+            why: Aucun chiffrement ici.
+          - label: Elle supprime les apostrophes
+            correct: false
+            why: Les apostrophes restent des données.
+        explanation: '`WHERE email = ?` : la valeur est transmise à part.'
+      - code: sqlq-secu-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: Selon le moindre privilège, le compte PostgreSQL de l'application…
+        choices:
+          - label: n'a que les droits nécessaires (pas de DROP DATABASE, pas de superutilisateur)
+            correct: true
+            why: Oui.
+          - label: est le superutilisateur postgres, c'est plus simple
+            correct: false
+            why: En cas de faille, l'attaquant aurait tous les droits.
+          - label: n'a aucun droit
+            correct: false
+            why: L'application ne pourrait plus fonctionner.
+        explanation: Limiter les droits limite les dégâts d'une éventuelle faille.
+      - code: sqlq-secu-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: rgpd-secrets
+        prompt: Les mots de passe des utilisateurs doivent être hachés (BCrypt, Argon2) et non chiffrés.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : personne ne doit pouvoir les relire.'
+          - label: Faux
+            correct: false
+            why: 'Un chiffrement est réversible : on ne doit jamais pouvoir retrouver un mot de passe.'
+        explanation: 'Hachage lent et salé : BCrypt, Argon2, scrypt.'
     exercises:
       - slug: sql-ex-java-requete-preparee
         kind: CORRIGER_ERREUR
@@ -483,6 +587,11 @@ lessons:
         ref: sql-c8l3-q3
       - type: question
         ref: sql-c8l3-q4
+      - type: quiz
+        items:
+          - ref: sqlq-jury-1
+          - ref: sqlq-jury-2
+          - ref: sqlq-jury-3
     questions:
       - code: sql-c8l3-q1
         kind: CHOIX_UNIQUE
@@ -530,7 +639,7 @@ lessons:
             why: "La suppression du compte entraîne celle de toutes ses données personnelles."
           - label: "Faux"
             correct: false
-            why: "C'est précisément le choix fait dans CDA Academy."
+            why: "C'est précisément le choix fait dans Code en Clair Academy."
         explanation: "Attention toutefois aux données à conserver légalement (factures) : elles peuvent être anonymisées plutôt que supprimées."
       - code: sql-c8l3-q4
         kind: CHOIX_UNIQUE
@@ -547,9 +656,54 @@ lessons:
           - label: "Parce que Flyway rend les requêtes plus rapides"
             correct: false
             why: "Flyway gère la structure, pas les performances des requêtes."
-        explanation: "CDA Academy utilise Flyway (V1, V2, V3…) et `ddl-auto: validate` : Hibernate vérifie que les entités correspondent au schéma, sans jamais le modifier."
+        explanation: "Code en Clair Academy utilise Flyway (V1, V2, V3…) et `ddl-auto: validate` : Hibernate vérifie que les entités correspondent au schéma, sans jamais le modifier."
 
 # Exercices du projet de fin de parcours
+      - code: sqlq-jury-1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mld-mpd
+        prompt: Quelle est la différence entre MLD et MPD ?
+        choices:
+          - label: Le MLD décrit les tables et les clés ; le MPD ajoute les types et les détails propres au SGBD
+            correct: true
+            why: 'Oui : le MPD est le script réel pour PostgreSQL.'
+          - label: Aucune
+            correct: false
+            why: Ce sont deux niveaux différents.
+          - label: Le MPD est le dessin des entités
+            correct: false
+            why: Ça, c'est le MCD.
+        explanation: MCD (conceptuel) → MLD (tables, clés) → MPD (types, index, script SQL).
+      - code: sqlq-jury-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-dml
+        prompt: Qu'est-ce qu'une transaction, en une phrase pour le jury ?
+        choices:
+          - label: Un groupe d'opérations qui réussissent toutes ensemble ou sont toutes annulées
+            correct: true
+            why: 'Oui : le « tout ou rien ».'
+          - label: Un paiement par carte bancaire
+            correct: false
+            why: C'est le sens courant, pas le sens en base de données.
+          - label: Une sauvegarde de la base
+            correct: false
+            why: Une transaction n'est pas une sauvegarde.
+        explanation: 'Exemple : enregistrer une commande et baisser le stock, tout ou rien.'
+      - code: sqlq-jury-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: normalisation
+        prompt: Stocker le total d'une commande alors qu'il se calcule à partir des lignes crée un risque d'incohérence.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : si une ligne change, le total stocké devient faux.'
+          - label: Faux
+            correct: false
+            why: Une donnée calculable stockée peut diverger.
+        explanation: On évite la redondance (normalisation) ; si on dénormalise pour la performance, on le justifie.
 exercises:
   - slug: sql-projet-ca-mensuel
     kind: SQL

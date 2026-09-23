@@ -13,7 +13,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 
 import { ApiService } from '../../core/api/api.service';
-import { Answer, Completion, Feedback, LEVEL_LABELS, LessonBlock, LessonView } from '../../core/api/models';
+import { Answer, Completion, Feedback, LEVEL_LABELS, LessonBlock, LessonView, QuizItem } from '../../core/api/models';
 import { toFormError } from '../../core/auth/api-error';
 import { RewardService } from '../../core/ui/reward.service';
 import { CodeViewComponent } from '../../shared/code-view.component';
@@ -26,7 +26,7 @@ import { SqlRunnerComponent } from '../../shared/sql-runner.component';
 /** Étape de la leçon : une suite de blocs qui se termine par une interaction (question ou exercice). */
 interface Step {
   blocks: LessonBlock[];
-  gate?: { type: 'question' | 'exercise'; ref: string };
+  gate?: { type: 'question' | 'exercise' | 'quiz'; refs: string[] };
 }
 
 @Component({
@@ -57,6 +57,8 @@ export class LessonPlayerComponent {
   readonly feedbacks = signal<Record<string, Feedback | null>>({});
   readonly passed = signal<Set<string>>(new Set());
   readonly answering = signal<string | null>(null);
+  /** Questions ratées au moins une fois pendant cette visite (pour le score « du premier coup »). */
+  readonly missedOnce = signal<Set<string>>(new Set());
   readonly completing = signal(false);
   readonly completion = signal<Completion | null>(null);
   readonly levels = LEVEL_LABELS;
@@ -72,7 +74,10 @@ export class LessonPlayerComponent {
     for (const b of blocks) {
       current.push(b);
       if (b.type === 'question' || b.type === 'exercise') {
-        steps.push({ blocks: current, gate: { type: b.type, ref: b.ref } });
+        steps.push({ blocks: current, gate: { type: b.type, refs: [b.ref] } });
+        current = [];
+      } else if (b.type === 'quiz') {
+        steps.push({ blocks: current, gate: { type: 'quiz', refs: b.items.map((i) => i.ref) } });
         current = [];
       }
     }
@@ -103,6 +108,7 @@ export class LessonPlayerComponent {
     this.completion.set(null);
     this.error.set(null);
     this.feedbacks.set({});
+    this.missedOnce.set(new Set());
     this.openedAt = Date.now();
     this.api.lesson(slug).subscribe({
       next: (l) => {
@@ -113,6 +119,9 @@ export class LessonPlayerComponent {
           }
           if (b.type === 'exercise' && b.exercise?.solved) {
             passed.add(b.ref);
+          }
+          if (b.type === 'quiz') {
+            b.items.filter((i) => i.answered).forEach((i) => passed.add(i.ref));
           }
         }
         this.passed.set(passed);
@@ -127,7 +136,36 @@ export class LessonPlayerComponent {
 
   gateOpen(index: number): boolean {
     const gate = this.steps()[index]?.gate;
-    return !gate || this.passed().has(gate.ref);
+    return !gate || gate.refs.every((r) => this.passed().has(r));
+  }
+
+  /** Score du QCM de fin de leçon : questions réussies du premier coup, et questions réussies au total. */
+  quizScore(items: QuizItem[]): { firstTry: number; passed: number; total: number } {
+    const p = this.passed();
+    const missed = this.missedOnce();
+    return {
+      firstTry: items.filter((i) => p.has(i.ref) && !missed.has(i.ref)).length,
+      passed: items.filter((i) => p.has(i.ref)).length,
+      total: items.length,
+    };
+  }
+
+  /**
+   * « Revoir le passage » : fait défiler jusqu'au bloc désigné par la question (ou, à défaut, au début
+   * de l'étape qui contient la question) et le met en évidence quelques secondes.
+   */
+  review(anchor: string | undefined, stepIndex: number): void {
+    const target = anchor
+      ? document.getElementById('passage-' + anchor)
+      : this.stepEls()[Math.max(0, stepIndex)]?.nativeElement;
+    if (!target) {
+      return;
+    }
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target.classList.add('blk--flash');
+    target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
+    setTimeout(() => target.classList.remove('blk--flash'), 2600);
   }
 
   next(): void {
@@ -151,6 +189,9 @@ export class LessonPlayerComponent {
       next: (r) => {
         this.answering.set(null);
         this.feedbacks.update((f) => ({ ...f, [code]: r.feedback }));
+        if (!r.feedback.correct) {
+          this.missedOnce.update((m) => new Set(m).add(code));
+        }
         if (r.feedback.correct) {
           this.passed.update((p) => new Set(p).add(code));
           this.rewards.celebrate(r.reward);
@@ -202,6 +243,10 @@ export class LessonPlayerComponent {
 
   asQuestion(b: LessonBlock) {
     return b as Extract<LessonBlock, { type: 'question' }>;
+  }
+
+  asQuiz(b: LessonBlock) {
+    return b as Extract<LessonBlock, { type: 'quiz' }>;
   }
 
   asExercise(b: LessonBlock) {

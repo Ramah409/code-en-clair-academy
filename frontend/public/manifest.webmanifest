@@ -1,6 +1,6 @@
 {
-  "name": "frontend",
-  "short_name": "frontend",
+  "name": "Code en Clair Academy",
+  "short_name": "Code en Clair",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",

@@ -1,4 +1,4 @@
-# CDA Academy — pile complète : PostgreSQL, Spring Boot, Angular (Nginx), Ollama
+# Code en Clair Academy — pile complète : PostgreSQL, Spring Boot, Angular (Nginx), Ollama
 # Démarrage : ./scripts/demarrer.sh   (ou docker compose up -d --build)
 name: cda-academy
 

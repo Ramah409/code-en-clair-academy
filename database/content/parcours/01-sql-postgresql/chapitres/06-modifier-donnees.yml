@@ -88,6 +88,11 @@ lessons:
         ref: sql-ex-insert-client
       - type: question
         ref: sql-c6l1-q4
+      - type: quiz
+        items:
+          - ref: sqlq-insert-1
+          - ref: sqlq-insert-2
+          - ref: sqlq-insert-3
     questions:
       - code: sql-c6l1-q1
         kind: CHOIX_UNIQUE
@@ -149,6 +154,51 @@ lessons:
         language: sql
         answers: ["INSERT"]
         explanation: "`INSERT INTO table (colonnes) VALUES (valeurs);`"
+      - code: sqlq-insert-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-dml
+        prompt: Quelle instruction ajoute une ligne ?
+        choices:
+          - label: "`INSERT INTO categories (nom) VALUES ('Jeux');`"
+            correct: true
+            why: Oui.
+          - label: "`ADD categories ('Jeux');`"
+            correct: false
+            why: ADD n'est pas une instruction d'insertion.
+          - label: "`UPDATE categories SET nom = 'Jeux';`"
+            correct: false
+            why: UPDATE modifie des lignes existantes.
+        explanation: INSERT INTO table (colonnes) VALUES (valeurs).
+      - code: sqlq-insert-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-dml
+        prompt: Que renvoie `INSERT ... RETURNING id` ?
+        choices:
+          - label: L'identifiant généré pour la nouvelle ligne
+            correct: true
+            why: "Oui : pratique pour l'utiliser ensuite."
+          - label: Le nombre de lignes de la table
+            correct: false
+            why: RETURNING renvoie des colonnes des lignes insérées.
+          - label: "Rien : c'est une erreur"
+            correct: false
+            why: RETURNING est une extension PostgreSQL valide.
+        explanation: RETURNING évite une requête supplémentaire pour connaître l'id généré.
+      - code: sqlq-insert-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-dml
+        prompt: Un INSERT peut ajouter plusieurs lignes d'un coup.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : `VALUES (...), (...), (...)`.'
+          - label: Faux
+            correct: false
+            why: Plusieurs groupes de valeurs séparés par des virgules sont acceptés.
+        explanation: 'Une seule instruction, plusieurs lignes : plus rapide que plusieurs INSERT.'
     exercises:
       - slug: sql-ex-insert-client
         kind: SQL
@@ -260,6 +310,11 @@ lessons:
         ref: sql-c6l2-q4
       - type: exercise
         ref: sql-ex-delete-commandes-annulees
+      - type: quiz
+        items:
+          - ref: sqlq-upd-1
+          - ref: sqlq-upd-2
+          - ref: sqlq-upd-3
     questions:
       - code: sql-c6l2-q1
         kind: CHOIX_UNIQUE
@@ -321,6 +376,51 @@ lessons:
         language: sql
         answers: ["SET"]
         explanation: "`SET colonne = valeur` ; plusieurs colonnes se séparent par des virgules : `SET a = 1, b = 2`."
+      - code: sqlq-upd-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-dml
+        prompt: Quel est le réflexe à avoir avant un UPDATE ou un DELETE ?
+        choices:
+          - label: Écrire le WHERE et le tester d'abord avec un SELECT
+            correct: true
+            why: 'Oui : on voit exactement les lignes touchées.'
+          - label: Supprimer les contraintes
+            correct: false
+            why: 'Surtout pas : elles protègent les données.'
+          - label: Ne jamais utiliser de WHERE
+            correct: false
+            why: Sans WHERE, toutes les lignes sont touchées.
+        explanation: SELECT avec le même WHERE, puis UPDATE/DELETE, idéalement dans une transaction.
+      - code: sqlq-upd-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-dml
+        prompt: Quelle requête augmente de 10 % le prix des produits de la catégorie 2 ?
+        choices:
+          - label: '`UPDATE produits SET prix = prix * 1.10 WHERE categorie_id = 2;`'
+            correct: true
+            why: Oui.
+          - label: '`UPDATE produits SET prix = 10% WHERE categorie_id = 2;`'
+            correct: false
+            why: Le prix deviendrait une valeur fixe (et `10%` n'est pas valide).
+          - label: '`UPDATE produits prix + 10 WHERE categorie_id = 2;`'
+            correct: false
+            why: Il manque SET, et +10 ajoute 10 €, pas 10 %.
+        explanation: SET colonne = expression, qui peut utiliser l'ancienne valeur.
+      - code: sqlq-upd-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-dml
+        prompt: Une clé étrangère peut empêcher un DELETE.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : on ne supprime pas une ligne encore référencée (par défaut).'
+          - label: Faux
+            correct: false
+            why: La contrainte protège l'intégrité référentielle.
+        explanation: 'Erreur 23503 : la ligne est encore utilisée ailleurs.'
     exercises:
       - slug: sql-ex-update-stock
         kind: SQL
@@ -396,6 +496,7 @@ lessons:
           Si la seconde échoue, la première ne doit pas rester seule. Une **transaction** garantit que ces
           opérations forment un **bloc indivisible**.
       - type: definition
+        id: def-transaction
         term: "Transaction"
         md: "Suite d'instructions exécutées comme une unité : soit toutes sont validées (`COMMIT`), soit aucune ne l'est (`ROLLBACK`)."
       - type: code
@@ -429,6 +530,7 @@ lessons:
       - type: question
         ref: sql-c6l3-q1
       - type: definition
+        id: def-acid
         term: "ACID"
         md: |
           - **Atomicité** : tout ou rien.
@@ -458,6 +560,13 @@ lessons:
         ref: sql-c6l3-q3
       - type: question
         ref: sql-c6l3-q4
+      - type: quiz
+        items:
+          - ref: sqlq-tx-1
+            review: def-transaction
+          - ref: sqlq-tx-2
+            review: def-acid
+          - ref: sqlq-tx-3
     questions:
       - code: sql-c6l3-q1
         kind: CHOIX_UNIQUE
@@ -517,6 +626,51 @@ lessons:
         answers: ["COMMIT"]
         explanation: "COMMIT rend les modifications définitives et visibles par les autres sessions."
 
+      - code: sqlq-tx-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-dml
+        prompt: Quelle instruction ouvre une transaction ?
+        choices:
+          - label: '`BEGIN`'
+            correct: true
+            why: Oui (ou START TRANSACTION).
+          - label: '`COMMIT`'
+            correct: false
+            why: COMMIT la termine en validant.
+          - label: '`SAVE`'
+            correct: false
+            why: SAVE n'existe pas en SQL.
+        explanation: BEGIN … COMMIT (valider) ou ROLLBACK (annuler).
+      - code: sqlq-tx-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-dml
+        prompt: Que garantit la **durabilité** (le D de ACID) ?
+        choices:
+          - label: Une fois validées, les données survivent à une panne
+            correct: true
+            why: Oui.
+          - label: Les transactions sont rapides
+            correct: false
+            why: ACID ne parle pas de vitesse.
+          - label: Les données ne changent jamais
+            correct: false
+            why: Elles changent, mais les changements validés sont conservés.
+        explanation: Atomicité, Cohérence, Isolation, Durabilité.
+      - code: sqlq-tx-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-jpa
+        prompt: Dans Spring, `@Transactional` sur une méthode de service regroupe toutes ses écritures en une seule transaction.
+        choices:
+          - label: Vrai
+            correct: true
+            why: "Oui : tout est validé à la fin, ou annulé en cas d'exception."
+          - label: Faux
+            correct: false
+            why: C'est précisément son rôle.
+        explanation: 'Commande + baisse du stock dans la même méthode `@Transactional` : tout ou rien.'
 bank:
   - code: sql-c6-b1
     kind: CHOIX_UNIQUE
