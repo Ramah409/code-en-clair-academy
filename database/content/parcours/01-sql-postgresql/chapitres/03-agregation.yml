@@ -1,0 +1,726 @@
+slug: agregation
+position: 3
+level: INTERMEDIAIRE
+title: "Agréger et regrouper"
+summary: "Compter, additionner, faire des moyennes, regrouper les lignes par catégorie et filtrer les groupes : les requêtes des tableaux de bord."
+quizQuestionCount: 15
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sql-fonctions-agregat
+    title: "Les fonctions d'agrégat : COUNT, SUM, AVG, MIN, MAX"
+    duration: 10
+    objective: "Résumer toute une table en une valeur : nombre de lignes, total, moyenne, minimum et maximum."
+    prerequisites: "SELECT, WHERE et NULL (chapitres 1 et 2)."
+    skills: [sql-agregation]
+    xp: 12
+    memo: |
+      - `COUNT(*)` compte les **lignes** ; `COUNT(col)` compte les valeurs **non NULL** de la colonne.
+      - `SUM`, `AVG`, `MIN`, `MAX` ignorent les NULL.
+      - `COUNT(DISTINCT col)` compte les valeurs différentes.
+      - Un agrégat sans GROUP BY renvoie **une seule ligne**.
+    commonMistakes: |
+      - Confondre `COUNT(*)` et `COUNT(colonne)` quand la colonne contient des NULL.
+      - Mélanger une colonne simple et un agrégat sans GROUP BY : `SELECT nom, MAX(prix)` provoque une erreur.
+      - Oublier d'arrondir une moyenne : `AVG` renvoie beaucoup de décimales.
+    blocks:
+      - type: text
+        md: |
+          Un tableau de bord n'affiche pas 40 commandes une par une : il affiche **« 40 commandes, 3 550 €
+          de chiffre d'affaires, panier moyen de 88 € »**. Ces valeurs de synthèse s'obtiennent avec les
+          **fonctions d'agrégat**, qui transforment plusieurs lignes en une seule valeur.
+      - type: definition
+        term: "Fonction d'agrégat"
+        md: "Fonction qui prend **un ensemble de lignes** et renvoie **une valeur** : `COUNT` (nombre), `SUM` (somme), `AVG` (moyenne), `MIN` et `MAX`."
+      - type: code
+        language: sql
+        title: "Le résumé du catalogue en une requête"
+        code: |
+          SELECT COUNT(*)            AS nb_produits,
+                 MIN(prix)           AS prix_min,
+                 MAX(prix)           AS prix_max,
+                 ROUND(AVG(prix), 2) AS prix_moyen,
+                 SUM(stock)          AS stock_total
+          FROM produits;
+        lines:
+          - n: 1
+            note: "`COUNT(*)` compte toutes les lignes de la table, quelles que soient leurs valeurs."
+          - n: 2
+            note: "Le plus petit prix du catalogue."
+          - n: 3
+            note: "Le plus grand prix."
+          - n: 4
+            note: "La moyenne des prix, arrondie à deux décimales pour rester lisible."
+          - n: 5
+            note: "La somme des stocks de tous les produits."
+          - n: 6
+            note: "Sans GROUP BY, toute la table forme un seul groupe : le résultat tient en **une ligne**."
+      - type: demo
+        title: "Démonstration"
+        md: "Ajoute `WHERE categorie_id = 1` pour obtenir le même résumé pour les seuls livres."
+        language: sql
+        code: |
+          SELECT COUNT(*)            AS nb_produits,
+                 MIN(prix)           AS prix_min,
+                 MAX(prix)           AS prix_max,
+                 ROUND(AVG(prix), 2) AS prix_moyen,
+                 SUM(stock)          AS stock_total
+          FROM produits;
+      - type: question
+        ref: sql-c3l1-q1
+      - type: text
+        md: |
+          **COUNT(*) ou COUNT(colonne) ?** La différence apparaît avec les NULL :
+      - type: demo
+        title: "Démonstration : trois façons de compter"
+        md: "25 clients, dont 3 sans ville renseignée, répartis dans 9 villes différentes."
+        language: sql
+        code: |
+          SELECT COUNT(*)              AS clients,
+                 COUNT(ville)          AS avec_ville,
+                 COUNT(DISTINCT ville) AS villes_differentes
+          FROM clients;
+      - type: question
+        ref: sql-c3l1-q2
+      - type: question
+        ref: sql-c3l1-q3
+      - type: exercise
+        ref: sql-ex-stats-avis
+      - type: question
+        ref: sql-c3l1-q4
+    questions:
+      - code: sql-c3l1-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-agregation
+        prompt: "Quelle requête donne le **prix du produit le plus cher** ?"
+        choices:
+          - label: "`SELECT MAX(prix) FROM produits;`"
+            correct: true
+            why: "MAX renvoie la plus grande valeur de la colonne."
+          - label: "`SELECT prix FROM produits WHERE prix = MAX;`"
+            correct: false
+            why: "MAX est une fonction, elle s'utilise avec des parenthèses et pas dans WHERE."
+          - label: "`SELECT COUNT(prix) FROM produits;`"
+            correct: false
+            why: "COUNT compte les valeurs, il ne cherche pas la plus grande."
+        explanation: "`MAX(colonne)` et `MIN(colonne)` donnent directement les extrêmes. Pour afficher aussi le nom du produit, il faudra `ORDER BY prix DESC LIMIT 1` ou une sous-requête."
+      - code: sql-c3l1-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "La table `avis` contient 26 avis, dont 3 sans commentaire. Que renvoie cette requête ?"
+        snippet: |
+          SELECT COUNT(*), COUNT(commentaire)
+          FROM avis;
+        language: sql
+        choices:
+          - label: "26 et 23"
+            correct: true
+            why: "COUNT(*) compte toutes les lignes ; COUNT(commentaire) ignore les 3 NULL."
+          - label: "26 et 26"
+            correct: false
+            why: "COUNT(colonne) ne compte pas les NULL."
+          - label: "23 et 23"
+            correct: false
+            why: "COUNT(*) compte les lignes, même si certaines colonnes sont NULL."
+        explanation: "Retiens : `COUNT(*)` = nombre de lignes ; `COUNT(col)` = nombre de valeurs **renseignées** dans col."
+      - code: sql-c3l1-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "`AVG(note)` compte une note NULL comme un zéro dans le calcul de la moyenne."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Les agrégats ignorent les NULL : ni au numérateur, ni au dénominateur."
+          - label: "Faux"
+            correct: true
+            why: "La moyenne est calculée sur les seules valeurs renseignées."
+        explanation: "Pour compter les NULL comme 0 : `AVG(COALESCE(note, 0))`. Le choix dépend du sens métier."
+      - code: sql-c3l1-q4
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-agregation
+        prompt: "Complète pour compter le nombre de **villes différentes** où habitent les clients."
+        snippet: |
+          SELECT COUNT(____ ville) AS nb_villes
+          FROM clients;
+        language: sql
+        answers: ["DISTINCT"]
+        explanation: "`COUNT(DISTINCT col)` compte les valeurs distinctes non NULL. Ici : 9 villes."
+    exercises:
+      - slug: sql-ex-stats-avis
+        kind: SQL
+        title: "Statistiques des avis"
+        difficulty: FACILE
+        skill: sql-agregation
+        statement: |
+          Affiche en une seule ligne :
+          - le **nombre total d'avis** (`nb_avis`) ;
+          - la **note moyenne** arrondie à 2 décimales (`note_moyenne`) ;
+          - la **note la plus basse** (`note_min`) et la **plus haute** (`note_max`).
+        criteria: "Une ligne, 4 colonnes : nb_avis, note_moyenne (2 décimales), note_min, note_max."
+        hints:
+          - "Toutes les valeurs viennent de la table avis, sans GROUP BY."
+          - "Utilise COUNT(*), ROUND(AVG(note), 2), MIN(note) et MAX(note)."
+          - "`SELECT COUNT(*) AS nb_avis, ROUND(AVG(note), 2) AS note_moyenne, MIN(note) AS note_min, MAX(note) AS note_max FROM avis;`"
+        solution: |
+          SELECT COUNT(*)            AS nb_avis,
+                 ROUND(AVG(note), 2) AS note_moyenne,
+                 MIN(note)           AS note_min,
+                 MAX(note)           AS note_max
+          FROM avis;
+        explanation: |
+          Chaque fonction d'agrégat parcourt toutes les lignes de `avis` et produit une valeur. Comme il n'y a
+          pas de GROUP BY, la table entière forme un seul groupe : une seule ligne en résultat.
+        xp: 15
+        payload:
+          mode: READ
+
+  # ===================================================================== LEÇON 2
+  - slug: sql-group-by
+    title: "Regrouper les lignes avec GROUP BY"
+    duration: 12
+    objective: "Calculer un agrégat par catégorie, par client, par mois… et respecter la règle d'or du GROUP BY."
+    prerequisites: "Fonctions d'agrégat."
+    skills: [sql-agregation]
+    xp: 12
+    memo: |
+      - `GROUP BY col` forme **un groupe par valeur** de col ; les agrégats sont calculés **par groupe**.
+      - Règle d'or : toute colonne du SELECT est **soit dans le GROUP BY, soit dans un agrégat**.
+      - Les NULL forment **un groupe à part**.
+      - On peut grouper sur plusieurs colonnes ou sur une expression (`EXTRACT(YEAR FROM date)`).
+    commonMistakes: |
+      - `SELECT nom, categorie_id, COUNT(*) ... GROUP BY categorie_id` : `nom` n'est ni groupé ni agrégé → erreur 42803.
+      - Oublier le groupe NULL dans l'analyse du résultat.
+    blocks:
+      - type: text
+        md: |
+          « Combien de produits par catégorie ? », « Combien de commandes par client ? » : ces questions
+          demandent un agrégat **pour chaque valeur** d'une colonne. C'est le rôle de `GROUP BY`.
+      - type: definition
+        term: "GROUP BY"
+        md: |
+          Rassemble les lignes qui ont la **même valeur** dans la ou les colonnes indiquées. Chaque groupe
+          produit **une ligne** de résultat, et les fonctions d'agrégat sont calculées **dans chaque groupe**.
+      - type: code
+        language: sql
+        title: "Nombre de produits par catégorie"
+        code: |
+          SELECT categorie_id,
+                 COUNT(*) AS nb_produits
+          FROM produits
+          GROUP BY categorie_id
+          ORDER BY categorie_id;
+        lines:
+          - n: 1
+            note: "La colonne de regroupement est affichée : elle identifie chaque groupe."
+          - n: 2
+            note: "COUNT(*) est calculé **dans chaque groupe** : le nombre de produits de la catégorie."
+          - n: 4
+            note: "Un groupe par valeur de categorie_id. Le produit sans catégorie forme un groupe NULL."
+      - type: demo
+        title: "Démonstration"
+        md: "Remarque la ligne où `categorie_id` est NULL : le « Coffret surprise » sans catégorie forme son propre groupe."
+        language: sql
+        code: |
+          SELECT categorie_id,
+                 COUNT(*) AS nb_produits,
+                 ROUND(AVG(prix), 2) AS prix_moyen
+          FROM produits
+          GROUP BY categorie_id
+          ORDER BY categorie_id;
+      - type: question
+        ref: sql-c3l2-q1
+      - type: callout
+        variant: warning
+        title: "La règle d'or"
+        md: |
+          Dans une requête avec GROUP BY, chaque colonne du SELECT doit être **dans le GROUP BY** ou
+          **dans une fonction d'agrégat**. Sinon, PostgreSQL ne sait pas quelle valeur afficher pour le
+          groupe et renvoie l'erreur *« must appear in the GROUP BY clause or be used in an aggregate function »*.
+      - type: demo
+        title: "Démonstration : provoque l'erreur"
+        md: "Exécute, lis l'erreur, puis corrige en retirant `nom` du SELECT."
+        language: sql
+        code: |
+          SELECT categorie_id, nom, COUNT(*)
+          FROM produits
+          GROUP BY categorie_id;
+      - type: question
+        ref: sql-c3l2-q2
+      - type: code
+        language: sql
+        title: "Regrouper par une expression"
+        code: |
+          SELECT EXTRACT(YEAR FROM date_commande) AS annee,
+                 COUNT(*) AS nb_commandes
+          FROM commandes
+          GROUP BY EXTRACT(YEAR FROM date_commande)
+          ORDER BY annee;
+        lines:
+          - n: 1
+            note: "L'année de la commande, extraite de la date."
+          - n: 4
+            note: "On regroupe sur la même expression. PostgreSQL accepte aussi `GROUP BY annee` (l'alias) ou `GROUP BY 1` (1ʳᵉ colonne)."
+      - type: question
+        ref: sql-c3l2-q3
+      - type: exercise
+        ref: sql-ex-commandes-par-statut
+      - type: question
+        ref: sql-c3l2-q4
+      - type: exercise
+        ref: sql-ex-masse-salariale
+    questions:
+      - code: sql-c3l2-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-agregation
+        prompt: "Avec `GROUP BY ville`, combien de lignes obtient-on ?"
+        choices:
+          - label: "Une ligne par valeur différente de ville (NULL compris)"
+            correct: true
+            why: "Chaque valeur distincte forme un groupe, et les NULL forment un groupe à part."
+          - label: "Une ligne par client"
+            correct: false
+            why: "Ce serait le cas sans GROUP BY."
+          - label: "Une seule ligne"
+            correct: false
+            why: "C'est le cas d'un agrégat sans GROUP BY."
+        explanation: "GROUP BY produit autant de lignes que de groupes, c'est-à-dire de valeurs distinctes dans les colonnes de regroupement."
+      - code: sql-c3l2-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Pourquoi cette requête échoue-t-elle ?"
+        snippet: |
+          SELECT client_id, statut, COUNT(*)
+          FROM commandes
+          GROUP BY client_id;
+        language: sql
+        choices:
+          - label: "`statut` n'est ni dans le GROUP BY ni dans une fonction d'agrégat"
+            correct: true
+            why: "Un client a plusieurs commandes de statuts différents : quelle valeur afficher ?"
+          - label: "COUNT(*) est interdit avec GROUP BY"
+            correct: false
+            why: "C'est au contraire l'usage le plus courant."
+          - label: "GROUP BY doit être placé avant FROM"
+            correct: false
+            why: "L'ordre est SELECT, FROM, WHERE, GROUP BY."
+        explanation: "Pour corriger : `GROUP BY client_id, statut` (un groupe par couple client/statut) ou retirer `statut` du SELECT."
+      - code: sql-c3l2-q3
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "La table `employes` compte 12 employés, répartis dans 4 services, et un consultant sans service. Combien de lignes renvoie cette requête ?"
+        snippet: |
+          SELECT service_id, COUNT(*)
+          FROM employes
+          GROUP BY service_id;
+        language: sql
+        choices:
+          - label: "5"
+            correct: true
+            why: "Un groupe par service (4) plus un groupe pour la valeur NULL."
+          - label: "4"
+            correct: false
+            why: "Le consultant sans service forme un groupe NULL supplémentaire."
+          - label: "12"
+            correct: false
+            why: "Il y a une ligne par groupe, pas par employé."
+          - label: "1"
+            correct: false
+            why: "GROUP BY produit plusieurs groupes."
+        explanation: "Les NULL forment toujours un groupe à part dans un GROUP BY. Filtre-les avec `WHERE service_id IS NOT NULL` si besoin."
+      - code: sql-c3l2-q4
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-agregation
+        prompt: "Complète pour obtenir le nombre de clients par ville."
+        snippet: |
+          SELECT ville, COUNT(*) AS nb_clients
+          FROM clients
+          ____ ville;
+        language: sql
+        answers: ["GROUP BY"]
+        explanation: "`GROUP BY ville` crée un groupe par ville ; COUNT(*) compte les clients de chaque groupe."
+    exercises:
+      - slug: sql-ex-commandes-par-statut
+        kind: SQL
+        title: "Commandes par statut"
+        difficulty: FACILE
+        skill: sql-agregation
+        statement: |
+          Affiche chaque **statut** de commande et le **nombre de commandes** correspondant (colonne
+          `nb_commandes`), du statut le plus fréquent au moins fréquent.
+        criteria: "2 colonnes (statut, nb_commandes), une ligne par statut, triées par nombre décroissant."
+        hints:
+          - "Il faut un groupe par statut."
+          - "`COUNT(*)` compte les commandes de chaque groupe ; trie ensuite par ce nombre."
+          - "`SELECT statut, COUNT(*) AS nb_commandes FROM commandes GROUP BY statut ORDER BY nb_commandes DESC;`"
+        solution: |
+          SELECT statut, COUNT(*) AS nb_commandes
+          FROM commandes
+          GROUP BY statut
+          ORDER BY nb_commandes DESC;
+        explanation: |
+          GROUP BY statut forme 4 groupes (LIVREE, EN_ATTENTE, EXPEDIEE, ANNULEE). ORDER BY peut utiliser
+          l'alias `nb_commandes`, car le tri est effectué après le calcul des agrégats.
+        xp: 15
+        payload:
+          mode: READ
+          ordered: true
+      - slug: sql-ex-masse-salariale
+        kind: SQL
+        title: "Masse salariale par service"
+        difficulty: INTERMEDIAIRE
+        skill: sql-agregation
+        statement: |
+          Pour chaque **service_id** (en excluant les employés sans service), affiche :
+          - le nombre d'employés (`nb_employes`) ;
+          - la somme des salaires (`masse_salariale`) ;
+          - le salaire moyen arrondi à 2 décimales (`salaire_moyen`).
+
+          Trie par masse salariale décroissante.
+        criteria: "4 colonnes, 4 lignes (services 1 à 4), triées par masse salariale décroissante."
+        hints:
+          - "Exclure les employés sans service se fait **avant** le regroupement, avec WHERE."
+          - "Trois agrégats : COUNT(*), SUM(salaire) et ROUND(AVG(salaire), 2)."
+          - "`WHERE service_id IS NOT NULL GROUP BY service_id ORDER BY masse_salariale DESC`"
+        solution: |
+          SELECT service_id,
+                 COUNT(*)               AS nb_employes,
+                 SUM(salaire)           AS masse_salariale,
+                 ROUND(AVG(salaire), 2) AS salaire_moyen
+          FROM employes
+          WHERE service_id IS NOT NULL
+          GROUP BY service_id
+          ORDER BY masse_salariale DESC;
+        explanation: |
+          WHERE retire le consultant sans service **avant** la formation des groupes. On obtient ensuite un
+          groupe par service avec ses trois indicateurs. Le service Développement (2) arrive en tête.
+        xp: 20
+        payload:
+          mode: READ
+          ordered: true
+
+  # ===================================================================== LEÇON 3
+  - slug: sql-having
+    title: "Filtrer des groupes avec HAVING"
+    duration: 10
+    objective: "Distinguer WHERE (filtre des lignes) et HAVING (filtre des groupes) et connaître l'ordre d'exécution d'une requête."
+    prerequisites: "GROUP BY."
+    skills: [sql-agregation]
+    xp: 12
+    memo: |
+      - `WHERE` filtre les **lignes avant** le regroupement ; `HAVING` filtre les **groupes après**.
+      - Une condition sur un agrégat (`COUNT(*) >= 3`) va **toujours** dans HAVING.
+      - Ordre logique d'exécution : FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT.
+    commonMistakes: |
+      - `WHERE COUNT(*) > 2` : un agrégat n'est pas encore calculé au moment du WHERE → erreur.
+      - Mettre dans HAVING une condition simple sur une colonne : ça fonctionne, mais c'est moins efficace et moins lisible que WHERE.
+    blocks:
+      - type: text
+        md: |
+          « Quels clients ont passé **au moins 3 commandes** ? » Il faut compter les commandes **par client**
+          (GROUP BY), puis ne garder que les **groupes** dont le compte atteint 3. Ce filtre sur des groupes
+          s'écrit avec `HAVING`.
+      - type: code
+        language: sql
+        title: "Les clients fidèles"
+        code: |
+          SELECT client_id,
+                 COUNT(*) AS nb_commandes
+          FROM commandes
+          GROUP BY client_id
+          HAVING COUNT(*) >= 3
+          ORDER BY nb_commandes DESC;
+        lines:
+          - n: 4
+            note: "Un groupe par client, avec le nombre de ses commandes."
+          - n: 5
+            note: "HAVING s'applique **aux groupes** : on ne garde que ceux qui ont au moins 3 commandes."
+          - n: 6
+            note: "Le tri se fait après, sur les groupes restants."
+      - type: demo
+        title: "Démonstration"
+        language: sql
+        code: |
+          SELECT client_id,
+                 COUNT(*) AS nb_commandes
+          FROM commandes
+          GROUP BY client_id
+          HAVING COUNT(*) >= 3
+          ORDER BY nb_commandes DESC;
+      - type: question
+        ref: sql-c3l3-q1
+      - type: definition
+        term: "Ordre logique d'exécution"
+        md: |
+          PostgreSQL n'exécute pas une requête dans l'ordre où elle est écrite :
+          1. `FROM` (et les jointures) : quelles lignes ?
+          2. `WHERE` : on écarte des lignes ;
+          3. `GROUP BY` : on forme les groupes ;
+          4. `HAVING` : on écarte des groupes ;
+          5. `SELECT` : on calcule les colonnes (et les alias) ;
+          6. `ORDER BY` puis `LIMIT`.
+
+          C'est pourquoi un alias du SELECT est utilisable dans ORDER BY mais **pas** dans WHERE.
+      - type: compare
+        left:
+          title: "WHERE : filtre des lignes"
+          language: sql
+          code: |
+            SELECT client_id, COUNT(*)
+            FROM commandes
+            WHERE statut = 'LIVREE'
+            GROUP BY client_id;
+          md: "On ne compte que les commandes **livrées** de chaque client."
+        right:
+          title: "HAVING : filtre des groupes"
+          language: sql
+          code: |
+            SELECT client_id, COUNT(*)
+            FROM commandes
+            GROUP BY client_id
+            HAVING COUNT(*) >= 3;
+          md: "On ne garde que les **clients** ayant au moins 3 commandes."
+      - type: question
+        ref: sql-c3l3-q2
+      - type: question
+        ref: sql-c3l3-q3
+      - type: exercise
+        ref: sql-ex-categories-bien-fournies
+      - type: question
+        ref: sql-c3l3-q4
+    questions:
+      - code: sql-c3l3-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Où placer la condition `SUM(stock) > 50` pour ne garder que les catégories au stock total supérieur à 50 ?"
+        choices:
+          - label: "Dans une clause HAVING, après GROUP BY"
+            correct: true
+            why: "La condition porte sur un agrégat, calculé par groupe : c'est le rôle de HAVING."
+          - label: "Dans la clause WHERE"
+            correct: false
+            why: "Au moment du WHERE, les groupes et leurs sommes n'existent pas encore."
+          - label: "Dans le SELECT"
+            correct: false
+            why: "Le SELECT choisit les colonnes, il ne filtre pas."
+        explanation: "Règle simple : condition sur une **colonne** → WHERE ; condition sur un **agrégat** → HAVING."
+      - code: sql-c3l3-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Que se passe-t-il à l'exécution de cette requête ?"
+        snippet: |
+          SELECT client_id, COUNT(*) AS nb
+          FROM commandes
+          WHERE nb >= 3
+          GROUP BY client_id;
+        language: sql
+        choices:
+          - label: "Erreur : la colonne « nb » n'existe pas"
+            correct: true
+            why: "WHERE est évalué avant le SELECT : l'alias nb n'est pas encore défini."
+          - label: "Elle renvoie les clients ayant au moins 3 commandes"
+            correct: false
+            why: "Il faudrait `HAVING COUNT(*) >= 3`."
+          - label: "Elle renvoie toutes les commandes"
+            correct: false
+            why: "La requête ne s'exécute pas."
+        explanation: "L'ordre d'exécution explique l'erreur : FROM → WHERE → GROUP BY → HAVING → SELECT. Corrige avec `HAVING COUNT(*) >= 3`."
+      - code: sql-c3l3-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-agregation
+        prompt: "Une même requête peut contenir à la fois WHERE et HAVING."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "WHERE filtre d'abord les lignes, HAVING filtre ensuite les groupes."
+          - label: "Faux"
+            correct: false
+            why: "Les deux sont complémentaires et souvent utilisés ensemble."
+        explanation: "Exemple : les clients ayant au moins 2 commandes **livrées** → `WHERE statut = 'LIVREE' GROUP BY client_id HAVING COUNT(*) >= 2`."
+      - code: sql-c3l3-q4
+        kind: COMPLETER_CODE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Complète pour n'afficher que les villes comptant **au moins 3 clients**."
+        snippet: |
+          SELECT ville, COUNT(*) AS nb
+          FROM clients
+          GROUP BY ville
+          ____ COUNT(*) >= 3;
+        language: sql
+        answers: ["HAVING"]
+        explanation: "HAVING filtre les groupes selon la valeur d'un agrégat. Attention : le groupe NULL (clients sans ville) compte aussi 3 clients et apparaît dans le résultat !"
+    exercises:
+      - slug: sql-ex-categories-bien-fournies
+        kind: SQL
+        title: "Catégories bien fournies"
+        difficulty: INTERMEDIAIRE
+        skill: sql-agregation
+        statement: |
+          Affiche les **categorie_id** (en excluant les produits sans catégorie) dont le **stock total**
+          dépasse **100 unités**, avec ce stock total dans une colonne `stock_total`, du plus grand au plus
+          petit.
+        criteria: "2 colonnes (categorie_id, stock_total), uniquement les catégories dont le stock total > 100, tri décroissant."
+        hints:
+          - "WHERE pour exclure les produits sans catégorie, GROUP BY categorie_id, puis un filtre sur le groupe."
+          - "La condition sur `SUM(stock)` va dans HAVING."
+          - "`GROUP BY categorie_id HAVING SUM(stock) > 100 ORDER BY stock_total DESC`"
+        solution: |
+          SELECT categorie_id, SUM(stock) AS stock_total
+          FROM produits
+          WHERE categorie_id IS NOT NULL
+          GROUP BY categorie_id
+          HAVING SUM(stock) > 100
+          ORDER BY stock_total DESC;
+        explanation: |
+          WHERE agit sur les lignes (produits), HAVING sur les groupes (catégories). La somme des stocks est
+          calculée par catégorie, puis seules les catégories dépassant 100 unités sont conservées.
+        xp: 20
+        payload:
+          mode: READ
+          ordered: true
+          requiredKeywords:
+            - pattern: "\\bhaving\\b"
+              message: "Le filtre sur le stock total doit utiliser HAVING."
+
+bank:
+  - code: sql-c3-b1
+    kind: RESULTAT_CODE
+    difficulty: 1
+    skill: sql-agregation
+    prompt: "Combien de lignes renvoie une requête avec des fonctions d'agrégat **sans** GROUP BY ?"
+    snippet: |
+      SELECT COUNT(*), AVG(prix) FROM produits WHERE prix > 1000;
+    language: sql
+    choices:
+      - label: "Exactement une ligne"
+        correct: true
+        why: "Sans GROUP BY, toutes les lignes forment un seul groupe, même vide : COUNT vaut 0 et AVG vaut NULL."
+      - label: "Aucune ligne, car aucun produit ne coûte plus de 1000 €"
+        correct: false
+        why: "Un agrégat sans GROUP BY renvoie toujours une ligne, même sur un ensemble vide."
+      - label: "Une ligne par produit"
+        correct: false
+        why: "Les agrégats résument les lignes en une seule."
+    explanation: "Sur un ensemble vide : COUNT renvoie 0, et SUM/AVG/MIN/MAX renvoient NULL."
+  - code: sql-c3-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-agregation
+    prompt: "Quelle requête calcule le **chiffre d'affaires** total des lignes de commande ?"
+    choices:
+      - label: "`SELECT SUM(quantite * prix_unitaire) FROM lignes_commande;`"
+        correct: true
+        why: "On multiplie ligne par ligne, puis on additionne."
+      - label: "`SELECT SUM(quantite) * SUM(prix_unitaire) FROM lignes_commande;`"
+        correct: false
+        why: "Multiplier deux sommes ne donne pas la somme des produits."
+      - label: "`SELECT COUNT(prix_unitaire) FROM lignes_commande;`"
+        correct: false
+        why: "COUNT compte des lignes, il n'additionne pas des montants."
+    explanation: "Une fonction d'agrégat peut s'appliquer à une **expression** calculée pour chaque ligne."
+  - code: sql-c3-b3
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-agregation
+    prompt: "Dans quel ordre PostgreSQL évalue-t-il logiquement ces clauses ?"
+    choices:
+      - label: "FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY"
+        correct: true
+        why: "C'est l'ordre logique d'exécution, différent de l'ordre d'écriture."
+      - label: "SELECT, FROM, WHERE, GROUP BY, HAVING, ORDER BY"
+        correct: false
+        why: "C'est l'ordre d'écriture, pas l'ordre d'exécution."
+      - label: "FROM, GROUP BY, WHERE, SELECT, HAVING, ORDER BY"
+        correct: false
+        why: "WHERE agit avant GROUP BY et HAVING après."
+    explanation: "Connaître l'ordre logique explique pourquoi un alias n'est pas utilisable dans WHERE mais l'est dans ORDER BY."
+  - code: sql-c3-b4
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: sql-agregation
+    prompt: "`SELECT MAX(prix), nom FROM produits;` affiche le nom du produit le plus cher."
+    choices:
+      - label: "Vrai"
+        correct: false
+        why: "La requête échoue : nom n'est ni groupé ni agrégé."
+      - label: "Faux"
+        correct: true
+        why: "Pour obtenir ce nom, on utilise `ORDER BY prix DESC LIMIT 1` ou une sous-requête."
+    explanation: "Un agrégat résume un groupe ; il ne « pointe » pas vers une ligne précise."
+  - code: sql-c3-b5
+    kind: COMPLETER_CODE
+    difficulty: 2
+    skill: sql-agregation
+    prompt: "Complète pour obtenir le nombre de commandes par client **et** par statut."
+    snippet: |
+      SELECT client_id, statut, COUNT(*)
+      FROM commandes
+      GROUP BY ____;
+    language: sql
+    answers: ["client_id, statut", "statut, client_id"]
+    explanation: "Grouper sur plusieurs colonnes forme un groupe par **combinaison** de valeurs."
+  - code: sql-c3-b6
+    kind: CHOIX_MULTIPLE
+    difficulty: 3
+    skill: sql-agregation
+    prompt: "Quelles requêtes sont valides en PostgreSQL ? (plusieurs réponses)"
+    choices:
+      - label: "`SELECT ville, COUNT(*) FROM clients GROUP BY ville ORDER BY COUNT(*) DESC;`"
+        correct: true
+        why: "ORDER BY peut trier sur un agrégat."
+      - label: "`SELECT ville, COUNT(*) AS n FROM clients GROUP BY ville HAVING n > 2;`"
+        correct: false
+        why: "PostgreSQL n'accepte pas l'alias dans HAVING : il faut répéter COUNT(*)."
+      - label: "`SELECT ville, COUNT(*) AS n FROM clients GROUP BY 1 ORDER BY n DESC;`"
+        correct: true
+        why: "`GROUP BY 1` désigne la 1ʳᵉ colonne du SELECT, et ORDER BY accepte l'alias."
+      - label: "`SELECT COUNT(*) FROM clients WHERE COUNT(*) > 2;`"
+        correct: false
+        why: "Un agrégat est interdit dans WHERE."
+    explanation: "En PostgreSQL : alias autorisé dans ORDER BY, interdit dans WHERE et HAVING."
+  - code: sql-c3-b7
+    kind: RESULTAT_CODE
+    difficulty: 2
+    skill: sql-agregation
+    prompt: "Que renvoie cette requête sur les valeurs (4, NULL, 2) ?"
+    snippet: |
+      SELECT AVG(x) FROM (VALUES (4), (NULL), (2)) AS t(x);
+    language: sql
+    choices:
+      - label: "3"
+        correct: true
+        why: "La moyenne est calculée sur 4 et 2 seulement : (4 + 2) / 2 = 3."
+      - label: "2"
+        correct: false
+        why: "Ce serait (4 + 0 + 2) / 3, en comptant NULL comme 0."
+      - label: "NULL"
+        correct: false
+        why: "Un seul NULL ne rend pas la moyenne NULL : il est ignoré."
+    explanation: "Les agrégats ignorent les NULL. `VALUES` permet de créer une petite table à la volée pour tester."
+  - code: sql-c3-b8
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: sql-agregation
+    prompt: "Quelle requête donne le nombre de clients ayant passé **au moins une** commande ?"
+    choices:
+      - label: "`SELECT COUNT(DISTINCT client_id) FROM commandes;`"
+        correct: true
+        why: "Chaque client n'est compté qu'une fois, quel que soit son nombre de commandes."
+      - label: "`SELECT COUNT(client_id) FROM commandes;`"
+        correct: false
+        why: "Cela compte les commandes (40), pas les clients."
+      - label: "`SELECT COUNT(*) FROM clients;`"
+        correct: false
+        why: "Cela compte tous les clients, y compris ceux sans commande."
+    explanation: "COUNT(DISTINCT ...) est l'outil idéal pour compter des « entités différentes » dans une table de faits."

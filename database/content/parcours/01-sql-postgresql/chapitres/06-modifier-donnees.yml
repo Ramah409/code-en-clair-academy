@@ -1,0 +1,630 @@
+slug: modifier-donnees
+position: 6
+level: INTERMEDIAIRE
+title: "Modifier les données"
+summary: "Ajouter, mettre à jour et supprimer des lignes en toute sécurité, et garantir la cohérence avec les transactions."
+quizQuestionCount: 15
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sql-insert
+    title: "Ajouter des lignes avec INSERT"
+    duration: 10
+    objective: "Insérer une ou plusieurs lignes en nommant les colonnes et comprendre le rôle des contraintes."
+    prerequisites: "Structure des tables (clés, types)."
+    skills: [sql-dml]
+    xp: 12
+    memo: |
+      - `INSERT INTO table (col1, col2) VALUES (v1, v2);` : **nomme toujours les colonnes**.
+      - Plusieurs lignes : `VALUES (...), (...), (...)`.
+      - Les colonnes omises prennent leur valeur **DEFAULT** (ou NULL).
+      - `RETURNING` renvoie les valeurs insérées (très utile pour récupérer l'id généré).
+      - Les contraintes (clé primaire, NOT NULL, UNIQUE, CHECK, clé étrangère) peuvent refuser l'insertion.
+    commonMistakes: |
+      - `INSERT INTO table VALUES (...)` sans liste de colonnes : fragile si la table évolue.
+      - Oublier les apostrophes autour des textes et des dates.
+      - Insérer une clé étrangère qui ne correspond à aucune ligne → erreur 23503.
+    blocks:
+      - type: callout
+        variant: info
+        title: "Rien ne sera abîmé"
+        md: "Dans le laboratoire, chaque exécution est **annulée** à la fin (ROLLBACK). Tu peux insérer, modifier et supprimer librement : la base pédagogique reste intacte pour tout le monde."
+      - type: text
+        md: |
+          Quand une personne s'inscrit sur un site, l'application exécute un `INSERT`. C'est l'instruction qui
+          **ajoute** une ligne dans une table.
+      - type: code
+        language: sql
+        title: "Ajouter une catégorie"
+        code: |
+          INSERT INTO categories (id, nom)
+          VALUES (9, 'Bien-être')
+          RETURNING id, nom;
+        lines:
+          - n: 1
+            note: "La table cible, puis **la liste des colonnes** qu'on remplit, entre parenthèses."
+          - n: 2
+            note: "Les valeurs, **dans le même ordre** que les colonnes. Le texte est entre apostrophes."
+          - n: 3
+            note: "`RETURNING` (spécifique à PostgreSQL) affiche la ligne insérée, sans refaire de SELECT."
+      - type: demo
+        title: "Démonstration"
+        md: "Exécute, puis exécute une seconde fois avec le même id : la contrainte de clé primaire refuse le doublon (erreur 23505)."
+        language: sql
+        code: |
+          INSERT INTO categories (id, nom)
+          VALUES (9, 'Bien-être')
+          RETURNING id, nom;
+      - type: question
+        ref: sql-c6l1-q1
+      - type: code
+        language: sql
+        title: "Plusieurs lignes, puis vérification"
+        code: |
+          INSERT INTO categories (id, nom)
+          VALUES (9, 'Bien-être'),
+                 (10, 'Cuisine');
+          SELECT id, nom FROM categories ORDER BY id;
+        lines:
+          - n: 2
+            note: "Chaque ligne à insérer est un groupe de valeurs entre parenthèses…"
+          - n: 3
+            note: "…séparé du suivant par une virgule. Une seule instruction insère les deux lignes."
+          - n: 4
+            note: "Un SELECT dans la même exécution permet de vérifier le résultat avant l'annulation."
+      - type: demo
+        title: "Démonstration"
+        language: sql
+        code: |
+          INSERT INTO categories (id, nom)
+          VALUES (9, 'Bien-être'),
+                 (10, 'Cuisine');
+          SELECT id, nom FROM categories ORDER BY id;
+      - type: question
+        ref: sql-c6l1-q2
+      - type: question
+        ref: sql-c6l1-q3
+      - type: exercise
+        ref: sql-ex-insert-client
+      - type: question
+        ref: sql-c6l1-q4
+    questions:
+      - code: sql-c6l1-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-dml
+        prompt: "Pourquoi est-il recommandé de lister les colonnes dans un INSERT ?"
+        choices:
+          - label: "Pour que l'instruction reste correcte même si des colonnes sont ajoutées ou réordonnées plus tard"
+            correct: true
+            why: "Sans liste, les valeurs dépendent de l'ordre exact des colonnes de la table."
+          - label: "Parce que PostgreSQL l'exige toujours"
+            correct: false
+            why: "C'est facultatif, mais fortement recommandé."
+          - label: "Pour que l'insertion soit plus rapide"
+            correct: false
+            why: "Aucun effet sur la vitesse."
+        explanation: "Nommer les colonnes rend le code lisible et robuste. C'est aussi ce que génère JPA/Hibernate."
+      - code: sql-c6l1-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-dml
+        prompt: "La table `produits` impose `prix >= 0` (contrainte CHECK). Que se passe-t-il ?"
+        snippet: |
+          INSERT INTO produits (id, nom, categorie_id, prix, stock, date_ajout)
+          VALUES (31, 'Erreur de saisie', 1, -5, 10, '2025-07-01');
+        language: sql
+        choices:
+          - label: "Erreur : la contrainte CHECK est violée, rien n'est inséré"
+            correct: true
+            why: "La base refuse toute ligne qui ne respecte pas ses règles."
+          - label: "La ligne est insérée avec un prix de 0"
+            correct: false
+            why: "PostgreSQL ne corrige jamais une valeur : il refuse."
+          - label: "La ligne est insérée avec un prix de -5"
+            correct: false
+            why: "La contrainte CHECK l'en empêche."
+        explanation: "Les contraintes sont le dernier rempart de la qualité des données : même si le frontend ou l'API laissent passer une erreur, la base la refuse."
+      - code: sql-c6l1-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-dml
+        prompt: "Une colonne omise dans un INSERT reçoit sa valeur DEFAULT si elle en a une, sinon NULL."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Si elle est NOT NULL sans DEFAULT, l'insertion échoue."
+          - label: "Faux"
+            correct: false
+            why: "C'est bien le comportement de PostgreSQL."
+        explanation: "Exemple : `stock INTEGER NOT NULL DEFAULT 0` reçoit 0 si on ne le précise pas."
+      - code: sql-c6l1-q4
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-dml
+        prompt: "Complète pour insérer un service."
+        snippet: |
+          ____ INTO services (id, nom, ville)
+          VALUES (5, 'Formation', 'Nantes');
+        language: sql
+        answers: ["INSERT"]
+        explanation: "`INSERT INTO table (colonnes) VALUES (valeurs);`"
+    exercises:
+      - slug: sql-ex-insert-client
+        kind: SQL
+        title: "Inscrire une nouvelle cliente"
+        difficulty: FACILE
+        skill: sql-dml
+        statement: |
+          Une nouvelle cliente s'inscrit : **Nadia Ferhat**, e-mail `nadia.ferhat@exemple.fr`, ville **Rouen**,
+          inscrite le **2025-07-01**. Son identifiant sera **26**.
+
+          Écris l'instruction qui l'ajoute dans la table `clients`.
+        criteria: "Une ligne insérée dans clients avec exactement ces valeurs."
+        hints:
+          - "Liste les colonnes : id, prenom, nom, email, ville, date_inscription."
+          - "Les textes et la date s'écrivent entre apostrophes."
+          - "`INSERT INTO clients (id, prenom, nom, email, ville, date_inscription) VALUES (26, 'Nadia', 'Ferhat', ...);`"
+        solution: |
+          INSERT INTO clients (id, prenom, nom, email, ville, date_inscription)
+          VALUES (26, 'Nadia', 'Ferhat', 'nadia.ferhat@exemple.fr', 'Rouen', '2025-07-01');
+        explanation: |
+          Chaque valeur correspond à la colonne de même position dans la liste. La vérification relit la table
+          après ton instruction : la nouvelle ligne doit y figurer avec exactement ces valeurs.
+        xp: 15
+        payload:
+          mode: WRITE
+          check: "SELECT id, prenom, nom, email, ville, date_inscription FROM clients WHERE id > 25 ORDER BY id"
+          starter: "INSERT INTO clients (id, prenom, nom, email, ville, date_inscription)\nVALUES ();\n"
+
+  # ===================================================================== LEÇON 2
+  - slug: sql-update-delete
+    title: "Modifier et supprimer : UPDATE et DELETE"
+    duration: 12
+    objective: "Mettre à jour et supprimer des lignes ciblées, sans jamais oublier le WHERE."
+    prerequisites: "INSERT et WHERE."
+    skills: [sql-dml]
+    xp: 12
+    memo: |
+      - `UPDATE table SET col = valeur WHERE condition;`
+      - `DELETE FROM table WHERE condition;`
+      - **Sans WHERE, toutes les lignes sont concernées.** Teste d'abord ta condition avec un SELECT.
+      - Une clé étrangère empêche de supprimer une ligne encore référencée (sauf `ON DELETE CASCADE`).
+    commonMistakes: |
+      - Oublier le WHERE : tous les prix passent à 0, tous les clients sont supprimés…
+      - Supprimer un client qui a des commandes → erreur 23503 (violation de clé étrangère).
+      - Confondre `DELETE` (lignes) et `DROP TABLE` (la table entière).
+    blocks:
+      - type: text
+        md: |
+          Un changement de prix, une adresse modifiée, un compte supprimé… Les données vivent. `UPDATE` modifie
+          des lignes existantes et `DELETE` en supprime. Ce sont les instructions les plus **dangereuses** du
+          SQL : un oubli de condition touche toute la table.
+      - type: code
+        language: sql
+        title: "Augmenter de 5 % les prix d'une catégorie"
+        code: |
+          UPDATE produits
+          SET prix = ROUND(prix * 1.05, 2)
+          WHERE categorie_id = 3;
+        lines:
+          - n: 1
+            note: "La table à modifier."
+          - n: 2
+            note: "`SET` : la nouvelle valeur. Elle peut être calculée à partir de l'ancienne (`prix * 1.05`)."
+          - n: 3
+            note: "Seules les lignes de la catégorie 3 (Maison) sont modifiées. **Sans cette ligne, tout le catalogue augmenterait.**"
+      - type: demo
+        title: "Démonstration : vérifier avant et après"
+        md: "Le premier SELECT montre les prix avant, le second après la mise à jour, dans la même transaction."
+        language: sql
+        code: |
+          SELECT id, nom, prix FROM produits WHERE categorie_id = 3;
+          UPDATE produits
+          SET prix = ROUND(prix * 1.05, 2)
+          WHERE categorie_id = 3;
+          SELECT id, nom, prix FROM produits WHERE categorie_id = 3;
+      - type: question
+        ref: sql-c6l2-q1
+      - type: steps
+        title: "La méthode sûre, en entreprise comme à l'examen"
+        items:
+          - "Écris d'abord un **SELECT** avec la condition prévue et vérifie les lignes renvoyées."
+          - "Remplace `SELECT ... FROM` par `UPDATE ... SET` ou `DELETE FROM`, **en gardant le même WHERE**."
+          - "Exécute dans une **transaction** (leçon suivante) pour pouvoir annuler."
+          - "Vérifie le nombre de lignes affectées annoncé par PostgreSQL."
+      - type: code
+        language: sql
+        title: "Supprimer des avis"
+        code: |
+          DELETE FROM avis
+          WHERE note <= 2;
+        lines:
+          - n: 1
+            note: "`DELETE FROM` : on supprime des lignes de la table avis."
+          - n: 2
+            note: "Seulement les avis dont la note est inférieure ou égale à 2."
+      - type: demo
+        title: "Démonstration : une suppression refusée"
+        md: "Essaie de supprimer la cliente n°1 : elle a des commandes, la clé étrangère de `commandes` l'interdit (erreur 23503)."
+        language: sql
+        code: |
+          DELETE FROM clients WHERE id = 1;
+      - type: question
+        ref: sql-c6l2-q2
+      - type: question
+        ref: sql-c6l2-q3
+      - type: exercise
+        ref: sql-ex-update-stock
+      - type: question
+        ref: sql-c6l2-q4
+      - type: exercise
+        ref: sql-ex-delete-commandes-annulees
+    questions:
+      - code: sql-c6l2-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-dml
+        prompt: "Que fait `UPDATE produits SET stock = 0;` ?"
+        choices:
+          - label: "Met le stock de **tous** les produits à 0"
+            correct: true
+            why: "Sans WHERE, toutes les lignes de la table sont modifiées."
+          - label: "Rien, car il manque le WHERE"
+            correct: false
+            why: "Le WHERE est facultatif : son absence ne provoque aucune erreur."
+          - label: "Supprime les produits en stock"
+            correct: false
+            why: "UPDATE modifie, il ne supprime pas."
+        explanation: "C'est l'erreur la plus coûteuse en production. Écris toujours ton WHERE **avant** le SET dans ta tête… et teste-le avec un SELECT."
+      - code: sql-c6l2-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-dml
+        prompt: "La cliente n°1 a passé des commandes. Que se passe-t-il ?"
+        snippet: |
+          DELETE FROM clients WHERE id = 1;
+        language: sql
+        choices:
+          - label: "Erreur de clé étrangère : des commandes la référencent encore"
+            correct: true
+            why: "La base protège la cohérence : une commande ne peut pas pointer vers un client inexistant."
+          - label: "La cliente et toutes ses commandes sont supprimées"
+            correct: false
+            why: "Ce serait le cas uniquement avec ON DELETE CASCADE sur la clé étrangère."
+          - label: "La cliente est supprimée, ses commandes gardent un client_id orphelin"
+            correct: false
+            why: "C'est justement ce qu'empêche l'intégrité référentielle."
+        explanation: "Le comportement à la suppression se choisit à la conception : RESTRICT (par défaut), CASCADE, SET NULL…"
+      - code: sql-c6l2-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-dml
+        prompt: "`DELETE FROM avis;` supprime la table avis de la base."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "DELETE supprime les lignes ; la table (vide) existe toujours."
+          - label: "Faux"
+            correct: true
+            why: "Pour supprimer la table elle-même, il faut DROP TABLE."
+        explanation: "DELETE = données (DML) ; DROP = structure (DDL)."
+      - code: sql-c6l2-q4
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-dml
+        prompt: "Complète pour passer la commande n°36 au statut EXPEDIEE."
+        snippet: |
+          UPDATE commandes
+          ____ statut = 'EXPEDIEE'
+          WHERE id = 36;
+        language: sql
+        answers: ["SET"]
+        explanation: "`SET colonne = valeur` ; plusieurs colonnes se séparent par des virgules : `SET a = 1, b = 2`."
+    exercises:
+      - slug: sql-ex-update-stock
+        kind: SQL
+        title: "Réassort des produits en rupture"
+        difficulty: INTERMEDIAIRE
+        skill: sql-dml
+        statement: |
+          Une livraison vient d'arriver : **tous les produits en rupture** (stock égal à 0) passent à un stock
+          de **20**. Les autres produits ne doivent pas être modifiés.
+        criteria: "Les produits à stock nul passent à 20 ; aucun autre stock ne change."
+        hints:
+          - "C'est une mise à jour : UPDATE ... SET ... WHERE."
+          - "La condition cible les produits dont le stock vaut 0."
+          - "`UPDATE produits SET stock = 20 WHERE stock = 0;`"
+        solution: |
+          UPDATE produits
+          SET stock = 20
+          WHERE stock = 0;
+        explanation: |
+          Le WHERE limite la mise à jour aux 3 produits en rupture. La vérification relit le stock de tous les
+          produits : si un autre stock avait changé (WHERE oublié), l'écart serait détecté.
+        xp: 15
+        payload:
+          mode: WRITE
+          check: "SELECT id, stock FROM produits ORDER BY id"
+      - slug: sql-ex-delete-commandes-annulees
+        kind: SQL
+        title: "Purger les commandes annulées"
+        difficulty: DIFFICILE
+        skill: sql-dml
+        statement: |
+          On veut supprimer les **commandes annulées**. Attention : leurs **lignes de commande** les
+          référencent. Écris les instructions nécessaires, **dans le bon ordre**, pour supprimer d'abord ces
+          lignes, puis les commandes annulées elles-mêmes.
+        criteria: "Plus aucune commande ANNULEE ni aucune ligne de commande qui leur appartenait ; le reste est intact."
+        hints:
+          - "Deux instructions DELETE sont nécessaires, séparées par un point-virgule."
+          - "Commence par `lignes_commande`, en ciblant les commandes annulées grâce à une sous-requête."
+          - "`DELETE FROM lignes_commande WHERE commande_id IN (SELECT id FROM commandes WHERE statut = 'ANNULEE');` puis `DELETE FROM commandes WHERE statut = 'ANNULEE';`"
+        solution: |
+          DELETE FROM lignes_commande
+          WHERE commande_id IN (SELECT id FROM commandes WHERE statut = 'ANNULEE');
+          DELETE FROM commandes
+          WHERE statut = 'ANNULEE';
+        explanation: |
+          Les lignes de commande dépendent des commandes (clé étrangère) : on supprime d'abord les « enfants »,
+          puis les « parents ». Dans l'autre ordre, PostgreSQL refuserait la suppression (erreur 23503).
+        xp: 25
+        payload:
+          mode: WRITE
+          check: "SELECT (SELECT count(*) FROM commandes) AS commandes, (SELECT count(*) FROM lignes_commande) AS lignes, (SELECT count(*) FROM commandes WHERE statut = 'ANNULEE') AS annulees"
+
+  # ===================================================================== LEÇON 3
+  - slug: sql-transactions
+    title: "Les transactions : tout ou rien"
+    duration: 10
+    objective: "Comprendre BEGIN, COMMIT, ROLLBACK et les propriétés ACID."
+    prerequisites: "INSERT, UPDATE et DELETE."
+    skills: [sql-dml]
+    xp: 12
+    memo: |
+      - Une **transaction** regroupe plusieurs instructions qui réussissent **toutes** ou échouent **toutes**.
+      - `BEGIN;` démarre, `COMMIT;` valide, `ROLLBACK;` annule.
+      - **ACID** : Atomicité, Cohérence, Isolation, Durabilité.
+      - En Spring Boot, `@Transactional` sur une méthode de service crée la transaction pour toi.
+    commonMistakes: |
+      - Faire un virement en deux UPDATE sans transaction : une panne entre les deux fait « disparaître » de l'argent.
+      - Laisser une transaction ouverte longtemps : elle bloque d'autres utilisateurs.
+    blocks:
+      - type: text
+        md: |
+          Passer une commande, c'est au moins **deux** opérations : créer la commande **et** diminuer le stock.
+          Si la seconde échoue, la première ne doit pas rester seule. Une **transaction** garantit que ces
+          opérations forment un **bloc indivisible**.
+      - type: definition
+        term: "Transaction"
+        md: "Suite d'instructions exécutées comme une unité : soit toutes sont validées (`COMMIT`), soit aucune ne l'est (`ROLLBACK`)."
+      - type: code
+        language: sql
+        title: "Une commande et la baisse du stock, en un seul bloc"
+        code: |
+          BEGIN;
+          INSERT INTO commandes (id, client_id, date_commande, statut)
+          VALUES (41, 3, CURRENT_DATE, 'EN_ATTENTE');
+          INSERT INTO lignes_commande (commande_id, produit_id, quantite, prix_unitaire)
+          VALUES (41, 5, 1, 89.99);
+          UPDATE produits SET stock = stock - 1 WHERE id = 5;
+          COMMIT;
+        lines:
+          - n: 1
+            note: "Début de la transaction : rien n'est encore définitif."
+          - n: 2
+            note: "Création de la commande…"
+          - n: 4
+            note: "…de sa ligne…"
+          - n: 6
+            note: "…et mise à jour du stock."
+          - n: 7
+            note: "COMMIT rend les trois modifications **définitives et visibles** par tous, en même temps. En cas d'erreur, on aurait fait ROLLBACK."
+      - type: callout
+        variant: info
+        md: |
+          Le laboratoire refuse `BEGIN`, `COMMIT` et `ROLLBACK` : il gère lui-même une transaction autour de
+          chaque exécution… et la termine toujours par un ROLLBACK. C'est exactement ce qui rend tes essais
+          sans danger !
+      - type: question
+        ref: sql-c6l3-q1
+      - type: definition
+        term: "ACID"
+        md: |
+          - **Atomicité** : tout ou rien.
+          - **Cohérence** : la base passe d'un état valide à un autre (contraintes respectées).
+          - **Isolation** : les transactions simultanées ne se perturbent pas.
+          - **Durabilité** : une fois validée (COMMIT), une modification survit à une panne.
+      - type: code
+        language: java
+        title: "Côté Spring Boot"
+        code: |
+          @Transactional
+          public Commande passerCommande(Long clientId, Long produitId) {
+              Commande commande = commandes.save(new Commande(clientId));
+              produits.diminuerStock(produitId, 1);
+              return commande;
+          }
+        lines:
+          - n: 1
+            note: "Spring ouvre une transaction avant la méthode, fait COMMIT à la fin, ou ROLLBACK si une exception (non vérifiée) est levée."
+          - n: 3
+            note: "Premier ordre SQL (INSERT)."
+          - n: 4
+            note: "Second ordre SQL (UPDATE). Si le stock est insuffisant et qu'une exception est levée, l'INSERT est annulé aussi."
+      - type: question
+        ref: sql-c6l3-q2
+      - type: question
+        ref: sql-c6l3-q3
+      - type: question
+        ref: sql-c6l3-q4
+    questions:
+      - code: sql-c6l3-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-dml
+        prompt: "Que fait `ROLLBACK` ?"
+        choices:
+          - label: "Annule toutes les modifications faites depuis le début de la transaction"
+            correct: true
+            why: "La base revient à l'état d'avant BEGIN."
+          - label: "Annule uniquement la dernière instruction"
+            correct: false
+            why: "C'est toute la transaction qui est annulée (sauf points de sauvegarde)."
+          - label: "Valide les modifications"
+            correct: false
+            why: "C'est le rôle de COMMIT."
+        explanation: "COMMIT valide, ROLLBACK annule. Il existe aussi SAVEPOINT pour annuler partiellement."
+      - code: sql-c6l3-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-dml
+        prompt: "Quelle propriété ACID garantit qu'un virement n'est jamais « à moitié » effectué ?"
+        choices:
+          - label: "L'atomicité"
+            correct: true
+            why: "Le débit et le crédit réussissent ensemble ou pas du tout."
+          - label: "La durabilité"
+            correct: false
+            why: "Elle garantit la conservation après COMMIT."
+          - label: "L'isolation"
+            correct: false
+            why: "Elle concerne les transactions simultanées."
+        explanation: "Atomique = indivisible. C'est la propriété la plus citée à l'oral du CDA."
+      - code: sql-c6l3-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-dml
+        prompt: "Avec `@Transactional`, une RuntimeException levée dans la méthode provoque un ROLLBACK."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Par défaut, Spring annule la transaction sur les exceptions non vérifiées."
+          - label: "Faux"
+            correct: false
+            why: "C'est le comportement par défaut de Spring."
+        explanation: "Attention : par défaut, les exceptions **vérifiées** (checked) ne déclenchent pas de rollback, sauf `rollbackFor`."
+      - code: sql-c6l3-q4
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-dml
+        prompt: "Complète pour valider définitivement la transaction."
+        snippet: |
+          BEGIN;
+          UPDATE produits SET stock = stock - 1 WHERE id = 5;
+          ____;
+        language: sql
+        answers: ["COMMIT"]
+        explanation: "COMMIT rend les modifications définitives et visibles par les autres sessions."
+
+bank:
+  - code: sql-c6-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-dml
+    prompt: "Que renvoie l'option `RETURNING id` d'un INSERT ?"
+    choices:
+      - label: "La valeur de la colonne id de la ligne insérée"
+        correct: true
+        why: "Pratique pour récupérer un identifiant généré automatiquement."
+      - label: "Le nombre de lignes insérées"
+        correct: false
+        why: "Ce nombre est renvoyé par le pilote, pas par RETURNING."
+      - label: "Une erreur si l'id existe déjà"
+        correct: false
+        why: "C'est la clé primaire qui produit cette erreur, pas RETURNING."
+    explanation: "RETURNING existe aussi pour UPDATE et DELETE : il renvoie les lignes modifiées ou supprimées."
+  - code: sql-c6-b2
+    kind: RESULTAT_CODE
+    difficulty: 2
+    skill: sql-dml
+    prompt: "La catégorie 3 contient 3 produits. Que signale PostgreSQL après cette instruction ?"
+    snippet: |
+      UPDATE produits SET prix = prix + 1 WHERE categorie_id = 3;
+    language: sql
+    choices:
+      - label: "UPDATE 3"
+        correct: true
+        why: "Trois lignes sont concernées par la condition."
+      - label: "UPDATE 1"
+        correct: false
+        why: "Toutes les lignes vérifiant le WHERE sont modifiées."
+      - label: "UPDATE 30"
+        correct: false
+        why: "Le WHERE limite la mise à jour à la catégorie 3."
+    explanation: "Le nombre de lignes affectées est un excellent contrôle : s'il est inattendu, fais ROLLBACK."
+  - code: sql-c6-b3
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: sql-dml
+    prompt: "Quelle est la différence entre `DELETE FROM avis;` et `TRUNCATE avis;` ?"
+    choices:
+      - label: "Les deux vident la table ; TRUNCATE est bien plus rapide et ne traite pas ligne par ligne"
+        correct: true
+        why: "TRUNCATE libère directement l'espace, sans parcourir les lignes."
+      - label: "TRUNCATE supprime aussi la structure de la table"
+        correct: false
+        why: "C'est DROP TABLE qui supprime la structure."
+      - label: "DELETE ne peut pas être annulé"
+        correct: false
+        why: "Dans une transaction, DELETE (et même TRUNCATE en PostgreSQL) peut être annulé."
+    explanation: "TRUNCATE ne déclenche pas les triggers ON DELETE et ne permet pas de WHERE : c'est un vidage complet."
+  - code: sql-c6-b4
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: sql-dml
+    prompt: "Une modification non validée (sans COMMIT) est visible par les autres utilisateurs de la base."
+    choices:
+      - label: "Vrai"
+        correct: false
+        why: "Grâce à l'isolation, les autres sessions voient l'état validé précédent."
+      - label: "Faux"
+        correct: true
+        why: "Elle ne devient visible qu'après COMMIT."
+    explanation: "PostgreSQL utilise le MVCC : chaque transaction voit une photographie cohérente des données validées."
+  - code: sql-c6-b5
+    kind: COMPLETER_CODE
+    difficulty: 2
+    skill: sql-dml
+    prompt: "Complète pour supprimer les avis du produit n°18."
+    snippet: |
+      DELETE ____ avis
+      WHERE produit_id = 18;
+    language: sql
+    answers: ["FROM"]
+    explanation: "`DELETE FROM table WHERE condition;`"
+  - code: sql-c6-b6
+    kind: CHOIX_MULTIPLE
+    difficulty: 3
+    skill: sql-dml
+    prompt: "Quelles contraintes peuvent faire échouer un INSERT ? (plusieurs réponses)"
+    choices:
+      - label: "PRIMARY KEY (doublon)"
+        correct: true
+        why: "Deux lignes ne peuvent pas avoir la même clé primaire."
+      - label: "FOREIGN KEY (référence inexistante)"
+        correct: true
+        why: "La ligne référencée doit exister."
+      - label: "CHECK (règle métier)"
+        correct: true
+        why: "Ex. prix >= 0."
+      - label: "ORDER BY"
+        correct: false
+        why: "ORDER BY est une clause de tri, pas une contrainte."
+    explanation: "Il faut aussi citer NOT NULL et UNIQUE : ce sont les cinq contraintes principales."
+  - code: sql-c6-b7
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-dml
+    prompt: "Tu dois augmenter le salaire des employés du service 3. Quelle est la démarche la plus sûre ?"
+    choices:
+      - label: "Exécuter d'abord un SELECT avec le même WHERE, puis l'UPDATE dans une transaction"
+        correct: true
+        why: "On vérifie les lignes ciblées, puis on garde la possibilité d'annuler."
+      - label: "Exécuter directement l'UPDATE"
+        correct: false
+        why: "Une erreur de condition ne serait découverte qu'après coup."
+      - label: "Supprimer les employés puis les réinsérer"
+        correct: false
+        why: "Inutilement risqué : les clés étrangères et l'historique seraient perdus."
+    explanation: "SELECT de contrôle + transaction : un réflexe professionnel qui évite les catastrophes."

@@ -1,0 +1,827 @@
+slug: jointures
+position: 4
+level: INTERMEDIAIRE
+title: "Croiser les tables : les jointures"
+summary: "Relier les tables grâce aux clés étrangères : INNER JOIN, LEFT JOIN, jointures multiples via une table d'association et auto-jointure."
+quizQuestionCount: 16
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sql-inner-join
+    title: "INNER JOIN : relier deux tables"
+    duration: 12
+    objective: "Comprendre le rôle d'une clé étrangère et combiner deux tables avec INNER JOIN ... ON."
+    prerequisites: "Chapitres 1 à 3."
+    skills: [sql-jointures]
+    xp: 12
+    memo: |
+      - Une **clé étrangère** (ex. `produits.categorie_id`) référence la clé primaire d'une autre table (`categories.id`).
+      - `FROM a INNER JOIN b ON a.col = b.col` associe chaque ligne de a aux lignes de b qui vérifient la condition.
+      - INNER JOIN ne garde **que les lignes qui ont une correspondance** des deux côtés.
+      - Utilise des **alias de table** (`produits p`) et préfixe les colonnes ambiguës (`p.id`).
+    commonMistakes: |
+      - Oublier la condition ON : on obtient toutes les combinaisons possibles (produit cartésien).
+      - Écrire `SELECT id` quand les deux tables ont une colonne id → « column reference is ambiguous ».
+      - Joindre sur les mauvaises colonnes (`p.id = c.id` au lieu de `p.categorie_id = c.id`).
+    blocks:
+      - type: text
+        md: |
+          Dans la table `produits`, la catégorie est stockée sous forme de **numéro** (`categorie_id`). Pour
+          afficher son **nom** (« Livres », « Informatique »…), il faut aller le chercher dans la table
+          `categories`. Relier deux tables de cette façon s'appelle une **jointure**.
+      - type: definition
+        term: "Clé étrangère"
+        md: |
+          Colonne dont les valeurs **font référence** à la clé primaire d'une autre table. `produits.categorie_id`
+          contient l'`id` d'une ligne de `categories`. PostgreSQL garantit que cette ligne existe (intégrité
+          référentielle).
+      - type: code
+        language: sql
+        title: "Le nom de la catégorie de chaque produit"
+        code: |
+          SELECT p.nom AS produit,
+                 c.nom AS categorie
+          FROM produits p
+          INNER JOIN categories c ON c.id = p.categorie_id
+          ORDER BY categorie, produit;
+        lines:
+          - n: 1
+            note: "`p.nom` : la colonne nom de la table produits (alias p). On la renomme car les deux tables ont une colonne `nom`."
+          - n: 2
+            note: "`c.nom` : le nom de la catégorie, pris dans la table categories (alias c)."
+          - n: 3
+            note: "Table de départ, avec l'alias `p` pour raccourcir l'écriture."
+          - n: 4
+            note: "On associe chaque produit à la catégorie dont l'`id` est égal à son `categorie_id`. C'est la **condition de jointure**."
+          - n: 5
+            note: "Tri par catégorie puis par produit, en utilisant les alias de colonnes."
+      - type: demo
+        title: "Démonstration"
+        md: "Compte les lignes : 29 et non 30. Le « Coffret surprise » n'a pas de catégorie, donc aucune correspondance : INNER JOIN l'écarte."
+        language: sql
+        code: |
+          SELECT p.nom AS produit,
+                 c.nom AS categorie
+          FROM produits p
+          INNER JOIN categories c ON c.id = p.categorie_id
+          ORDER BY categorie, produit;
+      - type: question
+        ref: sql-c4l1-q1
+      - type: steps
+        title: "Comment PostgreSQL construit une jointure (vision simplifiée)"
+        items:
+          - "Il prend chaque ligne de `produits`."
+          - "Il cherche dans `categories` les lignes qui vérifient `c.id = p.categorie_id`."
+          - "Pour chaque correspondance, il produit une ligne qui contient les colonnes des deux tables."
+          - "Une ligne sans correspondance n'apparaît pas (c'est le « INNER »)."
+      - type: question
+        ref: sql-c4l1-q2
+      - type: question
+        ref: sql-c4l1-q3
+      - type: exercise
+        ref: sql-ex-commandes-clients
+      - type: question
+        ref: sql-c4l1-q4
+    questions:
+      - code: sql-c4l1-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-jointures
+        prompt: "Quelle est la bonne condition pour relier `commandes` (alias co) et `clients` (alias cl) ?"
+        choices:
+          - label: "`ON cl.id = co.client_id`"
+            correct: true
+            why: "La clé étrangère client_id de commandes référence l'id du client."
+          - label: "`ON cl.id = co.id`"
+            correct: false
+            why: "Le numéro de commande n'a rien à voir avec le numéro de client."
+          - label: "`ON cl.client_id = co.client_id`"
+            correct: false
+            why: "La table clients n'a pas de colonne client_id."
+        explanation: "Une jointure suit une **clé étrangère** : `table_fille.xxx_id = table_mere.id`."
+      - code: sql-c4l1-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-jointures
+        prompt: "INNER JOIN conserve les produits qui n'ont pas de catégorie (categorie_id NULL)."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Sans correspondance, la ligne est écartée."
+          - label: "Faux"
+            correct: true
+            why: "INNER JOIN ne garde que les lignes qui ont une correspondance des deux côtés."
+        explanation: "Pour conserver les lignes sans correspondance, il faut une **jointure externe** : LEFT JOIN (leçon suivante)."
+      - code: sql-c4l1-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: "Que signifie l'erreur *column reference \"id\" is ambiguous* ?"
+        choices:
+          - label: "Plusieurs tables de la jointure ont une colonne id : il faut préciser laquelle, par ex. `p.id`"
+            correct: true
+            why: "PostgreSQL ne peut pas deviner de quelle table tu parles."
+          - label: "La colonne id n'existe dans aucune table"
+            correct: false
+            why: "Ce serait l'erreur « column does not exist »."
+          - label: "La jointure n'a pas de condition ON"
+            correct: false
+            why: "C'est un autre problème (produit cartésien ou erreur de syntaxe)."
+        explanation: "Bonne pratique : dans une jointure, préfixe **toutes** les colonnes par l'alias de leur table."
+      - code: sql-c4l1-q4
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-jointures
+        prompt: "Complète la jointure entre avis (a) et produits (p)."
+        snippet: |
+          SELECT p.nom, a.note
+          FROM avis a
+          INNER JOIN produits p ON ____;
+        language: sql
+        answers: ["p.id = a.produit_id", "a.produit_id = p.id"]
+        explanation: "La table avis contient la clé étrangère `produit_id`, qui référence `produits.id`."
+    exercises:
+      - slug: sql-ex-commandes-clients
+        kind: SQL
+        title: "Commandes avec le nom du client"
+        difficulty: FACILE
+        skill: sql-jointures
+        statement: |
+          Affiche l'**id de la commande**, sa **date**, le **prénom** et le **nom** du client, pour les
+          commandes **en attente** (statut `EN_ATTENTE`), triées par date.
+        criteria: "4 colonnes (id, date_commande, prenom, nom), les 5 commandes en attente, triées par date."
+        hints:
+          - "Joins commandes et clients grâce à la clé étrangère client_id."
+          - "`FROM commandes co INNER JOIN clients cl ON cl.id = co.client_id`"
+          - "Ajoute `WHERE co.statut = 'EN_ATTENTE' ORDER BY co.date_commande` et préfixe les colonnes."
+        solution: |
+          SELECT co.id, co.date_commande, cl.prenom, cl.nom
+          FROM commandes co
+          INNER JOIN clients cl ON cl.id = co.client_id
+          WHERE co.statut = 'EN_ATTENTE'
+          ORDER BY co.date_commande;
+        explanation: |
+          La jointure associe chaque commande à son client, puis WHERE ne garde que les commandes en attente.
+          Les préfixes `co.` et `cl.` lèvent toute ambiguïté (les deux tables ont une colonne id).
+        xp: 15
+        payload:
+          mode: READ
+          ordered: true
+          requiredKeywords:
+            - pattern: "\\bjoin\\b"
+              message: "Utilise une jointure (JOIN) pour relier commandes et clients."
+
+  # ===================================================================== LEÇON 2
+  - slug: sql-left-join
+    title: "LEFT JOIN : garder les lignes sans correspondance"
+    duration: 12
+    objective: "Utiliser une jointure externe pour conserver toutes les lignes de la table de gauche et détecter les absences."
+    prerequisites: "INNER JOIN."
+    skills: [sql-jointures]
+    xp: 12
+    memo: |
+      - `a LEFT JOIN b` garde **toutes** les lignes de a ; les colonnes de b valent NULL s'il n'y a pas de correspondance.
+      - Motif classique « ceux qui n'ont pas de… » : `LEFT JOIN ... WHERE b.id IS NULL`.
+      - `RIGHT JOIN` est le symétrique (rarement utilisé) ; `FULL JOIN` garde les deux côtés.
+      - Avec LEFT JOIN, `COUNT(b.id)` compte 0 pour les lignes sans correspondance, `COUNT(*)` compterait 1.
+    commonMistakes: |
+      - Mettre une condition sur la table de droite dans WHERE (`WHERE co.statut = 'LIVREE'`) : cela annule l'effet du LEFT JOIN. Place-la dans le ON.
+      - Utiliser `COUNT(*)` au lieu de `COUNT(colonne_de_droite)` pour compter les correspondances.
+    blocks:
+      - type: text
+        md: |
+          « Quels clients n'ont **jamais** commandé ? » Avec INNER JOIN, impossible de répondre : ces clients
+          disparaissent justement parce qu'ils n'ont pas de correspondance. La **jointure externe gauche**
+          (`LEFT JOIN`) les conserve.
+      - type: definition
+        term: "LEFT JOIN (jointure externe gauche)"
+        md: |
+          Conserve **toutes les lignes de la table de gauche** (celle du FROM). Quand aucune ligne de droite ne
+          correspond, les colonnes de droite sont remplies avec **NULL**.
+      - type: code
+        language: sql
+        title: "Tous les produits, avec ou sans catégorie"
+        code: |
+          SELECT p.nom, c.nom AS categorie
+          FROM produits p
+          LEFT JOIN categories c ON c.id = p.categorie_id
+          ORDER BY categorie NULLS FIRST;
+        lines:
+          - n: 2
+            note: "produits est la table de **gauche** : toutes ses lignes seront conservées."
+          - n: 3
+            note: "LEFT JOIN : si aucune catégorie ne correspond, `c.nom` vaudra NULL au lieu de faire disparaître le produit."
+          - n: 4
+            note: "`NULLS FIRST` affiche les valeurs NULL en premier pour les repérer tout de suite."
+      - type: demo
+        title: "Démonstration : 30 lignes cette fois"
+        language: sql
+        code: |
+          SELECT p.nom, c.nom AS categorie
+          FROM produits p
+          LEFT JOIN categories c ON c.id = p.categorie_id
+          ORDER BY categorie NULLS FIRST;
+      - type: question
+        ref: sql-c4l2-q1
+      - type: code
+        language: sql
+        title: "Les clients qui n'ont jamais commandé"
+        code: |
+          SELECT cl.prenom, cl.nom
+          FROM clients cl
+          LEFT JOIN commandes co ON co.client_id = cl.id
+          WHERE co.id IS NULL;
+        lines:
+          - n: 3
+            note: "Chaque client est conservé ; s'il n'a aucune commande, les colonnes de `co` valent NULL."
+          - n: 4
+            note: "On ne garde que les lignes **sans** correspondance : c'est le motif « anti-jointure »."
+      - type: demo
+        title: "Démonstration"
+        language: sql
+        code: |
+          SELECT cl.prenom, cl.nom
+          FROM clients cl
+          LEFT JOIN commandes co ON co.client_id = cl.id
+          WHERE co.id IS NULL;
+      - type: question
+        ref: sql-c4l2-q2
+      - type: question
+        ref: sql-c4l2-q3
+      - type: exercise
+        ref: sql-ex-nb-commandes-par-client
+      - type: question
+        ref: sql-c4l2-q4
+    questions:
+      - code: sql-c4l2-q1
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: "La table `produits` compte 30 lignes, dont 1 sans catégorie. Combien de lignes renvoie cette requête ?"
+        snippet: |
+          SELECT p.nom, c.nom
+          FROM produits p
+          LEFT JOIN categories c ON c.id = p.categorie_id;
+        language: sql
+        choices:
+          - label: "30"
+            correct: true
+            why: "LEFT JOIN garde toutes les lignes de produits, y compris celle sans catégorie."
+          - label: "29"
+            correct: false
+            why: "Ce serait le résultat d'un INNER JOIN."
+          - label: "8"
+            correct: false
+            why: "C'est le nombre de catégories, pas de lignes de la jointure."
+          - label: "240"
+            correct: false
+            why: "Ce serait un produit cartésien (30 × 8), sans condition de jointure."
+        explanation: "Chaque produit a au plus une catégorie : la jointure externe renvoie exactement une ligne par produit."
+      - code: sql-c4l2-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: "Quelle requête trouve les produits qui n'ont **jamais été commandés** ?"
+        choices:
+          - label: "`SELECT p.nom FROM produits p LEFT JOIN lignes_commande l ON l.produit_id = p.id WHERE l.produit_id IS NULL;`"
+            correct: true
+            why: "Anti-jointure : on garde les produits sans aucune ligne de commande."
+          - label: "`SELECT p.nom FROM produits p INNER JOIN lignes_commande l ON l.produit_id = p.id WHERE l.produit_id IS NULL;`"
+            correct: false
+            why: "INNER JOIN a déjà éliminé les produits sans commande : le résultat est vide."
+          - label: "`SELECT p.nom FROM produits p WHERE p.id = NULL;`"
+            correct: false
+            why: "Aucun rapport avec les commandes, et `= NULL` ne fonctionne jamais."
+        explanation: "Motif à connaître par cœur : `LEFT JOIN ... WHERE droite.cle IS NULL`. Il existe aussi `NOT EXISTS` (chapitre suivant)."
+      - code: sql-c4l2-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: sql-jointures
+        prompt: "Pour compter les commandes de chaque client, **y compris 0** pour ceux qui n'en ont pas, que faut-il compter après un LEFT JOIN ?"
+        choices:
+          - label: "`COUNT(co.id)`"
+            correct: true
+            why: "co.id est NULL quand il n'y a pas de commande, et COUNT ignore les NULL : le client compte 0."
+          - label: "`COUNT(*)`"
+            correct: false
+            why: "Le client sans commande produit quand même une ligne : COUNT(*) vaudrait 1."
+          - label: "`SUM(co.id)`"
+            correct: false
+            why: "Additionner des identifiants n'a pas de sens."
+        explanation: "Avec une jointure externe, compte une colonne **de la table de droite** pour obtenir 0 en l'absence de correspondance."
+      - code: sql-c4l2-q4
+        kind: VRAI_FAUX
+        difficulty: 3
+        skill: sql-jointures
+        prompt: "Ajouter `WHERE co.statut = 'LIVREE'` après un `clients LEFT JOIN commandes co` conserve les clients sans commande."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Pour eux, co.statut vaut NULL : la condition est « inconnue » et la ligne est écartée."
+          - label: "Faux"
+            correct: true
+            why: "Le WHERE transforme de fait la jointure externe en jointure interne."
+        explanation: "Pour filtrer la table de droite sans perdre les lignes de gauche, place la condition dans le ON : `LEFT JOIN commandes co ON co.client_id = cl.id AND co.statut = 'LIVREE'`."
+    exercises:
+      - slug: sql-ex-nb-commandes-par-client
+        kind: SQL
+        title: "Nombre de commandes de chaque client"
+        difficulty: DIFFICILE
+        skill: sql-jointures
+        statement: |
+          Affiche le **prénom**, le **nom** et le **nombre de commandes** (`nb_commandes`) de **chaque client**,
+          y compris ceux qui n'ont jamais commandé (ils doivent apparaître avec 0). Trie par nombre de
+          commandes décroissant, puis par nom.
+        criteria: "3 colonnes, 25 lignes (tous les clients), 0 pour les clients sans commande, tri par nb_commandes décroissant puis nom."
+        hints:
+          - "Il faut garder tous les clients : pense à LEFT JOIN."
+          - "Regroupe par client (cl.id, cl.prenom, cl.nom) et compte une colonne de la table commandes."
+          - "`SELECT cl.prenom, cl.nom, COUNT(co.id) AS nb_commandes ... GROUP BY cl.id, cl.prenom, cl.nom ORDER BY nb_commandes DESC, cl.nom`"
+        solution: |
+          SELECT cl.prenom, cl.nom, COUNT(co.id) AS nb_commandes
+          FROM clients cl
+          LEFT JOIN commandes co ON co.client_id = cl.id
+          GROUP BY cl.id, cl.prenom, cl.nom
+          ORDER BY nb_commandes DESC, cl.nom;
+        explanation: |
+          LEFT JOIN conserve les 25 clients. `COUNT(co.id)` ignore les NULL : un client sans commande obtient 0.
+          On groupe par `cl.id` (deux clients pourraient avoir le même nom) en plus des colonnes affichées.
+        xp: 25
+        payload:
+          mode: READ
+          ordered: true
+
+  # ===================================================================== LEÇON 3
+  - slug: sql-jointures-multiples
+    title: "Jointures multiples et table d'association"
+    duration: 12
+    objective: "Enchaîner plusieurs jointures et exploiter une table d'association (relation plusieurs-à-plusieurs)."
+    prerequisites: "INNER JOIN et LEFT JOIN."
+    skills: [sql-jointures, sql-agregation]
+    xp: 15
+    memo: |
+      - Une relation **plusieurs-à-plusieurs** (une commande contient plusieurs produits, un produit est dans plusieurs commandes) passe par une **table d'association** : `lignes_commande`.
+      - On enchaîne les jointures : `FROM a JOIN b ON ... JOIN c ON ...`.
+      - Une table d'association porte souvent des données propres au lien : quantité, prix unitaire.
+    commonMistakes: |
+      - Oublier une jointure intermédiaire et relier directement deux tables qui ne partagent pas de clé.
+      - Compter des lignes de commande en croyant compter des commandes : utilise `COUNT(DISTINCT co.id)`.
+    blocks:
+      - type: text
+        md: |
+          Une commande peut contenir **plusieurs** produits, et un produit peut figurer dans **plusieurs**
+          commandes. Aucune des deux tables ne peut contenir une seule clé étrangère vers l'autre : on crée une
+          table intermédiaire, `lignes_commande`, qui relie une commande et un produit, avec la quantité.
+      - type: definition
+        term: "Table d'association"
+        md: |
+          Table dont la clé primaire est composée de deux clés étrangères (`commande_id`, `produit_id`). Elle
+          matérialise une relation **plusieurs-à-plusieurs** (0,n – 0,n dans un MCD) et peut porter des
+          attributs propres au lien.
+      - type: code
+        language: sql
+        title: "Le détail de la commande n°1"
+        code: |
+          SELECT co.id AS commande,
+                 p.nom AS produit,
+                 l.quantite,
+                 l.prix_unitaire,
+                 l.quantite * l.prix_unitaire AS montant
+          FROM commandes co
+          JOIN lignes_commande l ON l.commande_id = co.id
+          JOIN produits p ON p.id = l.produit_id
+          WHERE co.id = 1;
+        lines:
+          - n: 5
+            note: "Le montant de chaque ligne = quantité × prix unitaire au moment de la commande."
+          - n: 6
+            note: "On part des commandes."
+          - n: 7
+            note: "1ʳᵉ jointure : les lignes de chaque commande. `JOIN` seul équivaut à `INNER JOIN`."
+          - n: 8
+            note: "2ᵉ jointure : pour chaque ligne, le produit concerné (et son nom)."
+          - n: 9
+            note: "On se limite à la commande n°1."
+      - type: demo
+        title: "Démonstration"
+        md: "Change l'identifiant de commande, ou supprime le WHERE pour voir toutes les lignes."
+        language: sql
+        code: |
+          SELECT co.id AS commande,
+                 p.nom AS produit,
+                 l.quantite,
+                 l.prix_unitaire,
+                 l.quantite * l.prix_unitaire AS montant
+          FROM commandes co
+          JOIN lignes_commande l ON l.commande_id = co.id
+          JOIN produits p ON p.id = l.produit_id
+          WHERE co.id = 1;
+      - type: question
+        ref: sql-c4l3-q1
+      - type: code
+        language: sql
+        title: "Chiffre d'affaires par catégorie (4 tables)"
+        code: |
+          SELECT c.nom AS categorie,
+                 SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+          FROM lignes_commande l
+          JOIN commandes co ON co.id = l.commande_id
+          JOIN produits p   ON p.id = l.produit_id
+          JOIN categories c ON c.id = p.categorie_id
+          WHERE co.statut <> 'ANNULEE'
+          GROUP BY c.nom
+          ORDER BY chiffre_affaires DESC;
+        lines:
+          - n: 2
+            note: "Agrégat : la somme des montants de chaque groupe (catégorie)."
+          - n: 4
+            note: "On rejoint la commande pour connaître son statut."
+          - n: 5
+            note: "On rejoint le produit pour connaître sa catégorie…"
+          - n: 6
+            note: "…et la catégorie pour afficher son nom."
+          - n: 7
+            note: "Les commandes annulées ne comptent pas dans le chiffre d'affaires."
+          - n: 8
+            note: "Un groupe par catégorie."
+      - type: demo
+        title: "Démonstration : un indicateur de tableau de bord"
+        language: sql
+        code: |
+          SELECT c.nom AS categorie,
+                 SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+          FROM lignes_commande l
+          JOIN commandes co ON co.id = l.commande_id
+          JOIN produits p   ON p.id = l.produit_id
+          JOIN categories c ON c.id = p.categorie_id
+          WHERE co.statut <> 'ANNULEE'
+          GROUP BY c.nom
+          ORDER BY chiffre_affaires DESC;
+      - type: question
+        ref: sql-c4l3-q2
+      - type: question
+        ref: sql-c4l3-q3
+      - type: exercise
+        ref: sql-ex-montant-commandes
+      - type: question
+        ref: sql-c4l3-q4
+    questions:
+      - code: sql-c4l3-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: "Pourquoi la table `lignes_commande` existe-t-elle ?"
+        choices:
+          - label: "Pour représenter la relation plusieurs-à-plusieurs entre commandes et produits, avec la quantité"
+            correct: true
+            why: "Chaque ligne relie une commande à un produit et porte les données du lien."
+          - label: "Pour stocker une copie des produits en cas de suppression"
+            correct: false
+            why: "Ce n'est pas son rôle : elle ne contient que des clés et des données du lien."
+          - label: "Parce que PostgreSQL limite le nombre de colonnes par table"
+            correct: false
+            why: "Rien à voir : c'est une question de modélisation."
+        explanation: "En Merise, une association (0,n)–(0,n) devient une table dont la clé primaire est composée des deux clés étrangères."
+      - code: sql-c4l3-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: "La commande n°1 contient 1 exemplaire à 29,90 € et 2 exemplaires à 9,90 €. Que renvoie cette requête ?"
+        snippet: |
+          SELECT SUM(quantite * prix_unitaire)
+          FROM lignes_commande
+          WHERE commande_id = 1;
+        language: sql
+        choices:
+          - label: "49.70"
+            correct: true
+            why: "1 × 29,90 + 2 × 9,90 = 29,90 + 19,80 = 49,70."
+          - label: "39.80"
+            correct: false
+            why: "La quantité 2 de la seconde ligne n'a pas été prise en compte."
+          - label: "3"
+            correct: false
+            why: "C'est la somme des quantités."
+        explanation: "Le produit quantite × prix_unitaire est calculé pour chaque ligne, puis SUM additionne les résultats."
+      - code: sql-c4l3-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-jointures
+        prompt: "`JOIN` utilisé seul est équivalent à `INNER JOIN`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "INNER est le type de jointure par défaut."
+          - label: "Faux"
+            correct: false
+            why: "JOIN sans précision est bien une jointure interne."
+        explanation: "Écrire INNER explicitement est une question de style ; les jointures externes, elles, doivent toujours être précisées (LEFT, RIGHT, FULL)."
+      - code: sql-c4l3-q4
+        kind: COMPLETER_CODE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: "Complète pour compter le nombre de **commandes différentes** dans lesquelles apparaît chaque produit."
+        snippet: |
+          SELECT p.nom, COUNT(____ l.commande_id) AS nb_commandes
+          FROM produits p
+          JOIN lignes_commande l ON l.produit_id = p.id
+          GROUP BY p.id, p.nom;
+        language: sql
+        answers: ["DISTINCT"]
+        explanation: "Ici chaque couple (commande, produit) est unique, mais `COUNT(DISTINCT ...)` est un réflexe sûr dès qu'une jointure peut dupliquer des lignes."
+    exercises:
+      - slug: sql-ex-montant-commandes
+        kind: SQL
+        title: "Montant total de chaque commande livrée"
+        difficulty: DIFFICILE
+        skill: sql-jointures
+        statement: |
+          Pour chaque commande **livrée**, affiche son **id** (`commande_id`), le **nom du client**
+          (colonne `client`, au format « Prénom Nom ») et le **montant total** (`montant`). Trie par montant
+          décroissant et garde les **5 premières**.
+        criteria: "3 colonnes (commande_id, client, montant), 5 lignes, triées par montant décroissant."
+        hints:
+          - "Il faut trois tables : commandes, clients et lignes_commande."
+          - "Groupe par commande et par client ; le montant est `SUM(l.quantite * l.prix_unitaire)`. Le nom complet : `cl.prenom || ' ' || cl.nom`."
+          - "`... WHERE co.statut = 'LIVREE' GROUP BY co.id, cl.prenom, cl.nom ORDER BY montant DESC LIMIT 5`"
+        solution: |
+          SELECT co.id AS commande_id,
+                 cl.prenom || ' ' || cl.nom AS client,
+                 SUM(l.quantite * l.prix_unitaire) AS montant
+          FROM commandes co
+          JOIN clients cl ON cl.id = co.client_id
+          JOIN lignes_commande l ON l.commande_id = co.id
+          WHERE co.statut = 'LIVREE'
+          GROUP BY co.id, cl.prenom, cl.nom
+          ORDER BY montant DESC
+          LIMIT 5;
+        explanation: |
+          Les deux jointures donnent accès au client et aux lignes. On regroupe par commande pour additionner
+          ses lignes ; `cl.prenom` et `cl.nom` figurent dans le GROUP BY pour pouvoir être affichés.
+        xp: 25
+        payload:
+          mode: READ
+          ordered: true
+
+  # ===================================================================== LEÇON 4
+  - slug: sql-auto-jointure
+    title: "Auto-jointure : une table reliée à elle-même"
+    duration: 10
+    objective: "Joindre une table avec elle-même pour exploiter une hiérarchie (employé et manager)."
+    prerequisites: "LEFT JOIN et alias de tables."
+    skills: [sql-jointures]
+    xp: 12
+    memo: |
+      - Une **auto-jointure** relie une table à elle-même : il faut **deux alias différents**.
+      - Cas typique : `employes.manager_id` référence `employes.id` (hiérarchie).
+      - LEFT JOIN pour garder la personne qui n'a pas de manager (la directrice).
+    commonMistakes: |
+      - Utiliser le même alias deux fois.
+      - Inverser la condition : `m.manager_id = e.id` donne les subordonnés au lieu du manager.
+    blocks:
+      - type: text
+        md: |
+          Dans la table `employes`, la colonne `manager_id` contient l'identifiant d'un **autre employé**.
+          Pour afficher le nom du manager à côté de celui de l'employé, on joint la table **à elle-même**,
+          en lui donnant deux rôles grâce à deux alias.
+      - type: code
+        language: sql
+        title: "Chaque employé et son manager"
+        code: |
+          SELECT e.prenom || ' ' || e.nom AS employe,
+                 m.prenom || ' ' || m.nom AS manager
+          FROM employes e
+          LEFT JOIN employes m ON m.id = e.manager_id
+          ORDER BY manager NULLS FIRST, employe;
+        lines:
+          - n: 1
+            note: "L'alias `e` joue le rôle de l'employé."
+          - n: 2
+            note: "L'alias `m` joue le rôle du manager : c'est la **même table**, vue une seconde fois."
+          - n: 4
+            note: "Le manager de e est l'employé m dont l'id vaut e.manager_id. LEFT JOIN garde la directrice, qui n'a pas de manager."
+      - type: demo
+        title: "Démonstration"
+        language: sql
+        code: |
+          SELECT e.prenom || ' ' || e.nom AS employe,
+                 m.prenom || ' ' || m.nom AS manager
+          FROM employes e
+          LEFT JOIN employes m ON m.id = e.manager_id
+          ORDER BY manager NULLS FIRST, employe;
+      - type: question
+        ref: sql-c4l4-q1
+      - type: question
+        ref: sql-c4l4-q2
+      - type: exercise
+        ref: sql-ex-equipe-karim
+      - type: question
+        ref: sql-c4l4-q3
+    questions:
+      - code: sql-c4l4-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: "Pourquoi utilise-t-on un LEFT JOIN plutôt qu'un INNER JOIN dans la requête employé / manager ?"
+        choices:
+          - label: "Pour garder la directrice, qui n'a pas de manager (manager_id NULL)"
+            correct: true
+            why: "Avec INNER JOIN, elle disparaîtrait faute de correspondance."
+          - label: "Parce qu'une auto-jointure doit toujours être externe"
+            correct: false
+            why: "Une auto-jointure peut être interne ou externe selon le besoin."
+          - label: "Pour éviter les doublons"
+            correct: false
+            why: "Le type de jointure n'a rien à voir avec les doublons ici."
+        explanation: "Choisis le type de jointure selon la question posée : faut-il garder les lignes sans correspondance ?"
+      - code: sql-c4l4-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-jointures
+        prompt: "Dans une auto-jointure, les deux occurrences de la table doivent avoir des alias différents."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Sinon PostgreSQL ne peut pas distinguer les deux rôles de la table."
+          - label: "Faux"
+            correct: false
+            why: "Deux alias identiques provoquent une erreur."
+        explanation: "Choisis des alias parlants : `e` (employé) et `m` (manager)."
+      - code: sql-c4l4-q3
+        kind: COMPLETER_CODE
+        difficulty: 3
+        skill: sql-jointures
+        prompt: "Complète pour lister les employés dont le salaire est **supérieur à celui de leur manager**."
+        snippet: |
+          SELECT e.prenom, e.salaire, m.salaire AS salaire_manager
+          FROM employes e
+          JOIN employes m ON m.id = e.manager_id
+          WHERE ____;
+        language: sql
+        answers: ["e.salaire > m.salaire", "m.salaire < e.salaire"]
+        explanation: "Une fois la table jointe à elle-même, on compare librement les colonnes des deux rôles. Dans notre base, la requête ne renvoie aucune ligne : aucun employé ne gagne plus que son manager. Vérifie-le dans le laboratoire !"
+    exercises:
+      - slug: sql-ex-equipe-karim
+        kind: SQL
+        title: "L'équipe du responsable technique"
+        difficulty: INTERMEDIAIRE
+        skill: sql-jointures
+        statement: |
+          Affiche le **prénom**, le **nom** et le **poste** des employés dont le manager s'appelle **Karim**
+          (prénom), triés par nom.
+        criteria: "3 colonnes, uniquement les employés managés par Karim, triés par nom."
+        hints:
+          - "Joins employes (e) à employes (m) pour connaître le manager de chaque employé."
+          - "Filtre sur `m.prenom = 'Karim'`."
+          - "`FROM employes e JOIN employes m ON m.id = e.manager_id WHERE m.prenom = 'Karim' ORDER BY e.nom`"
+        solution: |
+          SELECT e.prenom, e.nom, e.poste
+          FROM employes e
+          JOIN employes m ON m.id = e.manager_id
+          WHERE m.prenom = 'Karim'
+          ORDER BY e.nom;
+        explanation: |
+          L'auto-jointure associe chaque employé à son manager ; la condition porte ensuite sur la colonne
+          `prenom` du **manager** (alias m). On obtient l'équipe de développement encadrée par Karim.
+        xp: 15
+        payload:
+          mode: READ
+          ordered: true
+
+bank:
+  - code: sql-c4-b1
+    kind: RESULTAT_CODE
+    difficulty: 3
+    skill: sql-jointures
+    prompt: "Combien de lignes produit une jointure **sans condition** entre `categories` (8 lignes) et `services` (4 lignes) ?"
+    snippet: |
+      SELECT * FROM categories, services;
+    language: sql
+    choices:
+      - label: "32"
+        correct: true
+        why: "Sans condition, chaque ligne est combinée à chaque ligne : 8 × 4 = 32 (produit cartésien)."
+      - label: "12"
+        correct: false
+        why: "Ce serait une addition ; une jointure multiplie les combinaisons."
+      - label: "8"
+        correct: false
+        why: "Toutes les combinaisons sont produites."
+    explanation: "Le produit cartésien (CROSS JOIN) est rarement voulu : c'est souvent le signe d'une condition de jointure oubliée."
+  - code: sql-c4-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-jointures
+    prompt: "Quelle jointure garde les lignes des **deux** tables, même sans correspondance ?"
+    choices:
+      - label: "FULL OUTER JOIN"
+        correct: true
+        why: "Elle combine l'effet d'un LEFT et d'un RIGHT JOIN."
+      - label: "INNER JOIN"
+        correct: false
+        why: "Elle ne garde que les correspondances."
+      - label: "LEFT JOIN"
+        correct: false
+        why: "Elle ne garde que toutes les lignes de gauche."
+      - label: "CROSS JOIN"
+        correct: false
+        why: "C'est le produit cartésien, sans condition."
+    explanation: "INNER (intersection), LEFT/RIGHT (un côté complet), FULL (les deux côtés), CROSS (toutes les combinaisons)."
+  - code: sql-c4-b3
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: sql-jointures
+    prompt: "`a LEFT JOIN b` donne le même résultat que `b RIGHT JOIN a`."
+    choices:
+      - label: "Vrai"
+        correct: true
+        why: "RIGHT JOIN est le symétrique de LEFT JOIN."
+      - label: "Faux"
+        correct: false
+        why: "Seul l'ordre des colonnes peut différer : les lignes sont les mêmes."
+    explanation: "On privilégie LEFT JOIN, plus lisible : la table principale est écrite en premier."
+  - code: sql-c4-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: sql-jointures
+    prompt: "Un client a 4 commandes et 2 avis. Combien de lignes produit `clients JOIN commandes JOIN avis` (sur client_id) pour ce client ?"
+    choices:
+      - label: "8"
+        correct: true
+        why: "Chaque commande est combinée à chaque avis : 4 × 2 = 8 lignes (effet « multiplication »)."
+      - label: "6"
+        correct: false
+        why: "Les jointures multiplient, elles n'additionnent pas."
+      - label: "4"
+        correct: false
+        why: "Les avis multiplient les lignes de commandes."
+    explanation: "Joindre deux tables « filles » indépendantes à un même parent fausse les agrégats (SUM, COUNT). On agrège séparément ou on utilise des sous-requêtes."
+  - code: sql-c4-b5
+    kind: COMPLETER_CODE
+    difficulty: 2
+    skill: sql-jointures
+    prompt: "Complète pour afficher les produits et leurs avis, en gardant les produits **sans avis**."
+    snippet: |
+      SELECT p.nom, a.note
+      FROM produits p
+      ____ avis a ON a.produit_id = p.id;
+    language: sql
+    answers: ["LEFT JOIN", "LEFT OUTER JOIN"]
+    explanation: "LEFT JOIN conserve toutes les lignes de produits ; `a.note` vaut NULL pour les produits sans avis."
+  - code: sql-c4-b6
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-jointures
+    prompt: "Quel est l'avantage des alias de table (`FROM produits p`) ?"
+    choices:
+      - label: "Raccourcir l'écriture et lever les ambiguïtés entre colonnes de même nom"
+        correct: true
+        why: "`p.nom` et `c.nom` sont clairs et concis."
+      - label: "Accélérer l'exécution de la requête"
+        correct: false
+        why: "Les alias n'ont aucun effet sur les performances."
+      - label: "Renommer définitivement la table"
+        correct: false
+        why: "L'alias n'existe que le temps de la requête."
+    explanation: "Les alias sont indispensables pour les auto-jointures et fortement recommandés dès deux tables."
+  - code: sql-c4-b7
+    kind: RESULTAT_CODE
+    difficulty: 3
+    skill: sql-jointures
+    prompt: "4 clients n'ont jamais commandé. Combien de lignes renvoie cette requête ?"
+    snippet: |
+      SELECT cl.id
+      FROM clients cl
+      LEFT JOIN commandes co ON co.client_id = cl.id
+      WHERE co.id IS NULL;
+    language: sql
+    choices:
+      - label: "4"
+        correct: true
+        why: "Ce sont exactement les clients sans correspondance dans commandes."
+      - label: "0"
+        correct: false
+        why: "Le LEFT JOIN conserve ces clients avec des colonnes co.* à NULL."
+      - label: "21"
+        correct: false
+        why: "C'est le nombre de clients ayant au moins une commande."
+    explanation: "L'anti-jointure isole les lignes de gauche sans correspondance à droite."
+  - code: sql-c4-b8
+    kind: CHOIX_MULTIPLE
+    difficulty: 3
+    skill: sql-jointures
+    prompt: "Quelles écritures relient correctement produits et catégories ? (plusieurs réponses)"
+    choices:
+      - label: "`FROM produits p JOIN categories c ON c.id = p.categorie_id`"
+        correct: true
+        why: "Forme moderne et recommandée."
+      - label: "`FROM produits p, categories c WHERE c.id = p.categorie_id`"
+        correct: true
+        why: "Ancienne syntaxe (jointure dans le WHERE) : correcte mais moins lisible."
+      - label: "`FROM produits p JOIN categories c USING (id)`"
+        correct: false
+        why: "USING (id) relierait p.id à c.id : un produit à la catégorie de même numéro, ce qui est faux."
+      - label: "`FROM produits p JOIN categories c ON c.nom = p.nom`"
+        correct: false
+        why: "Le nom d'un produit n'est pas celui de sa catégorie."
+    explanation: "Préfère `JOIN ... ON` : la condition de jointure est séparée des filtres du WHERE."

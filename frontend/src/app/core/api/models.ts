@@ -568,3 +568,48 @@ export interface QuizStats {
     fixed: boolean;
   }[];
 }
+
+// ------------------------------------------------------------------ projets
+
+export interface ProjectStep {
+  position: number;
+  title: string;
+  instructions: string;
+  deliverable: string;
+  checklist: string[];
+  exercise?: { slug: string; title: string; kind: string; solved: boolean };
+  done: boolean;
+}
+
+export interface ProjectView {
+  slug: string;
+  title: string;
+  difficulty: string;
+  courseSlug?: string;
+  courseTitle?: string;
+  available: boolean;
+  statement: string;
+  needs: string;
+  businessRules: string;
+  userStories: string;
+  mockup?: string;
+  mcd?: string;
+  mld?: string;
+  acceptanceCriteria: string;
+  tests?: string;
+  steps: ProjectStep[];
+  completed: boolean;
+  correction?: string;
+  improvements?: string;
+}
+
+export interface ProjectListItem {
+  slug: string;
+  title: string;
+  difficulty: string;
+  courseSlug?: string;
+  courseTitle?: string;
+  stepCount: number;
+  stepsDone: number;
+  available: boolean;
+}

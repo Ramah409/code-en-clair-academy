@@ -58,7 +58,7 @@ public class LabMaintenance implements ApplicationRunner {
         for (String table : TABLES) {
             jdbc.execute("insert into lab." + table + " select * from lab_seed." + table);
         }
-        jdbc.execute("grant select, insert, update, delete on all tables in schema lab to cda_lab");
+        jdbc.execute("grant select, insert, update, delete, references on all tables in schema lab to cda_lab");
         if (!foreignObjects.isEmpty()) {
             log.warn("Laboratoire : {} objet(s) créé(s) par les apprenantes supprimé(s)", foreignObjects.size());
         }

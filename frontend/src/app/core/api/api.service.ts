@@ -16,12 +16,15 @@ import {
   LabRun,
   LabTable,
   LessonView,
+  ProjectListItem,
+  ProjectView,
   ProgressOverview,
   QuizAttempt,
   QuizHistoryItem,
   QuizOptions,
   QuizResult,
   QuizStats,
+  Reward,
   StartQuiz,
   SubmitResult,
 } from './models';
@@ -142,6 +145,19 @@ export class ApiService {
 
   quizResult(id: number): Observable<QuizResult> {
     return this.http.get<QuizResult>(`/api/quiz/attempts/${id}/result`);
+  }
+
+  // Projets
+  projects(): Observable<ProjectListItem[]> {
+    return this.http.get<ProjectListItem[]>('/api/projects');
+  }
+
+  project(slug: string): Observable<ProjectView> {
+    return this.http.get<ProjectView>(`/api/projects/${slug}`);
+  }
+
+  completeProjectStep(slug: string, position: number, checked: number[]): Observable<{ reward: Reward; projectCompleted: boolean }> {
+    return this.http.post<{ reward: Reward; projectCompleted: boolean }>(`/api/projects/${slug}/steps/${position}/complete`, { checked });
   }
 
   // Profil

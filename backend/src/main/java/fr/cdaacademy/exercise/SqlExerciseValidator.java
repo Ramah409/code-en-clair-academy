@@ -8,12 +8,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import fr.cdaacademy.common.BusinessRuleException;
 import fr.cdaacademy.lab.LabExecutor;
 import fr.cdaacademy.lab.LabExecutor.LabSqlException;
 import fr.cdaacademy.lab.LabExecutor.ResultData;
@@ -39,6 +42,7 @@ public class SqlExerciseValidator implements ExerciseValidator {
     }
 
     private static final int PREVIEW_ROWS = 30;
+    private static final Logger log = LoggerFactory.getLogger(SqlExerciseValidator.class);
 
     private final LabExecutor executor;
     private final ObjectMapper json;
@@ -70,7 +74,14 @@ public class SqlExerciseValidator implements ExerciseValidator {
         List<String> statements = SqlGuard.check(sql, mode);
         String check = ex.payload().path("check").asText(null);
 
-        ResultData expected = run(SqlGuard.check(ex.solution(), SqlGuard.Mode.WRITE), mode, check);
+        ResultData expected;
+        try {
+            expected = run(SqlGuard.check(ex.solution(), SqlGuard.Mode.WRITE), mode, check);
+        } catch (LabSqlException e) {
+            log.error("Correction de référence invalide pour l'exercice {} : {}", ex.slug(), e.getMessage());
+            throw new BusinessRuleException("Cet exercice est momentanément indisponible : sa correction de "
+                    + "référence ne s'exécute pas. Signale-le à la formatrice.");
+        }
         ResultData actual;
         try {
             actual = run(statements, mode, check);

@@ -1,0 +1,619 @@
+slug: sous-requetes
+position: 5
+level: AVANCE
+title: "Sous-requêtes, CTE et fonctions de fenêtrage"
+summary: "Imbriquer des requêtes, tester l'existence de lignes liées, structurer une requête complexe avec WITH et calculer des classements avec les fonctions de fenêtrage."
+quizQuestionCount: 15
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sql-sous-requetes
+    title: "Sous-requêtes dans WHERE"
+    duration: 12
+    objective: "Utiliser le résultat d'une requête comme valeur (sous-requête scalaire) ou comme liste (IN)."
+    prerequisites: "Agrégation et jointures."
+    skills: [sql-agregation]
+    xp: 15
+    memo: |
+      - Une **sous-requête** est une requête entre parenthèses, utilisée dans une autre.
+      - **Scalaire** (une seule valeur) : `WHERE prix > (SELECT AVG(prix) FROM produits)`.
+      - **Liste** : `WHERE id IN (SELECT client_id FROM avis)`.
+      - Une sous-requête **corrélée** utilise une colonne de la requête principale : elle est réévaluée pour chaque ligne.
+    commonMistakes: |
+      - Utiliser `=` avec une sous-requête qui renvoie plusieurs lignes → erreur « more than one row returned ».
+      - Oublier les parenthèses autour de la sous-requête.
+      - Écrire `WHERE prix > AVG(prix)` : un agrégat ne peut pas être utilisé directement dans WHERE.
+    blocks:
+      - type: text
+        md: |
+          « Quels produits coûtent **plus cher que la moyenne** ? » Deux étapes : calculer la moyenne, puis
+          filtrer. En SQL, on peut les écrire en **une seule requête** en imbriquant la première dans la seconde.
+      - type: code
+        language: sql
+        title: "Plus cher que la moyenne"
+        code: |
+          SELECT nom, prix
+          FROM produits
+          WHERE prix > (SELECT AVG(prix) FROM produits)
+          ORDER BY prix DESC;
+        lines:
+          - n: 3
+            note: "La sous-requête entre parenthèses est exécutée : elle renvoie **une seule valeur** (43,62). La condition devient `prix > 43.62`."
+      - type: demo
+        title: "Démonstration"
+        md: "Exécute d'abord la sous-requête seule (`SELECT AVG(prix) FROM produits`) pour voir la valeur utilisée, puis la requête complète."
+        language: sql
+        code: |
+          SELECT nom, prix
+          FROM produits
+          WHERE prix > (SELECT AVG(prix) FROM produits)
+          ORDER BY prix DESC;
+      - type: question
+        ref: sql-c5l1-q1
+      - type: code
+        language: sql
+        title: "Sous-requête qui renvoie une liste : IN"
+        code: |
+          SELECT prenom, nom
+          FROM clients
+          WHERE id IN (SELECT client_id FROM avis);
+        lines:
+          - n: 3
+            note: "La sous-requête renvoie la liste des clients ayant laissé un avis ; IN garde les clients qui en font partie."
+      - type: definition
+        term: "Sous-requête corrélée"
+        md: |
+          Sous-requête qui **fait référence à la ligne en cours** de la requête principale. Elle est
+          (logiquement) exécutée une fois par ligne. Exemple : le produit le plus cher **de sa propre catégorie**.
+      - type: code
+        language: sql
+        title: "Le produit le plus cher de chaque catégorie"
+        code: |
+          SELECT p.nom, p.categorie_id, p.prix
+          FROM produits p
+          WHERE p.prix = (SELECT MAX(p2.prix)
+                          FROM produits p2
+                          WHERE p2.categorie_id = p.categorie_id)
+          ORDER BY p.categorie_id;
+        lines:
+          - n: 3
+            note: "Pour chaque produit p, on compare son prix au maximum…"
+          - n: 5
+            note: "…des produits **de la même catégorie que p** : c'est la corrélation (p2 dépend de p)."
+      - type: question
+        ref: sql-c5l1-q2
+      - type: question
+        ref: sql-c5l1-q3
+      - type: exercise
+        ref: sql-ex-salaire-superieur-moyenne
+      - type: question
+        ref: sql-c5l1-q4
+    questions:
+      - code: sql-c5l1-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Pourquoi écrire `WHERE prix > (SELECT AVG(prix) FROM produits)` plutôt que `WHERE prix > AVG(prix)` ?"
+        choices:
+          - label: "Parce qu'un agrégat ne peut pas être utilisé directement dans WHERE"
+            correct: true
+            why: "WHERE est évalué ligne par ligne, avant tout calcul d'agrégat ; la sous-requête calcule la moyenne à part."
+          - label: "Parce que la sous-requête est plus rapide"
+            correct: false
+            why: "La vraie raison est l'interdiction des agrégats dans WHERE."
+          - label: "Les deux écritures sont équivalentes"
+            correct: false
+            why: "La seconde provoque une erreur."
+        explanation: "La sous-requête scalaire permet de comparer chaque ligne à une valeur calculée sur l'ensemble de la table."
+      - code: sql-c5l1-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Que se passe-t-il à l'exécution ?"
+        snippet: |
+          SELECT nom FROM produits
+          WHERE categorie_id = (SELECT id FROM categories WHERE nom LIKE 'J%');
+        language: sql
+        choices:
+          - label: "Erreur : la sous-requête renvoie plusieurs lignes (Jeux et Jardin)"
+            correct: true
+            why: "Avec `=`, la sous-requête doit renvoyer une seule valeur."
+          - label: "Elle renvoie les produits des catégories Jeux et Jardin"
+            correct: false
+            why: "Il faudrait `IN` au lieu de `=`."
+          - label: "Elle ne renvoie aucune ligne"
+            correct: false
+            why: "La requête ne va pas jusqu'au bout : elle échoue."
+        explanation: "`=` attend une seule valeur, `IN` accepte une liste. Utilise IN dès qu'une sous-requête peut renvoyer plusieurs lignes."
+      - code: sql-c5l1-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Une sous-requête corrélée fait référence à une colonne de la requête principale."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "C'est la définition : elle dépend de la ligne en cours."
+          - label: "Faux"
+            correct: false
+            why: "Une sous-requête indépendante n'est pas corrélée ; une corrélée l'est par définition."
+        explanation: "Exemple : `WHERE p2.categorie_id = p.categorie_id`, où p vient de la requête principale."
+      - code: sql-c5l1-q4
+        kind: COMPLETER_CODE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Complète pour afficher les produits qui ont **déjà été commandés**."
+        snippet: |
+          SELECT nom FROM produits
+          WHERE id ____ (SELECT produit_id FROM lignes_commande);
+        language: sql
+        answers: ["IN"]
+        explanation: "La sous-requête renvoie la liste des produits commandés ; IN teste l'appartenance à cette liste."
+    exercises:
+      - slug: sql-ex-salaire-superieur-moyenne
+        kind: SQL
+        title: "Salaires au-dessus de la moyenne de leur service"
+        difficulty: DIFFICILE
+        skill: sql-agregation
+        statement: |
+          Affiche le **prénom**, le **nom**, le **service_id** et le **salaire** des employés qui gagnent
+          **plus que la moyenne de leur propre service**, triés par service puis par salaire décroissant.
+        criteria: "4 colonnes, uniquement les employés au-dessus de la moyenne de leur service, tri par service puis salaire décroissant."
+        hints:
+          - "Il faut comparer le salaire de chaque employé à une moyenne qui dépend de son service : sous-requête corrélée."
+          - "Dans la sous-requête : `SELECT AVG(e2.salaire) FROM employes e2 WHERE e2.service_id = e.service_id`."
+          - "`WHERE e.salaire > (SELECT AVG(e2.salaire) FROM employes e2 WHERE e2.service_id = e.service_id) ORDER BY e.service_id, e.salaire DESC`"
+        solution: |
+          SELECT e.prenom, e.nom, e.service_id, e.salaire
+          FROM employes e
+          WHERE e.salaire > (SELECT AVG(e2.salaire)
+                             FROM employes e2
+                             WHERE e2.service_id = e.service_id)
+          ORDER BY e.service_id, e.salaire DESC;
+        explanation: |
+          Pour chaque employé `e`, la sous-requête calcule la moyenne des salaires **de son service**. Le
+          consultant sans service est écarté : sa sous-requête compare avec `service_id = NULL`, qui ne
+          renvoie aucune ligne, donc une moyenne NULL.
+        xp: 25
+        payload:
+          mode: READ
+          ordered: true
+
+  # ===================================================================== LEÇON 2
+  - slug: sql-exists
+    title: "EXISTS et NOT EXISTS"
+    duration: 10
+    objective: "Tester l'existence de lignes liées et préférer NOT EXISTS à NOT IN."
+    prerequisites: "Sous-requêtes corrélées."
+    skills: [sql-agregation, sql-jointures]
+    xp: 15
+    memo: |
+      - `EXISTS (sous-requête)` est vrai si la sous-requête renvoie **au moins une ligne**.
+      - La sous-requête est presque toujours **corrélée** ; ce qu'elle sélectionne n'a pas d'importance (`SELECT 1`).
+      - `NOT EXISTS` est la forme la plus sûre pour « ceux qui n'ont pas de… » : pas de piège avec les NULL.
+    commonMistakes: |
+      - Oublier la corrélation : `EXISTS (SELECT 1 FROM avis)` est vrai pour toutes les lignes dès que la table avis n'est pas vide.
+      - Utiliser `NOT IN` avec une sous-requête pouvant contenir des NULL (résultat vide).
+    blocks:
+      - type: text
+        md: |
+          Pour savoir si un produit a reçu **au moins un avis**, on n'a pas besoin de compter les avis : il
+          suffit de savoir s'il **en existe un**. C'est exactement ce que fait `EXISTS`.
+      - type: code
+        language: sql
+        title: "Les produits jamais notés"
+        code: |
+          SELECT p.nom
+          FROM produits p
+          WHERE NOT EXISTS (
+            SELECT 1
+            FROM avis a
+            WHERE a.produit_id = p.id
+          )
+          ORDER BY p.nom;
+        lines:
+          - n: 3
+            note: "NOT EXISTS est vrai quand la sous-requête ne renvoie **aucune** ligne."
+          - n: 4
+            note: "`SELECT 1` : la valeur renvoyée n'a pas d'importance, seule compte l'existence d'une ligne."
+          - n: 6
+            note: "Corrélation : les avis **de ce produit-là**."
+      - type: demo
+        title: "Démonstration"
+        md: "Remplace `NOT EXISTS` par `EXISTS` pour obtenir les produits qui ont au moins un avis."
+        language: sql
+        code: |
+          SELECT p.nom
+          FROM produits p
+          WHERE NOT EXISTS (
+            SELECT 1
+            FROM avis a
+            WHERE a.produit_id = p.id
+          )
+          ORDER BY p.nom;
+      - type: question
+        ref: sql-c5l2-q1
+      - type: callout
+        variant: exam
+        title: "Question fréquente du jury"
+        md: |
+          « Pourquoi préférer NOT EXISTS à NOT IN ? » Parce que si la sous-requête de NOT IN renvoie un seul
+          NULL, la condition n'est **jamais vraie** et le résultat est vide. NOT EXISTS ne compare pas de
+          valeurs : il n'a pas ce problème. Il est aussi très bien optimisé par PostgreSQL (anti-jointure).
+      - type: question
+        ref: sql-c5l2-q2
+      - type: question
+        ref: sql-c5l2-q3
+      - type: exercise
+        ref: sql-ex-clients-sans-avis
+    questions:
+      - code: sql-c5l2-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Quand `EXISTS (sous-requête)` est-il vrai ?"
+        choices:
+          - label: "Quand la sous-requête renvoie au moins une ligne"
+            correct: true
+            why: "EXISTS ne regarde que la présence de lignes, pas leurs valeurs."
+          - label: "Quand la sous-requête renvoie une valeur non NULL"
+            correct: false
+            why: "Même une ligne contenant NULL rend EXISTS vrai."
+          - label: "Quand la sous-requête renvoie exactement une ligne"
+            correct: false
+            why: "Une ou plusieurs lignes : EXISTS est vrai."
+        explanation: "EXISTS s'arrête dès la première ligne trouvée : c'est efficace pour des tests de présence."
+      - code: sql-c5l2-q2
+        kind: VRAI_FAUX
+        difficulty: 3
+        skill: sql-agregation
+        prompt: "`WHERE id NOT IN (SELECT manager_id FROM employes)` renvoie les employés qui ne managent personne."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "La colonne manager_id contient un NULL (la directrice) : NOT IN renvoie alors un résultat vide."
+          - label: "Faux"
+            correct: true
+            why: "Le NULL de la liste rend chaque comparaison « inconnue »."
+        explanation: "Solutions : ajouter `WHERE manager_id IS NOT NULL` dans la sous-requête, ou mieux, utiliser NOT EXISTS."
+      - code: sql-c5l2-q3
+        kind: COMPLETER_CODE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Complète pour afficher les catégories qui contiennent au moins un produit en rupture de stock."
+        snippet: |
+          SELECT c.nom FROM categories c
+          WHERE ____ (SELECT 1 FROM produits p
+                      WHERE p.categorie_id = c.id AND p.stock = 0);
+        language: sql
+        answers: ["EXISTS"]
+        explanation: "EXISTS avec une sous-requête corrélée : pour chaque catégorie, existe-t-il un produit à stock nul ?"
+    exercises:
+      - slug: sql-ex-clients-sans-avis
+        kind: SQL
+        title: "Clients ayant commandé mais jamais noté"
+        difficulty: DIFFICILE
+        skill: sql-jointures
+        statement: |
+          Le service marketing veut solliciter un avis auprès des clients qui ont **au moins une commande
+          livrée** mais **n'ont jamais laissé d'avis**. Affiche leur **prénom**, **nom** et **email**, triés par nom.
+        criteria: "3 colonnes ; clients avec au moins une commande LIVREE et aucun avis ; tri par nom."
+        hints:
+          - "Deux conditions d'existence : EXISTS pour les commandes livrées, NOT EXISTS pour les avis."
+          - "Chaque sous-requête est corrélée sur `client_id = cl.id`."
+          - "`WHERE EXISTS (SELECT 1 FROM commandes co WHERE co.client_id = cl.id AND co.statut = 'LIVREE') AND NOT EXISTS (SELECT 1 FROM avis a WHERE a.client_id = cl.id)`"
+        solution: |
+          SELECT cl.prenom, cl.nom, cl.email
+          FROM clients cl
+          WHERE EXISTS (SELECT 1 FROM commandes co
+                        WHERE co.client_id = cl.id AND co.statut = 'LIVREE')
+            AND NOT EXISTS (SELECT 1 FROM avis a
+                            WHERE a.client_id = cl.id)
+          ORDER BY cl.nom;
+        explanation: |
+          EXISTS et NOT EXISTS expriment directement la règle métier, sans risque de doublons (contrairement à
+          une jointure avec commandes, qui produirait une ligne par commande).
+        xp: 25
+        payload:
+          mode: READ
+          ordered: true
+
+  # ===================================================================== LEÇON 3
+  - slug: sql-cte-fenetrage
+    title: "WITH (CTE) et fonctions de fenêtrage"
+    duration: 15
+    objective: "Découper une requête complexe en étapes nommées avec WITH et produire des classements avec OVER."
+    prerequisites: "Sous-requêtes et GROUP BY."
+    skills: [sql-avance, sql-agregation]
+    xp: 20
+    memo: |
+      - `WITH nom AS (requête)` définit une **table temporaire nommée** (CTE) utilisable dans la requête qui suit.
+      - Les **fonctions de fenêtrage** calculent sur un ensemble de lignes **sans les regrouper** : `RANK() OVER (ORDER BY ...)`.
+      - `PARTITION BY` découpe en groupes pour la fenêtre : `RANK() OVER (PARTITION BY categorie_id ORDER BY prix DESC)`.
+      - `ROW_NUMBER` numérote, `RANK` gère les ex æquo (avec trous), `DENSE_RANK` sans trous.
+    commonMistakes: |
+      - Filtrer une fonction de fenêtrage dans WHERE : impossible, il faut passer par une CTE ou une sous-requête.
+      - Confondre GROUP BY (réduit le nombre de lignes) et OVER (garde toutes les lignes).
+    blocks:
+      - type: text
+        md: |
+          Quand une requête devient longue, on a envie de la **découper en étapes**, comme on découpe un
+          programme en fonctions. La clause `WITH` (Common Table Expression) le permet.
+      - type: code
+        language: sql
+        title: "Étape 1 : le montant de chaque commande ; étape 2 : les commandes au-dessus du panier moyen"
+        code: |
+          WITH montants AS (
+            SELECT commande_id,
+                   SUM(quantite * prix_unitaire) AS montant
+            FROM lignes_commande
+            GROUP BY commande_id
+          )
+          SELECT commande_id, montant
+          FROM montants
+          WHERE montant > (SELECT AVG(montant) FROM montants)
+          ORDER BY montant DESC;
+        lines:
+          - n: 1
+            note: "On nomme une étape intermédiaire `montants`."
+          - n: 2
+            note: "Elle calcule le montant total de chaque commande…"
+          - n: 5
+            note: "…grâce à un GROUP BY par commande."
+          - n: 7
+            note: "La requête principale lit `montants` comme une table ordinaire."
+          - n: 9
+            note: "Et l'utilise même deux fois : pour filtrer et pour calculer le panier moyen."
+      - type: demo
+        title: "Démonstration"
+        language: sql
+        code: |
+          WITH montants AS (
+            SELECT commande_id,
+                   SUM(quantite * prix_unitaire) AS montant
+            FROM lignes_commande
+            GROUP BY commande_id
+          )
+          SELECT commande_id, montant
+          FROM montants
+          WHERE montant > (SELECT AVG(montant) FROM montants)
+          ORDER BY montant DESC;
+      - type: question
+        ref: sql-c5l3-q1
+      - type: definition
+        term: "Fonction de fenêtrage (OVER)"
+        md: |
+          Fonction calculée sur une « fenêtre » de lignes liées à la ligne courante, **sans fusionner les
+          lignes** comme le ferait GROUP BY. Chaque ligne garde son détail et reçoit en plus une valeur
+          calculée : un rang, un total cumulé, une moyenne du groupe…
+      - type: code
+        language: sql
+        title: "Classer les produits par prix dans chaque catégorie"
+        code: |
+          SELECT nom, categorie_id, prix,
+                 RANK() OVER (PARTITION BY categorie_id ORDER BY prix DESC) AS rang,
+                 ROUND(AVG(prix) OVER (PARTITION BY categorie_id), 2) AS moyenne_categorie
+          FROM produits
+          WHERE categorie_id IS NOT NULL
+          ORDER BY categorie_id, rang;
+        lines:
+          - n: 2
+            note: "RANK numérote les produits du plus cher au moins cher, **en recommençant à 1 dans chaque catégorie** (PARTITION BY)."
+          - n: 3
+            note: "La moyenne de la catégorie est affichée sur chaque ligne, sans regrouper les lignes."
+          - n: 6
+            note: "Le tri final affiche les catégories dans l'ordre, et les produits par rang."
+      - type: demo
+        title: "Démonstration"
+        language: sql
+        code: |
+          SELECT nom, categorie_id, prix,
+                 RANK() OVER (PARTITION BY categorie_id ORDER BY prix DESC) AS rang,
+                 ROUND(AVG(prix) OVER (PARTITION BY categorie_id), 2) AS moyenne_categorie
+          FROM produits
+          WHERE categorie_id IS NOT NULL
+          ORDER BY categorie_id, rang;
+      - type: question
+        ref: sql-c5l3-q2
+      - type: question
+        ref: sql-c5l3-q3
+      - type: exercise
+        ref: sql-ex-top2-par-categorie
+      - type: question
+        ref: sql-c5l3-q4
+    questions:
+      - code: sql-c5l3-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: "Quel est le principal intérêt d'une CTE (`WITH ... AS`) ?"
+        choices:
+          - label: "Découper une requête complexe en étapes nommées et réutilisables dans la requête"
+            correct: true
+            why: "Elle améliore la lisibilité et évite de répéter une sous-requête."
+          - label: "Créer une table permanente dans la base"
+            correct: false
+            why: "La CTE n'existe que pendant l'exécution de la requête."
+          - label: "Accélérer systématiquement la requête"
+            correct: false
+            why: "Son intérêt principal est la lisibilité, pas la performance."
+        explanation: "Une CTE est une sous-requête nommée, placée avant la requête principale. Elle rend les requêtes d'analyse beaucoup plus lisibles."
+      - code: sql-c5l3-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: sql-avance
+        prompt: "Quelle différence entre `GROUP BY categorie_id` et `OVER (PARTITION BY categorie_id)` ?"
+        choices:
+          - label: "GROUP BY produit une ligne par catégorie ; OVER garde toutes les lignes et ajoute un calcul par catégorie"
+            correct: true
+            why: "La fenêtre calcule sans fusionner les lignes."
+          - label: "Aucune, ce sont deux syntaxes du même calcul"
+            correct: false
+            why: "Le nombre de lignes du résultat diffère."
+          - label: "OVER est plus ancien et déconseillé"
+            correct: false
+            why: "Les fonctions de fenêtrage sont modernes et très utilisées."
+        explanation: "Avec OVER, tu peux afficher le détail d'un produit **et** la moyenne de sa catégorie sur la même ligne."
+      - code: sql-c5l3-q3
+        kind: RESULTAT_CODE
+        difficulty: 3
+        skill: sql-avance
+        prompt: "Trois produits coûtent 50, 50 et 40 €. Quels rangs donne `RANK() OVER (ORDER BY prix DESC)` ?"
+        snippet: |
+          SELECT prix, RANK() OVER (ORDER BY prix DESC)
+          FROM (VALUES (50), (50), (40)) AS t(prix);
+        language: sql
+        choices:
+          - label: "1, 1, 3"
+            correct: true
+            why: "Les ex æquo partagent le rang 1, et le rang suivant saute à 3."
+          - label: "1, 1, 2"
+            correct: false
+            why: "C'est le comportement de DENSE_RANK."
+          - label: "1, 2, 3"
+            correct: false
+            why: "C'est le comportement de ROW_NUMBER."
+        explanation: "ROW_NUMBER : 1, 2, 3 ; RANK : 1, 1, 3 ; DENSE_RANK : 1, 1, 2."
+      - code: sql-c5l3-q4
+        kind: VRAI_FAUX
+        difficulty: 3
+        skill: sql-avance
+        prompt: "On peut écrire `WHERE RANK() OVER (ORDER BY prix DESC) <= 3` pour garder les 3 produits les plus chers."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Les fonctions de fenêtrage sont calculées après WHERE : elles y sont interdites."
+          - label: "Faux"
+            correct: true
+            why: "Il faut calculer le rang dans une CTE (ou sous-requête), puis filtrer dessus."
+        explanation: "Motif classique : `WITH classement AS (SELECT ..., RANK() OVER (...) AS rang FROM ...) SELECT * FROM classement WHERE rang <= 3`."
+    exercises:
+      - slug: sql-ex-top2-par-categorie
+        kind: SQL
+        title: "Les 2 produits les plus chers de chaque catégorie"
+        difficulty: DIFFICILE
+        skill: sql-avance
+        statement: |
+          Affiche, pour chaque catégorie (hors produits sans catégorie), les **2 produits les plus chers**
+          avec les colonnes **categorie_id**, **nom**, **prix** et **rang** (1 ou 2), triés par catégorie puis
+          par rang. Utilise `ROW_NUMBER()` pour qu'il y ait exactement deux produits par catégorie.
+        criteria: "4 colonnes, au plus 2 produits par catégorie, tri par categorie_id puis rang."
+        hints:
+          - "Calcule d'abord le rang de chaque produit dans sa catégorie avec une fonction de fenêtrage, dans une CTE."
+          - "`ROW_NUMBER() OVER (PARTITION BY categorie_id ORDER BY prix DESC) AS rang`"
+          - "`WITH classement AS (...) SELECT categorie_id, nom, prix, rang FROM classement WHERE rang <= 2 ORDER BY categorie_id, rang;`"
+        solution: |
+          WITH classement AS (
+            SELECT categorie_id, nom, prix,
+                   ROW_NUMBER() OVER (PARTITION BY categorie_id ORDER BY prix DESC) AS rang
+            FROM produits
+            WHERE categorie_id IS NOT NULL
+          )
+          SELECT categorie_id, nom, prix, rang
+          FROM classement
+          WHERE rang <= 2
+          ORDER BY categorie_id, rang;
+        explanation: |
+          La fenêtre numérote les produits de chaque catégorie du plus cher au moins cher. Comme on ne peut pas
+          filtrer une fonction de fenêtrage dans WHERE, on passe par la CTE `classement`, puis on garde les rangs 1 et 2.
+        xp: 30
+        payload:
+          mode: READ
+          ordered: true
+          requiredKeywords:
+            - pattern: "\\bover\\s*\\("
+              message: "Utilise une fonction de fenêtrage (ROW_NUMBER() OVER (...))."
+
+bank:
+  - code: sql-c5-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-agregation
+    prompt: "Où peut-on placer une sous-requête ?"
+    choices:
+      - label: "Dans WHERE, dans FROM (table dérivée) et dans SELECT (valeur calculée)"
+        correct: true
+        why: "Les trois emplacements sont possibles, avec des usages différents."
+      - label: "Uniquement dans WHERE"
+        correct: false
+        why: "FROM et SELECT acceptent aussi des sous-requêtes."
+      - label: "Uniquement dans FROM"
+        correct: false
+        why: "La plus courante est même dans WHERE."
+    explanation: "Une sous-requête dans FROM doit avoir un alias : `FROM (SELECT ...) AS t`."
+  - code: sql-c5-b2
+    kind: RESULTAT_CODE
+    difficulty: 2
+    skill: sql-agregation
+    prompt: "Que renvoie cette requête ?"
+    snippet: |
+      SELECT MAX(n) FROM (SELECT COUNT(*) AS n FROM commandes GROUP BY client_id) AS t;
+    language: sql
+    choices:
+      - label: "Le plus grand nombre de commandes passées par un même client"
+        correct: true
+        why: "La sous-requête compte les commandes par client, la requête principale prend le maximum."
+      - label: "Le nombre total de commandes"
+        correct: false
+        why: "Ce serait SUM(n)."
+      - label: "Une erreur, car une sous-requête dans FROM est interdite"
+        correct: false
+        why: "C'est autorisé, avec un alias (ici t)."
+    explanation: "Agréger un agrégat nécessite deux niveaux : une sous-requête (ou une CTE), puis une seconde agrégation."
+  - code: sql-c5-b3
+    kind: VRAI_FAUX
+    difficulty: 1
+    skill: sql-avance
+    prompt: "Une CTE définie avec `WITH` n'existe que pendant l'exécution de la requête qui la suit."
+    choices:
+      - label: "Vrai"
+        correct: true
+        why: "La CTE est une table temporaire nommée, limitée à la requête."
+      - label: "Faux"
+        correct: false
+        why: "Pour une table durable, il faudrait CREATE TABLE (ou une vue avec CREATE VIEW)."
+    explanation: "WITH structure une requête ; CREATE VIEW enregistre une requête réutilisable dans la base."
+  - code: sql-c5-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: sql-avance
+    prompt: "Quelle fonction numérote les lignes 1, 2, 3… sans jamais d'ex æquo ?"
+    choices:
+      - label: "ROW_NUMBER()"
+        correct: true
+        why: "Chaque ligne reçoit un numéro unique dans sa partition."
+      - label: "RANK()"
+        correct: false
+        why: "RANK donne le même rang aux ex æquo."
+      - label: "COUNT()"
+        correct: false
+        why: "COUNT compte, il ne numérote pas."
+    explanation: "ROW_NUMBER est utile pour « le n premier de chaque groupe », quand un départage arbitraire est acceptable."
+  - code: sql-c5-b5
+    kind: COMPLETER_CODE
+    difficulty: 3
+    skill: sql-avance
+    prompt: "Complète pour afficher le **cumul** des salaires, employé après employé, dans l'ordre des identifiants."
+    snippet: |
+      SELECT id, salaire,
+             SUM(salaire) ____ (ORDER BY id) AS cumul
+      FROM employes;
+    language: sql
+    answers: ["OVER"]
+    explanation: "`SUM(...) OVER (ORDER BY id)` additionne les salaires de la première ligne jusqu'à la ligne courante : c'est un total cumulé, sans regrouper les lignes."
+  - code: sql-c5-b6
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-jointures
+    prompt: "Quelle requête renvoie les catégories qui n'ont **aucun** produit, sans risque avec les NULL ?"
+    choices:
+      - label: "`SELECT nom FROM categories c WHERE NOT EXISTS (SELECT 1 FROM produits p WHERE p.categorie_id = c.id);`"
+        correct: true
+        why: "NOT EXISTS n'est pas perturbé par le produit dont categorie_id est NULL."
+      - label: "`SELECT nom FROM categories WHERE id NOT IN (SELECT categorie_id FROM produits);`"
+        correct: false
+        why: "La sous-requête contient un NULL (coffret surprise) : le résultat est toujours vide."
+      - label: "`SELECT nom FROM categories WHERE id <> ALL (produits);`"
+        correct: false
+        why: "Syntaxe invalide."
+    explanation: "Réflexe professionnel : NOT EXISTS pour les anti-jointures par sous-requête."

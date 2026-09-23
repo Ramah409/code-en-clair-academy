@@ -1,0 +1,717 @@
+slug: preparation-examen
+position: 8
+level: EXAMEN
+title: "Préparation à l'examen CDA"
+summary: "Méthode pour résoudre une question de requête, sécurité des accès aux données et questions fréquentes du jury sur la persistance."
+quizQuestionCount: 15
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sql-methode-examen
+    title: "Méthode : de la demande métier à la requête"
+    duration: 15
+    objective: "Appliquer une méthode fiable pour traduire une demande en requête correcte, et savoir la vérifier."
+    prerequisites: "Chapitres 1 à 7."
+    skills: [sql-jointures, sql-agregation]
+    xp: 20
+    memo: |
+      1. Reformuler la demande : que doit contenir **chaque ligne** du résultat ?
+      2. Repérer les **tables** nécessaires et les **clés** qui les relient.
+      3. Écrire FROM + jointures, puis WHERE (filtres de lignes).
+      4. Ajouter GROUP BY / HAVING si la demande parle de « par… », « total », « nombre ».
+      5. Écrire le SELECT, puis ORDER BY / LIMIT.
+      6. **Vérifier** sur un cas connu (une ligne calculée à la main) et penser aux NULL.
+    commonMistakes: |
+      - Commencer par le SELECT sans savoir quelles tables utiliser.
+      - Oublier d'exclure les commandes annulées (règle métier implicite).
+      - Ne pas vérifier le nombre de lignes obtenu.
+    blocks:
+      - type: text
+        md: |
+          À l'examen (et en entreprise), la demande n'arrive jamais sous forme de requête : on te dit
+          « *le service commercial veut connaître ses meilleurs clients de 2024* ». Entre cette phrase et la
+          requête, une **méthode** évite les oublis.
+      - type: steps
+        title: "Les six étapes"
+        items:
+          - "**Reformule** : « une ligne par client, avec son chiffre d'affaires 2024, du plus grand au plus petit »."
+          - "**Tables** : clients (nom), commandes (date, statut), lignes_commande (montants). Clés : `commandes.client_id`, `lignes_commande.commande_id`."
+          - "**FROM et jointures**, puis **WHERE** : commandes de 2024, non annulées."
+          - "**GROUP BY** client, car on veut un total **par** client."
+          - "**SELECT** (nom, total) puis **ORDER BY** total décroissant et **LIMIT**."
+          - "**Vérifie** : recalcule à la main le total d'un client, et demande-toi si un client sans commande doit apparaître."
+      - type: code
+        language: sql
+        title: "Le résultat de la méthode"
+        code: |
+          SELECT cl.prenom || ' ' || cl.nom AS client,
+                 COUNT(DISTINCT co.id) AS nb_commandes,
+                 SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+          FROM clients cl
+          JOIN commandes co ON co.client_id = cl.id
+          JOIN lignes_commande l ON l.commande_id = co.id
+          WHERE co.date_commande BETWEEN '2024-01-01' AND '2024-12-31'
+            AND co.statut <> 'ANNULEE'
+          GROUP BY cl.id, cl.prenom, cl.nom
+          ORDER BY chiffre_affaires DESC
+          LIMIT 5;
+        lines:
+          - n: 2
+            note: "`COUNT(DISTINCT co.id)` : la jointure avec les lignes duplique les commandes, DISTINCT les compte une seule fois."
+          - n: 5
+            note: "Étape 3 : les jointures suivent les clés étrangères."
+          - n: 7
+            note: "Filtre sur l'année 2024 (bornes incluses)."
+          - n: 8
+            note: "Règle métier implicite : une commande annulée ne rapporte rien."
+          - n: 9
+            note: "Étape 4 : un groupe par client (l'id garantit l'unicité même en cas d'homonymes)."
+          - n: 10
+            note: "Étape 5 : tri et limite."
+      - type: demo
+        title: "Démonstration"
+        md: "Vérifie une ligne à la main : exécute `SELECT * FROM commandes WHERE client_id = 1` puis additionne ses lignes de 2024."
+        language: sql
+        code: |
+          SELECT cl.prenom || ' ' || cl.nom AS client,
+                 COUNT(DISTINCT co.id) AS nb_commandes,
+                 SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+          FROM clients cl
+          JOIN commandes co ON co.client_id = cl.id
+          JOIN lignes_commande l ON l.commande_id = co.id
+          WHERE co.date_commande BETWEEN '2024-01-01' AND '2024-12-31'
+            AND co.statut <> 'ANNULEE'
+          GROUP BY cl.id, cl.prenom, cl.nom
+          ORDER BY chiffre_affaires DESC
+          LIMIT 5;
+      - type: question
+        ref: sql-c8l1-q1
+      - type: question
+        ref: sql-c8l1-q2
+      - type: exercise
+        ref: sql-ex-note-moyenne-categorie
+      - type: question
+        ref: sql-c8l1-q3
+      - type: exercise
+        ref: sql-ex-corriger-requete
+    questions:
+      - code: sql-c8l1-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: sql-agregation
+        prompt: "Pourquoi utiliser `COUNT(DISTINCT co.id)` plutôt que `COUNT(*)` dans la requête des meilleurs clients ?"
+        choices:
+          - label: "Parce que la jointure avec lignes_commande produit une ligne par produit commandé : COUNT(*) compterait des lignes, pas des commandes"
+            correct: true
+            why: "Une commande de 3 produits apparaîtrait 3 fois."
+          - label: "Parce que COUNT(*) ignore les NULL"
+            correct: false
+            why: "C'est COUNT(colonne) qui ignore les NULL ; COUNT(*) compte toutes les lignes."
+          - label: "Pour que la requête soit plus rapide"
+            correct: false
+            why: "DISTINCT a un coût : on l'utilise pour la justesse du résultat."
+        explanation: "Méfie-toi toujours de la « granularité » après une jointure : chaque ligne du résultat représente-t-elle une commande, un produit, un client ?"
+      - code: sql-c8l1-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-jointures
+        prompt: "« Afficher **tous** les produits avec leur nombre d'avis, même ceux qui n'en ont aucun. » Quelle jointure choisir ?"
+        choices:
+          - label: "`produits LEFT JOIN avis` et `COUNT(a.id)`"
+            correct: true
+            why: "Le LEFT JOIN garde tous les produits et COUNT(a.id) donne 0 quand il n'y a pas d'avis."
+          - label: "`produits INNER JOIN avis` et `COUNT(*)`"
+            correct: false
+            why: "Les produits sans avis disparaîtraient."
+          - label: "`avis LEFT JOIN produits` et `COUNT(*)`"
+            correct: false
+            why: "La table conservée serait avis : les produits sans avis n'apparaîtraient pas."
+        explanation: "Le mot « tous » dans une demande est souvent le signal d'une jointure externe."
+      - code: sql-c8l1-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Vérifier une requête sur un cas calculé à la main fait partie de la méthode attendue à l'examen."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le jury apprécie qu'on sache prouver qu'un résultat est juste."
+          - label: "Faux"
+            correct: false
+            why: "Une requête qui s'exécute sans erreur n'est pas forcément correcte."
+        explanation: "Une requête syntaxiquement valide peut donner un résultat faux (jointure qui duplique, NULL oubliés, commandes annulées comptées…)."
+    exercises:
+      - slug: sql-ex-note-moyenne-categorie
+        kind: SQL
+        title: "Note moyenne par catégorie"
+        difficulty: DIFFICILE
+        skill: sql-agregation
+        statement: |
+          La responsable produit demande : « *Pour chaque catégorie, je veux la note moyenne des avis de ses
+          produits (arrondie à 2 décimales) et le nombre d'avis, uniquement pour les catégories ayant reçu
+          **au moins 3 avis**, de la mieux notée à la moins bien notée.* »
+
+          Colonnes attendues : `categorie`, `note_moyenne`, `nb_avis`.
+        criteria: "3 colonnes, uniquement les catégories avec au moins 3 avis, triées par note moyenne décroissante."
+        hints:
+          - "Tables : categories → produits → avis. Un groupe par catégorie."
+          - "Le seuil « au moins 3 avis » porte sur un agrégat : il va dans HAVING."
+          - "`... GROUP BY c.id, c.nom HAVING COUNT(a.id) >= 3 ORDER BY note_moyenne DESC`"
+        solution: |
+          SELECT c.nom AS categorie,
+                 ROUND(AVG(a.note), 2) AS note_moyenne,
+                 COUNT(a.id) AS nb_avis
+          FROM categories c
+          JOIN produits p ON p.categorie_id = c.id
+          JOIN avis a ON a.produit_id = p.id
+          GROUP BY c.id, c.nom
+          HAVING COUNT(a.id) >= 3
+          ORDER BY note_moyenne DESC;
+        explanation: |
+          Les deux jointures relient chaque avis à la catégorie de son produit. Le regroupement se fait par
+          catégorie, et HAVING filtre les groupes selon le nombre d'avis. Le tri utilise l'alias de la moyenne.
+        xp: 30
+        payload:
+          mode: READ
+          ordered: true
+      - slug: sql-ex-corriger-requete
+        kind: SQL
+        title: "Corriger la requête d'un collègue"
+        difficulty: DIFFICILE
+        skill: sql-jointures
+        statement: |
+          Un collègue devait afficher **le nombre de commandes livrées de chaque ville**, en ignorant les
+          clients sans ville, de la ville la plus active à la moins active. Sa requête contient **trois
+          erreurs**. Corrige-la.
+        criteria: "2 colonnes (ville, nb_commandes), uniquement les commandes LIVREE, villes non NULL, tri décroissant."
+        hints:
+          - "Relis la condition sur la ville : comment teste-t-on l'absence de valeur ?"
+          - "La condition sur le statut porte sur des lignes, pas sur des groupes : où doit-elle aller ?"
+          - "Erreurs : `ville != NULL` → `ville IS NOT NULL` ; la condition sur statut doit être dans WHERE ; le tri doit être DESC."
+        solution: |
+          SELECT cl.ville, COUNT(*) AS nb_commandes
+          FROM commandes co
+          JOIN clients cl ON cl.id = co.client_id
+          WHERE cl.ville IS NOT NULL
+            AND co.statut = 'LIVREE'
+          GROUP BY cl.ville
+          ORDER BY nb_commandes DESC;
+        explanation: |
+          1. `ville != NULL` ne renvoie jamais rien : on teste avec `IS NOT NULL`.
+          2. `statut` n'est ni groupé ni agrégé : la condition doit être dans WHERE, avant le regroupement.
+          3. « De la plus active à la moins active » demande un tri **décroissant**.
+        xp: 30
+        payload:
+          mode: READ
+          ordered: true
+          starter: |
+            SELECT cl.ville, COUNT(*) AS nb_commandes
+            FROM commandes co
+            JOIN clients cl ON cl.id = co.client_id
+            WHERE cl.ville != NULL
+            GROUP BY cl.ville
+            HAVING co.statut = 'LIVREE'
+            ORDER BY nb_commandes;
+
+  # ===================================================================== LEÇON 2
+  - slug: sql-securite-donnees
+    title: "Sécuriser l'accès aux données : injection SQL et moindre privilège"
+    duration: 12
+    objective: "Expliquer l'injection SQL, la prévenir avec des requêtes paramétrées et appliquer le principe du moindre privilège."
+    prerequisites: "Bases du SQL ; notions de Java utiles."
+    skills: [securite-owasp, sql-avance]
+    xp: 20
+    memo: |
+      - **Injection SQL** : une saisie utilisateur concaténée dans une requête devient du code SQL.
+      - Parade : **requêtes paramétrées** (`PreparedStatement`, JPA, Spring Data) : les valeurs ne sont jamais interprétées comme du SQL.
+      - **Moindre privilège** : le compte de l'application n'a que les droits nécessaires (GRANT/REVOKE).
+      - Les mots de passe sont **hachés** (BCrypt), jamais stockés en clair.
+    commonMistakes: |
+      - « J'échappe les apostrophes à la main » : fragile, contournable. Utilise des paramètres.
+      - Connecter l'application avec le superutilisateur `postgres`.
+    blocks:
+      - type: text
+        md: |
+          L'injection SQL figure dans le top 10 OWASP depuis sa création. Le jury du CDA te demandera presque
+          sûrement comment ton application s'en protège. Commençons par comprendre l'attaque.
+      - type: compare
+        left:
+          title: "Code vulnérable"
+          good: false
+          language: java
+          code: |
+            String sql = "SELECT * FROM users WHERE email = '"
+                       + email + "'";
+            ResultSet rs = statement.executeQuery(sql);
+          md: "Si l'utilisateur saisit `' OR '1'='1`, la requête devient `... WHERE email = '' OR '1'='1'` : **toutes** les lignes sont renvoyées."
+        right:
+          title: "Code sûr"
+          good: true
+          language: java
+          code: |
+            String sql = "SELECT * FROM users WHERE email = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+          md: "La requête et la valeur voyagent **séparément** : PostgreSQL traite la saisie comme une simple donnée, jamais comme du SQL."
+      - type: definition
+        term: "Requête paramétrée (ou préparée)"
+        md: "Requête écrite avec des marqueurs (`?`, `:email`, `$1`) remplacés par des valeurs transmises à part. JPA et Spring Data génèrent toujours des requêtes paramétrées."
+      - type: code
+        language: java
+        title: "Avec Spring Data JPA (ce que fait CDA Academy)"
+        code: |
+          public interface UserRepository extends JpaRepository<User, Long> {
+
+              Optional<User> findByEmailIgnoreCase(String email);
+
+              @Query("select u from User u where u.displayName like :term")
+              List<User> search(@Param("term") String term);
+          }
+        lines:
+          - n: 3
+            note: "Méthode dérivée : Spring Data génère une requête paramétrée à partir du nom de la méthode."
+          - n: 5
+            note: "Requête JPQL explicite : `:term` est un paramètre nommé, jamais concaténé."
+          - n: 6
+            note: "`@Param` associe l'argument Java au paramètre. Aucune injection possible par ce biais."
+      - type: question
+        ref: sql-c8l2-q1
+      - type: definition
+        term: "Principe du moindre privilège"
+        md: |
+          Chaque compte ne reçoit que les droits indispensables. Le laboratoire de CDA Academy l'applique :
+          son rôle `cda_lab` ne voit que le schéma `lab`. Même une requête malveillante ne peut pas lire la
+          table des comptes.
+      - type: demo
+        title: "Démonstration : le laboratoire respecte le moindre privilège"
+        md: "Tente de lire la table des utilisateurs de l'application : PostgreSQL refuse (permission denied)."
+        language: sql
+        code: |
+          SELECT email, password_hash FROM public.users;
+      - type: question
+        ref: sql-c8l2-q2
+      - type: exercise
+        ref: sql-ex-java-requete-preparee
+      - type: question
+        ref: sql-c8l2-q3
+      - type: question
+        ref: sql-c8l2-q4
+    questions:
+      - code: sql-c8l2-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quelle est la protection **efficace** contre l'injection SQL ?"
+        choices:
+          - label: "Les requêtes paramétrées (PreparedStatement, JPA)"
+            correct: true
+            why: "La valeur n'est jamais interprétée comme du SQL."
+          - label: "Supprimer les apostrophes des saisies"
+            correct: false
+            why: "Contournable (encodages, nombres, autres caractères) et casse des noms comme « D'Arc »."
+          - label: "Vérifier la longueur des saisies"
+            correct: false
+            why: "Utile pour la validation, mais une injection tient en quelques caractères."
+        explanation: "La validation des entrées reste utile (défense en profondeur), mais la parade de référence est la requête paramétrée."
+      - code: sql-c8l2-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: "Avec quel compte PostgreSQL une application doit-elle se connecter ?"
+        choices:
+          - label: "Un compte dédié, avec uniquement les droits nécessaires sur ses tables"
+            correct: true
+            why: "En cas de faille, les dégâts sont limités au périmètre de l'application."
+          - label: "Le superutilisateur postgres, pour éviter les erreurs de droits"
+            correct: false
+            why: "Une faille donnerait alors le contrôle total du serveur de base de données."
+          - label: "Le compte personnel du développeur"
+            correct: false
+            why: "Les accès doivent être séparés et traçables."
+        explanation: "Moindre privilège + secrets dans des variables d'environnement (jamais dans le code)."
+      - code: sql-c8l2-q3
+        kind: RESULTAT_CODE
+        difficulty: 3
+        skill: securite-owasp
+        prompt: "L'utilisateur saisit `x' OR '1'='1` dans ce code vulnérable. Quelle requête est envoyée ?"
+        snippet: |
+          String sql = "SELECT * FROM users WHERE email = '" + email + "'";
+        language: java
+        choices:
+          - label: "`SELECT * FROM users WHERE email = 'x' OR '1'='1'`"
+            correct: true
+            why: "La saisie ferme l'apostrophe et ajoute une condition toujours vraie."
+          - label: "`SELECT * FROM users WHERE email = 'x'' OR ''1''=''1'`"
+            correct: false
+            why: "Ce serait le cas si les apostrophes étaient échappées."
+          - label: "Aucune : Java refuse la concaténation"
+            correct: false
+            why: "Java concatène sans contrôle : c'est tout le danger."
+        explanation: "`'1'='1'` est toujours vrai : la condition renvoie toutes les lignes. D'autres charges peuvent lire d'autres tables (UNION) ou modifier des données."
+      - code: sql-c8l2-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: rgpd-secrets
+        prompt: "Stocker les mots de passe chiffrés (et donc déchiffrables) est la bonne pratique."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Un mot de passe se **hache** (BCrypt, Argon2) : on ne doit jamais pouvoir le retrouver."
+          - label: "Faux"
+            correct: true
+            why: "Le hachage est à sens unique ; la vérification compare les empreintes."
+        explanation: "CDA Academy utilise BCrypt (coût 12). Même un administrateur ne peut pas lire les mots de passe."
+    exercises:
+      - slug: sql-ex-java-requete-preparee
+        kind: CORRIGER_ERREUR
+        title: "Corriger une injection SQL en Java"
+        difficulty: INTERMEDIAIRE
+        skill: securite-owasp
+        statement: |
+          Cette méthode JDBC recherche les clients d'une ville saisie par l'utilisateur. Elle est vulnérable à
+          l'injection SQL. Réécris-la avec une **requête paramétrée** (`PreparedStatement`) : la ville ne doit
+          plus jamais être concaténée dans la chaîne SQL.
+        criteria: "Utilisation de prepareStatement, d'un paramètre ? et de setString ; aucune concaténation de la variable ville."
+        hints:
+          - "Remplace la valeur dans la chaîne SQL par un marqueur `?`."
+          - "Crée l'objet avec `connection.prepareStatement(sql)`, puis transmets la valeur avec `ps.setString(1, ville)`."
+          - "Exécute avec `ps.executeQuery()` (sans argument)."
+        solution: |
+          public List<String> clientsDeLaVille(Connection connection, String ville) throws SQLException {
+              String sql = "SELECT prenom, nom FROM clients WHERE ville = ?";
+              try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                  ps.setString(1, ville);
+                  try (ResultSet rs = ps.executeQuery()) {
+                      List<String> noms = new ArrayList<>();
+                      while (rs.next()) {
+                          noms.add(rs.getString("prenom") + " " + rs.getString("nom"));
+                      }
+                      return noms;
+                  }
+              }
+          }
+        explanation: |
+          Le `?` est un emplacement de paramètre : la requête est envoyée au serveur **sans** la valeur, puis la
+          valeur est transmise à part avec `setString`. PostgreSQL ne peut donc jamais l'interpréter comme du
+          SQL. Les try-with-resources ferment automatiquement la requête et le résultat.
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            public List<String> clientsDeLaVille(Connection connection, String ville) throws SQLException {
+                String sql = "SELECT prenom, nom FROM clients WHERE ville = '" + ville + "'";
+                try (Statement st = connection.createStatement();
+                     ResultSet rs = st.executeQuery(sql)) {
+                    List<String> noms = new ArrayList<>();
+                    while (rs.next()) {
+                        noms.add(rs.getString("prenom") + " " + rs.getString("nom"));
+                    }
+                    return noms;
+                }
+            }
+          checks:
+            - pattern: "prepareStatement\\s*\\("
+              message: "Crée la requête avec connection.prepareStatement(sql)."
+            - pattern: "ville\\s*=\\s*\\?"
+              message: "Dans la chaîne SQL, remplace la valeur par un marqueur « ? »."
+            - pattern: "setString\\s*\\(\\s*1\\s*,\\s*ville\\s*\\)"
+              message: "Transmets la valeur avec ps.setString(1, ville)."
+            - pattern: "\\+\\s*ville\\b|\\bville\\s*\\+"
+              absent: true
+              message: "La variable ville ne doit plus être concaténée dans la chaîne SQL."
+            - pattern: "executeQuery\\s*\\(\\s*sql\\s*\\)"
+              absent: true
+              message: "Avec un PreparedStatement, appelle executeQuery() sans argument."
+
+  # ===================================================================== LEÇON 3
+  - slug: sql-questions-jury
+    title: "Les questions du jury sur la persistance"
+    duration: 10
+    objective: "Préparer des réponses claires aux questions fréquentes du jury sur la base de données de ton projet."
+    prerequisites: "L'ensemble du parcours."
+    skills: [oral-cda, merise-mld-mpd]
+    xp: 15
+    memo: |
+      - Justifie tes choix : **PostgreSQL** (relationnel, ACID, contraintes, gratuit), **types** (NUMERIC pour l'argent), **contraintes** (règles de gestion).
+      - Sache expliquer une **jointure**, une **transaction**, un **index** et l'**injection SQL** avec un exemple de ton projet.
+      - Parle des **migrations versionnées** (Flyway) et des **sauvegardes** (pg_dump).
+      - Cite le **RGPD** : minimisation, droit à l'effacement (ON DELETE CASCADE), durée de conservation.
+    commonMistakes: |
+      - Réciter une définition sans exemple tiré de son propre projet.
+      - Ne pas savoir expliquer la différence entre MCD, MLD et MPD.
+    blocks:
+      - type: text
+        md: |
+          Lors de l'entretien technique, le jury part de **ton projet** et vérifie que tu comprends ce que tu
+          as fait. Voici les questions les plus fréquentes sur la persistance, avec les éléments de réponse
+          attendus. Entraîne-toi à y répondre **à voix haute**, avec un exemple de ton application.
+      - type: callout
+        variant: exam
+        title: "« Pourquoi avoir choisi PostgreSQL ? »"
+        md: |
+          Base relationnelle robuste et libre, conforme au SQL standard, transactions ACID, contraintes riches
+          (CHECK, clés étrangères), types avancés (JSONB, TIMESTAMPTZ), très utilisée en entreprise et bien
+          intégrée à Spring Boot. Mes données sont fortement liées (utilisateurs, commandes, produits) : le
+          modèle relationnel est adapté.
+      - type: callout
+        variant: exam
+        title: "« Comment passez-vous du MCD à la base ? »"
+        md: |
+          MCD (entités, associations, cardinalités, indépendant de la technique) → MLD (tables, clés primaires
+          et étrangères : une association 1,n devient une clé étrangère, une association n,n devient une
+          table) → MPD (types PostgreSQL, contraintes, index), écrit en SQL dans des migrations Flyway.
+      - type: question
+        ref: sql-c8l3-q1
+      - type: callout
+        variant: exam
+        title: "« Comment garantissez-vous la cohérence des données ? »"
+        md: |
+          Contraintes en base (NOT NULL, UNIQUE, CHECK, clés étrangères), validation des DTO côté API
+          (Bean Validation), transactions (`@Transactional`) pour les opérations en plusieurs étapes, et tests
+          d'intégration sur une vraie base PostgreSQL (Testcontainers).
+      - type: question
+        ref: sql-c8l3-q2
+      - type: callout
+        variant: exam
+        title: "« Et le RGPD ? »"
+        md: |
+          Je ne collecte que les données nécessaires (minimisation), les mots de passe sont hachés, la
+          suppression d'un compte efface ses données en cascade (droit à l'effacement), l'accès est protégé
+          par authentification et rôles, et les secrets ne sont jamais dans le code.
+      - type: question
+        ref: sql-c8l3-q3
+      - type: question
+        ref: sql-c8l3-q4
+    questions:
+      - code: sql-c8l3-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mld-mpd
+        prompt: "Dans le passage MCD → MLD, que devient une association de cardinalités (1,1) – (0,n) entre COMMANDE et CLIENT ?"
+        choices:
+          - label: "Une clé étrangère client_id dans la table commandes"
+            correct: true
+            why: "Le côté (1,1) reçoit la clé étrangère vers l'entité de l'autre côté."
+          - label: "Une table d'association commandes_clients"
+            correct: false
+            why: "Une table d'association est nécessaire pour une relation (0,n)–(0,n)."
+          - label: "Une clé étrangère commande_id dans la table clients"
+            correct: false
+            why: "Un client peut avoir plusieurs commandes : une seule colonne ne suffirait pas."
+        explanation: "Règle clé : la clé étrangère va du côté de la cardinalité maximale 1."
+      - code: sql-c8l3-q2
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Quels éléments garantissent la cohérence des données dans une application Spring Boot + PostgreSQL ? (plusieurs réponses)"
+        choices:
+          - label: "Les contraintes en base (clés étrangères, CHECK, UNIQUE)"
+            correct: true
+            why: "Elles protègent la base quelle que soit l'application qui l'utilise."
+          - label: "Les transactions (@Transactional)"
+            correct: true
+            why: "Elles garantissent le tout-ou-rien des opérations en plusieurs étapes."
+          - label: "La validation des DTO (Bean Validation)"
+            correct: true
+            why: "Elle rejette les données invalides dès l'entrée dans l'API, avec des messages clairs."
+          - label: "La couleur des boutons du frontend"
+            correct: false
+            why: "Aucun rapport avec la cohérence des données."
+        explanation: "La défense en profondeur combine plusieurs niveaux : interface, API, base."
+      - code: sql-c8l3-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: "`ON DELETE CASCADE` sur les tables liées à un utilisateur aide à respecter le droit à l'effacement du RGPD."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "La suppression du compte entraîne celle de toutes ses données personnelles."
+          - label: "Faux"
+            correct: false
+            why: "C'est précisément le choix fait dans CDA Academy."
+        explanation: "Attention toutefois aux données à conserver légalement (factures) : elles peuvent être anonymisées plutôt que supprimées."
+      - code: sql-c8l3-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Pourquoi utiliser des migrations versionnées (Flyway) plutôt que `spring.jpa.hibernate.ddl-auto=update` ?"
+        choices:
+          - label: "Pour contrôler exactement le SQL appliqué, le versionner avec le code et le rejouer à l'identique sur chaque environnement"
+            correct: true
+            why: "Chaque évolution du schéma est un fichier numéroté, relu et testé."
+          - label: "Parce que ddl-auto n'existe pas"
+            correct: false
+            why: "Il existe, mais il est déconseillé en production."
+          - label: "Parce que Flyway rend les requêtes plus rapides"
+            correct: false
+            why: "Flyway gère la structure, pas les performances des requêtes."
+        explanation: "CDA Academy utilise Flyway (V1, V2, V3…) et `ddl-auto: validate` : Hibernate vérifie que les entités correspondent au schéma, sans jamais le modifier."
+
+# Exercices du projet de fin de parcours
+exercises:
+  - slug: sql-projet-ca-mensuel
+    kind: SQL
+    title: "Projet — Chiffre d'affaires mensuel"
+    difficulty: INTERMEDIAIRE
+    skill: sql-agregation
+    statement: |
+      Pour le tableau de bord, calcule le **chiffre d'affaires de chaque mois de 2024** (commandes non
+      annulées). Colonnes : `mois` (numéro du mois, de 1 à 12) et `chiffre_affaires`, triées par mois.
+      Seuls les mois ayant des ventes apparaissent.
+    criteria: "2 colonnes (mois, chiffre_affaires), commandes 2024 non annulées, tri par mois."
+    hints:
+      - "Tables : commandes et lignes_commande. Le mois s'obtient avec EXTRACT(MONTH FROM date_commande)."
+      - "Filtre l'année 2024 et le statut, puis regroupe par mois."
+      - "`GROUP BY EXTRACT(MONTH FROM co.date_commande) ORDER BY mois`"
+    solution: |
+      SELECT EXTRACT(MONTH FROM co.date_commande) AS mois,
+             SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+      FROM commandes co
+      JOIN lignes_commande l ON l.commande_id = co.id
+      WHERE co.date_commande BETWEEN '2024-01-01' AND '2024-12-31'
+        AND co.statut <> 'ANNULEE'
+      GROUP BY EXTRACT(MONTH FROM co.date_commande)
+      ORDER BY mois;
+    explanation: |
+      On regroupe les lignes de commande par mois de la commande, après avoir écarté les commandes annulées
+      et hors période. Ce type de requête alimente directement un graphique mensuel.
+    xp: 30
+    payload:
+      mode: READ
+      ordered: true
+  - slug: sql-projet-reassort
+    kind: SQL
+    title: "Projet — Produits à réapprovisionner"
+    difficulty: DIFFICILE
+    skill: sql-jointures
+    statement: |
+      Liste les produits **à réapprovisionner en priorité** : stock **inférieur à 10** et **au moins 2
+      unités vendues** au total (toutes commandes non annulées). Colonnes : `nom`, `stock`,
+      `unites_vendues`, triées par unités vendues décroissantes puis par nom.
+    criteria: "3 colonnes, stock < 10 et au moins 2 unités vendues (hors commandes annulées), tri par ventes décroissantes puis nom."
+    hints:
+      - "Produits → lignes_commande → commandes ; filtre le statut et le stock dans WHERE."
+      - "Le seuil de ventes porte sur SUM(quantite) : HAVING."
+      - "`GROUP BY p.id, p.nom, p.stock HAVING SUM(l.quantite) >= 2 ORDER BY unites_vendues DESC, p.nom`"
+    solution: |
+      SELECT p.nom, p.stock, SUM(l.quantite) AS unites_vendues
+      FROM produits p
+      JOIN lignes_commande l ON l.produit_id = p.id
+      JOIN commandes co ON co.id = l.commande_id
+      WHERE co.statut <> 'ANNULEE'
+        AND p.stock < 10
+      GROUP BY p.id, p.nom, p.stock
+      HAVING SUM(l.quantite) >= 2
+      ORDER BY unites_vendues DESC, p.nom;
+    explanation: |
+      Le filtre sur le stock (une colonne) va dans WHERE ; le seuil sur les ventes (un agrégat) va dans
+      HAVING. `p.stock` est ajouté au GROUP BY pour pouvoir l'afficher.
+    xp: 30
+    payload:
+      mode: READ
+      ordered: true
+  - slug: sql-projet-vue-tableau-bord
+    kind: SQL
+    title: "Projet — Vue du tableau de bord"
+    difficulty: DIFFICILE
+    skill: sql-avance
+    statement: |
+      Crée une vue `indicateurs` qui renvoie **une seule ligne** avec :
+      - `nb_clients` : le nombre total de clients ;
+      - `nb_commandes` : le nombre de commandes non annulées ;
+      - `chiffre_affaires` : le chiffre d'affaires des commandes non annulées ;
+      - `panier_moyen` : chiffre d'affaires / nombre de commandes non annulées, arrondi à 2 décimales.
+
+      Termine par `SELECT * FROM indicateurs;`.
+    criteria: "Une vue indicateurs ; une ligne avec les 4 indicateurs exacts."
+    hints:
+      - "Chaque indicateur peut être une sous-requête scalaire : `(SELECT COUNT(*) FROM clients) AS nb_clients`."
+      - "Le chiffre d'affaires : somme des lignes des commandes dont le statut n'est pas ANNULEE (jointure ou sous-requête IN)."
+      - "Pour le panier moyen, divise le CA par le nombre de commandes et utilise ROUND(..., 2). Une CTE dans la vue peut éviter les répétitions."
+    solution: |
+      CREATE VIEW indicateurs AS
+      WITH valides AS (
+        SELECT co.id, SUM(l.quantite * l.prix_unitaire) AS montant
+        FROM commandes co
+        JOIN lignes_commande l ON l.commande_id = co.id
+        WHERE co.statut <> 'ANNULEE'
+        GROUP BY co.id
+      )
+      SELECT (SELECT COUNT(*) FROM clients) AS nb_clients,
+             COUNT(*) AS nb_commandes,
+             SUM(montant) AS chiffre_affaires,
+             ROUND(SUM(montant) / COUNT(*), 2) AS panier_moyen
+      FROM valides;
+      SELECT * FROM indicateurs;
+    explanation: |
+      La CTE `valides` calcule le montant de chaque commande non annulée ; la requête principale en déduit
+      le nombre de commandes, le chiffre d'affaires et le panier moyen, et une sous-requête scalaire ajoute le
+      nombre de clients. La vue rend ces indicateurs accessibles en une ligne.
+    xp: 40
+    payload:
+      mode: WRITE
+
+bank:
+  - code: sql-c8-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: merise-mld-mpd
+    prompt: "Dans quel ordre produit-on les modèles de données avec Merise ?"
+    choices:
+      - label: "MCD, puis MLD, puis MPD"
+        correct: true
+        why: "Du plus conceptuel (métier) au plus physique (SQL)."
+      - label: "MPD, puis MLD, puis MCD"
+        correct: false
+        why: "C'est l'ordre inverse."
+      - label: "MLD, puis MCD, puis MPD"
+        correct: false
+        why: "Le MCD vient en premier : il décrit le métier."
+    explanation: "MCD = conceptuel (entités, associations) ; MLD = logique (tables, clés) ; MPD = physique (SQL pour un SGBD précis)."
+  - code: sql-c8-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: sql-agregation
+    prompt: "Une requête de chiffre d'affaires par client renvoie des montants **deux fois trop élevés**. Quelle est la cause la plus probable ?"
+    choices:
+      - label: "Une jointure supplémentaire (par exemple avec avis) duplique les lignes avant le SUM"
+        correct: true
+        why: "Chaque ligne de commande est répétée autant de fois qu'il y a d'avis."
+      - label: "Un ORDER BY mal placé"
+        correct: false
+        why: "Le tri ne change pas les montants."
+      - label: "L'utilisation de ROUND"
+        correct: false
+        why: "ROUND arrondit, il ne double pas."
+    explanation: "Vérifie la granularité après chaque jointure. Agréger dans une sous-requête ou une CTE avant de joindre évite ce piège."
+  - code: sql-c8-b3
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: securite-owasp
+    prompt: "Spring Data JPA protège contre l'injection SQL même si l'on construit une requête native en concaténant des chaînes."
+    choices:
+      - label: "Vrai"
+        correct: false
+        why: "Une requête construite par concaténation reste vulnérable, quel que soit le framework."
+      - label: "Faux"
+        correct: true
+        why: "Il faut utiliser des paramètres (:nom ou ?1) même dans une @Query native."
+    explanation: "Le framework protège quand on utilise ses mécanismes de paramètres, pas quand on les contourne."
+  - code: sql-c8-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-avance
+    prompt: "Quel outil PostgreSQL permet de sauvegarder une base dans un fichier ?"
+    choices:
+      - label: "pg_dump"
+        correct: true
+        why: "pg_dump exporte la structure et les données ; pg_restore (ou psql) les réimporte."
+      - label: "EXPLAIN"
+        correct: false
+        why: "EXPLAIN affiche un plan d'exécution."
+      - label: "VACUUM"
+        correct: false
+        why: "VACUUM récupère l'espace des lignes supprimées."
+    explanation: "Une stratégie de sauvegarde (fréquence, rétention, test de restauration) fait partie des attendus du CDA."

@@ -73,6 +73,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/quiz/quiz-result.component').then((m) => m.QuizResultComponent),
       },
       {
+        path: 'projets/:slug',
+        title: 'Projet · CDA Academy',
+        loadComponent: () => import('./features/project/project-page.component').then((m) => m.ProjectPageComponent),
+      },
+      {
         path: 'progression',
         title: 'Progression · CDA Academy',
         loadComponent: () => import('./features/progress/progress.component').then((m) => m.ProgressComponent),

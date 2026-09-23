@@ -1,0 +1,118 @@
+@if (project(); as p) {
+  <nav class="crumbs" aria-label="Fil d'Ariane">
+    @if (p.courseSlug) {
+      <a [routerLink]="['/parcours', p.courseSlug]">{{ p.courseTitle }}</a> <span aria-hidden="true">›</span>
+    }
+    Projet
+  </nav>
+  <header class="page-header proj__head">
+    <h1>{{ p.title }}</h1>
+    <p class="proj__meta">
+      <span class="tag">{{ difficulties[p.difficulty] }}</span>
+      <span>{{ p.steps.length }} étapes guidées</span>
+      @if (p.completed) { <span class="tag tag--done"><app-icon name="check" [size]="14" /> Terminé</span> }
+    </p>
+  </header>
+
+  @if (!p.available) {
+    <div class="alert alert--info">Ce projet s'ouvre quand tous les QCM de chapitre du parcours sont réussis. Tu peux déjà lire l'énoncé.</div>
+  }
+  @if (error()) {
+    <div class="alert alert--error" role="alert">{{ error() }}</div>
+  }
+
+  <div class="proj">
+    <article class="proj__brief">
+      <section>
+        <h2>Contexte</h2>
+        <app-markdown [md]="p.statement" />
+      </section>
+      <section>
+        <h2>Besoins</h2>
+        <app-markdown [md]="p.needs" />
+      </section>
+      <section>
+        <h2>Règles de gestion</h2>
+        <app-markdown [md]="p.businessRules" />
+      </section>
+      <section>
+        <h2>User stories</h2>
+        <app-markdown [md]="p.userStories" />
+      </section>
+      @if (p.mockup) {
+        <section>
+          <h2>Maquette attendue</h2>
+          <app-markdown [md]="p.mockup" />
+        </section>
+      }
+      @if (p.mcd || p.mld) {
+        <section>
+          <h2>Modèle de données</h2>
+          @if (p.mcd) { <p class="proj__label">MCD</p><pre class="proj__model">{{ p.mcd }}</pre> }
+          @if (p.mld) { <p class="proj__label">MLD</p><pre class="proj__model">{{ p.mld }}</pre> }
+        </section>
+      }
+      <section>
+        <h2>Critères d'acceptation</h2>
+        <app-markdown [md]="p.acceptanceCriteria" />
+      </section>
+      @if (p.tests) {
+        <section>
+          <h2>Tests à mener</h2>
+          <app-markdown [md]="p.tests" />
+        </section>
+      }
+    </article>
+
+    <aside class="proj__steps" aria-labelledby="steps-title">
+      <h2 id="steps-title">Étapes</h2>
+      <ol class="psteps">
+        @for (s of p.steps; track s.position) {
+          <li class="pstep" [class.pstep--done]="s.done" [class.pstep--current]="current(p) === s.position">
+            <p class="pstep__title">
+              <span class="pstep__num">{{ s.done ? '✓' : s.position }}</span> {{ s.title }}
+            </p>
+            <app-markdown [md]="s.instructions" />
+            <p class="pstep__deliv"><strong>Livrable :</strong> {{ s.deliverable }}</p>
+            @if (s.exercise; as ex) {
+              <a class="pstep__ex" [routerLink]="['/exercices', ex.slug]" [class.pstep__ex--ok]="ex.solved">
+                <app-icon [name]="ex.solved ? 'check' : 'code'" [size]="16" /> {{ ex.title }} {{ ex.solved ? '(réussi)' : '— à réussir' }}
+              </a>
+            }
+            <ul class="pstep__check">
+              @for (item of s.checklist; track $index) {
+                <li>
+                  <label class="checkbox">
+                    <input type="checkbox" [checked]="isChecked(s, $index)" [disabled]="s.done || !p.available"
+                           (change)="toggle(s, $index)" />
+                    <span>{{ item }}</span>
+                  </label>
+                </li>
+              }
+            </ul>
+            @if (!s.done && current(p) === s.position && p.available) {
+              <button type="button" class="btn btn--sm" [disabled]="!ready(s) || busy() === s.position" (click)="complete(s)">
+                Valider l'étape (+20 XP)
+              </button>
+            }
+          </li>
+        }
+      </ol>
+    </aside>
+  </div>
+
+  @if (p.correction) {
+    <section class="proj__correction" aria-labelledby="corr-title">
+      <h2 id="corr-title"><app-icon name="book" [size]="22" /> Correction et analyse</h2>
+      <app-markdown [md]="p.correction" />
+      @if (p.improvements) {
+        <h3>Pour aller plus loin</h3>
+        <app-markdown [md]="p.improvements" />
+      }
+    </section>
+  }
+} @else if (error()) {
+  <div class="alert alert--error" role="alert">{{ error() }}</div>
+} @else {
+  <div class="skeleton skeleton--hero"></div>
+}

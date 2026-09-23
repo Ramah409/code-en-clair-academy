@@ -1,0 +1,675 @@
+slug: creer-une-base
+position: 7
+level: AVANCE
+title: "Créer une base : tables, contraintes, index et vues"
+summary: "Passer du modèle au code : choisir les types, créer des tables avec leurs clés et contraintes, accélérer les recherches avec des index et simplifier l'accès avec des vues."
+quizQuestionCount: 15
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sql-create-table
+    title: "CREATE TABLE et types de données"
+    duration: 12
+    objective: "Créer une table en choisissant des types adaptés et une clé primaire générée automatiquement."
+    prerequisites: "Chapitres 1 à 6."
+    skills: [sql-ddl]
+    xp: 15
+    memo: |
+      - `CREATE TABLE nom (colonne TYPE contraintes, ...);`
+      - Types courants : `INTEGER`, `BIGINT`, `NUMERIC(p, s)` (montants), `VARCHAR(n)`, `TEXT`, `BOOLEAN`, `DATE`, `TIMESTAMPTZ`.
+      - Clé primaire auto-incrémentée : `id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY` (ou `SERIAL`, plus ancien).
+      - Nommage : tables au pluriel, en `snake_case`, sans accent.
+    commonMistakes: |
+      - Stocker un prix dans un `REAL` ou un `FLOAT` : erreurs d'arrondi. Utilise `NUMERIC(10, 2)`.
+      - Stocker une date dans un `VARCHAR` : impossible de trier ou de calculer correctement.
+      - Oublier la clé primaire.
+    blocks:
+      - type: text
+        md: |
+          Jusqu'ici, tu as utilisé des tables existantes. Au titre CDA, tu dois aussi savoir **les créer** à
+          partir d'un modèle (le MPD). C'est le rôle du **DDL** (*Data Definition Language*) : `CREATE`,
+          `ALTER`, `DROP`.
+      - type: definition
+        term: "DDL et DML"
+        md: |
+          - **DDL** (définition) : crée ou modifie la **structure** → `CREATE TABLE`, `ALTER TABLE`, `DROP TABLE`.
+          - **DML** (manipulation) : agit sur les **données** → `SELECT`, `INSERT`, `UPDATE`, `DELETE`.
+      - type: code
+        language: sql
+        title: "La table des formations d'un centre de formation"
+        code: |
+          CREATE TABLE formations (
+            id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            titre       VARCHAR(150) NOT NULL,
+            duree_jours INTEGER      NOT NULL,
+            prix        NUMERIC(8, 2),
+            a_distance  BOOLEAN      NOT NULL DEFAULT FALSE,
+            date_debut  DATE
+          );
+        lines:
+          - n: 1
+            note: "Nom de la table : pluriel, minuscules, sans accent."
+          - n: 2
+            note: "Identifiant technique généré automatiquement par PostgreSQL (1, 2, 3…) et clé primaire."
+          - n: 3
+            note: "Texte de 150 caractères maximum, obligatoire (`NOT NULL`)."
+          - n: 4
+            note: "Nombre entier obligatoire."
+          - n: 5
+            note: "Montant exact : 8 chiffres dont 2 après la virgule. Facultatif (peut être NULL)."
+          - n: 6
+            note: "Booléen avec une valeur par défaut : si on ne le précise pas à l'insertion, il vaut FALSE."
+          - n: 7
+            note: "Une vraie date (pas un texte) : on pourra trier et calculer."
+      - type: demo
+        title: "Démonstration : créer, insérer, relire"
+        md: "La table est créée, remplie puis lue… et tout disparaît à la fin de l'exécution. Remarque que `id` et `a_distance` sont remplis automatiquement."
+        language: sql
+        code: |
+          CREATE TABLE formations (
+            id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            titre       VARCHAR(150) NOT NULL,
+            duree_jours INTEGER      NOT NULL,
+            prix        NUMERIC(8, 2),
+            a_distance  BOOLEAN      NOT NULL DEFAULT FALSE,
+            date_debut  DATE
+          );
+          INSERT INTO formations (titre, duree_jours, prix)
+          VALUES ('Concepteur Développeur d''Applications', 180, 7900.00);
+          SELECT * FROM formations;
+      - type: question
+        ref: sql-c7l1-q1
+      - type: question
+        ref: sql-c7l1-q2
+      - type: exercise
+        ref: sql-ex-create-apprenants
+      - type: question
+        ref: sql-c7l1-q3
+      - type: question
+        ref: sql-c7l1-q4
+    questions:
+      - code: sql-c7l1-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-ddl
+        prompt: "Quel type choisir pour stocker un **prix** en euros ?"
+        choices:
+          - label: "`NUMERIC(10, 2)`"
+            correct: true
+            why: "Type exact : pas d'erreur d'arrondi sur les centimes."
+          - label: "`REAL`"
+            correct: false
+            why: "Nombre à virgule flottante : 0.1 + 0.2 n'y vaut pas exactement 0.3."
+          - label: "`VARCHAR(10)`"
+            correct: false
+            why: "Un texte ne permet ni calcul fiable ni tri numérique."
+          - label: "`INTEGER`"
+            correct: false
+            why: "Possible en stockant des centimes, mais pas pour une valeur en euros avec décimales."
+        explanation: "Pour l'argent : NUMERIC (ou DECIMAL) côté base, BigDecimal côté Java. Jamais float ni double."
+      - code: sql-c7l1-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-ddl
+        prompt: "`CREATE TABLE` fait partie du DML (langage de manipulation des données)."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "CREATE agit sur la structure : c'est du DDL."
+          - label: "Faux"
+            correct: true
+            why: "DDL = structure (CREATE, ALTER, DROP) ; DML = données (SELECT, INSERT, UPDATE, DELETE)."
+        explanation: "On cite aussi le DCL (GRANT, REVOKE) pour les droits et le TCL (COMMIT, ROLLBACK) pour les transactions."
+      - code: sql-c7l1-q3
+        kind: COMPLETER_CODE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Complète pour qu'une colonne `actif` vaille TRUE si on ne la renseigne pas."
+        snippet: |
+          actif BOOLEAN NOT NULL ____ TRUE
+        language: sql
+        answers: ["DEFAULT"]
+        explanation: "`DEFAULT valeur` fournit la valeur utilisée quand l'INSERT n'en précise pas."
+      - code: sql-c7l1-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Que signifie `GENERATED ALWAYS AS IDENTITY` ?"
+        choices:
+          - label: "PostgreSQL génère lui-même une valeur croissante pour chaque nouvelle ligne"
+            correct: true
+            why: "C'est la forme standard SQL de l'auto-incrément ; ALWAYS interdit de fournir la valeur à la main."
+          - label: "La colonne doit être identique dans toutes les lignes"
+            correct: false
+            why: "C'est l'inverse : chaque ligne reçoit une valeur différente."
+          - label: "La colonne est une clé étrangère"
+            correct: false
+            why: "Une identité est une valeur générée, pas une référence."
+        explanation: "C'est ce qu'utilise le schéma de CDA Academy. `SERIAL` produit un effet proche, avec une séquence moins encapsulée."
+    exercises:
+      - slug: sql-ex-create-apprenants
+        kind: SQL
+        title: "Créer la table des apprenants"
+        difficulty: INTERMEDIAIRE
+        skill: sql-ddl
+        statement: |
+          Crée la table `apprenants` avec les colonnes suivantes :
+
+          | Colonne | Type | Règle |
+          |---------|------|-------|
+          | `id` | entier long généré automatiquement | clé primaire |
+          | `nom` | texte de 80 caractères maximum | obligatoire |
+          | `email` | texte de 254 caractères maximum | obligatoire |
+          | `date_naissance` | date | facultative |
+          | `actif` | booléen | obligatoire, vaut TRUE par défaut |
+        criteria: "Colonnes, types, caractère obligatoire et clé primaire conformes au tableau."
+        hints:
+          - "Commence par `CREATE TABLE apprenants (` et sépare les colonnes par des virgules."
+          - "Types : BIGINT GENERATED ALWAYS AS IDENTITY, VARCHAR(80), VARCHAR(254), DATE, BOOLEAN. « Obligatoire » se traduit par NOT NULL."
+          - "`actif BOOLEAN NOT NULL DEFAULT TRUE` ; `id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY`."
+        solution: |
+          CREATE TABLE apprenants (
+            id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            nom            VARCHAR(80)  NOT NULL,
+            email          VARCHAR(254) NOT NULL,
+            date_naissance DATE,
+            actif          BOOLEAN      NOT NULL DEFAULT TRUE
+          );
+        explanation: |
+          La vérification lit la description de ta table dans le catalogue de PostgreSQL (colonnes, types,
+          caractère obligatoire, valeur par défaut) et ses contraintes. `NOT NULL` est implicite pour la clé
+          primaire.
+        xp: 20
+        payload:
+          mode: WRITE
+          check: >-
+            SELECT 'colonne' AS element, column_name AS nom, data_type AS type,
+                   COALESCE(character_maximum_length::text, '') AS taille, is_nullable AS nullable,
+                   COALESCE(column_default, '') AS defaut
+            FROM information_schema.columns
+            WHERE table_schema = 'lab' AND table_name = 'apprenants'
+            UNION ALL
+            SELECT 'contrainte', contype::text, count(*)::text, '', '', ''
+            FROM pg_constraint WHERE conrelid = 'lab.apprenants'::regclass GROUP BY contype
+            ORDER BY 1, 2
+
+  # ===================================================================== LEÇON 2
+  - slug: sql-contraintes
+    title: "Contraintes et clés étrangères"
+    duration: 12
+    objective: "Protéger la qualité des données avec NOT NULL, UNIQUE, CHECK, PRIMARY KEY et FOREIGN KEY."
+    prerequisites: "CREATE TABLE."
+    skills: [sql-ddl, merise-mld-mpd]
+    xp: 15
+    memo: |
+      - `NOT NULL` : valeur obligatoire ; `UNIQUE` : pas de doublon ; `CHECK (condition)` : règle métier.
+      - `REFERENCES table (colonne)` : clé étrangère.
+      - Comportement à la suppression : `ON DELETE RESTRICT` (défaut), `CASCADE`, `SET NULL`.
+      - Clé primaire composée : `PRIMARY KEY (col1, col2)` pour une table d'association.
+    commonMistakes: |
+      - Mettre `ON DELETE CASCADE` partout : on peut effacer des données sans le vouloir.
+      - Oublier la contrainte UNIQUE sur un email de connexion.
+      - Déclarer une clé étrangère vers une colonne qui n'est ni clé primaire ni UNIQUE.
+    blocks:
+      - type: text
+        md: |
+          Une application peut avoir des bugs ; la base, elle, doit rester cohérente. Les **contraintes**
+          traduisent les **règles de gestion** directement dans la structure : PostgreSQL refusera toute
+          donnée qui les viole, quelle que soit l'application qui l'envoie.
+      - type: code
+        language: sql
+        title: "Sessions de formation et inscriptions"
+        code: |
+          CREATE TABLE sessions_formation (
+            id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            code       VARCHAR(20) NOT NULL UNIQUE,
+            places     INTEGER     NOT NULL CHECK (places BETWEEN 1 AND 30),
+            date_debut DATE        NOT NULL
+          );
+          CREATE TABLE inscriptions (
+            session_id  BIGINT NOT NULL REFERENCES sessions_formation (id) ON DELETE CASCADE,
+            apprenant   VARCHAR(80) NOT NULL,
+            inscrit_le  DATE NOT NULL DEFAULT CURRENT_DATE,
+            PRIMARY KEY (session_id, apprenant)
+          );
+        lines:
+          - n: 3
+            note: "`UNIQUE` : deux sessions ne peuvent pas avoir le même code."
+          - n: 4
+            note: "`CHECK` : règle de gestion « une session accueille entre 1 et 30 personnes »."
+          - n: 8
+            note: "Clé étrangère : chaque inscription référence une session existante. Si la session est supprimée, ses inscriptions le sont aussi (CASCADE)."
+          - n: 10
+            note: "Valeur par défaut calculée : la date du jour."
+          - n: 11
+            note: "Clé primaire **composée** : une même personne ne peut s'inscrire qu'une fois à une session."
+      - type: demo
+        title: "Démonstration : les contraintes en action"
+        md: "La troisième insertion viole le CHECK (35 places). Supprime-la et exécute à nouveau, puis essaie d'inscrire deux fois la même personne."
+        language: sql
+        code: |
+          CREATE TABLE sessions_formation (
+            id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            code       VARCHAR(20) NOT NULL UNIQUE,
+            places     INTEGER     NOT NULL CHECK (places BETWEEN 1 AND 30),
+            date_debut DATE        NOT NULL
+          );
+          INSERT INTO sessions_formation (code, places, date_debut) VALUES ('CDA-2026-A', 15, '2026-10-05');
+          INSERT INTO sessions_formation (code, places, date_debut) VALUES ('CDA-2026-B', 35, '2027-01-11');
+          SELECT * FROM sessions_formation;
+      - type: question
+        ref: sql-c7l2-q1
+      - type: question
+        ref: sql-c7l2-q2
+      - type: exercise
+        ref: sql-ex-create-avis-formation
+      - type: question
+        ref: sql-c7l2-q3
+      - type: question
+        ref: sql-c7l2-q4
+    questions:
+      - code: sql-c7l2-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Quelle contrainte traduit la règle « une note est comprise entre 0 et 20 » ?"
+        choices:
+          - label: "`CHECK (note BETWEEN 0 AND 20)`"
+            correct: true
+            why: "CHECK exprime une condition que chaque ligne doit respecter."
+          - label: "`UNIQUE (note)`"
+            correct: false
+            why: "UNIQUE interdirait que deux apprenants aient la même note."
+          - label: "`DEFAULT 0 AND 20`"
+            correct: false
+            why: "DEFAULT fournit une valeur par défaut, pas une règle ; la syntaxe est invalide."
+        explanation: "Les règles de gestion simples (bornes, valeurs autorisées) se traduisent en CHECK."
+      - code: sql-c7l2-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Que se passe-t-il si l'on supprime une session avec `ON DELETE CASCADE` sur la clé étrangère des inscriptions ?"
+        choices:
+          - label: "Les inscriptions de cette session sont supprimées automatiquement"
+            correct: true
+            why: "La suppression est propagée aux lignes qui référencent la session."
+          - label: "La suppression est refusée tant qu'il reste des inscriptions"
+            correct: false
+            why: "C'est le comportement RESTRICT (par défaut)."
+          - label: "Les inscriptions gardent un session_id NULL"
+            correct: false
+            why: "C'est le comportement SET NULL (impossible ici avec NOT NULL)."
+        explanation: "Choisis CASCADE pour les données qui n'ont pas de sens sans leur parent (inscriptions, lignes de commande), RESTRICT sinon."
+      - code: sql-c7l2-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Une table d'association a souvent une clé primaire composée des deux clés étrangères."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Exemple : `PRIMARY KEY (commande_id, produit_id)` dans lignes_commande."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement la traduction d'une association (0,n)–(0,n) du MCD."
+        explanation: "La clé composée empêche aussi les doublons : un produit n'apparaît qu'une fois par commande."
+      - code: sql-c7l2-q4
+        kind: COMPLETER_CODE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Complète la déclaration de clé étrangère."
+        snippet: |
+          client_id BIGINT NOT NULL ____ clients (id)
+        language: sql
+        answers: ["REFERENCES"]
+        explanation: "`REFERENCES table (colonne)` déclare une clé étrangère directement sur la colonne."
+    exercises:
+      - slug: sql-ex-create-avis-formation
+        kind: SQL
+        title: "Table des avis de formation"
+        difficulty: DIFFICILE
+        skill: sql-ddl
+        statement: |
+          Crée la table `avis_formation` :
+          - `id` : entier long généré automatiquement, clé primaire ;
+          - `client_id` : entier, **obligatoire**, **clé étrangère** vers `clients (id)` ;
+          - `note` : entier obligatoire, **compris entre 1 et 5** ;
+          - `commentaire` : texte libre (type `TEXT`), facultatif ;
+          - `cree_le` : date obligatoire, valant **la date du jour par défaut**.
+
+          Règle supplémentaire : un client ne peut déposer **qu'un seul avis** (contrainte d'unicité sur `client_id`).
+        criteria: "Colonnes, types, NOT NULL, DEFAULT, clé primaire, clé étrangère, CHECK et UNIQUE conformes."
+        hints:
+          - "Il te faut une contrainte de chaque sorte : PRIMARY KEY, FOREIGN KEY (REFERENCES), CHECK et UNIQUE."
+          - "`client_id INTEGER NOT NULL UNIQUE REFERENCES clients (id)` et `note INTEGER NOT NULL CHECK (note BETWEEN 1 AND 5)`."
+          - "`cree_le DATE NOT NULL DEFAULT CURRENT_DATE` ; `commentaire TEXT`."
+        solution: |
+          CREATE TABLE avis_formation (
+            id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            client_id   INTEGER NOT NULL UNIQUE REFERENCES clients (id),
+            note        INTEGER NOT NULL CHECK (note BETWEEN 1 AND 5),
+            commentaire TEXT,
+            cree_le     DATE    NOT NULL DEFAULT CURRENT_DATE
+          );
+        explanation: |
+          Chaque règle de gestion devient une contrainte : l'unicité de l'avis par client (UNIQUE), la
+          plage de notes (CHECK), l'existence du client (FOREIGN KEY). La base garantit ces règles même si
+          une application boguée tente de les contourner.
+        xp: 30
+        payload:
+          mode: WRITE
+          check: >-
+            SELECT 'colonne' AS element, column_name AS nom, data_type AS type, is_nullable AS nullable,
+                   COALESCE(column_default, '') AS defaut
+            FROM information_schema.columns
+            WHERE table_schema = 'lab' AND table_name = 'avis_formation'
+            UNION ALL
+            SELECT 'contrainte', contype::text, count(*)::text, '', ''
+            FROM pg_constraint WHERE conrelid = 'lab.avis_formation'::regclass GROUP BY contype
+            ORDER BY 1, 2
+
+  # ===================================================================== LEÇON 3
+  - slug: sql-index-vues
+    title: "Index, vues et ALTER TABLE"
+    duration: 12
+    objective: "Accélérer les recherches avec un index, enregistrer une requête dans une vue et faire évoluer une table."
+    prerequisites: "CREATE TABLE et contraintes."
+    skills: [sql-avance, sql-ddl]
+    xp: 15
+    memo: |
+      - Un **index** accélère les recherches (WHERE, JOIN, ORDER BY) au prix d'écritures un peu plus lentes.
+      - Les clés primaires et UNIQUE ont un index automatique ; pas les clés étrangères.
+      - `EXPLAIN` montre le plan d'exécution (Seq Scan = parcours complet, Index Scan = via un index).
+      - Une **vue** (`CREATE VIEW`) enregistre une requête et s'interroge comme une table.
+      - `ALTER TABLE` ajoute, modifie ou supprime colonnes et contraintes.
+    commonMistakes: |
+      - Indexer toutes les colonnes : chaque index ralentit les INSERT/UPDATE et occupe de la place.
+      - Oublier d'indexer les clés étrangères utilisées dans les jointures fréquentes.
+    blocks:
+      - type: text
+        md: |
+          Sur 30 produits, PostgreSQL lit toute la table en un instant. Sur 30 millions, chercher un e-mail
+          ligne par ligne prendrait des secondes. Un **index** fonctionne comme l'index d'un livre : il indique
+          directement où se trouvent les lignes recherchées.
+      - type: code
+        language: sql
+        title: "Créer un index et observer le plan"
+        code: |
+          CREATE TABLE commandes_copie AS SELECT * FROM commandes;
+          CREATE INDEX ix_copie_client ON commandes_copie (client_id);
+          EXPLAIN
+          SELECT * FROM commandes_copie WHERE client_id = 7;
+        lines:
+          - n: 1
+            note: "Dans le laboratoire, seules tes propres tables peuvent recevoir un index : on crée donc une copie de `commandes` (CREATE TABLE ... AS SELECT)."
+          - n: 2
+            note: "Index sur la clé étrangère client_id : il accélère la recherche des commandes d'un client et les jointures clients ↔ commandes."
+          - n: 3
+            note: "`EXPLAIN` n'exécute pas la requête : il affiche le **plan** choisi par PostgreSQL."
+      - type: demo
+        title: "Démonstration"
+        md: "Sur une si petite table, PostgreSQL peut préférer un parcours complet (Seq Scan) : il estime que c'est plus rapide. Sur de gros volumes, l'index serait utilisé."
+        language: sql
+        code: |
+          CREATE TABLE commandes_copie AS SELECT * FROM commandes;
+          CREATE INDEX ix_copie_client ON commandes_copie (client_id);
+          EXPLAIN
+          SELECT * FROM commandes_copie WHERE client_id = 7;
+      - type: question
+        ref: sql-c7l3-q1
+      - type: definition
+        term: "Vue"
+        md: "Requête enregistrée sous un nom. Elle ne stocke pas de données (sauf vue matérialisée) : chaque interrogation réexécute la requête. Idéal pour simplifier l'accès ou masquer des colonnes sensibles."
+      - type: code
+        language: sql
+        title: "Une vue « catalogue public »"
+        code: |
+          CREATE VIEW catalogue AS
+          SELECT p.nom, c.nom AS categorie, p.prix
+          FROM produits p
+          LEFT JOIN categories c ON c.id = p.categorie_id
+          WHERE p.stock > 0;
+          SELECT * FROM catalogue ORDER BY prix LIMIT 5;
+        lines:
+          - n: 1
+            note: "On enregistre la requête qui suit sous le nom `catalogue`."
+          - n: 5
+            note: "Seuls les produits disponibles apparaissent ; le stock exact, lui, n'est pas exposé."
+          - n: 6
+            note: "On interroge la vue exactement comme une table."
+      - type: demo
+        title: "Démonstration"
+        language: sql
+        code: |
+          CREATE VIEW catalogue AS
+          SELECT p.nom, c.nom AS categorie, p.prix
+          FROM produits p
+          LEFT JOIN categories c ON c.id = p.categorie_id
+          WHERE p.stock > 0;
+          SELECT * FROM catalogue ORDER BY prix LIMIT 5;
+      - type: question
+        ref: sql-c7l3-q2
+      - type: code
+        language: sql
+        title: "Faire évoluer une table"
+        code: |
+          ALTER TABLE clients ADD COLUMN telephone VARCHAR(20);
+          ALTER TABLE clients ADD CONSTRAINT ck_clients_email CHECK (email LIKE '%@%');
+        lines:
+          - n: 1
+            note: "Ajoute une colonne facultative : les lignes existantes reçoivent NULL."
+          - n: 2
+            note: "Ajoute une contrainte nommée ; PostgreSQL vérifie aussitôt que les lignes existantes la respectent. (Dans le laboratoire, ALTER TABLE ne fonctionne que sur les tables que tu crées.)"
+      - type: question
+        ref: sql-c7l3-q3
+      - type: exercise
+        ref: sql-ex-vue-ventes
+      - type: question
+        ref: sql-c7l3-q4
+    questions:
+      - code: sql-c7l3-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: "Quel est l'inconvénient principal d'un index ?"
+        choices:
+          - label: "Il ralentit les écritures (INSERT, UPDATE, DELETE) et occupe de l'espace"
+            correct: true
+            why: "Chaque modification de la table doit aussi mettre l'index à jour."
+          - label: "Il ralentit les SELECT"
+            correct: false
+            why: "C'est l'inverse : il les accélère quand il est utilisable."
+          - label: "Il interdit les doublons"
+            correct: false
+            why: "Seul un index UNIQUE interdit les doublons."
+        explanation: "On indexe les colonnes souvent utilisées dans WHERE, JOIN et ORDER BY, pas toutes les colonnes."
+      - code: sql-c7l3-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-avance
+        prompt: "Une vue classique stocke une copie des données au moment de sa création."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Une vue réexécute sa requête à chaque interrogation : elle est toujours à jour."
+          - label: "Faux"
+            correct: true
+            why: "Seule une vue **matérialisée** stocke un résultat, à rafraîchir avec REFRESH MATERIALIZED VIEW."
+        explanation: "Vue = requête enregistrée ; vue matérialisée = résultat enregistré."
+      - code: sql-c7l3-q3
+        kind: COMPLETER_CODE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Complète pour ajouter une colonne `newsletter` à la table clients."
+        snippet: |
+          ____ clients ADD COLUMN newsletter BOOLEAN NOT NULL DEFAULT FALSE;
+        language: sql
+        answers: ["ALTER TABLE"]
+        explanation: "`ALTER TABLE ... ADD COLUMN` fait évoluer une table existante. En production, ces évolutions passent par des migrations versionnées (Flyway)."
+      - code: sql-c7l3-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: sql-avance
+        prompt: "Quelles colonnes PostgreSQL indexe-t-il **automatiquement** ?"
+        choices:
+          - label: "Les clés primaires et les colonnes UNIQUE"
+            correct: true
+            why: "Ces contraintes reposent sur un index unique créé automatiquement."
+          - label: "Toutes les clés étrangères"
+            correct: false
+            why: "Les clés étrangères ne sont pas indexées automatiquement : c'est à toi de le faire."
+          - label: "Toutes les colonnes NOT NULL"
+            correct: false
+            why: "NOT NULL n'a pas besoin d'index."
+        explanation: "Bonne pratique : indexer les clés étrangères utilisées dans les jointures (comme dans le schéma de CDA Academy)."
+    exercises:
+      - slug: sql-ex-vue-ventes
+        kind: SQL
+        title: "Vue des ventes par produit"
+        difficulty: DIFFICILE
+        skill: sql-avance
+        statement: |
+          Crée une vue `ventes_par_produit` qui affiche, pour chaque produit **déjà vendu** dans une commande
+          **non annulée** :
+          - `produit` : le nom du produit ;
+          - `quantite_vendue` : la somme des quantités ;
+          - `chiffre_affaires` : la somme de quantité × prix unitaire.
+
+          Puis, dans la même exécution, interroge la vue pour afficher ses lignes triées par
+          `chiffre_affaires` décroissant.
+        criteria: "Une vue ventes_par_produit ; la requête finale affiche 3 colonnes triées par chiffre d'affaires décroissant."
+        hints:
+          - "`CREATE VIEW ventes_par_produit AS SELECT ...` avec deux jointures (lignes_commande → produits, lignes_commande → commandes)."
+          - "Filtre `WHERE co.statut <> 'ANNULEE'` et regroupe par produit (p.id, p.nom)."
+          - "Termine par `SELECT * FROM ventes_par_produit ORDER BY chiffre_affaires DESC;`"
+        solution: |
+          CREATE VIEW ventes_par_produit AS
+          SELECT p.nom AS produit,
+                 SUM(l.quantite) AS quantite_vendue,
+                 SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+          FROM lignes_commande l
+          JOIN produits p ON p.id = l.produit_id
+          JOIN commandes co ON co.id = l.commande_id
+          WHERE co.statut <> 'ANNULEE'
+          GROUP BY p.id, p.nom;
+          SELECT * FROM ventes_par_produit ORDER BY chiffre_affaires DESC;
+        explanation: |
+          La vue encapsule une requête d'analyse : n'importe quel tableau de bord peut ensuite l'interroger
+          simplement, sans répéter les jointures ni les règles (« on exclut les commandes annulées »).
+        xp: 30
+        payload:
+          mode: WRITE
+          ordered: true
+
+bank:
+  - code: sql-c7-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: sql-ddl
+    prompt: "Quel type choisir pour une date et une heure précises, avec fuseau horaire (date de création d'un compte) ?"
+    choices:
+      - label: "`TIMESTAMPTZ`"
+        correct: true
+        why: "Date + heure + fuseau : idéal pour dater des événements."
+      - label: "`DATE`"
+        correct: false
+        why: "Pas d'heure."
+      - label: "`VARCHAR(30)`"
+        correct: false
+        why: "Un texte ne se trie pas et ne se calcule pas comme une date."
+    explanation: "Le schéma de CDA Academy utilise TIMESTAMPTZ pour tous les horodatages (created_at, updated_at…)."
+  - code: sql-c7-b2
+    kind: RESULTAT_CODE
+    difficulty: 2
+    skill: sql-ddl
+    prompt: "Que se passe-t-il à la seconde insertion ?"
+    snippet: |
+      CREATE TABLE comptes (email VARCHAR(254) UNIQUE);
+      INSERT INTO comptes VALUES ('a@exemple.fr');
+      INSERT INTO comptes VALUES ('a@exemple.fr');
+    language: sql
+    choices:
+      - label: "Erreur 23505 : la valeur viole la contrainte d'unicité"
+        correct: true
+        why: "UNIQUE interdit deux lignes avec le même email."
+      - label: "La seconde ligne est ignorée silencieusement"
+        correct: false
+        why: "PostgreSQL signale toujours la violation (sauf ON CONFLICT DO NOTHING)."
+      - label: "Les deux lignes sont insérées"
+        correct: false
+        why: "La contrainte l'interdit."
+    explanation: "Astuce : pour une unicité insensible à la casse, on crée un index unique sur `lower(email)` (comme dans CDA Academy)."
+  - code: sql-c7-b3
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: sql-ddl
+    prompt: "UNIQUE autorise plusieurs lignes avec la valeur NULL (par défaut en PostgreSQL)."
+    choices:
+      - label: "Vrai"
+        correct: true
+        why: "NULL n'est égal à rien, donc plusieurs NULL ne sont pas des doublons."
+      - label: "Faux"
+        correct: false
+        why: "C'est pourtant le comportement par défaut (sauf NULLS NOT DISTINCT depuis PostgreSQL 15)."
+    explanation: "Ajoute NOT NULL si la valeur doit être à la fois obligatoire et unique."
+  - code: sql-c7-b4
+    kind: COMPLETER_CODE
+    difficulty: 2
+    skill: sql-avance
+    prompt: "Complète pour afficher le plan d'exécution d'une requête sans l'exécuter."
+    snippet: |
+      ____ SELECT * FROM produits WHERE prix > 100;
+    language: sql
+    answers: ["EXPLAIN"]
+    explanation: "`EXPLAIN ANALYZE` exécute en plus la requête et affiche les temps réels."
+  - code: sql-c7-b5
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-ddl
+    prompt: "Quelle instruction supprime une table **et** ses données ?"
+    choices:
+      - label: "`DROP TABLE nom;`"
+        correct: true
+        why: "DROP supprime l'objet entier."
+      - label: "`DELETE FROM nom;`"
+        correct: false
+        why: "Supprime les lignes, la table reste."
+      - label: "`ALTER TABLE nom DROP;`"
+        correct: false
+        why: "Syntaxe invalide ; ALTER TABLE ... DROP COLUMN supprime une colonne."
+    explanation: "Dans le laboratoire, tu ne peux supprimer que les tables que tu as créées toi-même."
+  - code: sql-c7-b6
+    kind: CHOIX_MULTIPLE
+    difficulty: 3
+    skill: merise-mld-mpd
+    prompt: "Quelles instructions font partie du DDL ? (plusieurs réponses)"
+    choices:
+      - label: "CREATE TABLE"
+        correct: true
+        why: "Crée une structure."
+      - label: "ALTER TABLE"
+        correct: true
+        why: "Modifie une structure."
+      - label: "DROP VIEW"
+        correct: true
+        why: "Supprime une structure."
+      - label: "UPDATE"
+        correct: false
+        why: "Modifie des données : c'est du DML."
+    explanation: "DDL : CREATE, ALTER, DROP (et TRUNCATE selon les classifications)."
+  - code: sql-c7-b7
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: sql-avance
+    prompt: "Dans un plan d'exécution, que signifie « Seq Scan on commandes » ?"
+    choices:
+      - label: "PostgreSQL lit toute la table, ligne par ligne"
+        correct: true
+        why: "Sequential scan : parcours complet, sans index."
+      - label: "PostgreSQL utilise un index"
+        correct: false
+        why: "Ce serait « Index Scan » ou « Bitmap Index Scan »."
+      - label: "La requête a échoué"
+        correct: false
+        why: "C'est simplement le mode de lecture choisi."
+    explanation: "Un Seq Scan sur une grande table filtrée par une colonne sélective est souvent le signe d'un index manquant."

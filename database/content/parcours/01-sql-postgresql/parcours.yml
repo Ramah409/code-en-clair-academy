@@ -1,5 +1,5 @@
 slug: sql-postgresql
-version: 1
+version: 2
 position: 1
 title: "SQL et PostgreSQL"
 category: SQL
@@ -22,3 +22,88 @@ description: |
   données ») : le dernier chapitre te prépare aux questions du jury.
 examQuestionCount: 40
 examTimeLimitMinutes: 45
+project:
+  slug: projet-tableau-de-bord-boutique
+  title: "Tableau de bord commercial de la boutique"
+  difficulty: INTERMEDIAIRE
+  statement: |
+    La gérante de la boutique en ligne veut suivre son activité sans dépendre d'un prestataire. Elle te
+    confie la réalisation des **requêtes SQL** qui alimenteront un tableau de bord : chiffre d'affaires
+    mensuel, produits à réapprovisionner et indicateurs clés, regroupés dans une vue réutilisable par
+    l'application.
+  needs: |
+    - Visualiser le chiffre d'affaires de chaque mois de l'année 2024.
+    - Identifier rapidement les produits bientôt en rupture qui se vendent bien.
+    - Disposer d'une ligne d'indicateurs (clients, commandes, chiffre d'affaires, panier moyen) interrogeable par l'API.
+  businessRules: |
+    - RG1 : une commande **annulée** ne compte ni dans le chiffre d'affaires ni dans les ventes.
+    - RG2 : le chiffre d'affaires d'une ligne vaut quantité × prix unitaire **au moment de la commande**.
+    - RG3 : un produit est « à réapprovisionner » si son stock est inférieur à 10 et qu'il a été vendu à au moins 2 exemplaires.
+    - RG4 : les montants sont exprimés en euros avec deux décimales.
+  userStories: |
+    - En tant que gérante, je veux voir le chiffre d'affaires mois par mois afin de repérer la saisonnalité.
+    - En tant que responsable logistique, je veux la liste des produits à réapprovisionner afin de passer commande à temps.
+    - En tant que développeuse de l'API, je veux une vue d'indicateurs afin de l'exposer sans réécrire les calculs.
+  mockup: |
+    Écran « Tableau de bord » : en haut, quatre tuiles (clients, commandes, chiffre d'affaires, panier
+    moyen) ; au centre, un histogramme du chiffre d'affaires mensuel ; à droite, la liste des produits à
+    réapprovisionner avec leur stock et leurs ventes.
+  mcd: |
+    CLIENT (1,1) — passe — (0,n) COMMANDE ; COMMANDE (0,n) — contient [quantité, prix unitaire] — (0,n) PRODUIT ;
+    PRODUIT (0,1) — appartient à — (0,n) CATÉGORIE.
+  mld: |
+    clients(#id, prenom, nom, email, ville, date_inscription)
+    commandes(#id, date_commande, statut, client_id→clients)
+    lignes_commande(#commande_id→commandes, #produit_id→produits, quantite, prix_unitaire)
+    produits(#id, nom, prix, stock, date_ajout, categorie_id→categories)
+    categories(#id, nom)
+  acceptanceCriteria: |
+    - Chaque requête respecte les règles de gestion RG1 à RG4.
+    - Les résultats sont triés comme demandé et les colonnes portent les noms attendus.
+    - La vue `indicateurs` renvoie une seule ligne, cohérente avec les requêtes détaillées.
+  tests: |
+    - Recalculer à la main le chiffre d'affaires d'un mois et le comparer au résultat.
+    - Vérifier qu'une commande annulée n'est comptée nulle part.
+    - Vérifier que le panier moyen × nombre de commandes ≈ chiffre d'affaires.
+  correction: |
+    Les trois requêtes de référence sont données dans la correction de chaque étape. Le point commun :
+    toujours partir des **lignes de commande** (où se trouvent les montants), joindre les **commandes**
+    pour appliquer la règle RG1, puis agréger au bon niveau (mois, produit, ou ensemble). La vue encapsule
+    ces règles : si une règle change (par exemple exclure aussi les commandes en attente), une seule
+    définition est à modifier.
+  improvements: |
+    - Ajouter une vue matérialisée rafraîchie chaque nuit pour de gros volumes.
+    - Exposer la vue par un endpoint REST `GET /api/tableau-de-bord` (Spring Boot).
+    - Ajouter des index sur `commandes (date_commande)` et `lignes_commande (produit_id)`.
+  steps:
+    - title: "Chiffre d'affaires mensuel"
+      instructions: "Écris la requête du chiffre d'affaires de chaque mois de 2024, en appliquant RG1 et RG2."
+      deliverable: "Requête validée par l'exercice de l'étape."
+      checklist:
+        - "J'exclus les commandes annulées."
+        - "Je calcule le montant avec quantité × prix unitaire."
+        - "J'ai vérifié à la main le total d'un mois."
+      exercise: sql-projet-ca-mensuel
+    - title: "Produits à réapprovisionner"
+      instructions: "Liste les produits qui répondent à la règle RG3, triés par ventes décroissantes."
+      deliverable: "Requête validée par l'exercice de l'étape."
+      checklist:
+        - "Le filtre sur le stock est dans WHERE."
+        - "Le seuil sur les ventes est dans HAVING."
+      exercise: sql-projet-reassort
+    - title: "Vue des indicateurs"
+      instructions: "Crée la vue `indicateurs` qui renvoie les quatre indicateurs clés sur une seule ligne."
+      deliverable: "Vue validée par l'exercice de l'étape."
+      checklist:
+        - "La vue renvoie une seule ligne."
+        - "Le panier moyen est arrondi à deux décimales."
+      exercise: sql-projet-vue-tableau-bord
+    - title: "Note de synthèse pour la gérante"
+      instructions: |
+        Rédige (pour toi) une note de 10 lignes qui explique à la gérante, sans jargon, ce que montrent les
+        trois résultats et une recommandation concrète (produit à commander, mois fort ou faible).
+      deliverable: "Une note de synthèse relue."
+      checklist:
+        - "J'ai expliqué chaque indicateur avec des mots simples."
+        - "J'ai formulé au moins une recommandation chiffrée."
+        - "J'ai cité la règle RG1 (commandes annulées exclues)."

@@ -185,7 +185,10 @@ public class DashboardService {
                      where s.user_id = u.id and s.solved_at is not null and e.kind = 'SQL') as "REQUETES_SQL",
                   (select count(*) from mcd_diagrams where user_id = u.id) as "MCD_CREES",
                   (select count(*) from quiz_attempts where user_id = u.id and scope = 'EXAMEN_BLANC' and passed) as "EXAMENS_REUSSIS",
-                  0 as "PROJETS_TERMINES",
+                  (select count(*) from projects p where exists (select 1 from project_steps ps where ps.project_id = p.id)
+                     and not exists (select 1 from project_steps ps where ps.project_id = p.id
+                       and not exists (select 1 from user_project_steps ups
+                                        where ups.step_id = ps.id and ups.user_id = u.id))) as "PROJETS_TERMINES",
                   (select count(*) from quiz_attempt_items i join quiz_attempts a on a.id = i.attempt_id
                      where a.user_id = u.id and a.scope = 'ERREURS' and i.correct is not null) as "REVISIONS",
                   (select count(*) from quiz_attempts where user_id = u.id and passed) as "QUIZ_REUSSIS",
