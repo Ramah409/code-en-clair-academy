@@ -1,0 +1,24 @@
+# Secrets
+.env
+*.env.local
+
+# Backend
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/coverage/
+
+# Sauvegardes de base
+database/backup/*.dump
+database/backup/*.sql
+
+# Système / IDE
+.DS_Store
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
