@@ -48,7 +48,7 @@ lessons:
           let inscrite: boolean = true;
           let langues: string[] = ["français", "anglais"];
 
-          age = "trente"; // Erreur : un texte dans une variable de type number
+          age = "trente"; // Erreur !
         lines:
           - n: 1
             note: "`string` : cette variable contiendra toujours du texte."
