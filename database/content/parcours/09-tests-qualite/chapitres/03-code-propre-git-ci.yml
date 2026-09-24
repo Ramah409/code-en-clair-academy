@@ -1,0 +1,545 @@
+slug: tst-code-propre-ci
+position: 3
+level: AVANCE
+title: "Code propre, Git et intégration continue"
+summary: "Écrire un code lisible, organiser son travail avec Git (branches, commits, revues) et faire lancer les tests automatiquement par GitHub Actions."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: tst-code-propre
+    title: "Écrire un code propre"
+    duration: 14
+    objective: "Nommer clairement, découper en petites fonctions, supprimer les duplications et appliquer les principes SOLID les plus utiles."
+    prerequisites: "Chapitre « Doublures, TDD et couverture »."
+    skills: [poo, tests-strategie]
+    xp: 25
+    memo: |
+      - **Noms** : dire l'intention (`calculerTotalTtc`, `estMajeur`), pas le type (`liste2`, `tmp`).
+      - **Fonctions courtes** qui font **une seule chose**.
+      - **DRY** (Don't Repeat Yourself) : une règle écrite à un seul endroit.
+      - **Nombres magiques** → constantes nommées.
+      - **SOLID** : surtout **S** (une classe = une responsabilité) et **D** (dépendre d'interfaces, injectées).
+      - Outils : formateur (Prettier, formatter IntelliJ), linters (ESLint, Checkstyle), analyse **SonarQube/SonarLint**.
+    commonMistakes: |
+      - Des commentaires qui expliquent un code obscur au lieu de le rendre clair.
+      - Une méthode de 200 lignes « parce que ça marche ».
+      - Copier-coller la même validation dans trois contrôleurs.
+    blocks:
+      - type: text
+        md: |
+          Un code est **lu** dix fois plus souvent qu'il n'est **écrit**. Par tes collègues, par le jury… et par
+          toi dans six mois. Un code propre se lit comme un texte.
+      - type: definition
+        id: def-code-propre
+        term: "Code propre"
+        md: |
+          Une **cuisine bien rangée** : chaque ustensile a sa place et son étiquette. On trouve tout sans
+          chercher, et n'importe quel cuisinier peut prendre le relais.
+      - type: compare
+        left:
+          title: "Difficile à lire"
+          code: |
+            double c(List<Double> l, int t) {
+                double r = 0;
+                for (double x : l) r += x;
+                if (t == 1) r = r * 1.2;
+                return r;
+            }
+          language: java
+        right:
+          title: "Propre"
+          code: |
+            private static final double TVA = 0.20;
+
+            double totalTtc(List<Double> prixHt) {
+                double totalHt = somme(prixHt);
+                return totalHt * (1 + TVA);
+            }
+          language: java
+      - type: question
+        ref: tst-cp-q1
+        review: def-code-propre
+      - type: definition
+        id: def-solid
+        term: "Responsabilité unique (le S de SOLID)"
+        md: |
+          Un **couteau suisse** fait tout… mal. Un **économe** épluche très bien. Une classe qui envoie des
+          e-mails, calcule des prix **et** écrit en base a trois raisons de changer : on la découpe.
+      - type: question
+        ref: tst-cp-q2
+        review: def-solid
+      - type: text
+        md: "Exercice guidé : donne de bons noms."
+      - type: exercise
+        ref: tst-ex-noms-guide
+      - type: text
+        md: "En autonomie : nettoie cette méthode."
+      - type: exercise
+        ref: tst-ex-refactoriser
+      - type: jury
+        items:
+          - q: "Comment garantissez-vous la qualité de votre code ?"
+            a: "Des conventions de nommage claires, des méthodes courtes, une architecture en couches, des tests automatiques, un formateur et un linter (ESLint côté Angular), SonarLint dans l'IDE, et des revues de code via les pull requests avant de fusionner dans la branche principale."
+          - q: "Pouvez-vous citer les principes SOLID ?"
+            a: "Responsabilité unique, ouvert/fermé (étendre sans modifier), substitution de Liskov (une sous-classe peut remplacer sa mère), ségrégation des interfaces (petites interfaces ciblées), inversion des dépendances (dépendre d'abstractions, injectées par Spring). Dans mon projet, les services ont une responsabilité unique et reçoivent leurs dépendances par constructeur."
+      - type: quiz
+        items:
+          - ref: tst-cp-q3
+            review: def-code-propre
+          - ref: tst-cp-q4
+            review: def-solid
+          - ref: tst-cp-q5
+            review: def-code-propre
+    questions:
+      - code: tst-cp-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Quel nom de méthode est le plus clair ?"
+        choices:
+          - label: "calculerFraisDeLivraison(commande)"
+            correct: true
+            why: "Il dit exactement ce qu'elle fait."
+          - label: "calc(c)"
+            correct: false
+            why: "Il faut lire le code pour comprendre."
+          - label: "traitement2(obj)"
+            correct: false
+            why: "Aucune information."
+        explanation: "Un bon nom évite un commentaire."
+      - code: tst-cp-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "`CommandeService` calcule les prix, envoie les e-mails et génère les PDF. Quel principe est violé ?"
+        choices:
+          - label: "La responsabilité unique"
+            correct: true
+            why: "Trois raisons de changer."
+          - label: "L'encapsulation"
+            correct: false
+            why: "Le problème est le nombre de responsabilités."
+          - label: "Aucun"
+            correct: false
+            why: "La classe fait trop de choses."
+        explanation: "On extrait EmailService et FactureService."
+      - code: tst-cp-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: poo
+        prompt: "Remplacer `if (age >= 18)` par `if (age >= AGE_MAJORITE)` améliore la lisibilité."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le nombre magique devient une idée nommée."
+          - label: "Faux"
+            correct: false
+            why: "Le nom explique pourquoi 18."
+        explanation: "Et si la règle change, un seul endroit à modifier."
+      - code: tst-cp-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "Que dit le principe d'inversion des dépendances (le D de SOLID) ?"
+        choices:
+          - label: "Dépendre d'abstractions (interfaces) plutôt que de classes concrètes"
+            correct: true
+            why: "On peut changer l'implémentation sans modifier l'appelant."
+          - label: "Ne jamais utiliser de bibliothèques"
+            correct: false
+            why: "Aucun rapport."
+          - label: "Inverser l'ordre des paramètres"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Spring injecte l'implémentation derrière l'interface."
+      - code: tst-cp-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Quel sigle de trois lettres signifie « ne te répète pas » ? (en majuscules)"
+        answers: ["DRY"]
+        explanation: "Don't Repeat Yourself : une connaissance à un seul endroit."
+    exercises:
+      - slug: tst-ex-noms-guide
+        kind: COMPLETER
+        title: "De bons noms"
+        difficulty: FACILE
+        skill: poo
+        statement: "Complète avec des noms qui disent l'intention : AGE_MAJORITE, estMajeur, clientsActifs."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Une méthode qui répond oui/non commence souvent par est ou a."
+          - "Une constante s'écrit en MAJUSCULES."
+          - "AGE_MAJORITE, estMajeur, clientsActifs."
+        solution: '["AGE_MAJORITE", "estMajeur", "clientsActifs"]'
+        explanation: "Méthode booléenne, constante, collection : chacun son style de nom."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            private static final int [[1]] = 18;
+
+            boolean [[2]](Personne p) {
+                return p.getAge() >= AGE_MAJORITE;
+            }
+
+            List<Client> [[3]] = clients.stream().filter(Client::isActif).toList();
+          blanks:
+            - ["AGE_MAJORITE"]
+            - ["estMajeur"]
+            - ["clientsActifs"]
+      - slug: tst-ex-refactoriser
+        kind: CORRIGER_ERREUR
+        title: "Nettoyer une méthode"
+        difficulty: INTERMEDIAIRE
+        skill: poo
+        statement: |
+          Cette méthode fonctionne, mais elle est illisible. Refactorise-la **sans changer son comportement** :
+          - renomme-la `prixApresRemise(double prix, boolean fidele)` ;
+          - remplace `0.1` par une constante `REMISE_FIDELITE` ;
+          - supprime la variable `r` inutile : renvoie directement le calcul.
+        criteria: "Nouveau nom et paramètres clairs, constante REMISE_FIDELITE, plus de 0.1 dans la méthode, plus de variable r."
+        hints:
+          - "`private static final double REMISE_FIDELITE = 0.1;`"
+          - "`double prixApresRemise(double prix, boolean fidele) {`"
+          - "`return fidele ? prix * (1 - REMISE_FIDELITE) : prix;`"
+        solution: |
+          private static final double REMISE_FIDELITE = 0.1;
+
+          double prixApresRemise(double prix, boolean fidele) {
+              return fidele ? prix * (1 - REMISE_FIDELITE) : prix;
+          }
+        explanation: "Même résultat, mais la règle se lit en une ligne."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            double pr(double p, boolean f) {
+                double r;
+                if (f == true) {
+                    r = p - p * 0.1;
+                } else {
+                    r = p;
+                }
+                return r;
+            }
+          checks:
+            - pattern: 'double\s+prixApresRemise\s*\(\s*double\s+prix\s*,\s*boolean\s+fidele\s*\)'
+              message: "Renomme en `prixApresRemise(double prix, boolean fidele)`."
+            - pattern: 'static\s+final\s+double\s+REMISE_FIDELITE\s*=\s*0\.1\s*;'
+              message: "Déclare `private static final double REMISE_FIDELITE = 0.1;`."
+            - pattern: 'prixApresRemise[^}]*0\.1'
+              absent: true
+              message: "Utilise `REMISE_FIDELITE` au lieu de 0.1 dans la méthode."
+            - pattern: '\bdouble\s+r\s*[;=]'
+              absent: true
+              message: "Supprime la variable `r` : renvoie directement le résultat."
+            - pattern: 'REMISE_FIDELITE[\s\S]*prixApresRemise[\s\S]*REMISE_FIDELITE'
+              message: "Utilise `REMISE_FIDELITE` dans le calcul."
+
+  # ===================================================================== LEÇON 2
+  - slug: tst-git-ci
+    title: "Git, pull requests et GitHub Actions"
+    duration: 15
+    objective: "Travailler avec des branches et des commits clairs, faire relire son code par une pull request et lancer les tests automatiquement à chaque push."
+    prerequisites: "Leçon « Écrire un code propre »."
+    skills: [git, tests-strategie]
+    xp: 30
+    memo: |
+      - **Commit** : une photo du projet, avec un message qui dit **pourquoi** (« Ajoute la validation de l'e-mail à l'inscription »).
+      - **Branche** : une copie de travail parallèle (`feature/panier`) ; `main` reste stable.
+      - **Pull request** : demande de fusion, relue par un collègue (**revue de code**) et vérifiée par la CI.
+      - **Intégration continue (CI)** : un robot (GitHub Actions) lance la compilation et les tests à chaque push.
+      - Fichier : `.github/workflows/ci.yml` avec `on:`, `jobs:`, `runs-on:`, `steps:`.
+      - **Livraison continue (CD)** : si tout est vert, déploiement automatique (voir parcours Docker).
+    commonMistakes: |
+      - Des messages de commit du type « modif », « fix », « ça marche ».
+      - Travailler directement sur `main`.
+      - Fusionner une pull request dont la CI est rouge.
+    blocks:
+      - type: text
+        md: |
+          Seul ou en équipe, Git garde l'**historique** de chaque modification. La CI, elle, joue le rôle d'un
+          **contrôleur qualité** infatigable qui relance tous les tests à chaque changement.
+      - type: definition
+        id: def-branche
+        term: "Branche et pull request"
+        md: |
+          Une **branche**, c'est un **brouillon** à côté de la copie propre (`main`). On y travaille
+          tranquillement. La **pull request**, c'est demander au professeur de **relire le brouillon** avant de
+          le recopier au propre.
+      - type: code
+        id: code-git
+        language: bash
+        title: "Un cycle de travail"
+        code: |
+          git switch -c feature/validation-email
+          # … modifications et tests …
+          git add src/
+          git commit -m "Valide le format de l'e-mail à l'inscription"
+          git push -u origin feature/validation-email
+          # → ouvrir une pull request sur GitHub, attendre la CI verte et la relecture
+        lines:
+          - n: 1
+            note: "Crée une branche et s'y place."
+          - n: 3
+            note: "Prépare les fichiers à photographier."
+          - n: 4
+            note: "Un message au présent qui dit ce que fait le commit."
+          - n: 5
+            note: "Envoie la branche sur GitHub."
+      - type: question
+        ref: tst-git-q1
+        review: code-git
+      - type: definition
+        id: def-ci
+        term: "Intégration continue"
+        md: |
+          Un **contrôle technique automatique** : à chaque modification envoyée, un robot vérifie que le projet
+          compile et que tous les tests passent. Si quelque chose casse, tout le monde le sait en quelques
+          minutes.
+      - type: code
+        id: code-ci
+        language: yaml
+        title: ".github/workflows/ci.yml"
+        code: |
+          name: CI
+          on: [push, pull_request]
+          jobs:
+            backend:
+              runs-on: ubuntu-latest
+              steps:
+                - uses: actions/checkout@v4
+                - uses: actions/setup-java@v4
+                  with:
+                    distribution: temurin
+                    java-version: 21
+                - run: ./mvnw -B verify
+            frontend:
+              runs-on: ubuntu-latest
+              steps:
+                - uses: actions/checkout@v4
+                - uses: actions/setup-node@v4
+                  with:
+                    node-version: 22
+                - run: npm ci
+                - run: npm test -- --watch=false
+                - run: npm run build
+        lines:
+          - n: 2
+            note: "Déclenché à chaque push et à chaque pull request."
+          - n: 4
+            note: "Un premier travail pour le backend…"
+          - n: 5
+            note: "… sur une machine Linux neuve fournie par GitHub."
+          - n: 7
+            note: "Récupère le code du dépôt."
+          - n: 12
+            note: "`verify` compile, lance les tests et vérifie le projet."
+          - n: 13
+            note: "Un second travail, en parallèle, pour Angular."
+          - n: 20
+            note: "`npm ci` installe exactement les versions du package-lock."
+      - type: question
+        ref: tst-git-q2
+        review: code-ci
+      - type: text
+        md: "Exercice guidé : complète le fichier de CI."
+      - type: exercise
+        ref: tst-ex-ci-guide
+      - type: text
+        md: "En autonomie : écris des messages de commit utiles."
+      - type: exercise
+        ref: tst-ex-commits
+      - type: jury
+        items:
+          - q: "Comment organisez-vous votre travail avec Git ?"
+            a: "Une branche par fonctionnalité à partir de main, des commits petits avec des messages qui expliquent le changement, une pull request pour fusionner, relue et validée par la CI. main reste toujours dans un état qui fonctionne."
+          - q: "Qu'est-ce que l'intégration continue ?"
+            a: "L'automatisation de la compilation et des tests à chaque push ou pull request, ici avec GitHub Actions : un workflow pour Maven et un pour Angular. Une régression est détectée en quelques minutes, avant d'arriver sur main. La livraison continue ajoute ensuite le déploiement automatique."
+      - type: quiz
+        items:
+          - ref: tst-git-q3
+            review: def-branche
+          - ref: tst-git-q4
+            review: def-ci
+          - ref: tst-git-q5
+            review: code-git
+    questions:
+      - code: tst-git-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: git
+        prompt: "Quel message de commit est le plus utile ?"
+        choices:
+          - label: "Ajoute la pagination à la liste des produits"
+            correct: true
+            why: "On sait ce qui a changé sans ouvrir le code."
+          - label: "modif"
+            correct: false
+            why: "Aucune information."
+          - label: "ça marche enfin !!!"
+            correct: false
+            why: "Ne dit pas ce qui a changé."
+        explanation: "Un verbe au présent + ce qui change."
+      - code: tst-git-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Dans un workflow GitHub Actions, que déclenche `on: [push, pull_request]` ?"
+        choices:
+          - label: "L'exécution du workflow à chaque push et à chaque pull request"
+            correct: true
+            why: "Les deux événements lancent la CI."
+          - label: "Un déploiement en production"
+            correct: false
+            why: "Ce workflow ne fait que compiler et tester."
+          - label: "La création d'une branche"
+            correct: false
+            why: "Il réagit aux événements, il n'en crée pas."
+        explanation: "`on:` = quand ; `jobs:` = quoi."
+      - code: tst-git-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: git
+        prompt: "On peut fusionner une pull request dont les tests de la CI échouent, si on est pressé."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "On casserait main pour toute l'équipe."
+          - label: "Faux"
+            correct: true
+            why: "La CI verte est une condition de fusion."
+        explanation: "Sur GitHub, on peut même l'imposer avec une règle de protection de branche."
+      - code: tst-git-q4
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Qu'apporte l'intégration continue ? (plusieurs réponses)"
+        choices:
+          - label: "Détecter une régression quelques minutes après le push"
+            correct: true
+            why: "Les tests tournent automatiquement."
+          - label: "Vérifier que le projet compile sur une machine propre"
+            correct: true
+            why: "Fin du « ça marche sur ma machine »."
+          - label: "Remplacer l'écriture des tests"
+            correct: false
+            why: "Elle exécute les tests, elle ne les écrit pas."
+          - label: "Informer toute l'équipe de l'état du projet"
+            correct: true
+            why: "Un badge vert ou rouge visible par tous."
+        explanation: "La CI est aussi utile seul qu'en équipe."
+      - code: tst-git-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: git
+        prompt: "Quelle commande Git crée une nouvelle branche et s'y place ? (commande complète, avec le nom `feature/panier`)"
+        answers: ["git switch -c feature/panier", "git checkout -b feature/panier"]
+        explanation: "`git switch -c` (moderne) ou `git checkout -b` (ancienne forme)."
+    exercises:
+      - slug: tst-ex-ci-guide
+        kind: COMPLETER
+        title: "Compléter la CI"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: "Complète le workflow : déclencheurs, machine, récupération du code, commande Maven."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Les déclencheurs se listent après on:."
+          - "La machine : ubuntu-latest. La commande Maven : verify."
+          - "push, ubuntu-latest, checkout, verify."
+        solution: '["push", "ubuntu-latest", "checkout", "verify"]'
+        explanation: "Quand, où, récupérer le code, vérifier."
+        xp: 10
+        payload:
+          language: yaml
+          template: |
+            on:
+              - [[1]]
+              - pull_request
+            jobs:
+              backend:
+                runs-on: [[2]]
+                steps:
+                  - uses: actions/[[3]]@v4
+                  - run: ./mvnw -B [[4]]
+          blanks:
+            - ["push"]
+            - ["ubuntu-latest"]
+            - ["checkout"]
+            - ["verify", "test"]
+      - slug: tst-ex-commits
+        kind: CODE_LIBRE
+        title: "Des messages de commit utiles"
+        difficulty: INTERMEDIAIRE
+        skill: git
+        statement: |
+          Tu viens de faire trois modifications. Écris un message de commit pour chacune, une par ligne,
+          sous la forme `git commit -m "…"`. Chaque message commence par un **verbe au présent** (Ajoute,
+          Corrige, Supprime, Renomme, Refactorise…) et fait au moins 20 caractères :
+          1. tu as ajouté la validation de l'e-mail à l'inscription ;
+          2. tu as corrigé le calcul du total quand le panier est vide ;
+          3. tu as extrait le calcul des frais de livraison dans un service.
+        criteria: "Trois commandes git commit -m, chaque message commence par un verbe d'action et est explicite."
+        hints:
+          - "`git commit -m \"Ajoute la validation de l'e-mail à l'inscription\"`"
+          - "`git commit -m \"Corrige le total d'un panier vide\"`"
+          - "`git commit -m \"Extrait le calcul des frais de livraison dans LivraisonService\"`"
+        solution: |
+          git commit -m "Ajoute la validation du format de l'e-mail à l'inscription"
+          git commit -m "Corrige le calcul du total quand le panier est vide"
+          git commit -m "Extrait le calcul des frais de livraison dans LivraisonService"
+        explanation: "Dans six mois, `git log` racontera clairement l'histoire du projet."
+        xp: 20
+        payload:
+          language: bash
+          starter: |
+            git commit -m ""
+          checks:
+            - pattern: '\A(?>[\s\S]*?git\s+commit\s+-m\s+"(?:Ajoute|Corrige|Supprime|Renomme|Refactorise|Extrait|Déplace|Met|Mets|Améliore|Crée|Valide|Remplace|Simplifie|Documente|Teste)\b[^"]{14,}"){3}'
+              message: "Écris trois `git commit -m \"…\"` qui commencent par un verbe (Ajoute, Corrige, Extrait…) avec au moins 20 caractères."
+            - pattern: '(?i)git\s+commit\s+-m\s+"[^"]*(?:e-?mail|inscription)[^"]*"'
+              message: "Le premier commit doit parler de l'e-mail ou de l'inscription."
+            - pattern: '(?i)git\s+commit\s+-m\s+"[^"]*(?:total|panier)[^"]*"'
+              message: "Le deuxième commit doit parler du total ou du panier."
+            - pattern: '(?i)git\s+commit\s+-m\s+"[^"]*(?:livraison|frais)[^"]*"'
+              message: "Le troisième commit doit parler des frais de livraison."
+            - pattern: '(?i)git\s+commit\s+-m\s+"\s*(?:modif|fix|wip|test|update|maj|ok)?\s*"'
+              absent: true
+              message: "Évite les messages vides ou du type « modif », « fix », « wip »."
+
+bank:
+  - code: tst-c3-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: git
+    prompt: "Que fait `git pull` ?"
+    choices:
+      - label: "Il récupère les commits du dépôt distant et les fusionne dans la branche locale"
+        correct: true
+        why: "fetch + merge."
+      - label: "Il envoie ses commits sur GitHub"
+        correct: false
+        why: "C'est git push."
+      - label: "Il crée une pull request"
+        correct: false
+        why: "La pull request se crée sur GitHub."
+    explanation: "pull = recevoir ; push = envoyer."
+  - code: tst-c3-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: tests-strategie
+    prompt: "À quoi sert une revue de code ?"
+    choices:
+      - label: "À faire relire le code par un collègue pour trouver des erreurs et partager les connaissances"
+        correct: true
+        why: "Deux regards valent mieux qu'un."
+      - label: "À noter le développeur"
+        correct: false
+        why: "C'est un outil d'équipe, pas d'évaluation."
+      - label: "À remplacer les tests"
+        correct: false
+        why: "Elle les complète."
+    explanation: "Elle se fait dans la pull request, avant la fusion."

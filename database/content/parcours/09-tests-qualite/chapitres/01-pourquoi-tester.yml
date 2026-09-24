@@ -1,0 +1,544 @@
+slug: tst-pourquoi-tester
+position: 1
+level: DEBUTANT
+title: "Pourquoi et comment tester"
+summary: "Les familles de tests, la pyramide, le modèle préparer-agir-vérifier, puis les premiers tests JUnit 5."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: tst-familles
+    title: "Les familles de tests"
+    duration: 12
+    objective: "Distinguer tests unitaires, d'intégration, de bout en bout et de recette, et expliquer la pyramide des tests."
+    prerequisites: "Parcours « Java et la programmation objet »."
+    skills: [tests-strategie]
+    xp: 20
+    memo: |
+      - **Unitaire** : une seule classe ou fonction, isolée. Très rapide.
+      - **Intégration** : plusieurs morceaux ensemble (service + base de données). Plus lent.
+      - **Bout en bout** (E2E) : un vrai navigateur clique dans l'application complète. Lent et fragile.
+      - **Recette** (acceptation) : vérifier avec le client que le besoin est couvert.
+      - **Pyramide** : beaucoup d'unitaires en bas, quelques intégrations, très peu de bout en bout en haut.
+      - **Régression** : un bug qui revient sur une fonctionnalité qui marchait. Les tests l'attrapent.
+    commonMistakes: |
+      - Tout tester à la main avant chaque livraison.
+      - N'écrire que des tests de bout en bout : lents, fragiles, difficiles à déboguer.
+      - Tester seulement le « chemin heureux », jamais les erreurs.
+    blocks:
+      - type: text
+        md: |
+          Tester à la main, c'est long, et on oublie toujours quelque chose. Un **test automatique** est un petit
+          programme qui vérifie un autre programme. On le relance autant de fois qu'on veut, gratuitement.
+      - type: definition
+        id: def-pyramide
+        term: "La pyramide des tests"
+        md: |
+          Pense à la **construction d'une voiture** : on teste chaque **pièce** (unitaire, des milliers de fois,
+          vite), puis le **moteur assemblé** (intégration), et enfin on fait **un tour de piste** avec la voiture
+          complète (bout en bout). On ne teste pas chaque vis en faisant un tour de piste !
+      - type: code
+        id: code-pyramide
+        language: text
+        title: "La pyramide"
+        code: |2
+                   /\        Bout en bout : quelques-uns (Playwright, Cypress)
+                  /  \
+                 /----\      Intégration : quelques dizaines (@SpringBootTest, Testcontainers)
+                /      \
+               /--------\    Unitaires : des centaines (JUnit, Mockito, Jasmine/Vitest)
+        lines:
+          - n: 1
+            note: "En haut : lents et coûteux, mais proches de l'utilisatrice."
+          - n: 3
+            note: "Au milieu : vérifient que les morceaux s'assemblent bien."
+          - n: 5
+            note: "En bas : rapides, nombreux, précis quand ils échouent."
+      - type: question
+        ref: tst-fam-q1
+        review: def-pyramide
+      - type: definition
+        id: def-aaa
+        term: "Préparer, agir, vérifier (AAA)"
+        md: |
+          Chaque test raconte une petite histoire en trois temps, comme une **recette** : on sort les ingrédients
+          (**préparer**), on fait cuire (**agir**), on goûte (**vérifier**). En anglais : Arrange, Act, Assert.
+      - type: question
+        ref: tst-fam-q2
+        review: def-aaa
+      - type: text
+        md: "Exercice guidé : classe chaque test dans sa famille."
+      - type: exercise
+        ref: tst-ex-familles-guide
+      - type: text
+        md: "En autonomie : décris la stratégie de tests d'une application."
+      - type: exercise
+        ref: tst-ex-strategie
+      - type: jury
+        items:
+          - q: "Quelle est votre stratégie de tests ?"
+            a: "Je suis la pyramide des tests : des tests unitaires nombreux sur la logique métier (JUnit 5, Mockito côté Spring, tests de services côté Angular), des tests d'intégration sur les contrôleurs et la base (MockMvc, Testcontainers), et quelques scénarios de bout en bout sur les parcours critiques comme l'inscription et la commande. Les tests tournent à chaque push dans GitHub Actions."
+          - q: "Qu'est-ce qu'un test de régression ?"
+            a: "Un test qui vérifie qu'une fonctionnalité qui marchait fonctionne toujours après une modification. En pratique, toute la suite de tests automatiques joue ce rôle. Quand je corrige un bug, j'ajoute d'abord un test qui le reproduit."
+      - type: quiz
+        items:
+          - ref: tst-fam-q3
+            review: code-pyramide
+          - ref: tst-fam-q4
+            review: def-pyramide
+          - ref: tst-fam-q5
+            review: def-aaa
+    questions:
+      - code: tst-fam-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Quels tests doivent être les plus nombreux ?"
+        choices:
+          - label: "Les tests unitaires"
+            correct: true
+            why: "Rapides et précis."
+          - label: "Les tests de bout en bout"
+            correct: false
+            why: "Lents et fragiles : on en garde peu."
+          - label: "Les tests manuels"
+            correct: false
+            why: "Ils ne sont pas automatisés."
+        explanation: "La base de la pyramide est la plus large."
+      - code: tst-fam-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Dans un test, `assertEquals(10, total)` correspond à quelle étape ?"
+        choices:
+          - label: "Vérifier"
+            correct: true
+            why: "On compare le résultat à l'attendu."
+          - label: "Préparer"
+            correct: false
+            why: "Préparer, c'est créer les objets."
+          - label: "Agir"
+            correct: false
+            why: "Agir, c'est appeler la méthode testée."
+        explanation: "Arrange, Act, Assert."
+      - code: tst-fam-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Un robot ouvre Chrome, s'inscrit, se connecte et passe une commande. Quel type de test ?"
+        choices:
+          - label: "Bout en bout (E2E)"
+            correct: true
+            why: "Toute l'application, comme une vraie utilisatrice."
+          - label: "Unitaire"
+            correct: false
+            why: "Un unitaire teste une seule classe."
+          - label: "Intégration"
+            correct: false
+            why: "L'intégration teste quelques morceaux, sans navigateur."
+        explanation: "Playwright ou Cypress."
+      - code: tst-fam-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Quand un test unitaire échoue, on sait généralement très vite où se trouve le problème."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Il ne teste qu'un petit morceau."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement son avantage sur un test de bout en bout."
+        explanation: "Petite portée = diagnostic rapide."
+      - code: tst-fam-q5
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Quels cas faut-il tester pour une méthode de retrait d'argent ? (plusieurs réponses)"
+        choices:
+          - label: "Un retrait normal"
+            correct: true
+            why: "Le chemin heureux."
+          - label: "Un montant supérieur au solde"
+            correct: true
+            why: "Cas d'erreur métier."
+          - label: "Un montant négatif ou nul"
+            correct: true
+            why: "Valeur limite invalide."
+          - label: "La couleur du bouton « Retirer »"
+            correct: false
+            why: "Ce n'est pas la logique de la méthode."
+        explanation: "Chemin heureux, erreurs et valeurs limites."
+    exercises:
+      - slug: tst-ex-familles-guide
+        kind: COMPLETER
+        title: "Classer les tests"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: "Complète avec : unitaire, intégration, bout, recette."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Une seule méthode isolée : unitaire."
+          - "Le client valide le besoin : recette."
+          - "unitaire, intégration, bout, recette."
+        solution: '["unitaire", "intégration", "bout", "recette"]'
+        explanation: "Quatre familles, quatre portées différentes."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Tester calculerTotal() avec un faux repository      : test [[1]]
+            Tester le repository sur un vrai PostgreSQL          : test d'[[2]]
+            Un robot clique dans le site complet                 : test de [[3]] en bout
+            La cliente vérifie que le besoin est couvert          : test de [[4]]
+          blanks:
+            - ["unitaire"]
+            - ["intégration", "integration"]
+            - ["bout"]
+            - ["recette", "validation", "acceptation"]
+      - slug: tst-ex-strategie
+        kind: CODE_LIBRE
+        title: "Une stratégie de tests"
+        difficulty: INTERMEDIAIRE
+        skill: tests-strategie
+        statement: |
+          Décris en trois lignes la stratégie de tests d'une application de réservation Angular + Spring Boot.
+          Commence les lignes par `Unitaires :`, `Intégration :` et `Bout en bout :`, et cite **au moins un
+          outil** par ligne (JUnit, Mockito, Jasmine, Vitest, MockMvc, Testcontainers, Playwright, Cypress…).
+        criteria: "Trois lignes, chacune avec un outil adapté à sa famille."
+        hints:
+          - "Unitaires : les services Java avec JUnit 5 et Mockito."
+          - "Intégration : les contrôleurs avec MockMvc, la base avec Testcontainers."
+          - "Bout en bout : le parcours de réservation avec Playwright."
+        solution: |
+          Unitaires : les règles de réservation dans les services, avec JUnit 5 et Mockito, et les services Angular avec Vitest.
+          Intégration : les contrôleurs avec MockMvc et les repositories sur PostgreSQL avec Testcontainers.
+          Bout en bout : le parcours inscription puis réservation dans un vrai navigateur avec Playwright.
+        explanation: "Chaque étage de la pyramide a ses outils et sa cible."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            Unitaires :
+            Intégration :
+            Bout en bout :
+          checks:
+            - pattern: '(?im)^\s*Unitaires?\s*:.*\b(?:JUnit|Mockito|Jasmine|Vitest|Jest|Karma)\b'
+              message: "Cite un outil de tests unitaires (JUnit, Mockito, Vitest…) sur la ligne « Unitaires : »."
+            - pattern: '(?im)^\s*Int[ée]gration\s*:.*\b(?:MockMvc|Testcontainers|SpringBootTest|WebMvcTest|HttpTestingController)\b'
+              message: "Cite un outil d'intégration (MockMvc, Testcontainers…) sur la ligne « Intégration : »."
+            - pattern: '(?im)^\s*Bout\s+en\s+bout\s*:.*\b(?:Playwright|Cypress|Selenium)\b'
+              message: "Cite un outil de bout en bout (Playwright, Cypress…) sur la ligne « Bout en bout : »."
+
+  # ===================================================================== LEÇON 2
+  - slug: tst-junit
+    title: "Écrire ses premiers tests JUnit 5"
+    duration: 14
+    objective: "Écrire des tests JUnit 5 avec @Test, les assertions principales, @BeforeEach et des tests paramétrés."
+    prerequisites: "Leçon « Les familles de tests »."
+    skills: [java-tests, tests-strategie]
+    xp: 25
+    memo: |
+      - `@Test` : cette méthode est un test. Nom lisible : `refuseUnMontantNegatif()`.
+      - `assertEquals(attendu, obtenu)` : **l'attendu d'abord**.
+      - `assertTrue`, `assertFalse`, `assertNull`, `assertThrows(Exception.class, () -> …)`.
+      - `@BeforeEach` : exécuté avant chaque test, pour repartir d'un état propre.
+      - `@ParameterizedTest` + `@CsvSource` : le même test avec plusieurs jeux de données.
+      - `@DisplayName("…")` : une phrase lisible dans le rapport.
+    commonMistakes: |
+      - Inverser attendu et obtenu dans `assertEquals` : le message d'échec devient trompeur.
+      - Un test qui dépend du résultat d'un autre test.
+      - Un test sans aucune assertion : il passe toujours.
+    blocks:
+      - type: text
+        md: |
+          **JUnit 5** est l'outil standard pour tester du Java. Un test est une méthode ordinaire, marquée
+          `@Test`, qui appelle ton code et vérifie le résultat.
+      - type: code
+        id: code-junit
+        language: java
+        title: "CompteTest.java"
+        code: |
+          class CompteTest {
+
+              private Compte compte;
+
+              @BeforeEach
+              void preparer() {
+                  compte = new Compte(100);
+              }
+
+              @Test
+              void retireUnMontantDisponible() {
+                  compte.retirer(30);
+                  assertEquals(70, compte.getSolde());
+              }
+
+              @Test
+              void refuseUnRetraitSuperieurAuSolde() {
+                  assertThrows(SoldeInsuffisantException.class, () -> compte.retirer(150));
+                  assertEquals(100, compte.getSolde());
+              }
+          }
+        lines:
+          - n: 5
+            note: "`@BeforeEach` : un compte neuf de 100 € avant **chaque** test."
+          - n: 10
+            note: "`@Test` : JUnit exécutera cette méthode."
+          - n: 11
+            note: "Le nom dit ce qu'on vérifie, comme une phrase."
+          - n: 13
+            note: "`assertEquals(attendu, obtenu)` : 70 est attendu."
+          - n: 18
+            note: "On vérifie que l'exception est bien lancée…"
+          - n: 19
+            note: "… et que le solde n'a pas bougé."
+      - type: question
+        ref: tst-ju-q1
+        review: code-junit
+      - type: definition
+        id: def-parametre
+        term: "Test paramétré"
+        md: |
+          Un **moule à gâteaux** : une seule recette de test, remplie avec plusieurs jeux de valeurs. Pratique
+          pour tester les **valeurs limites** (0, 1, le maximum…).
+      - type: code
+        id: code-parametre
+        language: java
+        title: "Tester plusieurs valeurs"
+        code: |
+          @ParameterizedTest
+          @CsvSource({
+              "0, false",
+              "17, false",
+              "18, true",
+              "65, true"
+          })
+          void estMajeur(int age, boolean attendu) {
+              assertEquals(attendu, Personne.estMajeur(age));
+          }
+        lines:
+          - n: 1
+            note: "Un test lancé une fois par ligne de données."
+          - n: 4
+            note: "17 et 18 : on teste juste avant et juste à la limite."
+          - n: 8
+            note: "Les colonnes deviennent les paramètres de la méthode."
+      - type: question
+        ref: tst-ju-q2
+        review: code-parametre
+      - type: text
+        md: "Exercice guidé : complète ce test."
+      - type: exercise
+        ref: tst-ex-junit-guide
+      - type: text
+        md: "En autonomie : teste une méthode de remise."
+      - type: exercise
+        ref: tst-ex-junit
+      - type: jury
+        items:
+          - q: "Comment nommez-vous vos tests ?"
+            a: "Par une phrase qui décrit le comportement attendu, par exemple refuseUnRetraitSuperieurAuSolde, éventuellement avec @DisplayName. En cas d'échec, le rapport dit tout de suite quelle règle est cassée."
+          - q: "Que sont les valeurs limites ?"
+            a: "Les valeurs juste avant, pile sur et juste après une frontière : 17, 18 et 19 pour la majorité, 0 pour une quantité. C'est là que se cachent la plupart des bugs, comme un < au lieu de <=. Je les teste avec des tests paramétrés."
+      - type: quiz
+        items:
+          - ref: tst-ju-q3
+            review: code-junit
+          - ref: tst-ju-q4
+            review: code-junit
+          - ref: tst-ju-q5
+            review: def-parametre
+    questions:
+      - code: tst-ju-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-tests
+        prompt: "Quel est le bon ordre des arguments de `assertEquals` ?"
+        choices:
+          - label: "assertEquals(attendu, obtenu)"
+            correct: true
+            why: "Le message d'échec dit « expected: attendu but was: obtenu »."
+          - label: "assertEquals(obtenu, attendu)"
+            correct: false
+            why: "Le message d'échec serait inversé."
+          - label: "L'ordre n'a aucune importance"
+            correct: false
+            why: "Il compte pour la lisibilité des erreurs."
+        explanation: "L'attendu d'abord."
+      - code: tst-ju-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Pour une règle « gratuit dès 50 € d'achat », quelles valeurs tester en priorité ?"
+        choices:
+          - label: "49,99 € ; 50 € ; 50,01 €"
+            correct: true
+            why: "Autour de la limite."
+          - label: "10 € ; 200 € ; 1 000 €"
+            correct: false
+            why: "Loin de la frontière : on raterait un < au lieu de <=."
+          - label: "Seulement 50 €"
+            correct: false
+            why: "Il faut aussi juste avant et juste après."
+        explanation: "Les bugs aiment les frontières."
+      - code: tst-ju-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: java-tests
+        prompt: "Grâce à `@BeforeEach`, chaque test part d'un compte neuf à 100 €."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "La méthode s'exécute avant chaque test."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement son rôle."
+        explanation: "Des tests indépendants les uns des autres."
+      - code: tst-ju-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Un test ne contient aucune assertion. Que se passe-t-il ?"
+        choices:
+          - label: "Il passe toujours, même si le code est faux"
+            correct: true
+            why: "Rien n'est vérifié."
+          - label: "JUnit refuse de l'exécuter"
+            correct: false
+            why: "JUnit l'exécute sans rien dire."
+          - label: "Il échoue toujours"
+            correct: false
+            why: "Il échoue seulement si une exception survient."
+        explanation: "Un test sans vérification donne une fausse confiance."
+      - code: tst-ju-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Quelle annotation fournit des jeux de données en lignes de texte séparées par des virgules ? (sans @)"
+        answers: ["CsvSource", "@CsvSource"]
+        explanation: "Avec `@ParameterizedTest`. Il existe aussi `@ValueSource` et `@MethodSource`."
+    exercises:
+      - slug: tst-ex-junit-guide
+        kind: COMPLETER
+        title: "Compléter un test"
+        difficulty: FACILE
+        skill: java-tests
+        statement: "Complète ce test du panier."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Avant chaque test : BeforeEach. Un test : Test."
+          - "L'égalité : assertEquals ; l'exception : assertThrows."
+          - "BeforeEach, Test, assertEquals, assertThrows."
+        solution: '["BeforeEach", "Test", "assertEquals", "assertThrows"]'
+        explanation: "Préparer, agir, vérifier la valeur ou l'exception."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @[[1]]
+            void preparer() { panier = new Panier(); }
+
+            @[[2]]
+            void calculeLeTotal() {
+                panier.ajouter(new Article("Café", 3));
+                [[3]](3, panier.total());
+            }
+
+            @Test
+            void refuseUneQuantiteNegative() {
+                [[4]](IllegalArgumentException.class, () -> panier.ajouter(new Article("Thé", -1)));
+            }
+          blanks:
+            - ["BeforeEach"]
+            - ["Test"]
+            - ["assertEquals"]
+            - ["assertThrows"]
+      - slug: tst-ex-junit
+        kind: CODE_LIBRE
+        title: "Tester une remise"
+        difficulty: INTERMEDIAIRE
+        skill: java-tests
+        statement: |
+          La méthode statique `Remise.calculer(double montant)` renvoie **10 %** de remise à partir de **100 €**
+          (inclus), sinon 0. Elle lance `IllegalArgumentException` si le montant est négatif.
+
+          Écris la classe `RemiseTest` avec **trois** tests :
+          - `aucuneRemiseSousCentEuros` : 99.99 → 0 ;
+          - `dixPourcentDesCentEuros` : 100 → 10 ;
+          - `refuseUnMontantNegatif` : -5 → exception.
+        criteria: "Trois méthodes @Test, deux assertEquals avec l'attendu en premier, un assertThrows."
+        hints:
+          - "`@Test void aucuneRemiseSousCentEuros() { assertEquals(0, Remise.calculer(99.99)); }`"
+          - "`assertEquals(10, Remise.calculer(100));`"
+          - "`assertThrows(IllegalArgumentException.class, () -> Remise.calculer(-5));`"
+        solution: |
+          class RemiseTest {
+
+              @Test
+              void aucuneRemiseSousCentEuros() {
+                  assertEquals(0, Remise.calculer(99.99));
+              }
+
+              @Test
+              void dixPourcentDesCentEuros() {
+                  assertEquals(10, Remise.calculer(100));
+              }
+
+              @Test
+              void refuseUnMontantNegatif() {
+                  assertThrows(IllegalArgumentException.class, () -> Remise.calculer(-5));
+              }
+          }
+        explanation: "Juste sous la limite, pile sur la limite, et une valeur interdite : trois tests qui protègent la règle."
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            class RemiseTest {
+
+            }
+          checks:
+            - pattern: '\A(?>[\s\S]*?@Test\b){3}'
+              message: "Écris trois méthodes annotées `@Test`."
+            - pattern: 'void\s+aucuneRemiseSousCentEuros\s*\(\s*\)[^}]*assertEquals\s*\(\s*0(?:\.0+)?\s*,\s*Remise\.calculer\s*\(\s*99\.99\s*\)'
+              message: "`aucuneRemiseSousCentEuros` : `assertEquals(0, Remise.calculer(99.99))`."
+            - pattern: 'void\s+dixPourcentDesCentEuros\s*\(\s*\)[^}]*assertEquals\s*\(\s*10(?:\.0+)?\s*,\s*Remise\.calculer\s*\(\s*100(?:\.0+)?\s*\)'
+              message: "`dixPourcentDesCentEuros` : `assertEquals(10, Remise.calculer(100))`."
+            - pattern: 'void\s+refuseUnMontantNegatif\s*\(\s*\)[^}]*assertThrows\s*\(\s*IllegalArgumentException\.class\s*,\s*\(\s*\)\s*->\s*Remise\.calculer\s*\(\s*-\s*5(?:\.0+)?\s*\)'
+              message: "`refuseUnMontantNegatif` : `assertThrows(IllegalArgumentException.class, () -> Remise.calculer(-5))`."
+
+bank:
+  - code: tst-c1-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: tests-strategie
+    prompt: "Tu corriges un bug signalé par une utilisatrice. Quelle est la bonne pratique ?"
+    choices:
+      - label: "Écrire d'abord un test qui reproduit le bug, puis le corriger"
+        correct: true
+        why: "Le bug ne pourra plus revenir sans qu'on le voie."
+      - label: "Corriger vite et ne rien ajouter"
+        correct: false
+        why: "Le bug pourrait revenir plus tard."
+      - label: "Supprimer les tests qui échouent"
+        correct: false
+        why: "On perd la protection."
+    explanation: "Un bug corrigé = un test de plus."
+  - code: tst-c1-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: java-tests
+    prompt: "Pourquoi les tests doivent-ils être indépendants les uns des autres ?"
+    choices:
+      - label: "Pour pouvoir les lancer dans n'importe quel ordre, seuls ou ensemble, avec le même résultat"
+        correct: true
+        why: "Un test ne doit pas réussir « par chance »."
+      - label: "Pour qu'ils soient plus courts"
+        correct: false
+        why: "La longueur n'est pas le sujet."
+      - label: "Ce n'est pas nécessaire"
+        correct: false
+        why: "Des tests dépendants deviennent imprévisibles."
+    explanation: "`@BeforeEach` recrée un état propre avant chaque test."

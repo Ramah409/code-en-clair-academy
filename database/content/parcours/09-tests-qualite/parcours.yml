@@ -1,0 +1,22 @@
+slug: tests-qualite
+version: 1
+position: 9
+title: "Tests et qualité du code"
+summary: "Tester avec JUnit et Mockito, pratiquer le TDD, écrire du code propre, travailler avec Git et l'intégration continue, préparer un plan de tests."
+category: QUALITE
+icon: check
+description: |
+  Un programme qui marche **aujourd'hui** peut casser **demain**, quand on ajoute une fonctionnalité. Les
+  **tests automatiques** vérifient en quelques secondes que tout fonctionne encore.
+
+  La **qualité**, c'est aussi un code **lisible** : des noms clairs, des fonctions courtes, une histoire
+  Git propre, et une machine qui relance les tests à chaque modification (l'**intégration continue**).
+
+  **Au programme** : la pyramide des tests, JUnit 5, les doublures Mockito, le TDD, le code propre, Git et
+  les branches, GitHub Actions, les tests d'intégration et de bout en bout, le cahier de recette, puis les
+  questions du jury.
+
+  **Prérequis** : le parcours « Java et la programmation objet ». Les chapitres 3 et 4 s'appuient aussi sur
+  « Spring Boot » et « Angular ».
+examQuestionCount: 30
+examTimeLimitMinutes: 35
