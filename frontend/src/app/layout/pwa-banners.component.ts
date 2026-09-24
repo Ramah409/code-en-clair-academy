@@ -19,7 +19,7 @@ import { IconComponent } from '../shared/icon.component';
       } @else if (wake.waking()) {
         <p class="pwa-banner pwa-banner--waking" role="status">
           <span class="pwa-banner__spinner" aria-hidden="true"></span>
-          <span class="pwa-banner__text">Le serveur se réveille (hébergement gratuit). Cela peut prendre jusqu'à une minute…</span>
+          <span class="pwa-banner__text">Le serveur se réveille (hébergement gratuit). Cela peut prendre jusqu'à trois minutes…</span>
         </p>
       }
       @if (pwa.updateReady()) {

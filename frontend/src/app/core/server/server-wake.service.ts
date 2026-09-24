@@ -33,7 +33,7 @@ const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * Réveil de l'API.
  *
  * Sur l'offre gratuite de l'hébergeur, l'API s'endort après quelques minutes sans visite et met
- * jusqu'à une ou deux minutes à redémarrer. Ce service interroge l'adresse de santé jusqu'à ce que
+ * deux à trois minutes à redémarrer (Java sur 0,1 processeur). Ce service interroge l'adresse de santé jusqu'à ce que
  * l'API réponde, et expose `waking` pour afficher un message d'attente.
  */
 @Injectable({ providedIn: 'root' })
@@ -58,7 +58,7 @@ export class ServerWakeService {
   }
 
   /** Attend que l'API réponde. Renvoie false si l'appareil est hors ligne ou si l'attente dépasse `maxMs`. */
-  waitUntilAwake(maxMs = 180_000): Promise<boolean> {
+  waitUntilAwake(maxMs = 240_000): Promise<boolean> {
     this.pending ??= this.poll(maxMs).finally(() => {
       this.pending = null;
       this.wakingState.set(false);

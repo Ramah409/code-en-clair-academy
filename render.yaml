@@ -1,0 +1,41 @@
+# Code en Clair Academy — API Spring Boot sur Render (Blueprint)
+# La base PostgreSQL est chez Neon ; le frontend chez Netlify.
+# Les valeurs marquées « sync: false » sont des secrets : Render les demande à la création,
+# elles ne sont jamais écrites dans ce dépôt.
+services:
+  - type: web
+    name: code-en-clair-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./deploy/api.Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    # Ne redéployer que si l'API ou les contenus changent (pas pour une modification du frontend)
+    buildFilter:
+      paths:
+        - backend/**
+        - database/content/**
+        - deploy/api.Dockerfile
+        - render.yaml
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      # Neon, adresse directe (sans « -pooler ») :
+      # jdbc:postgresql://ep-xxxx.eu-central-1.aws.neon.tech/cda_academy?sslmode=require
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # Au moins 64 caractères aléatoires : openssl rand -base64 64 | tr -d '\n'
+      - key: JWT_SECRET
+        sync: false
+      # Mot de passe du rôle restreint du laboratoire SQL (Neon exige un mot de passe robuste)
+      - key: LAB_DB_PASSWORD
+        sync: false
+      # Adresse publique du frontend Netlify, par exemple https://code-en-clair.netlify.app
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false

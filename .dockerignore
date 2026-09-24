@@ -1,0 +1,15 @@
+# Ne jamais envoyer de secrets ni de fichiers lourds dans le contexte de construction Docker
+.env
+*.env
+*.env.local
+.git
+**/node_modules
+**/.angular
+**/dist
+backend/target
+frontend
+docs
+database/backup
+**/.DS_Store
+.idea
+.vscode

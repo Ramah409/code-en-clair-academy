@@ -1,0 +1,58 @@
+# Code en Clair Academy API — profil de production (SPRING_PROFILES_ACTIVE=prod)
+# Hébergement : API sur Render (offre gratuite, 512 Mo de RAM), base PostgreSQL sur Neon.
+# Aucune valeur secrète ici : tout vient des variables d'environnement de l'hébergeur.
+spring:
+  datasource:
+    # Exemple : jdbc:postgresql://ep-xxxx.eu-central-1.aws.neon.tech/cda_academy?sslmode=require
+    # (adresse « directe » de Neon, sans « -pooler » : Flyway a besoin d'une vraie session)
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:5}
+      minimum-idle: 1
+      # Neon met la base en pause après 5 minutes sans activité : le premier réveil prend quelques secondes.
+      connection-timeout: 20000
+      idle-timeout: 120000
+      max-lifetime: 600000
+  jmx:
+    enabled: false
+
+server:
+  # Render fournit le port dans la variable PORT.
+  port: ${PORT:8090}
+  # Derrière les proxys de Netlify et de Render : respecter X-Forwarded-Proto (HTTPS) et X-Forwarded-For.
+  forward-headers-strategy: framework
+  tomcat:
+    threads:
+      max: 40
+      min-spare: 4
+  shutdown: graceful
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+app:
+  jwt:
+    # Cookie de rafraîchissement : HTTPS uniquement.
+    cookie-secure: true
+  cors:
+    # Le navigateur passe par le proxy de Netlify (même origine) ; on autorise quand même
+    # explicitement l'adresse du site pour les appels directs.
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  content:
+    directory: ${CONTENT_DIR:/app/content}
+  ollama:
+    # Pas d'Ollama en production : l'assistant répond à partir des cours.
+    base-url: ${OLLAMA_BASE_URL:http://127.0.0.1:11434}
+  lab:
+    pool-size: 2
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: WARN
+    com.zaxxer.hikari: WARN

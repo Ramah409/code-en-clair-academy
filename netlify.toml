@@ -1,0 +1,90 @@
+# Code en Clair Academy — frontend Angular (PWA) sur Netlify
+# L'API Spring Boot tourne sur Render ; Netlify la relaie sous /api pour que le navigateur ne voie
+# qu'une seule adresse : le cookie de session reste « first-party » (indispensable sur iPhone) et
+# aucun appel ne dépend de CORS.
+
+[build]
+  base = "frontend"
+  command = "npm ci && npx ng build"
+  publish = "dist/frontend/browser"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# ---------------------------------------------------------------- relais vers l'API (Render)
+# Adresse de santé de l'API (utilisée par l'application pour attendre le réveil du serveur gratuit)
+[[redirects]]
+  from = "/api/sante"
+  to = "https://code-en-clair-api.onrender.com/actuator/health"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://code-en-clair-api.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# Application monopage : toute autre adresse affiche index.html (le routeur Angular prend le relais)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ---------------------------------------------------------------- en-têtes
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Fichiers qui doivent toujours être revérifiés : sinon une nouvelle version ne serait jamais vue.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/ngsw-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/ngsw.json"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Content-Type = "application/manifest+json"
+
+# Fichiers dont le nom contient une empreinte (main-XXXX.js…) : ils ne changent jamais.
+# Motifs précis : un motif « /*.js » toucherait aussi ngsw-worker.js, et Netlify fusionnerait les deux règles.
+[[headers]]
+  for = "/main-*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/chunk-*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/polyfills-*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/styles-*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/media/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
