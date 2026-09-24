@@ -22,3 +22,24 @@ database/backup/*.sql
 *.iml
 .vscode/*
 !.vscode/extensions.json
+
+# Secrets et clés (ne jamais publier)
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+deploiement.env
+
+# Déploiement (dossiers locaux des outils)
+.netlify/
+**/.netlify/
+.vercel/
+
+# Journaux et archives
+*.log
+logs/
+*.bundle
+**/node_modules/
