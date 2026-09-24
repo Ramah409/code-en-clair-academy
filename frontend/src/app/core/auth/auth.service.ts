@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, finalize, firstValueFrom, map, of, shareReplay, tap } from 'rxjs';
 
+import { ServerWakeService, isServerUnavailable } from '../server/server-wake.service';
 import { AuthResponse, LoginRequest, RegisterRequest, User } from './auth.models';
 
 /**
@@ -16,6 +17,7 @@ import { AuthResponse, LoginRequest, RegisterRequest, User } from './auth.models
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly wake = inject(ServerWakeService);
 
   private readonly token = signal<string | null>(null);
   private readonly currentUser = signal<User | null>(null);
@@ -53,9 +55,19 @@ export class AuthService {
     return this.refreshInFlight;
   }
 
-  /** Appelé au démarrage de l'application : ne rejette jamais. */
-  restoreSession(): Promise<unknown> {
-    return firstValueFrom(this.refresh().pipe(catchError(() => of(null))));
+  /**
+   * Appelé au démarrage de l'application : ne rejette jamais. Si l'API est en train de se réveiller
+   * (hébergement gratuit), attend son réveil puis réessaie, pour ne pas déconnecter l'utilisatrice.
+   */
+  async restoreSession(): Promise<unknown> {
+    try {
+      return await firstValueFrom(this.refresh());
+    } catch (err) {
+      if (isServerUnavailable(err) && (await this.wake.waitUntilAwake())) {
+        return firstValueFrom(this.refresh().pipe(catchError(() => of(null))));
+      }
+      return null;
+    }
   }
 
   /** Recharge le profil depuis l'API (XP, niveau, série à jour). */

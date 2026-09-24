@@ -6,11 +6,43 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Code en Clair Academy — plateforme d'apprentissage pour le titre Concepteur Développeur d'Applications.">
+  <meta name="theme-color" content="#12532c">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
   <link rel="manifest" href="manifest.webmanifest">
+  <!-- iPhone et iPad : icône d'écran d'accueil et affichage plein écran -->
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Code en Clair">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+    /* Écran de démarrage : visible jusqu'à ce qu'Angular prenne la main (API parfois en cours de réveil). */
+    .demarrage { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.5rem; padding: 1.5rem; text-align: center; background: #f6faf5; color: #0f1a0f;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+    .demarrage img { border-radius: 18px; }
+    .demarrage__titre { margin: 0.75rem 0 0; font-size: 1.25rem; font-weight: 700; }
+    .demarrage__texte { margin: 0; color: #4a5a49; }
+    .demarrage__reveil { max-width: 22rem; margin: 0.5rem 0 0; color: #22627a; opacity: 0;
+      animation: demarrage-apparait 0.4s ease 5s forwards; }
+    @keyframes demarrage-apparait { to { opacity: 1; } }
+    @media (prefers-color-scheme: dark) {
+      .demarrage { background: #0b140c; color: #eef6ec; }
+      .demarrage__texte { color: #a9bca6; }
+      .demarrage__reveil { color: #9fd0e0; }
+    }
+  </style>
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <div class="demarrage" role="status" aria-live="polite">
+      <img src="icons/icon-192x192.png" width="72" height="72" alt="">
+      <p class="demarrage__titre">Code en Clair Academy</p>
+      <p class="demarrage__texte">Chargement…</p>
+      <p class="demarrage__reveil">Le serveur gratuit se réveille après une pause. Cela peut prendre jusqu'à une minute : merci de patienter.</p>
+    </div>
+  </app-root>
   <noscript>Active JavaScript pour utiliser Code en Clair Academy.</noscript>
 </body>
 </html>

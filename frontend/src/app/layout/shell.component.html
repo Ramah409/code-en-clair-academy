@@ -18,6 +18,26 @@
       </ul>
     </nav>
 
+    @if (pwa.canInstall()) {
+      <button type="button" class="side__install" (click)="installer()">
+        <app-icon name="plus" [size]="18" /> Installer l'application
+      </button>
+    } @else if (pwa.needsIosInstructions()) {
+      <div class="side__install-ios">
+        <button type="button" class="side__install" (click)="iosHelp.set(!iosHelp())"
+                [attr.aria-expanded]="iosHelp()" aria-controls="aide-installation-ios">
+          <app-icon name="plus" [size]="18" /> Installer sur l'écran d'accueil
+        </button>
+        @if (iosHelp()) {
+          <ol id="aide-installation-ios" class="side__install-help">
+            <li>Ouvre ce site dans <strong>Safari</strong>.</li>
+            <li>Touche <strong>Partager</strong> (le carré avec une flèche vers le haut).</li>
+            <li>Choisis <strong>Sur l'écran d'accueil</strong>, puis <strong>Ajouter</strong>.</li>
+          </ol>
+        }
+      </div>
+    }
+
     @if (user(); as u) {
       <div class="side__me">
         <div class="side__who">

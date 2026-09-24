@@ -1,4 +1,9 @@
 {
+  "/api/sante": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "pathRewrite": { "^/api/sante": "/actuator/health" }
+  },
   "/api": {
     "target": "http://localhost:8090",
     "secure": false

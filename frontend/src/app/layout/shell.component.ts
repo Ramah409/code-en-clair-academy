@@ -3,6 +3,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter } from 'rxjs';
 
 import { AuthService } from '../core/auth/auth.service';
+import { PwaService } from '../core/pwa/pwa.service';
 import { RewardService } from '../core/ui/reward.service';
 import { ThemeService } from '../core/ui/theme.service';
 import { IconComponent } from '../shared/icon.component';
@@ -30,8 +31,11 @@ export class ShellComponent {
   private readonly router = inject(Router);
   private readonly theme = inject(ThemeService);
 
+  readonly pwa = inject(PwaService);
+
   readonly user = this.auth.user;
   readonly drawerOpen = signal(false);
+  readonly iosHelp = signal(false);
 
   readonly nav: NavItem[] = [
     { path: '/accueil', label: 'Accueil', icon: 'home' },
@@ -85,5 +89,11 @@ export class ShellComponent {
 
   logout(): void {
     this.auth.logout();
+  }
+
+  async installer(): Promise<void> {
+    if (await this.pwa.install()) {
+      this.rewards.info('Application installée', 'Retrouve Code en Clair sur ton écran d\'accueil.');
+    }
   }
 }
