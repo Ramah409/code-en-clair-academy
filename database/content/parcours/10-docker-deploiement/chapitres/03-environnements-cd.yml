@@ -1,0 +1,525 @@
+slug: dk-environnements-cd
+position: 3
+level: AVANCE
+title: "Environnements et déploiement continu"
+summary: "Séparer développement, recette et production, sécuriser le serveur avec HTTPS, puis construire, publier et déployer automatiquement avec GitHub Actions."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: dk-environnements
+    title: "Développement, recette, production"
+    duration: 13
+    objective: "Distinguer les environnements, les configurer avec des variables et mettre l'application en HTTPS derrière un proxy inverse."
+    prerequisites: "Chapitre « Docker Compose et Nginx »."
+    skills: [docker-deploiement, rgpd-secrets]
+    xp: 25
+    memo: |
+      - **Développement** : ta machine, données fictives, logs bavards.
+      - **Recette** (ou préproduction) : copie fidèle de la production, pour valider avant de livrer.
+      - **Production** : les vraies utilisatrices et les vraies données.
+      - **Même image** partout ; seules les **variables d'environnement** changent (principe des 12 facteurs).
+      - **HTTPS** : un certificat (gratuit avec Let's Encrypt) installé sur le proxy inverse (Nginx, Caddy, Traefik).
+      - Sur le serveur : pare-feu (seuls 80 et 443 ouverts), connexion SSH par clé, mises à jour régulières.
+    commonMistakes: |
+      - Reconstruire une image différente pour la production : ce n'est plus ce qu'on a testé.
+      - Tester directement en production.
+      - Laisser le port de la base ou de l'API ouvert sur Internet.
+    blocks:
+      - type: text
+        md: |
+          On ne livre pas directement de sa machine aux utilisatrices. Entre les deux, il y a une **répétition
+          générale** : la recette.
+      - type: definition
+        id: def-environnements
+        term: "Les trois environnements"
+        md: |
+          Une pièce de théâtre : les **répétitions** en salle (développement), la **répétition générale** en
+          costume sur la vraie scène (recette), puis la **première** devant le public (production). On ne
+          découvre pas le texte le soir de la première.
+      - type: code
+        id: code-env
+        language: bash
+        title: "Même image, variables différentes"
+        code: |
+          # .env.recette
+          SPRING_PROFILES_ACTIVE=recette
+          DB_URL=jdbc:postgresql://bdd:5432/boutique_recette
+          CORS_ORIGIN=https://recette.boutique.fr
+
+          # .env.production (sur le serveur uniquement)
+          SPRING_PROFILES_ACTIVE=prod
+          DB_URL=jdbc:postgresql://bdd:5432/boutique
+          CORS_ORIGIN=https://boutique.fr
+
+          docker compose --env-file .env.production up -d
+        lines:
+          - n: 2
+            note: "Le profil Spring change le niveau de logs, etc."
+          - n: 3
+            note: "Une base différente : les tests de recette ne touchent jamais aux vraies données."
+          - n: 6
+            note: "Le fichier de production n'existe **que** sur le serveur de production."
+          - n: 11
+            note: "La même image, lancée avec la configuration de production."
+      - type: question
+        ref: dk-env-q1
+        review: def-environnements
+      - type: definition
+        id: def-https
+        term: "HTTPS et certificat"
+        md: |
+          Une **enveloppe scellée avec le tampon de la mairie** : le contenu est illisible en route
+          (chiffrement), et le tampon prouve que l'expéditeur est bien celui qu'il prétend être (certificat).
+          Let's Encrypt délivre ces tampons gratuitement.
+      - type: question
+        ref: dk-env-q2
+        review: def-https
+      - type: text
+        md: "Exercice guidé : associe chaque situation à son environnement."
+      - type: exercise
+        ref: dk-ex-env-guide
+      - type: text
+        md: "En autonomie : écris le fichier d'exemple des variables."
+      - type: exercise
+        ref: dk-ex-env-example
+      - type: jury
+        items:
+          - q: "Quels environnements avez-vous ?"
+            a: "Développement sur ma machine avec Docker Compose, une recette qui reproduit la production pour valider chaque version avec le client, et la production. La même image Docker circule entre les trois ; seules les variables d'environnement changent (base, secrets, origine CORS, profil Spring)."
+          - q: "Comment sécurisez-vous le serveur ?"
+            a: "HTTPS avec un certificat Let's Encrypt sur le proxy inverse, un pare-feu qui n'ouvre que 80 et 443, SSH par clé sans mot de passe, la base accessible uniquement sur le réseau interne Docker, et des mises à jour régulières du système et des images."
+      - type: quiz
+        items:
+          - ref: dk-env-q3
+            review: code-env
+          - ref: dk-env-q4
+            review: def-environnements
+          - ref: dk-env-q5
+            review: def-https
+    questions:
+      - code: dk-env-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Dans quel environnement la cliente valide-t-elle une nouvelle version avant sa mise en ligne ?"
+        choices:
+          - label: "La recette"
+            correct: true
+            why: "La répétition générale."
+          - label: "La production"
+            correct: false
+            why: "Trop tard : les vraies utilisatrices la voient déjà."
+          - label: "Le poste du développeur"
+            correct: false
+            why: "Il ne reproduit pas la production."
+        explanation: "Développement → recette → production."
+      - code: dk-env-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Où installe-t-on généralement le certificat HTTPS dans une architecture Docker ?"
+        choices:
+          - label: "Sur le proxy inverse (Nginx, Caddy, Traefik) placé devant l'application"
+            correct: true
+            why: "Un seul point d'entrée chiffré."
+          - label: "Dans la base de données"
+            correct: false
+            why: "La base n'est pas exposée au navigateur."
+          - label: "Dans le code Angular"
+            correct: false
+            why: "Le navigateur reçoit le code, pas le certificat serveur."
+        explanation: "Le proxy termine le HTTPS, puis transmet en interne."
+      - code: dk-env-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "On reconstruit une image spéciale pour la production, avec les secrets à l'intérieur."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Les secrets ne vont jamais dans une image."
+          - label: "Faux"
+            correct: true
+            why: "Même image partout ; configuration par variables."
+        explanation: "On déploie exactement ce qui a été testé en recette."
+      - code: dk-env-q4
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Qu'est-ce qui change d'un environnement à l'autre ? (plusieurs réponses)"
+        choices:
+          - label: "L'adresse de la base de données"
+            correct: true
+            why: "Chaque environnement a sa base."
+          - label: "Les secrets (mot de passe, clé JWT)"
+            correct: true
+            why: "Jamais les mêmes en recette et en production."
+          - label: "Le code de l'application"
+            correct: false
+            why: "C'est la même image."
+          - label: "L'origine autorisée par CORS"
+            correct: true
+            why: "Le domaine du frontend diffère."
+        explanation: "Code identique, configuration différente."
+      - code: dk-env-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Quelle autorité délivre gratuitement des certificats HTTPS automatiques ? (deux mots)"
+        answers: ["Let's Encrypt", "Lets Encrypt", "LetsEncrypt", "Let’s Encrypt"]
+        explanation: "Les certificats durent 90 jours et se renouvellent automatiquement (Certbot, Caddy, Traefik)."
+    exercises:
+      - slug: dk-ex-env-guide
+        kind: COMPLETER
+        title: "Quel environnement ?"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Complète avec : développement, recette, production."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Ta machine : développement."
+          - "La validation par la cliente : recette."
+          - "développement, recette, production."
+        solution: '["développement", "recette", "production"]'
+        explanation: "Chaque environnement a son rôle."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Je code une nouvelle page et je la teste sur ma machine    : [[1]]
+            La cliente vérifie la nouvelle version avant sa sortie    : [[2]]
+            Les utilisatrices réservent leurs rendez-vous             : [[3]]
+          blanks:
+            - ["développement", "developpement", "dev"]
+            - ["recette", "préproduction", "preproduction"]
+            - ["production", "prod"]
+      - slug: dk-ex-env-example
+        kind: CODE_LIBRE
+        title: "Le fichier .env.example"
+        difficulty: INTERMEDIAIRE
+        skill: rgpd-secrets
+        statement: |
+          Écris le fichier `.env.example` versionné dans Git. Il liste les variables nécessaires, **une par
+          ligne**, au format `NOM=valeur`, avec des valeurs **factices** :
+          `DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET` et `CORS_ORIGIN`.
+          Les valeurs des secrets doivent clairement indiquer qu'il faut les remplacer (par exemple
+          `a-remplacer`, `change-moi`).
+        criteria: "Les cinq variables, et des valeurs factices pour les deux secrets."
+        hints:
+          - "Une ligne par variable : `DB_URL=jdbc:postgresql://localhost:5432/boutique`."
+          - "Pour les secrets : `DB_PASSWORD=a-remplacer`."
+          - "`CORS_ORIGIN=http://localhost:4200`"
+        solution: |
+          DB_URL=jdbc:postgresql://localhost:5432/boutique
+          DB_USER=boutique
+          DB_PASSWORD=a-remplacer
+          JWT_SECRET=a-remplacer-par-une-cle-aleatoire-de-48-octets
+          CORS_ORIGIN=http://localhost:4200
+        explanation: "L'équipe sait quelles variables définir, sans qu'aucun vrai secret ne soit versionné."
+        xp: 20
+        payload:
+          language: properties
+          starter: |
+            DB_URL=
+          checks:
+            - pattern: '(?m)^\s*DB_URL=\S+'
+              message: "Ajoute `DB_URL=…`."
+            - pattern: '(?m)^\s*DB_USER=\S+'
+              message: "Ajoute `DB_USER=…`."
+            - pattern: '(?mi)^\s*DB_PASSWORD=\S*(?:remplac|change|exemple|xxx|todo|secret-ici)'
+              message: "`DB_PASSWORD` doit avoir une valeur factice (par exemple `a-remplacer`)."
+            - pattern: '(?mi)^\s*JWT_SECRET=\S*(?:remplac|change|exemple|xxx|todo|generer|générer)'
+              message: "`JWT_SECRET` doit avoir une valeur factice (par exemple `a-remplacer`)."
+            - pattern: '(?m)^\s*CORS_ORIGIN=https?://\S+'
+              message: "Ajoute `CORS_ORIGIN=http://localhost:4200`."
+
+  # ===================================================================== LEÇON 2
+  - slug: dk-deploiement-continu
+    title: "Déployer automatiquement avec GitHub Actions"
+    duration: 15
+    objective: "Écrire un workflow qui teste, construit et publie l'image Docker, puis la déploie sur le serveur, avec un retour arrière possible."
+    prerequisites: "Leçon « Développement, recette, production » et chapitre Git et CI du parcours « Tests et qualité »."
+    skills: [docker-deploiement, git]
+    xp: 30
+    memo: |
+      - **Déploiement continu (CD)** : quand la CI est verte sur `main`, l'application est livrée automatiquement.
+      - Étapes : tests → construction de l'image → publication dans un registre (ghcr.io) → mise à jour du serveur.
+      - **Étiqueter** chaque image avec une version ou le SHA du commit, pas seulement `latest`.
+      - `needs: tests` : le déploiement n'a lieu **que si** les tests passent.
+      - Les secrets (clé SSH, mot de passe du registre) sont dans les **secrets GitHub** : `${{ secrets.SSH_KEY }}`.
+      - **Retour arrière** (rollback) : relancer l'image de la version précédente.
+    commonMistakes: |
+      - Déployer même quand les tests échouent.
+      - Écrire la clé SSH ou le mot de passe dans le fichier du workflow.
+      - N'utiliser que l'étiquette `latest` : impossible de savoir quelle version tourne ni de revenir en arrière.
+    blocks:
+      - type: text
+        md: |
+          Déployer à la main, c'est une liste de commandes qu'on finit par oublier ou mal taper. Le déploiement
+          continu transforme cette liste en **recette automatique**, exécutée de la même façon à chaque fois.
+      - type: definition
+        id: def-cd
+        term: "Déploiement continu"
+        md: |
+          Une **chaîne de montage** : chaque voiture (version) passe par les mêmes postes de contrôle. Si un
+          contrôle échoue, la voiture ne sort pas de l'usine. Sinon, elle est livrée automatiquement.
+      - type: code
+        id: code-cd
+        language: yaml
+        title: ".github/workflows/deploiement.yml"
+        code: |
+          name: Déploiement
+          on:
+            push:
+              branches: [main]
+          jobs:
+            tests:
+              runs-on: ubuntu-latest
+              steps:
+                - uses: actions/checkout@v4
+                - uses: actions/setup-java@v4
+                  with: { distribution: temurin, java-version: 21 }
+                - run: ./mvnw -B verify
+            image:
+              needs: tests
+              runs-on: ubuntu-latest
+              permissions: { contents: read, packages: write }
+              steps:
+                - uses: actions/checkout@v4
+                - uses: docker/login-action@v3
+                  with:
+                    registry: ghcr.io
+                    username: ${{ github.actor }}
+                    password: ${{ secrets.GITHUB_TOKEN }}
+                - run: |
+                    docker build -t ghcr.io/moi/boutique-api:${{ github.sha }} ./backend
+                    docker push ghcr.io/moi/boutique-api:${{ github.sha }}
+            deploiement:
+              needs: image
+              runs-on: ubuntu-latest
+              steps:
+                - uses: appleboy/ssh-action@v1
+                  with:
+                    host: ${{ secrets.SERVEUR }}
+                    username: deploy
+                    key: ${{ secrets.SSH_KEY }}
+                    script: |
+                      cd /opt/boutique
+                      API_TAG=${{ github.sha }} docker compose pull api
+                      API_TAG=${{ github.sha }} docker compose up -d api
+        lines:
+          - n: 4
+            note: "Seulement quand on pousse sur `main` (après fusion d'une pull request)."
+          - n: 12
+            note: "Première porte : les tests."
+          - n: 14
+            note: "`needs: tests` : l'image n'est construite **que si** les tests passent."
+          - n: 24
+            note: "Le jeton fourni par GitHub, jamais un mot de passe écrit en clair."
+          - n: 26
+            note: "L'image est étiquetée avec le **SHA du commit** : on sait exactement quelle version tourne."
+          - n: 29
+            note: "Le déploiement attend que l'image soit publiée."
+          - n: 36
+            note: "La clé SSH vient des **secrets** du dépôt."
+          - n: 40
+            note: "Le serveur télécharge la nouvelle image et redémarre seulement l'API."
+      - type: question
+        ref: dk-cd-q1
+        review: code-cd
+      - type: question
+        ref: dk-cd-q2
+        review: def-cd
+      - type: text
+        md: "Exercice guidé : remets le pipeline dans l'ordre."
+      - type: exercise
+        ref: dk-ex-pipeline-ordre
+      - type: text
+        md: "En autonomie : prépare la commande de retour arrière."
+      - type: exercise
+        ref: dk-ex-rollback
+      - type: jury
+        items:
+          - q: "Comment déployez-vous votre application ?"
+            a: "Par un workflow GitHub Actions déclenché sur main : il lance les tests, construit l'image Docker, la publie sur le GitHub Container Registry avec le SHA du commit comme étiquette, puis se connecte en SSH au serveur pour tirer la nouvelle image et redémarrer le service avec Docker Compose. Les secrets sont stockés dans les secrets GitHub."
+          - q: "Et si la nouvelle version pose problème ?"
+            a: "Chaque image est étiquetée avec son commit : je relance la version précédente en changeant l'étiquette (API_TAG) et en refaisant docker compose up -d. Les migrations Flyway doivent donc rester compatibles avec la version précédente, par exemple en ajoutant une colonne avant de supprimer l'ancienne."
+      - type: quiz
+        items:
+          - ref: dk-cd-q3
+            review: code-cd
+          - ref: dk-cd-q4
+            review: code-cd
+          - ref: dk-cd-q5
+            review: def-cd
+    questions:
+      - code: dk-cd-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Que garantit `needs: tests` sur le job `image` ?"
+        choices:
+          - label: "L'image n'est construite que si le job de tests a réussi"
+            correct: true
+            why: "Une version cassée ne part jamais."
+          - label: "Les tests sont lancés après l'image"
+            correct: false
+            why: "C'est l'inverse."
+          - label: "Les deux jobs tournent en même temps"
+            correct: false
+            why: "needs crée une dépendance."
+        explanation: "Chaque étape protège la suivante."
+      - code: dk-cd-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "La clé SSH du serveur peut être écrite directement dans le fichier du workflow, puisque le dépôt est privé."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Tout collaborateur ou fuite du dépôt l'exposerait, et l'historique Git la garderait."
+          - label: "Faux"
+            correct: true
+            why: "Elle va dans les secrets du dépôt : `${{ secrets.SSH_KEY }}`."
+        explanation: "Jamais de secret dans un fichier versionné."
+      - code: dk-cd-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Pourquoi étiqueter l'image avec le SHA du commit plutôt que seulement `latest` ?"
+        choices:
+          - label: "Pour savoir exactement quelle version tourne et pouvoir revenir à la précédente"
+            correct: true
+            why: "Traçabilité et retour arrière."
+          - label: "Parce que latest est interdit par GitHub"
+            correct: false
+            why: "Il est permis, mais insuffisant."
+          - label: "Pour que l'image soit plus légère"
+            correct: false
+            why: "L'étiquette ne change pas la taille."
+        explanation: "`latest` bouge à chaque publication : on ne sait plus ce qu'il contient."
+      - code: dk-cd-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: git
+        prompt: "Quel événement déclenche ce workflow de déploiement ?"
+        choices:
+          - label: "Un push sur la branche main"
+            correct: true
+            why: "`on: push: branches: [main]`."
+          - label: "Chaque push sur n'importe quelle branche"
+            correct: false
+            why: "Il est limité à main."
+          - label: "L'ouverture d'un ticket"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Les branches de fonctionnalité passent par la CI, pas par le déploiement."
+      - code: dk-cd-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Comment appelle-t-on en anglais le fait de revenir à la version précédente après un déploiement raté ? (un mot)"
+        answers: ["rollback", "roll-back", "Rollback"]
+        explanation: "Préparé à l'avance, il se fait en une commande."
+    exercises:
+      - slug: dk-ex-pipeline-ordre
+        kind: REMETTRE_ORDRE
+        title: "Le pipeline de livraison"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Remets les étapes du pipeline dans l'ordre."
+        criteria: "Fusion, tests, image, publication, déploiement, vérification."
+        hints:
+          - "Tout commence par la fusion de la pull request."
+          - "L'image est construite après les tests, publiée avant le déploiement."
+          - "On vérifie la santé de l'application en dernier."
+        solution: |
+          La pull request est fusionnée dans main
+          GitHub Actions lance les tests
+          L'image Docker est construite et étiquetée avec le SHA
+          L'image est publiée sur ghcr.io
+          Le serveur tire l'image et redémarre le service
+          On vérifie /actuator/health et les journaux
+        explanation: "Chaque étape ne s'exécute que si la précédente a réussi."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "La pull request est fusionnée dans main"
+            - "GitHub Actions lance les tests"
+            - "L'image Docker est construite et étiquetée avec le SHA"
+            - "L'image est publiée sur ghcr.io"
+            - "Le serveur tire l'image et redémarre le service"
+            - "On vérifie /actuator/health et les journaux"
+      - slug: dk-ex-rollback
+        kind: CODE_LIBRE
+        title: "Revenir à la version précédente"
+        difficulty: INTERMEDIAIRE
+        skill: docker-deploiement
+        statement: |
+          La version `a1b2c3d` pose problème. La version précédente, qui fonctionnait, est `9f8e7d6`. Sur le
+          serveur, dans `/opt/boutique`, écris les commandes pour :
+          1. te placer dans le dossier ;
+          2. relancer le service `api` avec l'étiquette `9f8e7d6` (variable `API_TAG`) avec `docker compose up -d api` ;
+          3. afficher les dernières lignes des journaux de l'API avec `docker compose logs --tail=50 api`.
+        criteria: "cd /opt/boutique, API_TAG=9f8e7d6 docker compose up -d api, puis les logs."
+        hints:
+          - "`cd /opt/boutique`"
+          - "`API_TAG=9f8e7d6 docker compose up -d api`"
+          - "`docker compose logs --tail=50 api`"
+        solution: |
+          cd /opt/boutique
+          API_TAG=9f8e7d6 docker compose up -d api
+          docker compose logs --tail=50 api
+        explanation: "Trois commandes, préparées à l'avance, pour revenir en arrière en moins d'une minute."
+        xp: 20
+        payload:
+          language: bash
+          starter: |
+            cd /opt/boutique
+          checks:
+            - pattern: '(?m)^\s*cd\s+/opt/boutique/?\s*$'
+              message: "Place-toi dans `/opt/boutique`."
+            - pattern: 'API_TAG=9f8e7d6\s+docker\s+compose\s+up\s+-d\s+api\b'
+              message: "Relance avec `API_TAG=9f8e7d6 docker compose up -d api`."
+            - pattern: 'a1b2c3d'
+              absent: true
+              message: "N'utilise pas la version défectueuse `a1b2c3d`."
+            - pattern: 'docker\s+compose\s+logs\s+(?:--tail[=\s]+\d+\s+|-n\s+\d+\s+|-f\s+)*api\b'
+              message: "Affiche les journaux : `docker compose logs --tail=50 api`."
+
+bank:
+  - code: dk-c3-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: docker-deploiement
+    prompt: "Quelle différence entre intégration continue et déploiement continu ?"
+    choices:
+      - label: "La CI compile et teste chaque changement ; le CD livre automatiquement ce qui a passé la CI"
+        correct: true
+        why: "Le CD prolonge la CI."
+      - label: "Ce sont deux noms pour la même chose"
+        correct: false
+        why: "Le CD ajoute la livraison."
+      - label: "Le CD remplace les tests"
+        correct: false
+        why: "Il en dépend."
+    explanation: "CI : vérifier. CD : livrer."
+  - code: dk-c3-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: docker-deploiement
+    prompt: "Pourquoi une migration de base doit-elle rester compatible avec la version précédente de l'API ?"
+    choices:
+      - label: "Pour pouvoir revenir en arrière sans casser l'application"
+        correct: true
+        why: "L'ancienne API doit encore fonctionner sur le nouveau schéma."
+      - label: "Parce que Flyway l'exige"
+        correct: false
+        why: "C'est une bonne pratique de déploiement."
+      - label: "Ce n'est pas nécessaire"
+        correct: false
+        why: "Sans cela, le retour arrière échouerait."
+    explanation: "Ajouter d'abord, supprimer plus tard, en deux livraisons."

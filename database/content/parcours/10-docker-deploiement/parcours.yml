@@ -1,0 +1,23 @@
+slug: docker-deploiement
+version: 1
+position: 10
+title: "Docker et déploiement"
+summary: "Mettre son application dans des conteneurs, tout lancer avec Docker Compose, servir Angular avec Nginx, déployer automatiquement et surveiller la production."
+category: PROJET
+icon: route
+description: |
+  Ton application marche sur ton ordinateur. Il faut maintenant qu'elle marche **partout** : sur la
+  machine d'un collègue, sur le serveur de test, en production.
+
+  **Docker** met chaque partie de l'application dans une **boîte standard** (un conteneur) qui contient
+  tout ce dont elle a besoin. La boîte fonctionne de la même façon sur n'importe quelle machine, comme un
+  conteneur de marchandises qui voyage en bateau, en train ou en camion.
+
+  **Au programme** : images et conteneurs, Dockerfile, Docker Compose, Nginx pour Angular, environnements
+  et variables, déploiement continu avec GitHub Actions, journaux, sauvegardes, supervision, puis les
+  questions du jury.
+
+  **Prérequis** : les parcours « Spring Boot » et « Angular » ; le chapitre Git du parcours « Tests et
+  qualité » pour la partie déploiement continu.
+examQuestionCount: 30
+examTimeLimitMinutes: 35
