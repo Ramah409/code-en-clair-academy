@@ -1,0 +1,491 @@
+slug: gp-titre-dossier
+position: 3
+level: AVANCE
+title: "Le titre CDA et le dossier de projet"
+summary: "Connaître les trois blocs de compétences du titre, relier chaque partie de son projet à une compétence et rédiger un dossier de projet clair."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: gp-competences-cda
+    title: "Les compétences du titre CDA"
+    duration: 14
+    objective: "Citer les trois blocs de compétences du titre Concepteur Développeur d'Applications et montrer, pour chacune, une preuve tirée de son projet."
+    prerequisites: "Chapitre « Organiser le travail en mode agile »."
+    skills: [oral-cda, gestion-projet]
+    xp: 25
+    memo: |
+      - Le titre professionnel **CDA** (niveau 6) comporte **trois blocs** de compétences (activités types).
+      - **Bloc 1 — Développer une application sécurisée** : environnement de travail, interfaces utilisateur, composants métier, contribution à la gestion de projet.
+      - **Bloc 2 — Concevoir et développer une application sécurisée organisée en couches** : analyse du besoin et maquettes, architecture logicielle, base de données relationnelle, composants d'accès aux données (SQL et NoSQL).
+      - **Bloc 3 — Préparer le déploiement d'une application sécurisée** : plans de tests, documentation du déploiement, mise en production dans une démarche DevOps.
+      - Pour chaque compétence : **une preuve** dans ton projet (code, diagramme, test, capture).
+      - Référence officielle : le **REAC** et le **RC** du titre sur France Compétences ; vérifie la version de ta session.
+    commonMistakes: |
+      - Présenter son projet sans jamais nommer les compétences.
+      - Oublier la sécurité, présente dans le nom des trois blocs.
+      - Ne rien montrer pour le NoSQL ou le déploiement.
+    blocks:
+      - type: text
+        md: |
+          Le jury évalue des **compétences**, pas un logiciel. Ton projet est la **preuve** que tu les as.
+          Il faut donc savoir quelle partie du projet démontre quelle compétence.
+      - type: definition
+        id: def-bloc
+        term: "Bloc de compétences"
+        md: |
+          Un **chapitre du permis de conduire** : le code, la conduite en ville, la conduite sur autoroute.
+          Chaque bloc regroupe des compétences proches, et il faut les valider tous pour obtenir le titre.
+      - type: code
+        id: code-matrice
+        language: text
+        title: "Une matrice compétences → preuves (extrait)"
+        code: |
+          Compétence                                         Preuve dans mon projet
+          Bloc 1 · Développer des interfaces utilisateur    Composants Angular, formulaires réactifs, accessibilité
+          Bloc 1 · Développer des composants métier          Services Spring (règles de réservation) + tests JUnit
+          Bloc 1 · Contribuer à la gestion de projet         Backlog MoSCoW, sprints, GitHub Projects
+          Bloc 2 · Analyser les besoins et maquetter         User stories, wireframes Figma
+          Bloc 2 · Définir l'architecture logicielle         Architecture en couches, diagrammes UML
+          Bloc 2 · Concevoir la base de données              MCD, MLD, script SQL, migrations Flyway
+          Bloc 2 · Composants d'accès aux données            Repositories JPA, requête SQL optimisée, NoSQL (journal)
+          Bloc 3 · Plans de tests                            Pyramide, Testcontainers, cahier de recette
+          Bloc 3 · Documenter le déploiement                 Dockerfile, compose.yaml, README de déploiement
+          Bloc 3 · Mise en production DevOps                 GitHub Actions : CI puis déploiement
+        lines:
+          - n: 2
+            note: "Pour chaque compétence, une preuve concrète que tu peux **montrer** au jury."
+          - n: 8
+            note: "Le NoSQL est attendu : même un petit usage (MongoDB, Redis, JSONB) doit être expliqué."
+          - n: 11
+            note: "Le bloc 3 se prouve avec des fichiers réels : workflow, Dockerfile, résultats de tests."
+      - type: question
+        ref: gp-cd-q1
+        review: code-matrice
+      - type: question
+        ref: gp-cd-q2
+        review: def-bloc
+      - type: text
+        md: "Exercice guidé : associe chaque preuve à son bloc."
+      - type: exercise
+        ref: gp-ex-blocs-guide
+      - type: text
+        md: "En autonomie : prépare ta propre matrice."
+      - type: exercise
+        ref: gp-ex-matrice
+      - type: jury
+        items:
+          - q: "Quelles compétences votre projet couvre-t-il ?"
+            a: "Les trois blocs : le développement sécurisé (interfaces Angular, composants métier Spring, gestion de projet agile), la conception en couches (besoin et maquettes, architecture, base PostgreSQL, accès aux données SQL et NoSQL) et la préparation du déploiement (plan de tests, Docker, CI/CD avec GitHub Actions). J'ai une preuve concrète pour chaque compétence."
+          - q: "Où utilisez-vous du NoSQL ?"
+            a: "Donner l'usage réel : par exemple un journal d'événements dans MongoDB, un cache Redis, ou une colonne JSONB dans PostgreSQL. Expliquer pourquoi ce choix convient mieux qu'une table classique pour ces données peu structurées."
+      - type: quiz
+        items:
+          - ref: gp-cd-q3
+            review: code-matrice
+          - ref: gp-cd-q4
+            review: code-matrice
+          - ref: gp-cd-q5
+            review: def-bloc
+    questions:
+      - code: gp-cd-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Dans quel bloc se trouve la compétence « concevoir et mettre en place une base de données relationnelle » ?"
+        choices:
+          - label: "Bloc 2 : concevoir et développer une application sécurisée organisée en couches"
+            correct: true
+            why: "Conception et accès aux données."
+          - label: "Bloc 1 : développer une application sécurisée"
+            correct: false
+            why: "Le bloc 1 couvre interfaces, composants métier et gestion de projet."
+          - label: "Bloc 3 : préparer le déploiement"
+            correct: false
+            why: "Le bloc 3 couvre tests et déploiement."
+        explanation: "Bloc 2 = besoin, architecture, base de données, accès aux données."
+      - code: gp-cd-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Pour obtenir le titre CDA, il faut valider les trois blocs de compétences."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Chaque bloc est indispensable."
+          - label: "Faux"
+            correct: false
+            why: "Le titre complet exige les trois."
+        explanation: "Un bloc peut aussi être validé séparément (certificat de compétences)."
+      - code: gp-cd-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Quelle preuve montre la compétence « préparer et exécuter les plans de tests » ?"
+        choices:
+          - label: "La stratégie de tests, les tests automatisés et le cahier de recette"
+            correct: true
+            why: "Plan + exécution + résultats."
+          - label: "Le diagramme de cas d'utilisation"
+            correct: false
+            why: "Il prouve l'analyse du besoin."
+          - label: "Le Dockerfile"
+            correct: false
+            why: "Il prouve la préparation du déploiement."
+        explanation: "Montre aussi les résultats (CI verte, rapport de recette)."
+      - code: gp-cd-q4
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Quelles preuves appartiennent au bloc 3 (préparer le déploiement) ? (plusieurs réponses)"
+        choices:
+          - label: "Le workflow GitHub Actions"
+            correct: true
+            why: "Démarche DevOps."
+          - label: "Le fichier compose.yaml et la documentation de déploiement"
+            correct: true
+            why: "Documenter le déploiement."
+          - label: "Le cahier de recette"
+            correct: true
+            why: "Plans de tests."
+          - label: "Le MCD"
+            correct: false
+            why: "Il appartient au bloc 2."
+        explanation: "Tests, documentation du déploiement, mise en production."
+      - code: gp-cd-q5
+        kind: TEXTE
+        difficulty: 3
+        skill: oral-cda
+        prompt: "Quel sigle désigne le référentiel qui décrit les activités et compétences d'un titre professionnel ? (quatre lettres)"
+        answers: ["REAC"]
+        explanation: "Référentiel Emploi Activités Compétences ; le RC décrit, lui, les modalités d'évaluation."
+    exercises:
+      - slug: gp-ex-blocs-guide
+        kind: COMPLETER
+        title: "Quel bloc ?"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Indique le numéro du bloc (1, 2 ou 3) de chaque preuve."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Interfaces et composants métier : bloc 1."
+          - "Base de données et architecture : bloc 2."
+          - "1, 2, 3, 2."
+        solution: '["1", "2", "3", "2"]'
+        explanation: "Développer (1), concevoir en couches (2), préparer le déploiement (3)."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            Formulaire Angular accessible avec validation            → bloc [[1]]
+            MCD, MLD et migrations Flyway                           → bloc [[2]]
+            Workflow GitHub Actions qui teste et déploie             → bloc [[3]]
+            Diagramme d'architecture en couches                      → bloc [[4]]
+          blanks:
+            - ["1"]
+            - ["2"]
+            - ["3"]
+            - ["2"]
+      - slug: gp-ex-matrice
+        kind: CODE_LIBRE
+        title: "Ma matrice de preuves"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Écris **trois lignes**, une par bloc, au format `Bloc N : compétence → preuve`. Chaque preuve doit
+          être un élément **concret** de ton projet (un fichier, un composant, un diagramme, un test…).
+        criteria: "Trois lignes Bloc 1, Bloc 2, Bloc 3, chacune avec une flèche et une preuve."
+        hints:
+          - "Bloc 1 : développer des composants métier → ReservationService et ses tests JUnit."
+          - "Bloc 2 : concevoir la base de données → MCD, MLD et migrations Flyway V1 à V5."
+          - "Bloc 3 : mise en production DevOps → workflow GitHub Actions deploiement.yml."
+        solution: |
+          Bloc 1 : développer des composants métier → ReservationService et ses tests JUnit.
+          Bloc 2 : concevoir la base de données → MCD, MLD et migrations Flyway V1 à V5.
+          Bloc 3 : mise en production DevOps → workflow GitHub Actions deploiement.yml.
+        explanation: "Complète ensuite la matrice pour toutes les compétences : elle structure ton dossier et ta présentation."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            Bloc 1 :
+            Bloc 2 :
+            Bloc 3 :
+          checks:
+            - pattern: '(?im)^\s*Bloc\s*1\s*:\s*\S[^\n]*(?:→|->|=>)\s*\S{3,}'
+              message: "Ligne « Bloc 1 : compétence → preuve »."
+            - pattern: '(?im)^\s*Bloc\s*2\s*:\s*\S[^\n]*(?:→|->|=>)\s*\S{3,}'
+              message: "Ligne « Bloc 2 : compétence → preuve »."
+            - pattern: '(?im)^\s*Bloc\s*3\s*:\s*\S[^\n]*(?:→|->|=>)\s*\S{3,}'
+              message: "Ligne « Bloc 3 : compétence → preuve »."
+
+  # ===================================================================== LEÇON 2
+  - slug: gp-dossier-projet
+    title: "Rédiger le dossier de projet"
+    duration: 14
+    objective: "Construire le plan du dossier de projet, écrire des parties claires avec captures et extraits de code, et préparer le résumé en anglais."
+    prerequisites: "Leçon « Les compétences du titre CDA »."
+    skills: [oral-cda, gestion-projet]
+    xp: 25
+    memo: |
+      - Le **dossier de projet** présente ton projet au jury **avant** la soutenance : il doit donner envie et prouver tes compétences.
+      - Plan type : compétences couvertes, contexte et besoin, gestion de projet, spécifications, conception (UML, MCD), réalisations commentées, sécurité, tests, déploiement, veille, bilan.
+      - Chaque extrait de code est **court**, **commenté** et relié à une compétence.
+      - Un **résumé en anglais** est demandé (vérifie le format exact dans le RC de ta session).
+      - Le **dossier professionnel** (DP) est un document distinct : il décrit tes pratiques professionnelles par compétence.
+      - Relire : orthographe, numéros de pages, sommaire, légendes des figures.
+    commonMistakes: |
+      - Copier des pages entières de code.
+      - Écrire « on » partout : le jury veut savoir ce que **tu** as fait.
+      - Oublier la veille technologique et de sécurité.
+    blocks:
+      - type: text
+        md: |
+          Le jury lit ton dossier avant de te rencontrer. Un dossier clair, c'est une soutenance qui commence
+          bien : le jury arrive avec des questions précises au lieu de chercher à comprendre ton projet.
+      - type: definition
+        id: def-dossier
+        term: "Dossier de projet"
+        md: |
+          La **bande-annonce** et le **dossier de presse** de ton projet : il raconte l'histoire (le besoin),
+          montre les meilleurs moments (tes réalisations) et prouve la qualité (tests, sécurité, déploiement).
+      - type: steps
+        id: etapes-plan
+        title: "Un plan qui fonctionne"
+        items:
+          - "**Compétences couvertes** : la matrice compétences → preuves, dès les premières pages."
+          - "**Contexte et besoin** : l'entreprise, le client, le problème, le périmètre (MoSCoW)."
+          - "**Gestion de projet** : méthode, planning, outils, organisation."
+          - "**Conception** : maquettes, architecture, UML, MCD/MLD, choix techniques justifiés."
+          - "**Réalisations** : extraits de code commentés (front, back, données), sécurité."
+          - "**Tests et déploiement** : stratégie, résultats, Docker, CI/CD."
+          - "**Veille et bilan** : sources de veille, difficultés, améliorations possibles, ce que tu as appris."
+      - type: question
+        ref: gp-dp-q1
+        review: etapes-plan
+      - type: compare
+        left:
+          title: "Extrait peu utile"
+          code: |
+            (3 pages de code du contrôleur, sans commentaire)
+          language: text
+        right:
+          title: "Extrait utile"
+          code: |
+            Figure 12 – Vérification de propriété (bloc 1, composants métier)
+            10 lignes du service + 3 phrases :
+            le problème (IDOR), la solution, le test qui la prouve.
+          language: text
+      - type: question
+        ref: gp-dp-q2
+        review: def-dossier
+      - type: text
+        md: "Exercice guidé : remets le plan du dossier dans l'ordre."
+      - type: exercise
+        ref: gp-ex-plan-ordre
+      - type: text
+        md: "En autonomie : rédige le résumé en anglais."
+      - type: exercise
+        ref: gp-ex-summary
+      - type: jury
+        items:
+          - q: "Pourquoi avoir choisi ces technologies ?"
+            a: "Répondre avec des critères : besoin du projet, compétences visées, écosystème et documentation, sécurité, maintenabilité, et contexte de l'entreprise. Par exemple : Spring Boot pour Spring Security et JPA, Angular pour TypeScript et une architecture structurée, PostgreSQL pour la fiabilité et les contraintes relationnelles."
+          - q: "Comment faites-vous votre veille ?"
+            a: "Des sources régulières et fiables : blogs officiels d'Angular et Spring, notes de version, CERT-FR et OWASP pour la sécurité, newsletters, conférences en ligne. Donner un exemple concret : une nouveauté ou une faille découverte grâce à la veille et ce qu'elle a changé dans mon projet."
+      - type: quiz
+        items:
+          - ref: gp-dp-q3
+            review: etapes-plan
+          - ref: gp-dp-q4
+            review: def-dossier
+          - ref: gp-dp-q5
+            review: etapes-plan
+    questions:
+      - code: gp-dp-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Pourquoi placer la matrice compétences → preuves au début du dossier ?"
+        choices:
+          - label: "Le jury voit tout de suite où chaque compétence est démontrée"
+            correct: true
+            why: "Il évalue des compétences."
+          - label: "Pour remplir des pages"
+            correct: false
+            why: "Elle a une vraie utilité."
+          - label: "Parce qu'elle est obligatoire en dernière page"
+            correct: false
+            why: "Elle est utile dès le début."
+        explanation: "Une carte pour guider la lecture."
+      - code: gp-dp-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Un bon dossier de projet contient de longues pages de code sans commentaire, pour montrer le volume de travail."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Le jury ne lira pas des pages de code brut."
+          - label: "Faux"
+            correct: true
+            why: "Des extraits courts, commentés et reliés à une compétence."
+        explanation: "La qualité compte, pas la quantité."
+      - code: gp-dp-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Dans le dossier, faut-il écrire « nous avons fait » ou « j'ai fait » ?"
+        choices:
+          - label: "« J'ai fait » pour ta part, « l'équipe a fait » pour le reste, clairement distingués"
+            correct: true
+            why: "Le jury évalue tes compétences à toi."
+          - label: "Toujours « on »"
+            correct: false
+            why: "Trop flou."
+          - label: "Toujours « nous », par modestie"
+            correct: false
+            why: "Le jury ne sait plus ce que tu as fait."
+        explanation: "Sois précise sur ta contribution."
+      - code: gp-dp-q4
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Qu'est-ce qui rend un extrait de code utile dans le dossier ? (plusieurs réponses)"
+        choices:
+          - label: "Il est court et centré sur l'essentiel"
+            correct: true
+            why: "Le jury comprend vite."
+          - label: "Il est expliqué en quelques phrases"
+            correct: true
+            why: "Le problème, la solution, la preuve."
+          - label: "Il est relié à une compétence"
+            correct: true
+            why: "Il sert de preuve."
+          - label: "Il contient des mots de passe réels pour prouver que ça marche"
+            correct: false
+            why: "Jamais de secret dans un document."
+        explanation: "Court, commenté, relié."
+      - code: gp-dp-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Que doit contenir la partie « bilan » du dossier ?"
+        choices:
+          - label: "Les difficultés rencontrées, les solutions, les améliorations possibles et ce que tu as appris"
+            correct: true
+            why: "Elle montre ton recul."
+          - label: "Uniquement les réussites"
+            correct: false
+            why: "Le jury apprécie l'honnêteté."
+          - label: "La liste des fichiers du projet"
+            correct: false
+            why: "Ce n'est pas un bilan."
+        explanation: "Un bilan honnête est un signe de maturité professionnelle."
+    exercises:
+      - slug: gp-ex-plan-ordre
+        kind: REMETTRE_ORDRE
+        title: "Le plan du dossier"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Remets les parties du dossier de projet dans un ordre logique."
+        criteria: "Compétences, contexte, gestion, conception, réalisations, tests et déploiement, veille et bilan."
+        hints:
+          - "On commence par les compétences couvertes."
+          - "La conception vient avant les réalisations."
+          - "La veille et le bilan terminent le dossier."
+        solution: |
+          Compétences couvertes par le projet
+          Contexte, besoin et périmètre
+          Gestion de projet
+          Conception : maquettes, architecture, UML, base de données
+          Réalisations commentées et sécurité
+          Tests et déploiement
+          Veille et bilan
+        explanation: "Du pourquoi au comment, puis la preuve de la qualité et le recul."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Compétences couvertes par le projet"
+            - "Contexte, besoin et périmètre"
+            - "Gestion de projet"
+            - "Conception : maquettes, architecture, UML, base de données"
+            - "Réalisations commentées et sécurité"
+            - "Tests et déploiement"
+            - "Veille et bilan"
+      - slug: gp-ex-summary
+        kind: CODE_LIBRE
+        title: "Le résumé en anglais"
+        difficulty: DIFFICILE
+        skill: oral-cda
+        statement: |
+          Écris un court résumé **en anglais** (au moins quatre phrases) d'une application de réservation.
+          Il doit présenter : le **besoin** (the need / the goal), la **technique** (Angular, Spring Boot,
+          PostgreSQL), la **sécurité** (security, JWT…) et le **déploiement** ou les **tests** (Docker, tests,
+          CI). Utilise des phrases simples : sujet, verbe, complément.
+        criteria: "Au moins quatre phrases en anglais couvrant besoin, technologies, sécurité, tests ou déploiement."
+        hints:
+          - "This project is a web application that allows customers to book an appointment online."
+          - "The front end is built with Angular and the back end with Spring Boot and PostgreSQL."
+          - "Users are authenticated with JWT tokens, and the application is tested and deployed with Docker and GitHub Actions."
+        solution: |
+          This project is a web application that allows customers to book an appointment with a hairdresser online.
+          The goal is to reduce phone calls and to give the salon a clear view of its schedule.
+          The front end is built with Angular, and the back end is a REST API developed with Spring Boot and PostgreSQL.
+          Security relies on hashed passwords, JWT authentication and role-based access control.
+          The application is tested with JUnit and Playwright, and deployed with Docker through a GitHub Actions pipeline.
+        explanation: "Des phrases courtes et le vocabulaire technique que tu connais déjà : c'est ce que le jury attend."
+        xp: 30
+        payload:
+          language: text
+          starter: |
+            This project is
+          checks:
+            - pattern: '\A(?>[\s\S]*?[a-z][^.!?]{15,}[.!?]){4}'
+              message: "Écris au moins quatre phrases complètes, terminées par un point."
+            - pattern: '(?i)\b(?:allows?|goal|aim|need|helps?|enables?|purpose)\b'
+              message: "Explique le besoin ou le but (the goal, allows users to…)."
+            - pattern: '(?i)angular|spring|postgre'
+              message: "Cite les technologies (Angular, Spring Boot, PostgreSQL)."
+            - pattern: '(?i)secur|jwt|authenticat|password|hash'
+              message: "Parle de la sécurité (security, JWT, hashed passwords…)."
+            - pattern: '(?i)docker|deploy|tests?\b|tested|pipeline|\bci\b'
+              message: "Parle des tests ou du déploiement."
+            - pattern: '(?i)\b(?:le|la|les|des|est|avec|pour)\b'
+              absent: true
+              message: "Écris le résumé en anglais."
+
+bank:
+  - code: gp-c3-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: oral-cda
+    prompt: "Qu'est-ce que la veille technologique ?"
+    choices:
+      - label: "Se tenir informé régulièrement des évolutions techniques et des failles de sécurité"
+        correct: true
+        why: "Pour garder ses compétences et ses projets à jour."
+      - label: "Travailler la nuit"
+        correct: false
+        why: "Aucun rapport."
+      - label: "Surveiller les serveurs"
+        correct: false
+        why: "C'est la supervision."
+    explanation: "Sources : documentation officielle, CERT-FR, OWASP, notes de version, blogs techniques."
+  - code: gp-c3-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: oral-cda
+    prompt: "Quelle différence entre le dossier de projet et le dossier professionnel ?"
+    choices:
+      - label: "Le dossier de projet présente un projet ; le dossier professionnel décrit des pratiques par compétence"
+        correct: true
+        why: "Deux documents distincts, tous deux lus par le jury."
+      - label: "Ce sont deux noms pour le même document"
+        correct: false
+        why: "Ils ont des rôles différents."
+      - label: "Le dossier professionnel est facultatif"
+        correct: false
+        why: "Il fait partie du dossier de candidature au titre."
+    explanation: "Vérifie les consignes exactes de ton centre et de ta session."

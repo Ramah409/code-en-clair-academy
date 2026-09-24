@@ -1,0 +1,487 @@
+slug: gp-soutenance
+position: 4
+level: EXAMEN
+title: "Soutenance blanche et entretien avec le jury"
+summary: "Construire une présentation claire, réussir la démonstration, répondre aux questions techniques et préparer l'entretien final."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: gp-presentation-demo
+    title: "La présentation et la démonstration"
+    duration: 15
+    objective: "Construire le déroulé de la présentation, préparer une démonstration fiable et gérer son temps et son stress."
+    prerequisites: "Chapitre « Le titre CDA et le dossier de projet »."
+    skills: [oral-cda]
+    xp: 30
+    memo: |
+      - Les épreuves et leurs durées sont fixées par le **RC** de ta session : vérifie-les dans ta convocation (présentation du projet, entretien technique, questionnaire professionnel, entretien final).
+      - Déroulé type de la présentation : **toi et le contexte** → **besoin** → **gestion de projet** → **conception** → **démonstration** → **focus technique** (sécurité, code) → **tests et déploiement** → **bilan**.
+      - **Une idée par diapositive**, peu de texte, des schémas.
+      - **Démonstration** : un scénario écrit à l'avance, des données prêtes, l'application lancée **avant** d'entrer, une **vidéo de secours**.
+      - Répéter à voix haute, **chronométré**, au moins trois fois ; garder 10 % de marge.
+    commonMistakes: |
+      - Lire ses diapositives.
+      - Dépasser le temps et devoir couper la fin (souvent le bilan).
+      - Improviser la démonstration et chercher ses identifiants devant le jury.
+    blocks:
+      - type: text
+        md: |
+          La présentation n'est pas un résumé du dossier : c'est un **récit**. Le jury doit comprendre en
+          quelques minutes le problème, ta solution, et pourquoi tu es capable d'exercer le métier.
+      - type: definition
+        id: def-recit
+        term: "Raconter son projet"
+        md: |
+          Comme une **visite guidée d'une maison** que tu as construite : d'abord pourquoi elle existe et pour
+          qui, puis le plan, puis on entre dans les pièces (la démo), et on termine en ouvrant une trappe pour
+          montrer les fondations (un point technique solide).
+      - type: steps
+        id: etapes-presentation
+        title: "Un déroulé en huit temps"
+        items:
+          - "**Toi** : ton parcours en deux phrases, l'entreprise ou le contexte."
+          - "**Besoin** : le problème du client, les utilisateurs, le périmètre (MoSCoW)."
+          - "**Gestion de projet** : méthode, planning, outils."
+          - "**Conception** : maquettes, architecture, UML, modèle de données."
+          - "**Démonstration** : un scénario utilisateur complet, préparé à l'avance."
+          - "**Focus technique** : un extrait de code dont tu es fière (sécurité, règle métier)."
+          - "**Qualité et déploiement** : tests, CI/CD, Docker."
+          - "**Bilan** : difficultés, apprentissages, améliorations possibles."
+      - type: question
+        ref: gp-pr-q1
+        review: etapes-presentation
+      - type: definition
+        id: def-demo
+        term: "Démonstration maîtrisée"
+        md: |
+          Un **numéro de cuisine à la télévision** : les ingrédients sont déjà pesés, le four est chaud, et
+          il y a un plat déjà cuit en réserve au cas où. Rien n'est laissé au hasard.
+      - type: question
+        ref: gp-pr-q2
+        review: def-demo
+      - type: text
+        md: "Exercice guidé : remets le déroulé dans l'ordre."
+      - type: exercise
+        ref: gp-ex-deroule-ordre
+      - type: text
+        md: "En autonomie : écris le scénario de ta démonstration."
+      - type: exercise
+        ref: gp-ex-scenario-demo
+      - type: jury
+        items:
+          - q: "Pouvez-vous nous présenter votre projet en une minute ?"
+            a: "Préparer un « pitch » : pour qui (le client et les utilisateurs), quel problème, quelle solution (les fonctionnalités principales), avec quelles technologies, et un résultat concret (en production, testé, utilisé par…)."
+          - q: "Que feriez-vous avec plus de temps ?"
+            a: "Citer deux ou trois améliorations précises et justifiées, reliées à une compétence : par exemple la limitation des tentatives de connexion, des tests de bout en bout supplémentaires, ou un tableau de bord de supervision."
+      - type: quiz
+        items:
+          - ref: gp-pr-q3
+            review: etapes-presentation
+          - ref: gp-pr-q4
+            review: def-demo
+          - ref: gp-pr-q5
+            review: def-recit
+    questions:
+      - code: gp-pr-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Par quoi commencer la présentation de son projet ?"
+        choices:
+          - label: "Le contexte et le besoin du client"
+            correct: true
+            why: "Le jury doit comprendre le problème avant la solution."
+          - label: "Le code du contrôleur"
+            correct: false
+            why: "Trop tôt : on ne sait pas encore à quoi il sert."
+          - label: "Les difficultés rencontrées"
+            correct: false
+            why: "Elles viennent dans le bilan."
+        explanation: "Pourquoi, puis comment."
+      - code: gp-pr-q2
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Comment sécuriser sa démonstration ? (plusieurs réponses)"
+        choices:
+          - label: "Écrire le scénario et le répéter"
+            correct: true
+            why: "Pas d'improvisation."
+          - label: "Lancer l'application et se connecter avant d'entrer dans la salle"
+            correct: true
+            why: "Aucune attente devant le jury."
+          - label: "Préparer une vidéo de secours"
+            correct: true
+            why: "Si le réseau ou le serveur lâche."
+          - label: "Coder une nouvelle fonctionnalité en direct"
+            correct: false
+            why: "Beaucoup trop risqué."
+        explanation: "Préparé, répété, avec un plan B."
+      - code: gp-pr-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Il vaut mieux lire ses diapositives pour ne rien oublier."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Le jury lit plus vite que tu ne parles et décroche."
+          - label: "Faux"
+            correct: true
+            why: "Les diapositives illustrent, tu expliques."
+        explanation: "Peu de texte, des schémas, et ta voix pour raconter."
+      - code: gp-pr-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Pendant la démonstration, une erreur inattendue s'affiche. Que faire ?"
+        choices:
+          - label: "Rester calme, expliquer brièvement la cause probable, puis passer à la vidéo de secours ou à la suite"
+            correct: true
+            why: "Le jury évalue aussi ta réaction face à un incident."
+          - label: "Chercher à corriger le code en direct pendant dix minutes"
+            correct: false
+            why: "Tu perdrais tout ton temps."
+          - label: "Faire comme si de rien n'était"
+            correct: false
+            why: "Le jury l'a vu : mieux vaut l'expliquer."
+        explanation: "Un incident bien géré peut devenir un point fort."
+      - code: gp-pr-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Combien de fois répéter sa présentation, chronomètre en main ?"
+        choices:
+          - label: "Au moins trois fois à voix haute, dont une devant quelqu'un"
+            correct: true
+            why: "On ajuste le rythme et on repère les passages flous."
+          - label: "Une seule fois, la veille"
+            correct: false
+            why: "Trop peu pour tenir le temps."
+          - label: "Jamais, pour rester naturel"
+            correct: false
+            why: "Le naturel vient justement de la répétition."
+        explanation: "Garde une marge de 10 % sur le temps prévu."
+    exercises:
+      - slug: gp-ex-deroule-ordre
+        kind: REMETTRE_ORDRE
+        title: "Le déroulé de la présentation"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Remets les parties de la présentation dans l'ordre."
+        criteria: "Contexte, besoin, gestion, conception, démo, focus technique, qualité, bilan."
+        hints:
+          - "On se présente et on présente le contexte en premier."
+          - "La démonstration vient après la conception."
+          - "Le bilan termine la présentation."
+        solution: |
+          Présentation personnelle et contexte
+          Besoin du client et périmètre
+          Gestion de projet
+          Conception : maquettes, architecture, données
+          Démonstration d'un scénario
+          Focus technique sur un extrait de code
+          Tests, CI/CD et déploiement
+          Bilan et perspectives
+        explanation: "Du problème à la solution, puis la preuve et le recul."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Présentation personnelle et contexte"
+            - "Besoin du client et périmètre"
+            - "Gestion de projet"
+            - "Conception : maquettes, architecture, données"
+            - "Démonstration d'un scénario"
+            - "Focus technique sur un extrait de code"
+            - "Tests, CI/CD et déploiement"
+            - "Bilan et perspectives"
+      - slug: gp-ex-scenario-demo
+        kind: CODE_LIBRE
+        title: "Le scénario de démonstration"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Écris le scénario de ta démonstration en **au moins cinq étapes numérotées** (`1.`, `2.`…). Il doit
+          montrer **deux rôles** (par exemple une utilisatrice **et** un administrateur), **un cas d'erreur**
+          (formulaire invalide, accès refusé…) et se terminer par une étape de **vérification** (le résultat
+          visible). Ajoute une dernière ligne `Plan B :` avec ta solution de secours.
+        criteria: "Cinq étapes numérotées, deux rôles, un cas d'erreur, un plan B."
+        hints:
+          - "1. Je me connecte en tant que cliente (compte préparé)."
+          - "3. Je tente de réserver un créneau déjà pris : un message d'erreur clair s'affiche."
+          - "5. Je me connecte en administrateur et je vois la réservation. Plan B : vidéo de la démonstration."
+        solution: |
+          1. Je me connecte en tant que cliente avec un compte préparé.
+          2. Je choisis un créneau libre mardi à 10 h et je le réserve.
+          3. Je tente de réserver un créneau déjà pris : un message d'erreur clair s'affiche.
+          4. J'essaie d'ouvrir la page d'administration : l'accès est refusé.
+          5. Je me connecte en tant qu'administrateur et je vérifie que la réservation apparaît dans le planning.
+          Plan B : vidéo de la démonstration enregistrée la veille.
+        explanation: "Un scénario qui montre la valeur pour l'utilisateur, la sécurité et la robustesse."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            1.
+            2.
+            3.
+            4.
+            5.
+            Plan B :
+          checks:
+            - pattern: '(?m)^\s*1\.\s*\S[\s\S]*^\s*2\.\s*\S[\s\S]*^\s*3\.\s*\S[\s\S]*^\s*4\.\s*\S[\s\S]*^\s*5\.\s*\S'
+              message: "Écris au moins cinq étapes numérotées."
+            - pattern: '(?i)admin'
+              message: "Montre aussi le rôle administrateur."
+            - pattern: '(?i)client|utilisat|b[ée]n[ée]vole|adh[ée]rent|lecteur|patient|[ée]l[èe]ve'
+              message: "Montre le rôle d'un utilisateur (cliente, utilisatrice…)."
+            - pattern: '(?i)erreur|refus|invalide|interdit|403|401|d[ée]j[àa]\s+pris'
+              message: "Montre un cas d'erreur (formulaire invalide, accès refusé…)."
+            - pattern: '(?im)^\s*Plan\s+B\s*:\s*\S.{5,}'
+              message: "Ajoute ta solution de secours après « Plan B : »."
+
+  # ===================================================================== LEÇON 2
+  - slug: gp-entretien-final
+    title: "Questions techniques et entretien final"
+    duration: 13
+    objective: "Répondre avec méthode aux questions techniques, reconnaître ce qu'on ne sait pas et présenter son projet professionnel."
+    prerequisites: "Leçon « La présentation et la démonstration »."
+    skills: [oral-cda]
+    xp: 30
+    memo: |
+      - Méthode de réponse : **reformuler** si besoin → **définir simplement** → **exemple de ton projet** → **limite ou bonne pratique**.
+      - Si tu ne sais pas : le dire honnêtement, expliquer comment tu chercherais, proposer ce que tu sais de proche.
+      - **Entretien final** : ton projet professionnel, ta vision du métier, tes qualités (travail en équipe, autonomie, rigueur, veille).
+      - Questions fréquentes à préparer : pourquoi ce métier, tes points forts et axes de progrès, où tu te vois dans deux ans.
+      - Posture : écouter la question jusqu'au bout, prendre deux secondes, regarder tout le jury.
+    commonMistakes: |
+      - Inventer une réponse quand on ne sait pas.
+      - Répondre à côté pour placer un sujet qu'on maîtrise.
+      - Dénigrer son entreprise ou son équipe.
+    blocks:
+      - type: text
+        md: |
+          L'entretien n'est pas un piège : le jury cherche à vérifier que tu **comprends** ce que tu as fait et
+          que tu sais **raisonner** face à une question nouvelle.
+      - type: definition
+        id: def-methode-reponse
+        term: "Répondre en quatre temps"
+        md: |
+          Comme un **médecin** qui explique un diagnostic : le nom de la chose (définition simple), ce que ça
+          veut dire pour toi (l'exemple de ton projet), et ce à quoi il faut faire attention (la limite).
+      - type: steps
+        id: etapes-reponse
+        title: "Exemple : « Qu'est-ce qu'une transaction ? »"
+        items:
+          - "**Définition** : un ensemble d'opérations en base qui réussissent toutes ou sont toutes annulées."
+          - "**Exemple** : dans mon service de réservation, la réservation et la mise à jour du créneau sont dans une même méthode @Transactional."
+          - "**Limite / bonne pratique** : le rollback se fait par défaut sur les RuntimeException ; je garde les transactions courtes."
+      - type: question
+        ref: gp-ef-q1
+        review: etapes-reponse
+      - type: jury
+        id: jury-final
+        title: "Questions fréquentes de l'entretien final"
+        items:
+          - q: "Pourquoi avez-vous choisi le métier de développeur ?"
+            a: "Une réponse sincère et concrète : un déclic, un projet, ce qui te plaît (résoudre des problèmes, créer des outils utiles), et comment ta formation l'a confirmé."
+          - q: "Quels sont vos points forts et vos axes de progrès ?"
+            a: "Deux points forts illustrés par un exemple du projet (rigueur sur les tests, communication avec le client) et un axe de progrès réel avec ce que tu fais déjà pour t'améliorer."
+          - q: "Comment vous voyez-vous dans deux ans ?"
+            a: "Un objectif réaliste relié au métier : développeuse full stack autonome dans une équipe, approfondir la sécurité ou le DevOps, et continuer la veille."
+          - q: "Que faites-vous quand vous êtes bloquée sur un problème ?"
+            a: "Je relis le message d'erreur et les journaux, je reproduis avec un test minimal, je consulte la documentation officielle, puis je demande de l'aide en expliquant ce que j'ai déjà essayé. Je note la solution pour l'équipe."
+      - type: question
+        ref: gp-ef-q2
+        review: jury-final
+      - type: text
+        md: "Exercice guidé : complète la réponse en quatre temps."
+      - type: exercise
+        ref: gp-ex-reponse-guide
+      - type: text
+        md: "En autonomie : réponds honnêtement à une question que tu ne maîtrises pas."
+      - type: exercise
+        ref: gp-ex-je-ne-sais-pas
+      - type: quiz
+        items:
+          - ref: gp-ef-q3
+            review: def-methode-reponse
+          - ref: gp-ef-q4
+            review: jury-final
+          - ref: gp-ef-q5
+            review: etapes-reponse
+    questions:
+      - code: gp-ef-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Quelle réponse à « Qu'est-ce qu'un DTO ? » est la meilleure ?"
+        choices:
+          - label: "Une définition simple, l'exemple de mon UtilisateurDto qui n'expose pas le mot de passe, et la bonne pratique des records"
+            correct: true
+            why: "Définition, exemple, bonne pratique."
+          - label: "« C'est un objet »"
+            correct: false
+            why: "Trop vague."
+          - label: "Une récitation de la documentation pendant cinq minutes"
+            correct: false
+            why: "Il faut être concis et relié au projet."
+        explanation: "Définir, illustrer, nuancer."
+      - code: gp-ef-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Quand on ne connaît pas la réponse, mieux vaut inventer quelque chose de plausible."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Le jury s'en rend compte et creusera."
+          - label: "Faux"
+            correct: true
+            why: "L'honnêteté et la méthode de recherche sont valorisées."
+        explanation: "« Je ne sais pas, mais voici comment je chercherais… »"
+      - code: gp-ef-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Tu n'as pas compris une question du jury. Que faire ?"
+        choices:
+          - label: "La reformuler pour vérifier : « Si je comprends bien, vous me demandez… ? »"
+            correct: true
+            why: "C'est une compétence professionnelle."
+          - label: "Répondre à une autre question"
+            correct: false
+            why: "Le jury le remarquera."
+          - label: "Rester silencieuse"
+            correct: false
+            why: "Mieux vaut demander une précision."
+        explanation: "Reformuler montre l'écoute et évite le hors-sujet."
+      - code: gp-ef-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "À la question « Quel est votre axe de progrès ? », quelle réponse est la plus convaincante ?"
+        choices:
+          - label: "Un point réel, avec ce que je fais déjà pour progresser"
+            correct: true
+            why: "Lucidité et action."
+          - label: "« Je suis trop perfectionniste »"
+            correct: false
+            why: "Réponse toute faite, peu crédible."
+          - label: "« Je n'en ai pas »"
+            correct: false
+            why: "Peu crédible et fermé."
+        explanation: "Par exemple : « Les tests de bout en bout ; je m'entraîne avec Playwright sur mon projet. »"
+      - code: gp-ef-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Quel est le troisième temps de la méthode de réponse ?"
+        choices:
+          - label: "Une limite ou une bonne pratique"
+            correct: true
+            why: "Elle montre ta maîtrise et ton recul."
+          - label: "Une blague"
+            correct: false
+            why: "Pas nécessaire."
+          - label: "Changer de sujet"
+            correct: false
+            why: "À éviter."
+        explanation: "Définition → exemple → limite ou bonne pratique."
+    exercises:
+      - slug: gp-ex-reponse-guide
+        kind: COMPLETER
+        title: "Une réponse en trois temps"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Complète la réponse à « Qu'est-ce qu'un index en base de données ? »."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Un index accélère les recherches, comme celui d'un livre."
+          - "Exemple : un index sur la colonne email."
+          - "recherches, email, écritures."
+        solution: '["recherches", "email", "écritures"]'
+        explanation: "Définition, exemple, limite : la réponse complète tient en trois phrases."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Définition : un index accélère les [[1]], comme l'index à la fin d'un livre.
+            Exemple : dans mon projet, la colonne [[2]] des utilisateurs a un index unique pour la connexion.
+            Limite : chaque index ralentit un peu les [[3]] (INSERT, UPDATE) et prend de la place.
+          blanks:
+            - ["recherches", "lectures", "requêtes", "requetes"]
+            - ["email", "e-mail", "mail"]
+            - ["écritures", "ecritures", "insertions"]
+      - slug: gp-ex-je-ne-sais-pas
+        kind: CODE_LIBRE
+        title: "Dire qu'on ne sait pas, avec méthode"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Le jury te demande : « **Qu'est-ce que GraphQL et l'auriez-vous utilisé ?** ». Tu n'as jamais utilisé
+          GraphQL. Écris ta réponse en trois lignes :
+          - `Honnêteté :` tu dis que tu ne l'as pas utilisé ;
+          - `Ce que je sais :` ce que tu en connais ou ce qui s'en rapproche (par exemple REST) ;
+          - `Comment je chercherais :` la documentation officielle, un petit prototype, etc.
+        criteria: "Trois lignes remplies ; mention honnête, lien avec REST, méthode de recherche."
+        hints:
+          - "Honnêteté : je ne l'ai pas encore utilisé dans un projet."
+          - "Ce que je sais : c'est une alternative à REST où le client choisit les champs qu'il veut recevoir."
+          - "Comment je chercherais : la documentation officielle et un petit prototype avec Spring for GraphQL."
+        solution: |
+          Honnêteté : je n'ai pas encore utilisé GraphQL dans un projet.
+          Ce que je sais : c'est une alternative à REST où le client demande exactement les champs dont il a besoin, via un seul point d'entrée.
+          Comment je chercherais : je lirais la documentation officielle et je ferais un petit prototype avec Spring for GraphQL pour comparer avec mon API REST.
+        explanation: "Une réponse honnête et structurée rassure plus le jury qu'une réponse inventée."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            Honnêteté :
+            Ce que je sais :
+            Comment je chercherais :
+          checks:
+            - pattern: '(?im)^\s*Honn[êe]tet[ée]\s*:\s*\S.{10,}'
+              message: "Dis honnêtement que tu ne l'as pas utilisé."
+            - pattern: '(?im)^\s*Ce\s+que\s+je\s+sais\s*:.*\bREST\b'
+              message: "Relie ce que tu sais à ce que tu connais déjà (REST)."
+            - pattern: '(?im)^\s*Comment\s+je\s+chercherais\s*:.*(?:documentation|doc|prototype|tutoriel|essai|test)'
+              message: "Explique comment tu chercherais (documentation, prototype…)."
+
+bank:
+  - code: gp-c4-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: oral-cda
+    prompt: "Quelle posture adopter pendant les questions du jury ?"
+    choices:
+      - label: "Écouter la question jusqu'au bout, prendre deux secondes, répondre en regardant tout le jury"
+        correct: true
+        why: "Calme et respect."
+      - label: "Couper la parole pour montrer qu'on sait"
+        correct: false
+        why: "Irrespectueux, et risque de hors-sujet."
+      - label: "Ne regarder que son ordinateur"
+        correct: false
+        why: "On perd le contact avec le jury."
+    explanation: "Le jury évalue aussi la communication professionnelle."
+  - code: gp-c4-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: oral-cda
+    prompt: "Comment présenter une difficulté rencontrée pendant le projet ?"
+    choices:
+      - label: "Le problème, l'analyse, la solution choisie et ce que tu en as appris"
+        correct: true
+        why: "Elle devient la preuve de ta capacité à résoudre des problèmes."
+      - label: "En accusant un collègue"
+        correct: false
+        why: "Jamais : on parle de faits et de solutions."
+      - label: "En disant qu'il n'y en a pas eu"
+        correct: false
+        why: "Peu crédible."
+    explanation: "Problème → analyse → solution → apprentissage."

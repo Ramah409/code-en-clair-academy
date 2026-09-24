@@ -64,7 +64,9 @@ public class CodeChecksValidator implements ExerciseValidator {
         List<String> problems = new ArrayList<>();
         int passed = 0;
         for (JsonNode check : ex.payload().path("checks")) {
-            Pattern p = Pattern.compile(check.path("pattern").asText(), Pattern.DOTALL | Pattern.MULTILINE);
+            // UNICODE_CASE : avec (?i), « É » et « é » sont équivalents, comme « E » et « e ».
+            Pattern p = Pattern.compile(check.path("pattern").asText(),
+                    Pattern.DOTALL | Pattern.MULTILINE | Pattern.UNICODE_CASE);
             boolean found = p.matcher(cleaned).find();
             boolean ok = check.path("absent").asBoolean(false) != found;
             if (ok) {

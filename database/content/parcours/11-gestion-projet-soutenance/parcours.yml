@@ -1,0 +1,23 @@
+slug: gestion-projet-soutenance
+version: 1
+position: 11
+title: "Gestion de projet et soutenance CDA"
+summary: "Recueillir le besoin, maquetter, organiser le travail en agile, rédiger le dossier de projet et préparer chaque épreuve de la soutenance du titre CDA."
+category: PROJET
+icon: graduation
+description: |
+  Savoir coder ne suffit pas : un **concepteur développeur d'applications** comprend le **besoin** du
+  client, **organise** le travail, **documente** ses choix et sait les **présenter**.
+
+  Ce parcours t'accompagne jusqu'au jour de la certification : les user stories et les maquettes, la
+  méthode agile, les compétences du titre, le dossier de projet, la présentation, la démonstration et
+  l'entretien avec le jury.
+
+  **Au programme** : cahier des charges et user stories, maquettes et accessibilité, Scrum et Kanban,
+  estimation et risques, les trois blocs de compétences du titre, le dossier de projet, la soutenance et
+  les questions du jury.
+
+  **Conseil** : fais ce parcours en parallèle de ton projet, et termine par les examens blancs et les
+  entraînements à l'oral de l'espace « Examen CDA ».
+examQuestionCount: 30
+examTimeLimitMinutes: 35

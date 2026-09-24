@@ -1,0 +1,471 @@
+slug: gp-organiser-travail
+position: 2
+level: INTERMEDIAIRE
+title: "Organiser le travail en mode agile"
+summary: "Travailler par sprints avec Scrum ou en flux avec Kanban, estimer, suivre l'avancement et gérer les risques."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: gp-agile
+    title: "Scrum et Kanban"
+    duration: 14
+    objective: "Décrire les rôles, les artefacts et les cérémonies de Scrum, et organiser un tableau Kanban."
+    prerequisites: "Chapitre « Comprendre et formaliser le besoin »."
+    skills: [gestion-projet]
+    xp: 25
+    memo: |
+      - **Agile** : livrer souvent de petites versions utiles et s'adapter aux retours, plutôt que tout prévoir au début (cycle en V).
+      - **Scrum** — rôles : **Product Owner** (priorise le besoin), **Scrum Master** (facilite, lève les obstacles), **équipe de développement**.
+      - Artefacts : **Product Backlog** (toutes les stories), **Sprint Backlog** (celles du sprint), **incrément** (version livrable).
+      - Cérémonies : **planification** de sprint, **mêlée quotidienne** (15 min), **revue** (démonstration), **rétrospective** (s'améliorer).
+      - **Kanban** : un tableau À faire / En cours / À vérifier / Terminé, avec une **limite** de tâches en cours.
+    commonMistakes: |
+      - Confondre revue (on montre le produit) et rétrospective (on améliore la façon de travailler).
+      - Transformer la mêlée quotidienne en réunion d'une heure.
+      - Commencer dix tâches à la fois sans en terminer aucune.
+    blocks:
+      - type: text
+        md: |
+          Plutôt que de passer six mois à tout construire pour découvrir à la fin que ce n'était pas le bon
+          besoin, les méthodes **agiles** livrent un peu, souvent, et ajustent le cap.
+      - type: definition
+        id: def-sprint
+        term: "Sprint"
+        md: |
+          Une **étape d'un tour de France** : une durée fixe (souvent deux semaines), un objectif clair, et à
+          l'arrivée on fait le point avant l'étape suivante. À chaque fin de sprint, on a une version qui
+          fonctionne.
+      - type: steps
+        id: etapes-scrum
+        title: "La vie d'un sprint Scrum"
+        items:
+          - "**Planification** : l'équipe choisit dans le backlog les stories prioritaires qu'elle peut terminer."
+          - "**Mêlée quotidienne** (15 min, debout) : hier, aujourd'hui, ce qui me bloque."
+          - "**Développement** : chaque story passe par code, tests, revue, jusqu'à la « définition de terminé »."
+          - "**Revue de sprint** : on montre l'incrément au Product Owner et au client, qui donnent leur avis."
+          - "**Rétrospective** : l'équipe discute de sa façon de travailler et choisit une amélioration."
+      - type: question
+        ref: gp-ag-q1
+        review: etapes-scrum
+      - type: definition
+        id: def-kanban
+        term: "Tableau Kanban"
+        md: |
+          Le **tableau des commandes d'un restaurant** : chaque ticket avance de colonne en colonne (reçue, en
+          cuisine, prête, servie). On voit d'un coup d'œil ce qui bloque, et on limite le nombre de plats en
+          cuisson pour ne pas tout rater.
+      - type: question
+        ref: gp-ag-q2
+        review: def-kanban
+      - type: text
+        md: "Exercice guidé : associe chaque rôle ou cérémonie à sa description."
+      - type: exercise
+        ref: gp-ex-scrum-guide
+      - type: text
+        md: "En autonomie : prépare ta mêlée quotidienne."
+      - type: exercise
+        ref: gp-ex-melee
+      - type: jury
+        items:
+          - q: "Quelle méthode de gestion de projet avez-vous utilisée ?"
+            a: "Une approche agile inspirée de Scrum : des sprints de deux semaines, un backlog priorisé avec MoSCoW, une démonstration au tuteur en fin de sprint et une courte rétrospective. Les tâches étaient suivies sur un tableau Kanban dans GitHub Projects, reliées aux issues et aux pull requests."
+          - q: "Quelle différence entre Scrum et Kanban ?"
+            a: "Scrum rythme le travail en sprints à durée fixe, avec des rôles et des cérémonies définis. Kanban est un flux continu : pas de sprint, mais une limite du travail en cours pour finir avant de commencer. Beaucoup d'équipes combinent les deux."
+      - type: quiz
+        items:
+          - ref: gp-ag-q3
+            review: etapes-scrum
+          - ref: gp-ag-q4
+            review: def-sprint
+          - ref: gp-ag-q5
+            review: def-kanban
+    questions:
+      - code: gp-ag-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Quelle cérémonie sert à améliorer la façon de travailler de l'équipe ?"
+        choices:
+          - label: "La rétrospective"
+            correct: true
+            why: "On parle du « comment », pas du produit."
+          - label: "La revue de sprint"
+            correct: false
+            why: "Elle montre le produit."
+          - label: "La planification"
+            correct: false
+            why: "Elle choisit le travail du sprint."
+        explanation: "Revue = le produit ; rétrospective = l'équipe."
+      - code: gp-ag-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "À quoi sert la limite du travail en cours (WIP) sur un tableau Kanban ?"
+        choices:
+          - label: "À finir les tâches avant d'en commencer de nouvelles"
+            correct: true
+            why: "Moins de dispersion, plus de tâches terminées."
+          - label: "À limiter le nombre de développeurs"
+            correct: false
+            why: "Elle limite les tâches, pas les personnes."
+          - label: "À interdire les bugs"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Arrêter de commencer, commencer à finir."
+      - code: gp-ag-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Qui priorise le Product Backlog dans Scrum ?"
+        choices:
+          - label: "Le Product Owner"
+            correct: true
+            why: "Il représente le besoin du client."
+          - label: "Le Scrum Master"
+            correct: false
+            why: "Il facilite, il ne priorise pas."
+          - label: "Le développeur le plus ancien"
+            correct: false
+            why: "Ce n'est pas un rôle Scrum."
+        explanation: "PO = le quoi et le pourquoi ; équipe = le comment."
+      - code: gp-ag-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "À la fin de chaque sprint, l'équipe doit avoir une version qui fonctionne et peut être montrée."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "C'est l'incrément."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement le principe d'un sprint."
+        explanation: "Petit, mais utilisable."
+      - code: gp-ag-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Comment s'appelle la réunion quotidienne de 15 minutes en Scrum ? (en anglais, deux mots ou en français)"
+        answers: ["daily scrum", "daily meeting", "daily", "mêlée quotidienne", "melee quotidienne", "stand-up", "standup"]
+        explanation: "Hier, aujourd'hui, mes blocages : pas plus de 15 minutes."
+    exercises:
+      - slug: gp-ex-scrum-guide
+        kind: COMPLETER
+        title: "Rôles et cérémonies"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: "Complète avec : Owner, Master, revue, rétrospective."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Celui qui priorise le besoin : Product Owner."
+          - "Montrer le produit : revue ; améliorer l'équipe : rétrospective."
+          - "Owner, Master, revue, rétrospective."
+        solution: '["Owner", "Master", "revue", "rétrospective"]'
+        explanation: "Deux rôles, deux cérémonies de fin de sprint."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Le Product [[1]] priorise le backlog selon la valeur pour le client.
+            Le Scrum [[2]] aide l'équipe et lève les obstacles.
+            Pendant la [[3]] de sprint, on montre le produit au client.
+            Pendant la [[4]], l'équipe choisit comment mieux travailler.
+          blanks:
+            - ["Owner"]
+            - ["Master"]
+            - ["revue"]
+            - ["rétrospective", "retrospective", "rétro", "retro"]
+      - slug: gp-ex-melee
+        kind: CODE_LIBRE
+        title: "Ma mêlée quotidienne"
+        difficulty: INTERMEDIAIRE
+        skill: gestion-projet
+        statement: |
+          Prépare ton intervention à la mêlée quotidienne, en trois lignes : `Hier :`, `Aujourd'hui :`,
+          `Blocage :`. Cite au moins **un identifiant de story ou de ticket** (par exemple `US-04` ou `#12`).
+          Si tu n'as pas de blocage, écris-le explicitement (« aucun »).
+        criteria: "Trois lignes Hier / Aujourd'hui / Blocage remplies, et un identifiant de story ou de ticket."
+        hints:
+          - "Hier : j'ai terminé l'API de réservation (US-04), la pull request est en revue."
+          - "Aujourd'hui : je commence l'écran de réservation dans Angular."
+          - "Blocage : j'attends les textes des e-mails du client (ou : aucun)."
+        solution: |
+          Hier : j'ai terminé l'API de réservation (US-04) ; la pull request est en revue.
+          Aujourd'hui : je développe l'écran de réservation dans Angular et ses tests.
+          Blocage : j'attends du client le texte de l'e-mail de confirmation.
+        explanation: "Court, concret, relié aux tickets : tout le monde sait où tu en es."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            Hier :
+            Aujourd'hui :
+            Blocage :
+          checks:
+            - pattern: '(?im)^\s*Hier\s*:\s*\S.{10,}'
+              message: "Dis ce que tu as fait hier."
+            - pattern: '(?im)^\s*Aujourd.hui\s*:\s*\S.{10,}'
+              message: "Dis ce que tu vas faire aujourd'hui."
+            - pattern: '(?im)^\s*Blocages?\s*:\s*\S.*'
+              message: "Indique tes blocages (ou « aucun »)."
+            - pattern: '(?i)\b(?:US|T|TICKET)-?\d+\b|#\d+'
+              message: "Cite un identifiant de story ou de ticket (US-04, #12…)."
+
+  # ===================================================================== LEÇON 2
+  - slug: gp-estimation-risques
+    title: "Estimer, suivre et gérer les risques"
+    duration: 13
+    objective: "Estimer des stories en points, suivre l'avancement avec un burndown, identifier les risques et documenter les décisions."
+    prerequisites: "Leçon « Scrum et Kanban »."
+    skills: [gestion-projet]
+    xp: 25
+    memo: |
+      - **Estimation relative** en points (suite 1, 2, 3, 5, 8, 13) : on compare les stories entre elles plutôt que de deviner des heures.
+      - **Planning poker** : chacun vote en même temps, on discute des écarts.
+      - **Vélocité** : points terminés par sprint ; sert à prévoir les suivants.
+      - **Burndown** : graphique du travail restant ; il doit descendre vers zéro.
+      - **Risque** = probabilité × impact ; pour chacun : une action préventive et un plan B.
+      - **Définition de terminé** : codé, testé, relu, fusionné, documenté.
+    commonMistakes: |
+      - Estimer seul, sans l'équipe.
+      - Découvrir un risque connu le jour où il arrive.
+      - Considérer une story « terminée » alors qu'elle n'est ni testée ni relue.
+    blocks:
+      - type: text
+        md: |
+          « Combien de temps ça va prendre ? » est la question la plus difficile du métier. On ne peut pas
+          être exact, mais on peut être **honnête** et **suivre** l'avancement.
+      - type: definition
+        id: def-points
+        term: "Points d'effort"
+        md: |
+          On ne sait pas toujours combien de minutes dure une randonnée, mais on sait dire qu'une balade est
+          **deux fois plus longue** qu'une autre. Les points mesurent la **taille relative** d'une story :
+          effort, complexité et incertitude.
+      - type: code
+        id: code-risques
+        language: text
+        title: "Un extrait de registre des risques"
+        code: |
+          Risque                                  Probabilité  Impact  Prévention                      Plan B
+          Retard du client pour valider           Moyenne      Fort    Démo à chaque fin de sprint     Valider par écrit
+          Hébergeur indisponible le jour J        Faible       Fort    Tester le déploiement à J-7     Vidéo de démonstration
+          Sous-estimation du module paiement      Forte        Moyen   Prototype technique au sprint 1 Passer en « Could »
+        lines:
+          - n: 1
+            note: "Pour chaque risque : sa probabilité, son impact, comment l'éviter, et quoi faire s'il arrive."
+          - n: 3
+            note: "Pour la soutenance aussi : une vidéo de secours si la démo en direct échoue."
+          - n: 4
+            note: "Réduire le périmètre est une réponse valable à un risque."
+      - type: question
+        ref: gp-er-q1
+        review: def-points
+      - type: definition
+        id: def-termine
+        term: "Définition de terminé"
+        md: |
+          La **liste de contrôle** qu'une story doit cocher pour être vraiment finie. Sans elle, « terminé »
+          veut dire « ça marche chez moi ».
+      - type: question
+        ref: gp-er-q2
+        review: code-risques
+      - type: text
+        md: "Exercice guidé : complète la définition de terminé."
+      - type: exercise
+        ref: gp-ex-dod-guide
+      - type: text
+        md: "En autonomie : décris un risque de ton projet."
+      - type: exercise
+        ref: gp-ex-risque
+      - type: jury
+        items:
+          - q: "Comment avez-vous estimé et suivi votre projet ?"
+            a: "J'ai estimé les stories en points relatifs, en comparant avec une story de référence. Je suivais la vélocité de chaque sprint et un tableau Kanban dans GitHub Projects. Quand un module a pris plus de temps que prévu, j'ai repriorisé avec le client et déplacé une story Could."
+          - q: "Quelles difficultés avez-vous rencontrées ?"
+            a: "Choisir une vraie difficulté, expliquer comment je l'ai analysée, la solution retenue et ce que j'en ai appris. Par exemple : une requête trop lente, identifiée avec EXPLAIN, corrigée par un index, et depuis je vérifie les plans d'exécution des requêtes importantes."
+      - type: quiz
+        items:
+          - ref: gp-er-q3
+            review: def-points
+          - ref: gp-er-q4
+            review: def-termine
+          - ref: gp-er-q5
+            review: code-risques
+    questions:
+      - code: gp-er-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Pourquoi estimer en points plutôt qu'en heures ?"
+        choices:
+          - label: "Il est plus facile et plus fiable de comparer des tâches entre elles que de deviner leur durée"
+            correct: true
+            why: "Estimation relative."
+          - label: "Parce que les heures sont interdites en agile"
+            correct: false
+            why: "Ce n'est pas une interdiction."
+          - label: "Pour que le client ne comprenne pas"
+            correct: false
+            why: "Au contraire, la vélocité rend les prévisions compréhensibles."
+        explanation: "La vélocité convertit ensuite les points en prévision de sprints."
+      - code: gp-er-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Pour un risque, qu'est-ce qu'un « plan B » ?"
+        choices:
+          - label: "L'action prévue à l'avance si le risque se réalise"
+            correct: true
+            why: "On ne l'improvise pas le jour même."
+          - label: "Une deuxième version du cahier des charges"
+            correct: false
+            why: "Aucun rapport."
+          - label: "Le fait d'ignorer le risque"
+            correct: false
+            why: "C'est l'inverse."
+        explanation: "Prévention avant, plan B pendant."
+      - code: gp-er-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "La vélocité d'une équipe sert à comparer les développeurs entre eux."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Elle sert à prévoir, pas à juger."
+          - label: "Faux"
+            correct: true
+            why: "C'est un outil de planification pour l'équipe."
+        explanation: "Comparer des vélocités pousse à gonfler les estimations."
+      - code: gp-er-q4
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Que contient une bonne définition de terminé ? (plusieurs réponses)"
+        choices:
+          - label: "Les critères d'acceptation sont validés"
+            correct: true
+            why: "Le besoin est couvert."
+          - label: "Les tests automatiques passent dans la CI"
+            correct: true
+            why: "Pas de régression."
+          - label: "Le code a été relu et fusionné"
+            correct: true
+            why: "Qualité partagée."
+          - label: "Le développeur pense que c'est fini"
+            correct: false
+            why: "Ce n'est pas vérifiable."
+        explanation: "Une liste de contrôle commune à toute l'équipe."
+      - code: gp-er-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Comment s'appelle le graphique qui montre le travail restant dans un sprint ? (un mot anglais)"
+        answers: ["burndown", "burn-down", "burndown chart"]
+        explanation: "La courbe doit descendre vers zéro à la fin du sprint."
+    exercises:
+      - slug: gp-ex-dod-guide
+        kind: COMPLETER
+        title: "La définition de terminé"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: "Complète la liste de contrôle."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Les critères d'acceptation sont validés."
+          - "La CI est verte ; le code est relu."
+          - "acceptation, tests, relu, documentation."
+        solution: '["acceptation", "tests", "relu", "documentation"]'
+        explanation: "Une story n'est terminée que lorsque tout est coché."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            [ ] Les critères d'[[1]] sont vérifiés
+            [ ] Les [[2]] automatiques passent dans la CI
+            [ ] Le code est [[3]] par une autre personne et fusionné
+            [ ] La [[4]] (README, API) est à jour
+          blanks:
+            - ["acceptation"]
+            - ["tests"]
+            - ["relu", "revu"]
+            - ["documentation", "doc"]
+      - slug: gp-ex-risque
+        kind: CODE_LIBRE
+        title: "Un risque de mon projet"
+        difficulty: INTERMEDIAIRE
+        skill: gestion-projet
+        statement: |
+          Décris un risque réel de ton projet (ou du jour de la soutenance) en cinq lignes :
+          `Risque :`, `Probabilité :`, `Impact :`, `Prévention :`, `Plan B :`.
+          Probabilité et impact valent `faible`, `moyenne`/`moyen` ou `forte`/`fort`.
+        criteria: "Cinq lignes remplies ; probabilité et impact avec une valeur de l'échelle."
+        hints:
+          - "Risque : la connexion internet de la salle ne fonctionne pas pendant la démonstration."
+          - "Probabilité : faible ; Impact : fort."
+          - "Prévention : faire tourner l'application en local avec Docker ; Plan B : vidéo de la démonstration."
+        solution: |
+          Risque : la démonstration en direct échoue le jour de la soutenance (réseau, serveur).
+          Probabilité : faible
+          Impact : fort
+          Prévention : lancer l'application en local avec Docker Compose et répéter la démonstration la veille.
+          Plan B : montrer une vidéo de la démonstration enregistrée à l'avance.
+        explanation: "Un risque anticipé devient un simple contretemps."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            Risque :
+            Probabilité :
+            Impact :
+            Prévention :
+            Plan B :
+          checks:
+            - pattern: '(?im)^\s*Risque\s*:\s*\S.{10,}'
+              message: "Décris le risque."
+            - pattern: '(?im)^\s*Probabilit[ée]\s*:\s*(?:faible|moyenne?|forte?|[ée]lev[ée]e?)\b'
+              message: "Probabilité : faible, moyenne ou forte."
+            - pattern: '(?im)^\s*Impact\s*:\s*(?:faible|moyenne?|forte?|[ée]lev[ée]e?)\b'
+              message: "Impact : faible, moyen ou fort."
+            - pattern: '(?im)^\s*Pr[ée]vention\s*:\s*\S.{10,}'
+              message: "Décris l'action préventive."
+            - pattern: '(?im)^\s*Plan\s+B\s*:\s*\S.{8,}'
+              message: "Décris le plan B."
+
+bank:
+  - code: gp-c2-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: gestion-projet
+    prompt: "Quelle est la principale différence entre un cycle en V et une méthode agile ?"
+    choices:
+      - label: "Le cycle en V planifie tout au début et livre à la fin ; l'agile livre par petites itérations"
+        correct: true
+        why: "L'agile s'adapte aux retours en cours de route."
+      - label: "Le cycle en V n'a pas de tests"
+        correct: false
+        why: "Il en a, en fin de cycle."
+      - label: "L'agile n'a pas de documentation"
+        correct: false
+        why: "Elle documente ce qui est utile."
+    explanation: "Le cycle en V convient aux besoins très stables ; l'agile aux besoins qui évoluent."
+  - code: gp-c2-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: gestion-projet
+    prompt: "Quel outil peut servir de tableau Kanban relié au code ?"
+    choices:
+      - label: "GitHub Projects (ou Jira, Trello)"
+        correct: true
+        why: "Les cartes peuvent être liées aux issues et pull requests."
+      - label: "PostgreSQL"
+        correct: false
+        why: "C'est une base de données."
+      - label: "Nginx"
+        correct: false
+        why: "C'est un serveur web."
+    explanation: "Relier les tickets au code rend le suivi traçable."

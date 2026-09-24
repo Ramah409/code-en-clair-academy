@@ -1,0 +1,493 @@
+slug: gp-comprendre-besoin
+position: 1
+level: DEBUTANT
+title: "Comprendre et formaliser le besoin"
+summary: "Transformer une demande floue en user stories avec critères d'acceptation, prioriser, puis maquetter des écrans accessibles."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: gp-user-stories
+    title: "Du besoin aux user stories"
+    duration: 13
+    objective: "Écrire des user stories au bon format, avec des critères d'acceptation vérifiables, et les prioriser avec la méthode MoSCoW."
+    prerequisites: "Aucun : ce parcours peut commencer à tout moment du projet."
+    skills: [gestion-projet]
+    xp: 20
+    memo: |
+      - **Cahier des charges** : le document qui décrit le besoin, le contexte, les contraintes (délais, budget, technique).
+      - **User story** : « En tant que **<qui>**, je veux **<quoi>** afin de **<pourquoi>** ».
+      - **Critères d'acceptation** : les conditions précises pour dire « c'est terminé », souvent au format **Étant donné / Quand / Alors**.
+      - **MoSCoW** : **M**ust (indispensable), **S**hould (important), **C**ould (bonus), **W**on't (pas cette fois).
+      - Une bonne story est petite, indépendante, testable et apporte de la valeur.
+    commonMistakes: |
+      - Écrire une story technique (« Créer la table users ») au lieu d'un besoin utilisateur.
+      - Oublier le « afin de » : on ne sait plus pourquoi on la fait.
+      - Des critères vagues (« ça doit être rapide »).
+    blocks:
+      - type: text
+        md: |
+          Un client dit rarement « je veux une API REST avec JWT ». Il dit « mes clients doivent pouvoir
+          réserver en ligne ». Ton travail : **traduire** ce besoin en petites tâches claires.
+      - type: definition
+        id: def-user-story
+        term: "User story"
+        md: |
+          Une **carte de vœu** écrite du point de vue de la personne qui utilisera l'application : qui elle
+          est, ce qu'elle veut faire, et pourquoi. Elle tient sur un post-it.
+      - type: code
+        id: code-story
+        language: text
+        title: "Une user story complète"
+        code: |
+          US-04 — Réserver un créneau                                   Priorité : Must
+
+          En tant que cliente connectée,
+          je veux réserver un créneau libre chez mon coiffeur,
+          afin de ne plus avoir à téléphoner.
+
+          Critères d'acceptation
+          - Étant donné un créneau libre, quand je le réserve, alors il devient indisponible pour les autres.
+          - Étant donné un créneau déjà pris, quand je tente de le réserver, alors un message m'indique qu'il n'est plus libre.
+          - Étant donné une réservation confirmée, alors je reçois un e-mail récapitulatif.
+        lines:
+          - n: 1
+            note: "Un identifiant et une priorité MoSCoW."
+          - n: 3
+            note: "**Qui** : un type d'utilisateur précis (un rôle, un persona)."
+          - n: 4
+            note: "**Quoi** : l'action, sans parler de technique."
+          - n: 5
+            note: "**Pourquoi** : la valeur apportée."
+          - n: 8
+            note: "Chaque critère est **vérifiable** : il deviendra un cas de test."
+      - type: question
+        ref: gp-us-q1
+        review: code-story
+      - type: definition
+        id: def-moscow
+        term: "Priorisation MoSCoW"
+        md: |
+          Faire ses **courses avec un petit budget** : d'abord le **pain et le lait** (Must), puis les fruits
+          (Should), le chocolat si il reste de l'argent (Could), et pas le champagne cette fois (Won't).
+      - type: question
+        ref: gp-us-q2
+        review: def-moscow
+      - type: text
+        md: "Exercice guidé : complète la user story."
+      - type: exercise
+        ref: gp-ex-story-guide
+      - type: text
+        md: "En autonomie : écris une user story avec ses critères."
+      - type: exercise
+        ref: gp-ex-story
+      - type: jury
+        items:
+          - q: "Comment avez-vous recueilli et formalisé le besoin ?"
+            a: "Par des entretiens avec le client et l'analyse de l'existant, puis un cahier des charges. J'ai découpé le besoin en user stories avec des critères d'acceptation au format Étant donné / Quand / Alors, priorisées avec MoSCoW pour définir un produit minimum viable."
+          - q: "Qu'est-ce qu'un MVP ?"
+            a: "Le produit minimum viable : la plus petite version utile de l'application, qui contient seulement les stories Must. Il permet de livrer vite, d'avoir des retours réels, puis d'améliorer."
+      - type: quiz
+        items:
+          - ref: gp-us-q3
+            review: def-user-story
+          - ref: gp-us-q4
+            review: code-story
+          - ref: gp-us-q5
+            review: def-moscow
+    questions:
+      - code: gp-us-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Quel est le format d'une user story ?"
+        choices:
+          - label: "En tant que… je veux… afin de…"
+            correct: true
+            why: "Qui, quoi, pourquoi."
+          - label: "Créer la table… avec les colonnes…"
+            correct: false
+            why: "C'est une tâche technique."
+          - label: "Le bouton doit être bleu"
+            correct: false
+            why: "C'est un détail de maquette."
+        explanation: "Une story parle du besoin de l'utilisateur."
+      - code: gp-us-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Dans MoSCoW, que signifie une story « Could » ?"
+        choices:
+          - label: "Un bonus, réalisé s'il reste du temps"
+            correct: true
+            why: "Souhaitable mais pas nécessaire."
+          - label: "Indispensable"
+            correct: false
+            why: "C'est Must."
+          - label: "Abandonnée définitivement"
+            correct: false
+            why: "Won't = pas cette fois, peut-être plus tard."
+        explanation: "Must, Should, Could, Won't."
+      - code: gp-us-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "« Créer l'entité JPA Reservation » est une bonne user story."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "C'est une tâche technique, pas un besoin utilisateur."
+          - label: "Faux"
+            correct: true
+            why: "Elle ne dit ni qui, ni pourquoi."
+        explanation: "Les tâches techniques découlent des stories, elles n'en sont pas."
+      - code: gp-us-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Quel critère d'acceptation est le mieux écrit ?"
+        choices:
+          - label: "Étant donné un panier vide, quand j'ouvre le panier, alors le message « Votre panier est vide » s'affiche"
+            correct: true
+            why: "Précis et vérifiable."
+          - label: "Le panier doit bien marcher"
+            correct: false
+            why: "Impossible à vérifier."
+          - label: "Le panier doit être joli"
+            correct: false
+            why: "Subjectif."
+        explanation: "Étant donné (contexte) / Quand (action) / Alors (résultat)."
+      - code: gp-us-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Quel sigle désigne la plus petite version utile d'un produit ? (trois lettres)"
+        answers: ["MVP", "PMV"]
+        explanation: "Minimum Viable Product (produit minimum viable) : les stories Must."
+    exercises:
+      - slug: gp-ex-story-guide
+        kind: COMPLETER
+        title: "Compléter une user story"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: "Complète la story et son critère d'acceptation."
+        criteria: "Les cinq trous sont corrects."
+        hints:
+          - "Format : En tant que… je veux… afin de…"
+          - "Critère : Étant donné… quand… alors…"
+          - "tant, veux, afin, quand, alors."
+        solution: '["tant", "veux", "afin", "quand", "alors"]'
+        explanation: "Qui, quoi, pourquoi ; puis contexte, action, résultat."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            En [[1]] que bibliothécaire, je [[2]] voir les livres en retard [[3]] de relancer les lecteurs.
+
+            Étant donné un livre rendu après sa date, [[4]] j'ouvre la liste des retards, [[5]] ce livre y apparaît.
+          blanks:
+            - ["tant"]
+            - ["veux"]
+            - ["afin"]
+            - ["quand"]
+            - ["alors"]
+      - slug: gp-ex-story
+        kind: CODE_LIBRE
+        title: "Écrire une user story"
+        difficulty: INTERMEDIAIRE
+        skill: gestion-projet
+        statement: |
+          Une association veut que ses bénévoles puissent **s'inscrire à une distribution alimentaire** en ligne.
+          Écris la user story au format « En tant que… je veux… afin de… », puis **deux** critères
+          d'acceptation au format « Étant donné… quand… alors… », et indique sa priorité MoSCoW
+          (`Priorité : Must`, `Should`, `Could` ou `Won't`).
+        criteria: "Format complet de la story, deux critères Étant donné/quand/alors, une priorité MoSCoW."
+        hints:
+          - "En tant que bénévole, je veux m'inscrire à une distribution afin que l'association sache combien nous serons."
+          - "Étant donné une distribution avec des places libres, quand je m'inscris, alors mon nom apparaît dans la liste."
+          - "Étant donné une distribution complète, quand je tente de m'inscrire, alors un message m'indique qu'elle est complète."
+        solution: |
+          Priorité : Must
+          En tant que bénévole, je veux m'inscrire à une distribution alimentaire afin que l'association sache combien de personnes seront présentes.
+          Étant donné une distribution avec des places libres, quand je m'inscris, alors mon nom apparaît dans la liste des participants.
+          Étant donné une distribution complète, quand je tente de m'inscrire, alors un message m'indique qu'il n'y a plus de place.
+        explanation: "Qui, quoi, pourquoi, et deux critères qui deviendront des cas de test."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            Priorité :
+            En tant que
+          checks:
+            - pattern: '(?i)en\s+tant\s+qu[e'']\s*\S[\s\S]*?je\s+(?:veux|souhaite|voudrais)\s+\S[\s\S]*?afin\s+(?:de|d''|que)'
+              message: "Écris la story au format « En tant que…, je veux… afin de… »."
+            - pattern: '(?i)\A(?>[\s\S]*?[ÉEée]tant\s+donn[ée]e?s?\s[^\n]*?\bquand\b[^\n]*?\balors\b){2}'
+              message: "Écris deux critères au format « Étant donné…, quand…, alors… » (chacun sur une ligne)."
+            - pattern: '(?i)priorit[ée]\s*:\s*(?:must|should|could|won.?t)\b'
+              message: "Indique la priorité : `Priorité : Must` (ou Should, Could, Won't)."
+            - pattern: '(?i)b[ée]n[ée]vole'
+              message: "La story doit parler des bénévoles."
+
+  # ===================================================================== LEÇON 2
+  - slug: gp-maquettes
+    title: "Maquettes, ergonomie et accessibilité"
+    duration: 13
+    objective: "Passer du zoning à la maquette, appliquer les règles d'ergonomie de base et les principes d'accessibilité (RGAA/WCAG)."
+    prerequisites: "Leçon « Du besoin aux user stories »."
+    skills: [ux-ui, accessibilite]
+    xp: 25
+    memo: |
+      - **Zoning** → **wireframe** (maquette fil de fer, sans couleur) → **maquette** graphique → **prototype** cliquable (Figma).
+      - **Mobile d'abord** : concevoir le petit écran, puis l'agrandir.
+      - Ergonomie : cohérence, retours visibles (chargement, succès, erreur), messages d'erreur utiles, peu de clics.
+      - **Accessibilité** (RGAA en France, basé sur les WCAG) : contrastes suffisants, textes alternatifs, navigation au clavier, labels de formulaire, titres hiérarchisés.
+      - L'accessibilité est une **obligation légale** pour de nombreux services, et elle profite à tout le monde.
+    commonMistakes: |
+      - Coder directement sans maquette : on refait trois fois les écrans.
+      - Indiquer une erreur **seulement** par une couleur rouge.
+      - Des boutons sans texte (seulement une icône) et sans `aria-label`.
+    blocks:
+      - type: text
+        md: |
+          Avant de coder un écran, on le **dessine**. Un dessin se corrige en deux minutes ; un écran codé, en
+          deux heures.
+      - type: definition
+        id: def-wireframe
+        term: "Wireframe"
+        md: |
+          Le **plan d'architecte** d'un écran : on place les murs et les portes (zones, boutons, champs), sans
+          choisir la peinture. On valide l'organisation avec le client avant de parler de couleurs.
+      - type: question
+        ref: gp-mq-q1
+        review: def-wireframe
+      - type: definition
+        id: def-accessibilite
+        term: "Accessibilité numérique"
+        md: |
+          Une **rampe à côté des escaliers** : indispensable pour certains, pratique pour tous (poussettes,
+          valises). Un site accessible est utilisable au clavier, avec un lecteur d'écran, par une personne
+          daltonienne ou malvoyante… et il est aussi plus clair pour tout le monde.
+      - type: compare
+        left:
+          title: "Pas accessible"
+          code: |
+            <input placeholder="E-mail">
+            <span class="rouge">Erreur</span>
+            <div (click)="envoyer()">➤</div>
+          language: html
+        right:
+          title: "Accessible"
+          code: |
+            <label for="email">E-mail</label>
+            <input id="email" type="email" aria-describedby="err-email">
+            <p id="err-email">Erreur : l'e-mail doit contenir un @.</p>
+            <button type="submit">Envoyer</button>
+          language: html
+      - type: question
+        ref: gp-mq-q2
+        review: def-accessibilite
+      - type: text
+        md: "Exercice guidé : remets les étapes de conception dans l'ordre."
+      - type: exercise
+        ref: gp-ex-maquette-ordre
+      - type: text
+        md: "En autonomie : rends ce formulaire accessible."
+      - type: exercise
+        ref: gp-ex-accessible
+      - type: jury
+        items:
+          - q: "Comment avez-vous conçu vos interfaces ?"
+            a: "À partir des user stories, j'ai fait un zoning puis des wireframes validés avec le client, puis des maquettes dans Figma avec une charte graphique. J'ai conçu en mobile d'abord, avec des composants réutilisables et des retours clairs (chargement, succès, erreur)."
+          - q: "Comment avez-vous pris en compte l'accessibilité ?"
+            a: "Labels liés à chaque champ, contrastes vérifiés, navigation complète au clavier avec un focus visible, textes alternatifs, titres hiérarchisés, messages d'erreur en texte et pas seulement en couleur. J'ai vérifié avec Lighthouse et un lecteur d'écran, en m'appuyant sur le RGAA."
+      - type: quiz
+        items:
+          - ref: gp-mq-q3
+            review: def-accessibilite
+          - ref: gp-mq-q4
+            review: def-wireframe
+          - ref: gp-mq-q5
+            review: def-accessibilite
+    questions:
+      - code: gp-mq-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: ux-ui
+        prompt: "Qu'est-ce qu'un wireframe ?"
+        choices:
+          - label: "Un schéma de l'écran qui place les éléments, sans couleurs ni style"
+            correct: true
+            why: "On valide l'organisation."
+          - label: "Le code HTML final"
+            correct: false
+            why: "Il vient bien après."
+          - label: "Un diagramme de base de données"
+            correct: false
+            why: "C'est un MCD ou un MPD."
+        explanation: "Zoning → wireframe → maquette → prototype."
+      - code: gp-mq-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: accessibilite
+        prompt: "Indiquer une erreur seulement par une bordure rouge suffit pour l'accessibilité."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Une personne daltonienne ou aveugle ne la percevra pas."
+          - label: "Faux"
+            correct: true
+            why: "Il faut un texte explicite, relié au champ."
+        explanation: "L'information ne doit jamais reposer uniquement sur la couleur."
+      - code: gp-mq-q3
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: accessibilite
+        prompt: "Quelles pratiques rendent un site plus accessible ? (plusieurs réponses)"
+        choices:
+          - label: "Un label relié à chaque champ de formulaire"
+            correct: true
+            why: "Le lecteur d'écran l'annonce."
+          - label: "Une navigation possible au clavier, avec un focus visible"
+            correct: true
+            why: "Indispensable sans souris."
+          - label: "Un texte alternatif sur les images utiles"
+            correct: true
+            why: "Il décrit l'image."
+          - label: "Du texte gris clair sur fond blanc"
+            correct: false
+            why: "Contraste insuffisant."
+        explanation: "Référentiel français : RGAA."
+      - code: gp-mq-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: ux-ui
+        prompt: "Que signifie concevoir « mobile d'abord » (mobile first) ?"
+        choices:
+          - label: "Dessiner d'abord l'écran de téléphone, puis l'adapter aux grands écrans"
+            correct: true
+            why: "On se concentre sur l'essentiel."
+          - label: "Ne faire qu'une application mobile"
+            correct: false
+            why: "Le site s'adapte à tous les écrans."
+          - label: "Coder l'application sur son téléphone"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Le petit écran oblige à prioriser."
+      - code: gp-mq-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: accessibilite
+        prompt: "Quel est le sigle du référentiel français d'accessibilité numérique ? (quatre lettres)"
+        answers: ["RGAA"]
+        explanation: "Référentiel général d'amélioration de l'accessibilité, basé sur les WCAG."
+    exercises:
+      - slug: gp-ex-maquette-ordre
+        kind: REMETTRE_ORDRE
+        title: "De l'idée à l'écran"
+        difficulty: FACILE
+        skill: ux-ui
+        statement: "Remets les étapes de conception d'une interface dans l'ordre."
+        criteria: "Stories, zoning, wireframe, validation, maquette, prototype, développement."
+        hints:
+          - "Tout part des user stories."
+          - "Le wireframe est validé avant la maquette graphique."
+          - "On développe en dernier."
+        solution: |
+          Lire les user stories de l'écran
+          Faire un zoning : grandes zones de la page
+          Dessiner le wireframe avec les éléments
+          Valider le wireframe avec le client
+          Créer la maquette graphique (couleurs, typographies)
+          Relier les écrans dans un prototype cliquable
+          Développer l'écran dans Angular
+        explanation: "Chaque étape est plus coûteuse que la précédente : on valide tôt."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Lire les user stories de l'écran"
+            - "Faire un zoning : grandes zones de la page"
+            - "Dessiner le wireframe avec les éléments"
+            - "Valider le wireframe avec le client"
+            - "Créer la maquette graphique (couleurs, typographies)"
+            - "Relier les écrans dans un prototype cliquable"
+            - "Développer l'écran dans Angular"
+      - slug: gp-ex-accessible
+        kind: CORRIGER_ERREUR
+        title: "Un formulaire accessible"
+        difficulty: INTERMEDIAIRE
+        skill: accessibilite
+        statement: |
+          Ce formulaire de recherche n'est pas accessible. Corrige-le :
+          - ajoute un `<label for="recherche">Rechercher un livre</label>` relié au champ (`id="recherche"`) ;
+          - remplace la `<div>` cliquable par un vrai `<button type="submit">` avec le texte « Rechercher » ;
+          - ajoute un texte alternatif `alt` non vide à l'image du logo.
+        criteria: "Label relié par for/id, vrai bouton submit avec texte, alt non vide, plus de div cliquable."
+        hints:
+          - "`<label for=\"recherche\">Rechercher un livre</label>` puis `<input id=\"recherche\" …>`."
+          - "`<button type=\"submit\">Rechercher</button>`"
+          - "`<img src=\"logo.svg\" alt=\"Médiathèque de Lyon\">`"
+        solution: |
+          <img src="logo.svg" alt="Médiathèque de Lyon">
+          <form (ngSubmit)="chercher()">
+            <label for="recherche">Rechercher un livre</label>
+            <input id="recherche" type="search" name="q">
+            <button type="submit">Rechercher</button>
+          </form>
+        explanation: "Chaque élément est annoncé correctement par un lecteur d'écran et utilisable au clavier."
+        xp: 20
+        payload:
+          language: html
+          starter: |
+            <img src="logo.svg">
+            <form (ngSubmit)="chercher()">
+              <input type="search" name="q" placeholder="Rechercher un livre">
+              <div class="bouton" (click)="chercher()">🔍</div>
+            </form>
+          checks:
+            - pattern: '<label\s+for="recherche"\s*>[^<]*\S[^<]*</label>'
+              message: "Ajoute `<label for=\"recherche\">Rechercher un livre</label>`."
+            - pattern: '<input\b[^>]*\bid="recherche"'
+              message: "Donne `id=\"recherche\"` au champ pour le relier au label."
+            - pattern: '<button\b[^>]*type="submit"[^>]*>\s*Rechercher\s*</button>'
+              message: "Utilise `<button type=\"submit\">Rechercher</button>`."
+            - pattern: '<div\b[^>]*\(click\)'
+              absent: true
+              message: "Remplace la `<div>` cliquable par un vrai bouton (utilisable au clavier)."
+            - pattern: '<img\b[^>]*\balt="[^"]*\S[^"]*"'
+              message: "Ajoute un texte alternatif non vide à l'image : `alt=\"…\"`."
+
+bank:
+  - code: gp-c1-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: gestion-projet
+    prompt: "Qu'est-ce qu'un persona ?"
+    choices:
+      - label: "Un portrait fictif mais réaliste d'un utilisateur type, pour guider la conception"
+        correct: true
+        why: "Âge, besoins, habitudes, frustrations…"
+      - label: "Un compte administrateur"
+        correct: false
+        why: "Aucun rapport."
+      - label: "Un membre de l'équipe de développement"
+        correct: false
+        why: "Il représente un utilisateur."
+    explanation: "« Awa, 34 ans, réserve depuis son téléphone dans le bus » aide à faire les bons choix."
+  - code: gp-c1-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: accessibilite
+    prompt: "Quel outil intégré à Chrome donne un score d'accessibilité à une page ?"
+    choices:
+      - label: "Lighthouse"
+        correct: true
+        why: "Onglet des outils de développement."
+      - label: "Postman"
+        correct: false
+        why: "Il sert à tester des API."
+      - label: "Git"
+        correct: false
+        why: "Il gère les versions."
+    explanation: "Un bon score ne remplace pas un test avec un lecteur d'écran et au clavier."
