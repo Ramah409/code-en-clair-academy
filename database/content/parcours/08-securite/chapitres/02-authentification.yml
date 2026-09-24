@@ -1,0 +1,535 @@
+slug: sec-authentification
+position: 2
+level: INTERMEDIAIRE
+title: "Authentification et autorisation"
+summary: "Prouver qui on est avec un jeton JWT, puis décider qui a le droit de faire quoi avec Spring Security."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sec-jwt
+    title: "Le jeton JWT"
+    duration: 14
+    objective: "Distinguer authentification et autorisation, décrire les trois parties d'un JWT et expliquer comment il est vérifié."
+    prerequisites: "Chapitre « Les bases de la sécurité »."
+    skills: [auth-jwt]
+    xp: 25
+    memo: |
+      - **Authentification** : prouver **qui** on est (e-mail + mot de passe). **Autorisation** : savoir **ce qu'on a le droit** de faire.
+      - Un **JWT** a trois parties séparées par des points : **en-tête**.**contenu**.**signature**.
+      - Le contenu est seulement **encodé** (Base64), pas chiffré : **tout le monde peut le lire**. Jamais de secret dedans.
+      - La **signature** (HS256 + secret du serveur) prouve que personne n'a modifié le jeton.
+      - Toujours une **expiration** courte (`exp`), par exemple 1 heure.
+      - Le frontend l'envoie dans `Authorization: Bearer <jeton>`.
+    commonMistakes: |
+      - Mettre le mot de passe ou des données sensibles dans le JWT.
+      - Un secret de signature court ou écrit dans le code.
+      - Un jeton sans date d'expiration.
+    blocks:
+      - type: text
+        md: |
+          Après la connexion, l'utilisatrice ne va pas retaper son mot de passe à chaque clic. Le serveur lui
+          donne un **jeton** : une sorte de badge qu'elle montrera à chaque requête.
+      - type: definition
+        id: def-authn-authz
+        term: "Authentification et autorisation"
+        md: |
+          À l'entrée d'un **concert** : le vigile vérifie ta **pièce d'identité** (authentification : qui es-tu ?),
+          puis ton **bracelet** dit si tu as accès à l'espace VIP (autorisation : qu'as-tu le droit de faire ?).
+      - type: question
+        ref: sec-jwt-q1
+        review: def-authn-authz
+      - type: definition
+        id: def-jwt
+        term: "JWT (JSON Web Token)"
+        md: |
+          Un **bracelet de festival** avec un **sceau officiel**. N'importe qui peut lire ce qui est écrit
+          dessus (nom, rôle, date de fin), mais personne ne peut le falsifier sans casser le sceau. Le serveur
+          vérifie le sceau à chaque passage.
+      - type: code
+        id: code-jwt
+        language: text
+        title: "Un JWT décodé"
+        code: |
+          eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhd2FAZXhlbXBsZS5mciIsInJvbGUiOiJVU0VSIiwiZXhwIjoxNzg5MDAwMDAwfQ.k3Jx…
+
+          En-tête   : { "alg": "HS256" }
+          Contenu   : { "sub": "awa@exemple.fr", "role": "USER", "exp": 1789000000 }
+          Signature : HMAC-SHA256(en-tête + "." + contenu, SECRET_DU_SERVEUR)
+        lines:
+          - n: 1
+            note: "Trois morceaux séparés par des points."
+          - n: 3
+            note: "L'algorithme de signature."
+          - n: 4
+            note: "`sub` : qui ; `role` : ses droits ; `exp` : date d'expiration. **Lisible par tous.**"
+          - n: 5
+            note: "Calculée avec un secret que seul le serveur connaît. Si on change le rôle en ADMIN, la signature ne correspond plus."
+      - type: question
+        ref: sec-jwt-q2
+        review: code-jwt
+      - type: text
+        md: "Exercice guidé : remets le parcours du jeton dans l'ordre."
+      - type: exercise
+        ref: sec-ex-jwt-ordre
+      - type: text
+        md: "En autonomie : génère un jeton avec la bibliothèque jjwt."
+      - type: exercise
+        ref: sec-ex-jwt-generer
+      - type: jury
+        items:
+          - q: "Comment fonctionne l'authentification dans votre application ?"
+            a: "L'utilisatrice envoie e-mail et mot de passe à /api/auth/login. Le serveur vérifie l'empreinte BCrypt et renvoie un JWT signé en HS256, qui contient l'e-mail, le rôle et une expiration. Angular l'envoie ensuite dans l'en-tête Authorization grâce à un intercepteur ; un filtre Spring Security vérifie la signature et l'expiration à chaque requête."
+          - q: "Un JWT est-il chiffré ?"
+            a: "Non, il est seulement encodé en Base64 et signé. Tout le monde peut lire son contenu, mais personne ne peut le modifier sans le secret. Je n'y mets donc aucune donnée sensible."
+      - type: quiz
+        items:
+          - ref: sec-jwt-q3
+            review: def-jwt
+          - ref: sec-jwt-q4
+            review: code-jwt
+          - ref: sec-jwt-q5
+            review: def-authn-authz
+    questions:
+      - code: sec-jwt-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: auth-jwt
+        prompt: "Vérifier qu'un utilisateur connecté a le rôle ADMIN, c'est…"
+        choices:
+          - label: "de l'autorisation"
+            correct: true
+            why: "On décide de ses droits."
+          - label: "de l'authentification"
+            correct: false
+            why: "Son identité est déjà prouvée."
+          - label: "du chiffrement"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Qui es-tu ? (authentification) puis Que peux-tu faire ? (autorisation)."
+      - code: sec-jwt-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "On peut stocker le mot de passe de l'utilisateur dans le contenu du JWT puisqu'il est signé."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Signé ne veut pas dire chiffré : tout le monde peut le lire."
+          - label: "Faux"
+            correct: true
+            why: "Le contenu est seulement encodé en Base64."
+        explanation: "Colle un JWT sur jwt.io : tout s'affiche en clair."
+      - code: sec-jwt-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Un pirate modifie `\"role\": \"USER\"` en `\"ADMIN\"` dans son jeton. Que se passe-t-il ?"
+        choices:
+          - label: "La signature ne correspond plus : le serveur rejette le jeton (401)"
+            correct: true
+            why: "Il ne connaît pas le secret pour resigner."
+          - label: "Il devient administrateur"
+            correct: false
+            why: "La signature l'en empêche."
+          - label: "Le serveur corrige le rôle tout seul"
+            correct: false
+            why: "Il refuse simplement le jeton."
+        explanation: "La signature garantit l'intégrité."
+      - code: sec-jwt-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Pourquoi donner une expiration courte au jeton ?"
+        choices:
+          - label: "Un jeton volé ne sert que peu de temps"
+            correct: true
+            why: "On limite les dégâts."
+          - label: "Pour que le jeton soit plus court"
+            correct: false
+            why: "La longueur ne change presque pas."
+          - label: "Ce n'est pas utile"
+            correct: false
+            why: "Un jeton sans fin serait valable pour toujours."
+        explanation: "Un JWT ne se révoque pas facilement : l'expiration est la protection principale."
+      - code: sec-jwt-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Dans quel en-tête HTTP le frontend envoie-t-il le JWT ? (un mot)"
+        answers: ["Authorization"]
+        explanation: "`Authorization: Bearer eyJhbGciOi…`"
+    exercises:
+      - slug: sec-ex-jwt-ordre
+        kind: REMETTRE_ORDRE
+        title: "Le voyage du jeton"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: "Remets dans l'ordre les étapes, de la connexion à une requête protégée."
+        criteria: "Connexion, vérification, émission, stockage, envoi, contrôle."
+        hints:
+          - "Tout commence par l'envoi de l'e-mail et du mot de passe."
+          - "Le serveur vérifie l'empreinte avant de signer un jeton."
+          - "Le jeton est vérifié à chaque requête suivante."
+        solution: |
+          Angular envoie e-mail et mot de passe à /api/auth/login
+          L'API compare le mot de passe avec l'empreinte BCrypt
+          L'API signe un JWT (e-mail, rôle, expiration) et le renvoie
+          Angular garde le jeton en mémoire
+          L'intercepteur ajoute Authorization: Bearer à chaque requête
+          Le filtre JWT vérifie la signature et l'expiration
+        explanation: "Connexion une seule fois, puis le jeton sert de badge."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Angular envoie e-mail et mot de passe à /api/auth/login"
+            - "L'API compare le mot de passe avec l'empreinte BCrypt"
+            - "L'API signe un JWT (e-mail, rôle, expiration) et le renvoie"
+            - "Angular garde le jeton en mémoire"
+            - "L'intercepteur ajoute Authorization: Bearer à chaque requête"
+            - "Le filtre JWT vérifie la signature et l'expiration"
+      - slug: sec-ex-jwt-generer
+        kind: CODE_LIBRE
+        title: "Générer un jeton"
+        difficulty: DIFFICILE
+        skill: auth-jwt
+        statement: |
+          Avec la bibliothèque **jjwt**, écris la méthode `String generer(Utilisateur u)` qui renvoie un jeton :
+          - `subject` : l'e-mail de l'utilisateur (`u.getEmail()`) ;
+          - une information `role` : `u.getRole().name()` ;
+          - date d'émission : maintenant ;
+          - expiration : dans **une heure** (`Instant.now().plus(1, ChronoUnit.HOURS)` ou `plusSeconds(3600)`) ;
+          - signé avec le champ `cle` (déjà construit à partir du secret de l'environnement).
+        criteria: "Jwts.builder, subject, claim role, issuedAt, expiration à +1 h, signWith(cle), compact."
+        hints:
+          - "Commence par `return Jwts.builder()` et termine par `.compact();`."
+          - "`.subject(u.getEmail()).claim(\"role\", u.getRole().name())`"
+          - "`.issuedAt(Date.from(maintenant)).expiration(Date.from(maintenant.plusSeconds(3600))).signWith(cle)`"
+        solution: |
+          public String generer(Utilisateur u) {
+              Instant maintenant = Instant.now();
+              return Jwts.builder()
+                      .subject(u.getEmail())
+                      .claim("role", u.getRole().name())
+                      .issuedAt(Date.from(maintenant))
+                      .expiration(Date.from(maintenant.plusSeconds(3600)))
+                      .signWith(cle)
+                      .compact();
+          }
+        explanation: "Un jeton minimal : qui, quel rôle, quand, jusqu'à quand, signé."
+        xp: 30
+        payload:
+          language: java
+          starter: |
+            public String generer(Utilisateur u) {
+
+            }
+          checks:
+            - pattern: 'Jwts\.builder\s*\(\s*\)'
+              message: "Commence par `Jwts.builder()`."
+            - pattern: '\.(?:subject|setSubject)\s*\(\s*u\.getEmail\s*\(\s*\)\s*\)'
+              message: "Le sujet est l'e-mail : `.subject(u.getEmail())`."
+            - pattern: '\.claim\s*\(\s*"role"\s*,\s*u\.getRole\s*\(\s*\)\s*\.name\s*\(\s*\)\s*\)'
+              message: "Ajoute le rôle : `.claim(\"role\", u.getRole().name())`."
+            - pattern: '\.(?:issuedAt|setIssuedAt)\s*\('
+              message: "Indique la date d'émission avec `.issuedAt(…)`."
+            - pattern: '\.(?:expiration|setExpiration)\s*\([^;]*(?:plusSeconds\s*\(\s*3600\s*\)|plus\s*\(\s*1\s*,\s*ChronoUnit\.HOURS\s*\)|plus\s*\(\s*Duration\.ofHours\s*\(\s*1\s*\)\s*\)|3600000|3_600_000)'
+              message: "L'expiration doit être dans une heure."
+            - pattern: '\.signWith\s*\(\s*cle\s*\)'
+              message: "Signe avec `.signWith(cle)`."
+            - pattern: '\.compact\s*\(\s*\)'
+              message: "Termine par `.compact()` pour obtenir le texte du jeton."
+
+  # ===================================================================== LEÇON 2
+  - slug: sec-spring-security
+    title: "Spring Security : qui a le droit ?"
+    duration: 15
+    objective: "Configurer une SecurityFilterChain sans état, ouvrir les routes publiques, exiger des rôles et vérifier la propriété d'une ressource."
+    prerequisites: "Leçon « Le jeton JWT »."
+    skills: [auth-jwt, securite-owasp]
+    xp: 30
+    memo: |
+      - `SecurityFilterChain` : la **liste des règles** appliquées à chaque requête.
+      - `SessionCreationPolicy.STATELESS` : pas de session serveur, le JWT suffit.
+      - `requestMatchers("/api/auth/**").permitAll()` : routes publiques ; `.hasRole("ADMIN")` : réservées ; `.anyRequest().authenticated()` : tout le reste exige un jeton.
+      - Les règles sont lues **dans l'ordre** : de la plus précise à la plus générale.
+      - `@PreAuthorize("hasRole('ADMIN')")` sur une méthode : autorisation fine.
+      - **Propriété** : vérifier que la ressource appartient bien à l'utilisateur connecté (sinon 403 ou 404).
+    commonMistakes: |
+      - Mettre `anyRequest().permitAll()` pour débloquer un problème.
+      - Placer `anyRequest()` avant les règles précises.
+      - Vérifier le rôle mais oublier de vérifier **à qui** appartient la commande demandée.
+    blocks:
+      - type: text
+        md: |
+          Le jeton dit **qui** fait la requête. Il reste à décider **ce qu'il a le droit de faire**. Spring
+          Security place une série de **contrôles** devant tous les contrôleurs.
+      - type: definition
+        id: def-filter-chain
+        term: "Chaîne de filtres"
+        md: |
+          Les **contrôles d'un aéroport** : vérification du billet, puis de l'identité, puis passage aux
+          rayons X. Chaque requête traverse les filtres dans l'ordre ; si l'un dit non, elle ne va pas plus loin.
+      - type: code
+        id: code-security
+        language: java
+        title: "SecurityConfig.java"
+        code: |
+          @Bean
+          SecurityFilterChain securite(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
+              return http
+                  .csrf(csrf -> csrf.disable())
+                  .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                  .authorizeHttpRequests(auth -> auth
+                      .requestMatchers("/api/auth/**").permitAll()
+                      .requestMatchers(HttpMethod.GET, "/api/produits/**").permitAll()
+                      .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                      .anyRequest().authenticated())
+                  .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                  .build();
+          }
+        lines:
+          - n: 4
+            note: "CSRF désactivé : sans cookie de session, cette attaque ne s'applique pas (le jeton est dans un en-tête)."
+          - n: 5
+            note: "`STATELESS` : aucune session côté serveur."
+          - n: 7
+            note: "Connexion et inscription : ouvertes à tous."
+          - n: 8
+            note: "Le catalogue se consulte sans compte (GET seulement)."
+          - n: 9
+            note: "L'administration exige le rôle ADMIN, sinon **403**."
+          - n: 10
+            note: "Tout le reste exige un jeton valide, sinon **401**. Toujours **en dernier**."
+          - n: 11
+            note: "Notre filtre lit et vérifie le JWT avant les contrôles de Spring."
+      - type: question
+        ref: sec-ss-q1
+        review: code-security
+      - type: definition
+        id: def-idor
+        term: "Vérifier la propriété"
+        md: |
+          Avoir un badge d'hôtel valide ne donne pas accès à **toutes** les chambres, seulement à la **sienne**.
+          `GET /api/commandes/42` : l'utilisatrice est connectée, d'accord… mais la commande 42 est-elle à elle ?
+      - type: code
+        id: code-propriete
+        language: java
+        title: "Dans le service"
+        code: |
+          public CommandeDto lire(Long id, String emailConnecte) {
+              Commande c = commandes.findByIdAndClientEmail(id, emailConnecte)
+                      .orElseThrow(() -> new RessourceIntrouvableException("Commande " + id));
+              return CommandeDto.from(c);
+          }
+        lines:
+          - n: 1
+            note: "L'e-mail vient du jeton vérifié, jamais d'un paramètre envoyé par le client."
+          - n: 2
+            note: "On cherche la commande **et** son propriétaire en une seule requête."
+          - n: 3
+            note: "Une commande d'une autre personne est traitée comme introuvable (404) : on ne révèle même pas qu'elle existe."
+      - type: question
+        ref: sec-ss-q2
+        review: def-idor
+      - type: text
+        md: "Exercice guidé : complète la configuration."
+      - type: exercise
+        ref: sec-ex-security-guide
+      - type: text
+        md: "En autonomie : corrige cette configuration dangereuse."
+      - type: exercise
+        ref: sec-ex-security-corriger
+      - type: jury
+        items:
+          - q: "Comment gérez-vous les rôles ?"
+            a: "Le rôle est stocké en base et placé dans le JWT. Le filtre JWT crée l'Authentication avec l'autorité ROLE_ADMIN ou ROLE_USER. La SecurityFilterChain protège les routes par préfixe (hasRole), et @PreAuthorize permet des règles plus fines sur les méthodes."
+          - q: "Un utilisateur connecté peut-il lire la commande d'un autre ?"
+            a: "Non : le service récupère la commande avec l'identifiant ET l'e-mail extrait du jeton. Si elle ne lui appartient pas, il reçoit 404. C'est la protection contre la faille IDOR, en tête du Top 10 OWASP (contrôle d'accès défaillant)."
+      - type: quiz
+        items:
+          - ref: sec-ss-q3
+            review: code-security
+          - ref: sec-ss-q4
+            review: code-propriete
+          - ref: sec-ss-q5
+            review: def-filter-chain
+    questions:
+      - code: sec-ss-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Pourquoi `anyRequest().authenticated()` doit-il être la dernière règle ?"
+        choices:
+          - label: "Les règles sont lues dans l'ordre : placée avant, elle masquerait les règles précises"
+            correct: true
+            why: "La première règle qui correspond gagne."
+          - label: "Spring trie les règles tout seul"
+            correct: false
+            why: "C'est l'ordre d'écriture qui compte."
+          - label: "Ce n'est pas obligatoire"
+            correct: false
+            why: "Spring lève même une erreur si des règles suivent anyRequest."
+        explanation: "Du plus précis au plus général."
+      - code: sec-ss-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Awa, connectée, change l'URL `/api/commandes/12` en `/api/commandes/13` et voit la commande de Karim. Quelle faille ?"
+        choices:
+          - label: "Un contrôle d'accès défaillant (IDOR)"
+            correct: true
+            why: "On ne vérifie pas à qui appartient la ressource."
+          - label: "Une injection SQL"
+            correct: false
+            why: "Aucune requête n'est détournée."
+          - label: "Une faille XSS"
+            correct: false
+            why: "Aucun script n'est injecté."
+        explanation: "C'est le risque n° 1 du Top 10 OWASP 2021."
+      - code: sec-ss-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Avec une API sans état et un JWT dans l'en-tête Authorization, on peut désactiver la protection CSRF."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le navigateur n'envoie pas l'en-tête Authorization tout seul."
+          - label: "Faux"
+            correct: false
+            why: "CSRF exploite les cookies envoyés automatiquement ; ici il n'y en a pas."
+        explanation: "Si le jeton était dans un cookie, il faudrait garder CSRF."
+      - code: sec-ss-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "D'où doit venir l'e-mail de l'utilisateur utilisé pour filtrer ses commandes ?"
+        choices:
+          - label: "Du jeton vérifié (le SecurityContext)"
+            correct: true
+            why: "Le client ne peut pas le falsifier."
+          - label: "D'un paramètre `?email=` envoyé par Angular"
+            correct: false
+            why: "N'importe qui pourrait mettre l'e-mail d'un autre."
+          - label: "Du localStorage"
+            correct: false
+            why: "Il est contrôlé par le client."
+        explanation: "L'identité vient toujours d'une source vérifiée par le serveur."
+      - code: sec-ss-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: auth-jwt
+        prompt: "Une requête sans jeton arrive sur une route qui exige `authenticated()`. Quel statut ?"
+        choices:
+          - label: "401"
+            correct: true
+            why: "Identité inconnue."
+          - label: "403"
+            correct: false
+            why: "403 = identité connue mais droit refusé."
+          - label: "200"
+            correct: false
+            why: "La requête est refusée."
+        explanation: "Pas de badge : 401. Mauvais badge : 403."
+    exercises:
+      - slug: sec-ex-security-guide
+        kind: COMPLETER
+        title: "Compléter la configuration"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: "Complète : sans session, route publique, route administrateur, tout le reste authentifié."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Pas de session : STATELESS."
+          - "Route ouverte : permitAll ; réservée : hasRole."
+          - "STATELESS, permitAll, hasRole, authenticated."
+        solution: '["STATELESS", "permitAll", "hasRole", "authenticated"]'
+        explanation: "Sans état, public, réservé, authentifié : les quatre réglages de base."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.[[1]]))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").[[2]]()
+                .requestMatchers("/api/admin/**").[[3]]("ADMIN")
+                .anyRequest().[[4]]())
+          blanks:
+            - ["STATELESS"]
+            - ["permitAll"]
+            - ["hasRole"]
+            - ["authenticated"]
+      - slug: sec-ex-security-corriger
+        kind: CORRIGER_ERREUR
+        title: "Une porte grande ouverte"
+        difficulty: INTERMEDIAIRE
+        skill: auth-jwt
+        statement: |
+          Pour « faire marcher » l'application, quelqu'un a tout ouvert. Corrige les règles :
+          - `/api/auth/**` reste public ;
+          - `/api/admin/**` exige le rôle `ADMIN` ;
+          - toutes les autres requêtes exigent d'être authentifié (au lieu de `permitAll`).
+        criteria: "Plus de anyRequest().permitAll(), /api/admin/** en hasRole(\"ADMIN\"), anyRequest().authenticated() en dernier."
+        hints:
+          - "Ajoute `.requestMatchers(\"/api/admin/**\").hasRole(\"ADMIN\")` avant la dernière règle."
+          - "Remplace `anyRequest().permitAll()` par `anyRequest().authenticated()`."
+          - "L'ordre : auth, admin, puis anyRequest."
+        solution: |
+          .authorizeHttpRequests(auth -> auth
+              .requestMatchers("/api/auth/**").permitAll()
+              .requestMatchers("/api/admin/**").hasRole("ADMIN")
+              .anyRequest().authenticated())
+        explanation: "On n'ouvre que le strict nécessaire ; tout le reste est fermé par défaut."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                .anyRequest().permitAll())
+          checks:
+            - pattern: 'anyRequest\s*\(\s*\)\s*\.\s*permitAll'
+              absent: true
+              message: "Ne laisse pas `anyRequest().permitAll()` : tout serait ouvert."
+            - pattern: 'requestMatchers\s*\(\s*"/api/auth/\*\*"\s*\)\s*\.\s*permitAll\s*\(\s*\)'
+              message: "Garde `/api/auth/**` en `permitAll()`."
+            - pattern: 'requestMatchers\s*\(\s*"/api/admin/\*\*"\s*\)\s*\.\s*hasRole\s*\(\s*"ADMIN"\s*\)'
+              message: "Ajoute `.requestMatchers(\"/api/admin/**\").hasRole(\"ADMIN\")`."
+            - pattern: 'hasRole\s*\(\s*"ADMIN"\s*\)[\s\S]*anyRequest\s*\(\s*\)\s*\.\s*authenticated\s*\(\s*\)'
+              message: "Termine par `.anyRequest().authenticated()`, après la règle administrateur."
+
+bank:
+  - code: sec-c2-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: auth-jwt
+    prompt: "Où garder le JWT côté Angular pour limiter le risque en cas de faille XSS ?"
+    choices:
+      - label: "En mémoire (un signal d'un service), avec une expiration courte"
+        correct: true
+        why: "Un script injecté aura plus de mal à le récupérer durablement."
+      - label: "Dans le code source d'Angular"
+        correct: false
+        why: "Le jeton change à chaque connexion."
+      - label: "Dans l'URL de chaque page"
+        correct: false
+        why: "Il apparaîtrait dans l'historique et les logs."
+    explanation: "Le localStorage est pratique mais lisible par tout script de la page : c'est un compromis à justifier."
+  - code: sec-c2-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: auth-jwt
+    prompt: "Quelle longueur minimale pour le secret HS256 ?"
+    choices:
+      - label: "256 bits (32 octets) générés aléatoirement"
+        correct: true
+        why: "La bibliothèque jjwt refuse une clé plus courte."
+      - label: "8 caractères"
+        correct: false
+        why: "Beaucoup trop court : on pourrait le deviner."
+      - label: "Peu importe"
+        correct: false
+        why: "Un secret faible permet de fabriquer de faux jetons."
+    explanation: "Exemple : `openssl rand -base64 48`, stocké dans une variable d'environnement."

@@ -1,0 +1,23 @@
+slug: securite
+version: 1
+position: 8
+title: "Sécuriser une application"
+category: SECURITE
+icon: shield
+summary: "Mots de passe, JWT, Spring Security, failles OWASP (injection, XSS, contrôle d'accès), RGPD et gestion des secrets."
+description: |
+  Une application utile attire aussi des personnes malveillantes. **Sécuriser**, c'est fermer les portes
+  qu'elles pourraient ouvrir : voler des mots de passe, lire les données des autres, modifier ce qui ne leur
+  appartient pas.
+
+  Bonne nouvelle : la plupart des attaques utilisent **toujours les mêmes failles**. Elles sont listées par
+  l'**OWASP**, une association qui publie le « Top 10 » des risques du web. Connaître ces failles et leurs
+  parades suffit à protéger l'essentiel.
+
+  **Au programme** : les grands principes, le stockage des mots de passe, l'authentification par JWT, Spring
+  Security, les injections SQL, les failles XSS et CSRF, le contrôle d'accès, le RGPD et les secrets, puis les
+  questions du jury.
+
+  **Prérequis** : les parcours « Angular » et « Spring Boot » (au moins les deux premiers chapitres).
+examQuestionCount: 30
+examTimeLimitMinutes: 35

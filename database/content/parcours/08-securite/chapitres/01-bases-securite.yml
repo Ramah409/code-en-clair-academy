@@ -1,0 +1,524 @@
+slug: sec-bases
+position: 1
+level: DEBUTANT
+title: "Les bases de la sécurité"
+summary: "Les grands principes (confidentialité, intégrité, disponibilité, moindre privilège, défense en profondeur) et le bon stockage des mots de passe."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sec-principes
+    title: "Les grands principes"
+    duration: 12
+    objective: "Nommer les trois objectifs de la sécurité, appliquer le moindre privilège et la défense en profondeur, et comprendre le rôle de HTTPS."
+    prerequisites: "Parcours « Spring Boot » (chapitre 1)."
+    skills: [securite-owasp]
+    xp: 20
+    memo: |
+      - **Confidentialité** : seules les bonnes personnes lisent les données.
+      - **Intégrité** : les données ne sont pas modifiées en cachette.
+      - **Disponibilité** : le service reste accessible.
+      - **Moindre privilège** : chacun n'a que les droits dont il a **vraiment** besoin.
+      - **Défense en profondeur** : plusieurs protections empilées ; si l'une cède, les autres tiennent.
+      - **HTTPS** chiffre les échanges entre le navigateur et le serveur.
+      - Règle d'or : **ne jamais faire confiance** à ce qui vient du client.
+    commonMistakes: |
+      - Compter uniquement sur le frontend pour protéger les données.
+      - Donner le rôle administrateur « pour simplifier ».
+      - Utiliser le compte superutilisateur de PostgreSQL pour l'application.
+    blocks:
+      - type: text
+        md: |
+          La sécurité n'est pas un bouton qu'on active à la fin. C'est une **habitude** prise à chaque ligne de
+          code. Tout commence par trois objectifs et deux principes.
+      - type: definition
+        id: def-cia
+        term: "Confidentialité, intégrité, disponibilité"
+        md: |
+          Pense à une **lettre** : la **confidentialité**, c'est que personne d'autre ne la lise ; l'**intégrité**,
+          que personne ne change son contenu en route ; la **disponibilité**, qu'elle arrive bien, au bon moment.
+      - type: question
+        ref: sec-pr-q1
+        review: def-cia
+      - type: definition
+        id: def-moindre-privilege
+        term: "Moindre privilège"
+        md: |
+          Le **trousseau de clés** d'un employé : l'agent d'entretien a la clé du local ménage, pas celle du
+          coffre. Si sa clé est volée, les dégâts restent limités.
+      - type: definition
+        id: def-defense-profondeur
+        term: "Défense en profondeur"
+        md: |
+          Un **château fort** : des douves, puis un rempart, puis une porte, puis des gardes. Une application,
+          c'est pareil : validation Angular, **puis** validation Spring, **puis** contraintes en base, **puis**
+          droits limités du compte PostgreSQL.
+      - type: compare
+        left:
+          title: "Une seule barrière"
+          code: |
+            Angular cache le bouton « Supprimer »
+            → l'API supprime pour n'importe qui
+          language: text
+        right:
+          title: "Plusieurs barrières"
+          code: |
+            Angular cache le bouton
+            + l'API vérifie le rôle ADMIN
+            + l'API vérifie que la ressource existe
+            + le compte BDD n'a pas DROP TABLE
+          language: text
+      - type: question
+        ref: sec-pr-q2
+        review: def-defense-profondeur
+      - type: text
+        md: "Exercice guidé : associe chaque situation au principe concerné."
+      - type: exercise
+        ref: sec-ex-principes-guide
+      - type: text
+        md: "En autonomie : décris les barrières de ton application."
+      - type: exercise
+        ref: sec-ex-barrieres
+      - type: jury
+        items:
+          - q: "Quels principes de sécurité avez-vous appliqués ?"
+            a: "Le moindre privilège (rôles USER et ADMIN, compte PostgreSQL applicatif sans droits d'administration), la défense en profondeur (validation Angular, validation Spring, contraintes SQL), et le principe de ne jamais faire confiance au client : chaque requête est authentifiée et autorisée côté API."
+          - q: "Pourquoi HTTPS est-il indispensable ?"
+            a: "Il chiffre les échanges : sans lui, le mot de passe et le jeton JWT circulent en clair et peuvent être interceptés sur un Wi-Fi public. Il garantit aussi qu'on parle bien au bon serveur grâce au certificat."
+      - type: quiz
+        items:
+          - ref: sec-pr-q3
+            review: def-moindre-privilege
+          - ref: sec-pr-q4
+            review: def-cia
+          - ref: sec-pr-q5
+            review: def-defense-profondeur
+    questions:
+      - code: sec-pr-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: securite-owasp
+        prompt: "Un pirate modifie le montant d'une commande pendant son envoi. Quel objectif est touché ?"
+        choices:
+          - label: "L'intégrité"
+            correct: true
+            why: "Les données ont été modifiées."
+          - label: "La disponibilité"
+            correct: false
+            why: "Le service fonctionne toujours."
+          - label: "La confidentialité"
+            correct: false
+            why: "Le problème n'est pas la lecture."
+        explanation: "Intégrité = les données restent exactes."
+      - code: sec-pr-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: securite-owasp
+        prompt: "Cacher le bouton « Supprimer » dans Angular suffit à empêcher les suppressions non autorisées."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "On peut appeler l'API directement (Postman, curl)."
+          - label: "Faux"
+            correct: true
+            why: "L'API doit vérifier les droits."
+        explanation: "Le frontend est une commodité, pas une barrière."
+      - code: sec-pr-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quel compte l'application Spring Boot doit-elle utiliser pour se connecter à PostgreSQL ?"
+        choices:
+          - label: "Un compte dédié avec seulement les droits nécessaires"
+            correct: true
+            why: "Moindre privilège."
+          - label: "Le superutilisateur postgres"
+            correct: false
+            why: "Une faille donnerait tous les pouvoirs."
+          - label: "Le compte personnel du développeur"
+            correct: false
+            why: "Droits inadaptés et traçabilité perdue."
+        explanation: "Si le compte est compromis, les dégâts restent limités."
+      - code: sec-pr-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: securite-owasp
+        prompt: "Un site est saturé de fausses requêtes et plus personne ne peut s'y connecter. Quel objectif est touché ?"
+        choices:
+          - label: "La disponibilité"
+            correct: true
+            why: "Le service n'est plus accessible."
+          - label: "L'intégrité"
+            correct: false
+            why: "Rien n'a été modifié."
+          - label: "La confidentialité"
+            correct: false
+            why: "Rien n'a été lu."
+        explanation: "C'est une attaque par déni de service."
+      - code: sec-pr-q5
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quelles protections forment une défense en profondeur contre une donnée invalide ? (plusieurs réponses)"
+        choices:
+          - label: "Validation du formulaire Angular"
+            correct: true
+            why: "Première barrière, pour le confort."
+          - label: "@Valid sur le DTO Spring"
+            correct: true
+            why: "Deuxième barrière, obligatoire."
+          - label: "Contrainte CHECK ou NOT NULL en base"
+            correct: true
+            why: "Dernière barrière."
+          - label: "Un message « merci de ne pas tricher »"
+            correct: false
+            why: "Ce n'est pas une protection."
+        explanation: "Plusieurs couches indépendantes."
+    exercises:
+      - slug: sec-ex-principes-guide
+        kind: COMPLETER
+        title: "Principe par situation"
+        difficulty: FACILE
+        skill: securite-owasp
+        statement: "Complète avec : confidentialité, intégrité, disponibilité, privilège."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Lire des données interdites touche la confidentialité."
+          - "Donner seulement les droits utiles : moindre privilège."
+          - "confidentialité, intégrité, disponibilité, privilège."
+        solution: '["confidentialité", "intégrité", "disponibilité", "privilège"]'
+        explanation: "Les trois objectifs et le principe de base."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Un utilisateur lit les commandes d'un autre      : atteinte à la [[1]]
+            Un prix est changé dans la requête                : atteinte à l'[[2]]
+            Le serveur tombe pendant les soldes               : atteinte à la [[3]]
+            Le compte BDD ne peut pas supprimer de table      : principe du moindre [[4]]
+          blanks:
+            - ["confidentialité", "confidentialite"]
+            - ["intégrité", "integrite"]
+            - ["disponibilité", "disponibilite"]
+            - ["privilège", "privilege"]
+      - slug: sec-ex-barrieres
+        kind: CODE_LIBRE
+        title: "Les barrières de mon application"
+        difficulty: INTERMEDIAIRE
+        skill: securite-owasp
+        statement: |
+          Décris, en une ligne chacune, **quatre barrières** qui empêchent un utilisateur simple de supprimer
+          un produit dans une application Angular + Spring Boot + PostgreSQL. Commence chaque ligne par un
+          tiret `-`. Tu dois parler du **frontend**, du **jeton** (ou de l'authentification), du **rôle** et de
+          la **base de données**.
+        criteria: "Quatre lignes à tiret couvrant frontend, jeton/authentification, rôle et base de données."
+        hints:
+          - "Côté Angular : garde de route et bouton masqué."
+          - "Côté API : jeton JWT vérifié, puis rôle ADMIN exigé."
+          - "Côté base : compte applicatif aux droits limités, clés étrangères."
+        solution: |
+          - Frontend : la garde et le bouton masqué empêchent l'accès à l'écran d'administration.
+          - Authentification : l'API refuse toute requête sans jeton JWT valide (401).
+          - Rôle : la route DELETE exige le rôle ADMIN, sinon 403.
+          - Base de données : le compte applicatif n'a que les droits nécessaires et les clés étrangères protègent les données liées.
+        explanation: "Quatre couches indépendantes : si l'une est contournée, les autres protègent encore."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            -
+          checks:
+            - pattern: '\A(?>[\s\S]*?^\s*-\s*\S){4}'
+              message: "Écris au moins quatre lignes commençant par un tiret."
+            - pattern: '(?i)front|angular|garde|guard'
+              message: "Parle de la barrière côté frontend (Angular, garde)."
+            - pattern: '(?i)jeton|jwt|token|authentifi'
+              message: "Parle de l'authentification (jeton JWT)."
+            - pattern: '(?i)r[ôo]le|admin'
+              message: "Parle du rôle exigé (ADMIN)."
+            - pattern: '(?i)base\s+de\s+donn[ée]es|bdd|postgres|sql'
+              message: "Parle de la barrière côté base de données."
+
+  # ===================================================================== LEÇON 2
+  - slug: sec-mots-de-passe
+    title: "Stocker les mots de passe"
+    duration: 13
+    objective: "Distinguer chiffrement et hachage, expliquer le sel et utiliser BCrypt avec Spring Security."
+    prerequisites: "Leçon « Les grands principes »."
+    skills: [securite-owasp, auth-jwt]
+    xp: 25
+    memo: |
+      - On ne stocke **jamais** un mot de passe en clair, ni chiffré : on stocke son **empreinte** (hachage).
+      - **Hachage** : sens unique, on ne peut pas revenir en arrière. **Chiffrement** : réversible avec une clé.
+      - **Sel** : une valeur aléatoire ajoutée avant le hachage ; deux mots de passe identiques donnent deux empreintes différentes.
+      - **BCrypt** (ou Argon2) : volontairement **lent**, ce qui décourage les essais en masse. MD5 et SHA-1 sont interdits.
+      - Spring : `passwordEncoder.encode(motDePasse)` à l'inscription, `passwordEncoder.matches(saisi, empreinte)` à la connexion.
+    commonMistakes: |
+      - Comparer `saisi.equals(empreinte)` : ça ne marche jamais, il faut `matches`.
+      - Utiliser SHA-256 seul, sans sel et trop rapide.
+      - Dire « e-mail inconnu » ou « mot de passe faux » séparément : on révèle quels e-mails existent.
+    blocks:
+      - type: text
+        md: |
+          Si la base est volée un jour, les mots de passe ne doivent **pas** être lisibles. Beaucoup de gens
+          réutilisent le même mot de passe partout : une fuite chez toi ouvrirait leurs autres comptes.
+      - type: definition
+        id: def-hachage
+        term: "Hachage"
+        md: |
+          Un **hachoir à viande** : on met un steak, il en sort de la viande hachée. Impossible de reconstituer
+          le steak. Mais le même steak donne toujours la même viande hachée : on peut **comparer** sans
+          connaître l'original.
+      - type: definition
+        id: def-sel
+        term: "Sel"
+        md: |
+          Une **pincée d'ingrédient au hasard** ajoutée avant de hacher. Deux personnes avec le même mot de
+          passe `Soleil2024` obtiennent des empreintes différentes. Les tables de mots de passe pré-calculés
+          deviennent inutiles. BCrypt ajoute le sel **tout seul**.
+      - type: code
+        id: code-bcrypt
+        language: java
+        title: "Inscription et connexion"
+        code: |
+          @Bean
+          PasswordEncoder passwordEncoder() {
+              return new BCryptPasswordEncoder();
+          }
+
+          // Inscription
+          String empreinte = passwordEncoder.encode(req.motDePasse());
+          utilisateurs.save(new Utilisateur(req.email(), empreinte));
+
+          // Connexion
+          Utilisateur u = utilisateurs.findByEmail(email)
+                  .orElseThrow(() -> new BadCredentialsException("Identifiants invalides"));
+          if (!passwordEncoder.matches(motDePasseSaisi, u.getEmpreinte())) {
+              throw new BadCredentialsException("Identifiants invalides");
+          }
+        lines:
+          - n: 3
+            note: "BCrypt : lent exprès, avec sel automatique."
+          - n: 7
+            note: "`encode` produit une empreinte du type `$2a$10$…` qui contient le sel."
+          - n: 8
+            note: "On enregistre **l'empreinte**, jamais le mot de passe."
+          - n: 12
+            note: "Même message si l'e-mail est inconnu…"
+          - n: 13
+            note: "`matches` rehache la saisie avec le même sel et compare."
+          - n: 14
+            note: "… ou si le mot de passe est faux : on ne révèle rien."
+      - type: question
+        ref: sec-mdp-q1
+        review: def-hachage
+      - type: question
+        ref: sec-mdp-q2
+        review: code-bcrypt
+      - type: text
+        md: "Exercice guidé : complète l'inscription."
+      - type: exercise
+        ref: sec-ex-bcrypt-guide
+      - type: text
+        md: "En autonomie : corrige cette connexion dangereuse."
+      - type: exercise
+        ref: sec-ex-connexion
+      - type: jury
+        items:
+          - q: "Comment stockez-vous les mots de passe ?"
+            a: "Hachés avec BCrypt via le PasswordEncoder de Spring Security : algorithme lent, avec un sel aléatoire intégré à chaque empreinte. Je ne stocke jamais le mot de passe en clair ni chiffré, et je compare avec matches()."
+          - q: "Quelle différence entre hachage et chiffrement ?"
+            a: "Le chiffrement est réversible avec une clé : on retrouve le texte d'origine. Le hachage est à sens unique : on ne peut que comparer deux empreintes. Pour un mot de passe, on n'a jamais besoin de le relire, donc on le hache."
+      - type: quiz
+        items:
+          - ref: sec-mdp-q3
+            review: def-sel
+          - ref: sec-mdp-q4
+            review: code-bcrypt
+          - ref: sec-mdp-q5
+            review: code-bcrypt
+    questions:
+      - code: sec-mdp-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: securite-owasp
+        prompt: "Pourquoi hacher plutôt que chiffrer les mots de passe ?"
+        choices:
+          - label: "Le hachage est à sens unique : même avec la base, on ne retrouve pas le mot de passe"
+            correct: true
+            why: "Pas de clé à voler."
+          - label: "Le hachage est plus court"
+            correct: false
+            why: "La longueur n'est pas l'argument."
+          - label: "Le chiffrement est interdit"
+            correct: false
+            why: "Il est utile ailleurs, pas pour les mots de passe."
+        explanation: "On n'a jamais besoin de relire un mot de passe, seulement de le comparer."
+      - code: sec-mdp-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Comment vérifier un mot de passe saisi avec Spring Security ?"
+        choices:
+          - label: "passwordEncoder.matches(saisi, empreinte)"
+            correct: true
+            why: "Il rehache avec le bon sel et compare."
+          - label: "saisi.equals(empreinte)"
+            correct: false
+            why: "Un texte ne sera jamais égal à son empreinte."
+          - label: "passwordEncoder.encode(saisi).equals(empreinte)"
+            correct: false
+            why: "Un nouveau sel donne une empreinte différente."
+        explanation: "Toujours `matches`."
+      - code: sec-mdp-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Avec BCrypt, deux utilisateurs ayant le même mot de passe ont la même empreinte en base."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Chaque empreinte a son propre sel."
+          - label: "Faux"
+            correct: true
+            why: "Le sel aléatoire rend les empreintes différentes."
+        explanation: "Le sel empêche de repérer les mots de passe identiques."
+      - code: sec-mdp-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quel message afficher quand la connexion échoue ?"
+        choices:
+          - label: "« Identifiants invalides », dans tous les cas"
+            correct: true
+            why: "On ne révèle pas si l'e-mail existe."
+          - label: "« Cet e-mail n'existe pas »"
+            correct: false
+            why: "Un attaquant apprend quels e-mails sont inscrits."
+          - label: "« Mot de passe faux pour cet e-mail »"
+            correct: false
+            why: "Même problème : l'e-mail est confirmé."
+        explanation: "Un message unique empêche l'énumération des comptes."
+      - code: sec-mdp-q5
+        kind: TEXTE
+        difficulty: 1
+        skill: securite-owasp
+        prompt: "Quel algorithme de hachage lent est fourni par Spring Security et recommandé pour les mots de passe ? (un nom)"
+        answers: ["BCrypt", "bcrypt", "Argon2", "argon2"]
+        explanation: "BCrypt (ou Argon2). Jamais MD5 ni SHA-1."
+    exercises:
+      - slug: sec-ex-bcrypt-guide
+        kind: COMPLETER
+        title: "Compléter l'inscription"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: "Complète : l'encodeur BCrypt, le hachage à l'inscription et la comparaison à la connexion."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La classe s'appelle BCryptPasswordEncoder."
+          - "À l'inscription : encode ; à la connexion : matches."
+          - "BCryptPasswordEncoder, encode, matches."
+        solution: '["BCryptPasswordEncoder", "encode", "matches"]'
+        explanation: "encode pour enregistrer, matches pour vérifier."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @Bean PasswordEncoder passwordEncoder() { return new [[1]](); }
+
+            String empreinte = passwordEncoder.[[2]](req.motDePasse());
+
+            boolean ok = passwordEncoder.[[3]](saisi, utilisateur.getEmpreinte());
+          blanks:
+            - ["BCryptPasswordEncoder"]
+            - ["encode"]
+            - ["matches"]
+      - slug: sec-ex-connexion
+        kind: CORRIGER_ERREUR
+        title: "Une connexion trop bavarde"
+        difficulty: INTERMEDIAIRE
+        skill: auth-jwt
+        statement: |
+          Cette méthode de connexion a trois défauts :
+          - elle compare le mot de passe avec `equals` ;
+          - elle dit si l'e-mail existe (« E-mail inconnu ») ;
+          - elle écrit le mot de passe dans les logs.
+          Corrige-la : `passwordEncoder.matches`, le **même** message « Identifiants invalides » dans les deux
+          cas, et plus aucun log du mot de passe.
+        criteria: "matches utilisé, plus d'equals sur le mot de passe, plus de « E-mail inconnu », plus de log du mot de passe."
+        hints:
+          - "`if (!passwordEncoder.matches(motDePasse, u.getEmpreinte()))`"
+          - "Remplace « E-mail inconnu » par « Identifiants invalides »."
+          - "Supprime la ligne `log.info(...)` qui contient le mot de passe."
+        solution: |
+          public Utilisateur connecter(String email, String motDePasse) {
+              Utilisateur u = utilisateurs.findByEmail(email)
+                      .orElseThrow(() -> new BadCredentialsException("Identifiants invalides"));
+              if (!passwordEncoder.matches(motDePasse, u.getEmpreinte())) {
+                  throw new BadCredentialsException("Identifiants invalides");
+              }
+              return u;
+          }
+        explanation: "La connexion ne révèle rien, ne journalise aucun secret et compare correctement."
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            public Utilisateur connecter(String email, String motDePasse) {
+                log.info("Connexion de " + email + " avec " + motDePasse);
+                Utilisateur u = utilisateurs.findByEmail(email)
+                        .orElseThrow(() -> new BadCredentialsException("E-mail inconnu"));
+                if (!motDePasse.equals(u.getEmpreinte())) {
+                    throw new BadCredentialsException("Mot de passe incorrect");
+                }
+                return u;
+            }
+          checks:
+            - pattern: 'passwordEncoder\.matches\s*\(\s*motDePasse\s*,\s*\w+\.getEmpreinte\s*\(\s*\)\s*\)'
+              message: "Compare avec `passwordEncoder.matches(motDePasse, u.getEmpreinte())`."
+            - pattern: 'motDePasse\.equals\s*\('
+              absent: true
+              message: "N'utilise pas `equals` pour comparer un mot de passe à une empreinte."
+            - pattern: '(?i)e-mail\s+inconnu|mot\s+de\s+passe\s+incorrect'
+              absent: true
+              message: "Utilise le même message « Identifiants invalides » dans les deux cas."
+            - pattern: '\A(?>[\s\S]*?"Identifiants invalides"){2}'
+              message: "Les deux erreurs doivent dire « Identifiants invalides »."
+            - pattern: 'log\.\w+\s*\([^;]*motDePasse'
+              absent: true
+              message: "N'écris jamais le mot de passe dans les logs."
+
+bank:
+  - code: sec-c1-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: securite-owasp
+    prompt: "Qu'est-ce que l'OWASP ?"
+    choices:
+      - label: "Une fondation qui publie notamment le Top 10 des risques de sécurité web"
+        correct: true
+        why: "La référence du domaine."
+      - label: "Un antivirus"
+        correct: false
+        why: "Ce n'est pas un logiciel."
+      - label: "Un langage de programmation"
+        correct: false
+        why: "C'est une communauté."
+    explanation: "Open Worldwide Application Security Project."
+  - code: sec-c1-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: securite-owasp
+    prompt: "Pourquoi un algorithme de hachage de mots de passe doit-il être lent ?"
+    choices:
+      - label: "Pour rendre très coûteux les essais de milliards de mots de passe"
+        correct: true
+        why: "Un attaquant teste des candidats en masse."
+      - label: "Pour économiser la batterie"
+        correct: false
+        why: "Aucun rapport."
+      - label: "Ce n'est pas souhaitable"
+        correct: false
+        why: "C'est justement la qualité recherchée."
+    explanation: "Quelques dizaines de millisecondes pour un utilisateur, des siècles pour un attaquant."

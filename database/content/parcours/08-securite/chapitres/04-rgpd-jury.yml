@@ -1,0 +1,492 @@
+slug: sec-rgpd-jury
+position: 4
+level: EXAMEN
+title: "RGPD, secrets et jury sécurité"
+summary: "Protéger les données personnelles selon le RGPD, gérer les secrets d'une application, puis défendre ses choix de sécurité devant le jury."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sec-rgpd-secrets
+    title: "Le RGPD et les secrets"
+    duration: 14
+    objective: "Appliquer les principes du RGPD dans une application (minimisation, consentement, droits, conservation) et garder les secrets hors du code."
+    prerequisites: "Chapitre « Les failles du Top 10 OWASP »."
+    skills: [rgpd-secrets]
+    xp: 25
+    memo: |
+      - **Donnée personnelle** : toute information qui permet d'identifier une personne (nom, e-mail, adresse IP…).
+      - **Minimisation** : ne collecter que ce qui est **nécessaire** au service.
+      - **Base légale** : consentement, contrat, obligation légale… ; le consentement est libre, éclairé, et **retirable**.
+      - **Droits** : accès, rectification, effacement, portabilité, opposition. L'application doit permettre de les exercer.
+      - **Durée de conservation** limitée, puis suppression ou anonymisation.
+      - **Secrets** (mots de passe BDD, clé JWT, clés d'API) : variables d'environnement, `.env` dans `.gitignore`, jamais dans Git.
+    commonMistakes: |
+      - Demander la date de naissance « au cas où ».
+      - Une case de consentement **précochée**.
+      - Pas de moyen de supprimer son compte.
+      - Un fichier `.env` poussé sur GitHub.
+    blocks:
+      - type: text
+        md: |
+          Le **RGPD** (Règlement général sur la protection des données) est une loi européenne. Il protège les
+          personnes dont ton application enregistre les informations. Pour un développeur, il se traduit par
+          des choix **très concrets**.
+      - type: definition
+        id: def-minimisation
+        term: "Minimisation"
+        md: |
+          Faire ses **valises au plus juste** : on n'emporte que ce qui sert au voyage. Moins de données
+          collectées, c'est moins de données à protéger… et moins à perdre en cas de fuite.
+      - type: compare
+        left:
+          title: "Trop de données"
+          code: |
+            Inscription à une newsletter :
+            - nom, prénom
+            - e-mail
+            - date de naissance
+            - adresse postale
+            - téléphone
+          language: text
+        right:
+          title: "Minimisé"
+          code: |
+            Inscription à une newsletter :
+            - e-mail
+            - case de consentement
+              (non cochée par défaut)
+          language: text
+      - type: question
+        ref: sec-rg-q1
+        review: def-minimisation
+      - type: definition
+        id: def-droits
+        term: "Les droits des personnes"
+        md: |
+          Chaque personne peut demander : **voir** ses données (accès), les **corriger** (rectification), les
+          **effacer** (droit à l'oubli), les **récupérer** dans un format lisible (portabilité). Dans
+          l'application : une page « Mon compte » avec export et suppression.
+      - type: code
+        id: code-suppression
+        language: java
+        title: "Supprimer son compte"
+        code: |
+          @DeleteMapping("/api/moi")
+          public ResponseEntity<Void> supprimerMonCompte(Authentication auth) {
+              service.supprimerCompte(auth.getName());
+              return ResponseEntity.noContent().build();
+          }
+
+          @Transactional
+          public void supprimerCompte(String email) {
+              Utilisateur u = utilisateurs.findByEmail(email).orElseThrow();
+              commandes.anonymiserClient(u.getId());
+              utilisateurs.delete(u);
+          }
+        lines:
+          - n: 2
+            note: "L'utilisateur est identifié par son jeton : il ne peut supprimer que **son** compte."
+          - n: 10
+            note: "Les factures doivent être gardées (obligation légale) : on les **anonymise** au lieu de les supprimer."
+          - n: 11
+            note: "Puis on supprime le compte et ses données personnelles."
+      - type: question
+        ref: sec-rg-q2
+        review: code-suppression
+      - type: text
+        md: "Exercice guidé : complète le fichier .gitignore et la configuration."
+      - type: exercise
+        ref: sec-ex-secrets-guide
+      - type: text
+        md: "En autonomie : rédige la mention d'information d'un formulaire."
+      - type: exercise
+        ref: sec-ex-mention-rgpd
+      - type: jury
+        items:
+          - q: "Comment avez-vous pris en compte le RGPD ?"
+            a: "Minimisation (seulement les champs utiles), consentement explicite non précoché, mots de passe hachés, HTTPS, droits limités par rôle, et une page Mon compte pour consulter, modifier, exporter et supprimer ses données. Les données obligatoires comme les factures sont anonymisées plutôt que supprimées."
+          - q: "Où sont stockés vos secrets ?"
+            a: "Dans des variables d'environnement : un fichier .env local ignoré par Git, et les secrets du serveur ou de GitHub Actions en production. Le dépôt ne contient qu'un .env.example avec des valeurs factices."
+      - type: quiz
+        items:
+          - ref: sec-rg-q3
+            review: def-droits
+          - ref: sec-rg-q4
+            review: def-minimisation
+          - ref: sec-rg-q5
+            review: code-suppression
+    questions:
+      - code: sec-rg-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: rgpd-secrets
+        prompt: "Pour une prise de rendez-vous chez un coiffeur, quelle donnée est inutile ?"
+        choices:
+          - label: "Le numéro de sécurité sociale"
+            correct: true
+            why: "Aucun rapport avec le service."
+          - label: "Le prénom"
+            correct: false
+            why: "Utile pour accueillir la personne."
+          - label: "Un moyen de contact"
+            correct: false
+            why: "Utile pour confirmer ou annuler."
+        explanation: "Minimisation : seulement ce qui sert au service."
+      - code: sec-rg-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: "Pour respecter le droit à l'effacement, on doit aussi supprimer les factures, même si la loi impose de les garder."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Une obligation légale de conservation s'applique."
+          - label: "Faux"
+            correct: true
+            why: "On les garde, en retirant ce qui n'est pas nécessaire (anonymisation partielle)."
+        explanation: "Le RGPD s'articule avec les autres lois."
+      - code: sec-rg-q3
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: "Quels droits le RGPD donne-t-il aux personnes ? (plusieurs réponses)"
+        choices:
+          - label: "Accéder à leurs données"
+            correct: true
+            why: "Droit d'accès."
+          - label: "Les faire effacer"
+            correct: true
+            why: "Droit à l'effacement."
+          - label: "Les récupérer dans un format lisible"
+            correct: true
+            why: "Droit à la portabilité."
+          - label: "Lire les données des autres utilisateurs"
+            correct: false
+            why: "Au contraire : chacun ne voit que les siennes."
+        explanation: "Aussi : rectification, opposition, limitation."
+      - code: sec-rg-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: rgpd-secrets
+        prompt: "Une case « J'accepte de recevoir des offres » doit être…"
+        choices:
+          - label: "décochée par défaut"
+            correct: true
+            why: "Le consentement doit être un acte volontaire."
+          - label: "cochée par défaut"
+            correct: false
+            why: "Un consentement précoché n'est pas valable."
+          - label: "cachée"
+            correct: false
+            why: "Le consentement doit être éclairé."
+        explanation: "Libre, éclairé, spécifique, et retirable à tout moment."
+      - code: sec-rg-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: "Quel fichier liste les fichiers que Git doit ignorer, comme .env ? (son nom exact)"
+        answers: [".gitignore", "gitignore"]
+        explanation: "Ajoute `.env` dans `.gitignore` avant le premier commit."
+    exercises:
+      - slug: sec-ex-secrets-guide
+        kind: COMPLETER
+        title: "Ranger les secrets"
+        difficulty: FACILE
+        skill: rgpd-secrets
+        statement: "Complète : le fichier ignoré par Git, puis la référence au secret dans la configuration."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le fichier des secrets locaux s'appelle .env."
+          - "La configuration lit une variable avec ${NOM}."
+          - ".env, ${JWT_SECRET}, .env.example."
+        solution: '[".env", "${JWT_SECRET}", ".env.example"]'
+        explanation: "Secrets en local dans .env (ignoré), modèle factice versionné dans .env.example."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            # .gitignore
+            [[1]]
+
+            # application.properties
+            app.jwt-secret=[[2]]
+
+            # fichier versionné, avec des valeurs factices, pour guider l'équipe
+            [[3]]
+          blanks:
+            - [".env"]
+            - ["${JWT_SECRET}"]
+            - [".env.example"]
+      - slug: sec-ex-mention-rgpd
+        kind: CODE_LIBRE
+        title: "La mention d'information"
+        difficulty: INTERMEDIAIRE
+        skill: rgpd-secrets
+        statement: |
+          Rédige la courte mention affichée sous un formulaire de contact. Elle doit indiquer : **pourquoi**
+          les données sont collectées (la finalité), **combien de temps** elles sont conservées (une durée en
+          mois ou en ans), et **comment** exercer ses droits (une adresse de contact). Utilise les mots
+          « finalité » ou « pour », « conservées » et « droits ».
+        criteria: "Finalité, durée chiffrée, droits et moyen de contact."
+        hints:
+          - "Commence par : « Vos données sont utilisées uniquement pour répondre à votre message. »"
+          - "Ajoute : « Elles sont conservées 12 mois. »"
+          - "Termine par : « Pour exercer vos droits (accès, effacement), écrivez à dpo@exemple.fr. »"
+        solution: |
+          Vos données sont utilisées uniquement pour répondre à votre message.
+          Elles sont conservées 12 mois puis supprimées.
+          Pour exercer vos droits d'accès, de rectification et d'effacement, écrivez à dpo@exemple.fr.
+        explanation: "Trois informations, en langage simple : pourquoi, combien de temps, comment agir."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            Vos données sont utilisées
+          checks:
+            - pattern: '(?i)finalit[ée]|\bpour\b'
+              message: "Indique pourquoi les données sont collectées (la finalité)."
+            - pattern: '(?i)conserv[ée]es?\s+[^.]*?\d+\s*(?:mois|ans?|jours?)'
+              message: "Indique une durée de conservation chiffrée (par exemple « conservées 12 mois »)."
+            - pattern: '(?i)droits?'
+              message: "Parle des droits des personnes."
+            - pattern: '[\w.+-]+@[\w-]+\.[\w.]+'
+              message: "Donne une adresse de contact pour exercer ses droits."
+
+  # ===================================================================== LEÇON 2
+  - slug: sec-questions-jury
+    title: "La sécurité devant le jury"
+    duration: 12
+    objective: "Présenter la sécurité de son application en quelques minutes, du navigateur à la base, et répondre aux questions pièges."
+    prerequisites: "Leçon « Le RGPD et les secrets »."
+    skills: [securite-owasp, oral-cda]
+    xp: 25
+    memo: |
+      - Présenter la sécurité **couche par couche** : navigateur → réseau → API → base → configuration.
+      - Pour chaque couche : **la menace**, **la parade**, **où dans le code**.
+      - Admettre une limite connue et dire comment on l'améliorerait : c'est un signe de maturité.
+    commonMistakes: |
+      - Dire « c'est sécurisé » sans exemple.
+      - Réciter le Top 10 sans le relier à son projet.
+      - Cacher une faiblesse que le jury trouvera en posant une question.
+    blocks:
+      - type: text
+        md: |
+          Devant le jury, la sécurité se raconte comme une **visite guidée** : on suit une requête depuis le
+          navigateur jusqu'à la base, et on montre les protections à chaque étape.
+      - type: steps
+        id: etapes-presentation
+        title: "La visite guidée en cinq étapes"
+        items:
+          - "**Navigateur** : Angular échappe l'affichage (XSS), les gardes masquent les écrans non autorisés."
+          - "**Réseau** : HTTPS chiffre les échanges, CORS limite les origines."
+          - "**API** : filtre JWT (signature, expiration), rôles, vérification de propriété, validation @Valid."
+          - "**Base** : requêtes paramétrées, mots de passe BCrypt, compte aux droits limités, contraintes."
+          - "**Configuration** : secrets en variables d'environnement, erreurs sans trace, dépendances à jour."
+      - type: question
+        ref: sec-jq-q1
+        review: etapes-presentation
+      - type: jury
+        id: jury-securite
+        title: "Questions fréquentes sur la sécurité"
+        items:
+          - q: "Que se passe-t-il si votre clé JWT fuit ?"
+            a: "N'importe qui pourrait fabriquer des jetons valides. Je change immédiatement la clé : tous les jetons existants deviennent invalides et les utilisateurs se reconnectent. Je cherche ensuite l'origine de la fuite."
+          - q: "Comment déconnecter un utilisateur avec un JWT ?"
+            a: "Côté client, on supprime le jeton. Côté serveur, un JWT reste valide jusqu'à son expiration : c'est pourquoi elle est courte. Pour une révocation immédiate, on peut tenir une liste de jetons révoqués ou utiliser des jetons de rafraîchissement stockés en base."
+          - q: "Quelle est la limite de sécurité de votre projet ?"
+            a: "Par exemple : pas encore de limitation du nombre de tentatives de connexion. Je l'ajouterais avec un compteur par adresse IP et par compte, et un délai progressif."
+          - q: "Pourquoi ne pas faire confiance aux données du frontend ?"
+            a: "Parce que le frontend s'exécute chez l'utilisateur : il peut être modifié, et l'API peut être appelée directement avec Postman ou curl. Toute règle importante est vérifiée côté serveur."
+      - type: question
+        ref: sec-jq-q2
+        review: jury-securite
+      - type: text
+        md: "Exercice guidé : remets la visite guidée dans l'ordre."
+      - type: exercise
+        ref: sec-ex-visite-ordre
+      - type: text
+        md: "En autonomie : prépare ta réponse sur une limite de ton projet."
+      - type: exercise
+        ref: sec-ex-limite
+      - type: quiz
+        items:
+          - ref: sec-jq-q3
+            review: jury-securite
+          - ref: sec-jq-q4
+            review: etapes-presentation
+          - ref: sec-jq-q5
+            review: jury-securite
+    questions:
+      - code: sec-jq-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Quelle présentation de la sécurité convainc le mieux le jury ?"
+        choices:
+          - label: "Suivre une requête couche par couche en montrant la menace, la parade et le code"
+            correct: true
+            why: "Concret et structuré."
+          - label: "Dire que l'application est sécurisée car elle utilise Spring"
+            correct: false
+            why: "Aucune preuve."
+          - label: "Réciter le Top 10 OWASP par cœur"
+            correct: false
+            why: "Il faut le relier à son projet."
+        explanation: "Menace → parade → où dans le code."
+      - code: sec-jq-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "La clé de signature JWT a fuité. Première action ?"
+        choices:
+          - label: "Changer la clé : tous les anciens jetons deviennent invalides"
+            correct: true
+            why: "On coupe l'accès aux faux jetons."
+          - label: "Attendre l'expiration des jetons"
+            correct: false
+            why: "L'attaquant peut en créer de nouveaux à volonté."
+          - label: "Supprimer les comptes"
+            correct: false
+            why: "Disproportionné et inutile."
+        explanation: "Un secret compromis se remplace immédiatement."
+      - code: sec-jq-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Supprimer le JWT du navigateur le rend immédiatement invalide côté serveur."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Une copie du jeton reste valide jusqu'à son expiration."
+          - label: "Faux"
+            correct: true
+            why: "Le serveur ne garde pas de liste des jetons, sauf si on l'ajoute."
+        explanation: "D'où l'intérêt d'une expiration courte."
+      - code: sec-jq-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "À quelle couche appartient la protection « requêtes paramétrées » ?"
+        choices:
+          - label: "L'accès à la base de données"
+            correct: true
+            why: "Elle protège contre l'injection SQL."
+          - label: "Le navigateur"
+            correct: false
+            why: "Le navigateur n'écrit pas de SQL."
+          - label: "Le réseau"
+            correct: false
+            why: "C'est le rôle de HTTPS."
+        explanation: "Chaque parade a sa place dans la visite guidée."
+      - code: sec-jq-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Le jury demande une faiblesse de votre sécurité. Que répondre ?"
+        choices:
+          - label: "Une limite réelle et la façon dont vous la corrigeriez"
+            correct: true
+            why: "Cela montre du recul et de la méthode."
+          - label: "« Il n'y en a aucune »"
+            correct: false
+            why: "Peu crédible : le jury en trouvera une."
+          - label: "Changer de sujet"
+            correct: false
+            why: "Le jury le remarquera."
+        explanation: "Admettre une limite, c'est prouver qu'on comprend le sujet."
+    exercises:
+      - slug: sec-ex-visite-ordre
+        kind: REMETTRE_ORDRE
+        title: "La visite guidée"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Remets les couches dans l'ordre du voyage d'une requête."
+        criteria: "Navigateur, réseau, API, base, configuration."
+        hints:
+          - "La requête part du navigateur."
+          - "Elle traverse le réseau avant d'arriver à l'API."
+          - "La configuration concerne l'ensemble : on la présente en dernier."
+        solution: |
+          Navigateur : Angular échappe l'affichage et masque les écrans interdits
+          Réseau : HTTPS et CORS
+          API : filtre JWT, rôles, propriété, validation
+          Base : requêtes paramétrées et BCrypt
+          Configuration : secrets en variables d'environnement
+        explanation: "Suivre la requête rend la présentation facile à comprendre."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Navigateur : Angular échappe l'affichage et masque les écrans interdits"
+            - "Réseau : HTTPS et CORS"
+            - "API : filtre JWT, rôles, propriété, validation"
+            - "Base : requêtes paramétrées et BCrypt"
+            - "Configuration : secrets en variables d'environnement"
+      - slug: sec-ex-limite
+        kind: CODE_LIBRE
+        title: "Parler d'une limite"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Question du jury : « **Quelle est la principale limite de sécurité de votre application ?** »
+
+          Réponds en trois lignes : `Limite :`, `Risque :`, `Amélioration :`.
+        criteria: "Les trois temps sont présents avec une vraie phrase chacun."
+        hints:
+          - "Limite : par exemple, aucune limitation des tentatives de connexion."
+          - "Risque : une attaque par force brute sur un compte."
+          - "Amélioration : bloquer après 5 échecs pendant 15 minutes, par IP et par compte."
+        solution: |
+          Limite : il n'y a pas encore de limitation du nombre de tentatives de connexion.
+          Risque : un attaquant pourrait essayer de nombreux mots de passe sur un même compte.
+          Amélioration : bloquer après cinq échecs pendant quinze minutes, par adresse IP et par compte, et journaliser ces blocages.
+        explanation: "Limite, risque, amélioration : une réponse honnête et professionnelle."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            Limite :
+            Risque :
+            Amélioration :
+          checks:
+            - pattern: '(?im)^\s*Limite\s*:\s*\S.{15,}'
+              message: "Décris la limite après « Limite : »."
+            - pattern: '(?im)^\s*Risque\s*:\s*\S.{15,}'
+              message: "Décris le risque après « Risque : »."
+            - pattern: '(?im)^\s*Am[ée]lioration\s*:\s*\S.{15,}'
+              message: "Décris l'amélioration après « Amélioration : »."
+
+bank:
+  - code: sec-c4-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: rgpd-secrets
+    prompt: "Qu'est-ce qu'une donnée personnelle ?"
+    choices:
+      - label: "Toute information qui permet d'identifier une personne, directement ou non"
+        correct: true
+        why: "Nom, e-mail, adresse IP, identifiant…"
+      - label: "Uniquement le nom et le prénom"
+        correct: false
+        why: "La définition est bien plus large."
+      - label: "Uniquement les données bancaires"
+        correct: false
+        why: "Elles en font partie, mais ne sont pas les seules."
+    explanation: "Une adresse IP ou un identifiant client sont aussi des données personnelles."
+  - code: sec-c4-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: rgpd-secrets
+    prompt: "Que contient le fichier `.env.example` versionné dans Git ?"
+    choices:
+      - label: "Les noms des variables avec des valeurs factices"
+        correct: true
+        why: "Il guide l'équipe sans révéler de secret."
+      - label: "Les vrais mots de passe de production"
+        correct: false
+        why: "Jamais de vrai secret dans Git."
+      - label: "Rien, il est vide"
+        correct: false
+        why: "Il liste les variables attendues."
+    explanation: "`DB_PASSWORD=change-moi`, `JWT_SECRET=a-generer`…"

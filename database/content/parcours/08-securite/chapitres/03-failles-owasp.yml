@@ -1,0 +1,508 @@
+slug: sec-failles-owasp
+position: 3
+level: AVANCE
+title: "Les failles du Top 10 OWASP"
+summary: "Reconnaître et corriger les injections SQL, les failles XSS et CSRF, les mauvaises configurations et les dépendances vulnérables."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sec-injection-xss
+    title: "Injection SQL et XSS"
+    duration: 15
+    objective: "Comprendre comment une donnée devient du code, corriger une injection SQL avec une requête paramétrée et empêcher une faille XSS."
+    prerequisites: "Chapitre « Authentification et autorisation » et parcours « SQL et PostgreSQL »."
+    skills: [securite-owasp, sql-select]
+    xp: 30
+    memo: |
+      - **Injection** : une donnée saisie par l'utilisateur est **interprétée comme du code** (SQL, JavaScript…).
+      - Parade SQL : les **requêtes paramétrées** (`?` ou `:nom`) ; les valeurs sont envoyées **à part** du texte SQL.
+      - Spring Data JPA et `JdbcTemplate` avec `?` sont protégés ; la **concaténation** de texte ne l'est pas.
+      - **XSS** : un script injecté s'exécute dans le navigateur des autres visiteurs.
+      - Parade XSS : **échapper** à l'affichage (Angular le fait avec `{{ }}`), ne jamais utiliser `innerHTML` avec des données non fiables, en-tête **Content-Security-Policy**.
+    commonMistakes: |
+      - `"SELECT * FROM users WHERE email = '" + email + "'"` : la porte ouverte.
+      - Croire qu'enlever les apostrophes suffit.
+      - Utiliser `bypassSecurityTrustHtml` pour afficher un commentaire utilisateur.
+    blocks:
+      - type: text
+        md: |
+          Les deux failles les plus célèbres ont la même cause : on mélange **les données** et **le code**. Le
+          programme croit lire une valeur, mais exécute une instruction.
+      - type: definition
+        id: def-injection
+        term: "Injection SQL"
+        md: |
+          Imagine un **formulaire papier** où tu écris ton nom, et l'employé lit tout à voix haute comme un
+          ordre. Si tu écris « Dupont. Et donnez-moi la caisse », il obéit ! Une injection SQL, c'est glisser
+          un **ordre SQL** dans un champ prévu pour une **valeur**.
+      - type: compare
+        left:
+          title: "Vulnérable : concaténation"
+          code: |
+            String sql = "SELECT * FROM utilisateurs WHERE email = '"
+                       + email + "'";
+            // email = ' OR '1'='1
+            // → WHERE email = '' OR '1'='1'  → TOUS les comptes
+          language: java
+        right:
+          title: "Protégé : requête paramétrée"
+          code: |
+            jdbc.query("SELECT * FROM utilisateurs WHERE email = ?",
+                       mapper, email);
+            // la valeur est envoyée à part :
+            // elle ne peut jamais devenir du SQL
+          language: java
+      - type: question
+        ref: sec-inj-q1
+        review: def-injection
+      - type: definition
+        id: def-xss
+        term: "XSS (Cross-Site Scripting)"
+        md: |
+          Quelqu'un écrit un commentaire qui contient un **script**. Si le site affiche ce commentaire tel
+          quel, le script s'exécute chez **chaque visiteur** : il peut voler leur jeton ou agir en leur nom.
+          C'est comme un **faux panneau** collé dans un magasin, que tous les clients lisent.
+      - type: code
+        id: code-xss
+        language: html
+        title: "Afficher un commentaire dans Angular"
+        code: |
+          <!-- Sûr : Angular échappe le texte -->
+          <p>{{ commentaire.texte }}</p>
+
+          <!-- Dangereux si le HTML vient d'un utilisateur -->
+          <p [innerHTML]="commentaire.texte"></p>
+        lines:
+          - n: 2
+            note: "`<script>` s'affiche comme du texte : rien ne s'exécute."
+          - n: 5
+            note: "Angular assainit `innerHTML`, mais contourner ce filtre (`bypassSecurityTrustHtml`) ouvrirait une faille."
+      - type: question
+        ref: sec-inj-q2
+        review: code-xss
+      - type: text
+        md: "Exercice guidé : complète la requête paramétrée."
+      - type: exercise
+        ref: sec-ex-injection-guide
+      - type: text
+        md: "En autonomie : corrige ce repository vulnérable."
+      - type: exercise
+        ref: sec-ex-injection-corriger
+      - type: jury
+        items:
+          - q: "Comment vous protégez-vous des injections SQL ?"
+            a: "Je n'assemble jamais de SQL par concaténation. J'utilise Spring Data JPA (requêtes dérivées, @Query avec paramètres nommés) ou JdbcTemplate avec des ? : les valeurs sont envoyées séparément au pilote PostgreSQL et ne peuvent pas devenir du code. Le compte de base a aussi des droits limités."
+          - q: "Et des failles XSS ?"
+            a: "Angular échappe tout ce qui est affiché par interpolation et assainit innerHTML ; je ne contourne jamais le DomSanitizer avec des données utilisateur. Côté serveur, les entrées sont validées, et on peut ajouter un en-tête Content-Security-Policy."
+      - type: quiz
+        items:
+          - ref: sec-inj-q3
+            review: def-injection
+          - ref: sec-inj-q4
+            review: def-xss
+          - ref: sec-inj-q5
+            review: code-xss
+    questions:
+      - code: sec-inj-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quelle est la vraie parade contre l'injection SQL ?"
+        choices:
+          - label: "Les requêtes paramétrées"
+            correct: true
+            why: "La valeur ne peut jamais devenir du SQL."
+          - label: "Supprimer les apostrophes des saisies"
+            correct: false
+            why: "Contournable, et casse les noms comme « O'Brien »."
+          - label: "Cacher les messages d'erreur"
+            correct: false
+            why: "Utile, mais ne corrige pas la faille."
+        explanation: "`?` ou `:parametre`, jamais de concaténation."
+      - code: sec-inj-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Avec `<p>{{ texte }}</p>`, un texte `<script>alert(1)</script>` s'exécute."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "L'interpolation échappe le texte."
+          - label: "Faux"
+            correct: true
+            why: "Le script s'affiche comme du texte."
+        explanation: "Angular protège par défaut ; il ne faut pas le contourner."
+      - code: sec-inj-q3
+        kind: RESULTAT_CODE
+        difficulty: 3
+        skill: securite-owasp
+        prompt: "Avec `email = \"' OR '1'='1\"`, quelle requête est exécutée ?"
+        snippet: |
+          String sql = "SELECT * FROM utilisateurs WHERE email = '" + email + "'";
+        language: java
+        choices:
+          - label: "SELECT * FROM utilisateurs WHERE email = '' OR '1'='1'"
+            correct: true
+            why: "La condition est toujours vraie : tous les comptes sortent."
+          - label: "SELECT * FROM utilisateurs WHERE email = ''' OR ''1''=''1'"
+            correct: false
+            why: "La concaténation ne double pas les apostrophes."
+          - label: "Une erreur empêche la requête"
+            correct: false
+            why: "La requête est syntaxiquement correcte."
+        explanation: "C'est l'injection la plus classique."
+      - code: sec-inj-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Que peut faire un script XSS exécuté dans le navigateur d'une victime ?"
+        choices:
+          - label: "Lire son jeton stocké dans le navigateur et agir en son nom"
+            correct: true
+            why: "Il a accès à la page comme la victime."
+          - label: "Lire directement la base de données du serveur"
+            correct: false
+            why: "Il n'agit que dans le navigateur."
+          - label: "Rien, il est sans danger"
+            correct: false
+            why: "C'est une faille grave."
+        explanation: "XSS = exécuter du code chez les autres."
+      - code: sec-inj-q5
+        kind: TEXTE
+        difficulty: 3
+        skill: securite-owasp
+        prompt: "Quel en-tête HTTP limite les sources de scripts qu'une page peut exécuter ? (son nom complet)"
+        answers: ["Content-Security-Policy", "CSP", "content-security-policy"]
+        explanation: "Par exemple `Content-Security-Policy: script-src 'self'`."
+    exercises:
+      - slug: sec-ex-injection-guide
+        kind: COMPLETER
+        title: "Une requête paramétrée"
+        difficulty: FACILE
+        skill: securite-owasp
+        statement: "Complète la requête JdbcTemplate puis la requête JPQL paramétrées."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "JdbcTemplate utilise un point d'interrogation."
+          - "JPQL utilise un paramètre nommé : `:ville`."
+          - "?, :ville, Param."
+        solution: '["?", ":ville", "Param"]'
+        explanation: "Les valeurs voyagent à part : elles ne deviennent jamais du SQL."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            jdbc.query("SELECT * FROM clients WHERE email = [[1]]", mapper, email);
+
+            @Query("select c from Client c where c.ville = [[2]]")
+            List<Client> parVille(@[[3]]("ville") String ville);
+          blanks:
+            - ["?"]
+            - [":ville"]
+            - ["Param"]
+      - slug: sec-ex-injection-corriger
+        kind: CORRIGER_ERREUR
+        title: "Une recherche vulnérable"
+        difficulty: DIFFICILE
+        skill: securite-owasp
+        statement: |
+          Cette recherche de produits assemble le SQL par concaténation. Corrige-la avec un paramètre `?`
+          (JdbcTemplate) : la recherche doit rester « contient le mot » (`ILIKE`), en passant la valeur
+          `"%" + mot + "%"` comme argument.
+        criteria: "Plus de concaténation de mot dans le SQL ; ILIKE ? ; valeur passée en argument."
+        hints:
+          - "Le texte SQL devient : `\"SELECT id, nom FROM produits WHERE nom ILIKE ?\"`."
+          - "Les % se mettent dans la valeur, pas dans le SQL."
+          - "`jdbc.query(sql, mapper, \"%\" + mot + \"%\")`"
+        solution: |
+          public List<Produit> chercher(String mot) {
+              String sql = "SELECT id, nom FROM produits WHERE nom ILIKE ?";
+              return jdbc.query(sql, mapper, "%" + mot + "%");
+          }
+        explanation: "Les jokers `%` font partie de la valeur ; le SQL, lui, ne change jamais."
+        xp: 30
+        payload:
+          language: java
+          starter: |
+            public List<Produit> chercher(String mot) {
+                String sql = "SELECT id, nom FROM produits WHERE nom ILIKE '%" + mot + "%'";
+                return jdbc.query(sql, mapper);
+            }
+          checks:
+            - pattern: '"[^"]*(?:WHERE|where)[^"]*"\s*\+\s*mot'
+              absent: true
+              message: "Ne colle pas `mot` dans le texte SQL."
+            - pattern: '"SELECT\s+id\s*,\s*nom\s+FROM\s+produits\s+WHERE\s+nom\s+ILIKE\s+\?\s*"'
+              message: "Le SQL doit être `SELECT id, nom FROM produits WHERE nom ILIKE ?`."
+            - pattern: 'jdbc\.query\s*\(\s*sql\s*,\s*mapper\s*,\s*"%"\s*\+\s*mot\s*\+\s*"%"\s*\)'
+              message: "Passe la valeur à part : `jdbc.query(sql, mapper, \"%\" + mot + \"%\")`."
+
+  # ===================================================================== LEÇON 2
+  - slug: sec-autres-failles
+    title: "CSRF, configuration et dépendances"
+    duration: 13
+    objective: "Expliquer la faille CSRF, repérer une mauvaise configuration et surveiller les dépendances vulnérables."
+    prerequisites: "Leçon « Injection SQL et XSS »."
+    skills: [securite-owasp]
+    xp: 25
+    memo: |
+      - **CSRF** : un site piégé fait envoyer une requête par le navigateur de la victime, **avec ses cookies**. Parade : jeton CSRF, cookies `SameSite`, ou JWT dans un en-tête.
+      - **Mauvaise configuration** : mode debug en production, messages d'erreur détaillés, CORS `*`, comptes par défaut.
+      - **Dépendances vulnérables** : une bibliothèque ancienne peut contenir une faille connue. Outils : `npm audit`, Dependabot, OWASP Dependency-Check.
+      - **Journalisation** : tracer les connexions échouées et les actions sensibles, **sans** mots de passe ni jetons.
+      - **Limitation de débit** : bloquer après trop de tentatives de connexion (force brute).
+    commonMistakes: |
+      - Laisser `server.error.include-stacktrace=always` en production.
+      - Ne jamais mettre à jour les dépendances.
+      - Journaliser les mots de passe ou les jetons « pour déboguer ».
+    blocks:
+      - type: text
+        md: |
+          Toutes les failles ne viennent pas d'une ligne de code. Beaucoup viennent d'un **réglage oublié** ou
+          d'une **bibliothèque trop vieille**.
+      - type: definition
+        id: def-csrf
+        term: "CSRF (falsification de requête)"
+        md: |
+          Quelqu'un te fait **signer un chèque** en le cachant sous une carte d'anniversaire. Tu es bien la
+          bonne personne (tes cookies sont valides), mais tu ne voulais pas faire cette action. Un site piégé
+          déclenche une requête vers ta banque, et ton navigateur y joint tes cookies automatiquement.
+      - type: question
+        ref: sec-af-q1
+        review: def-csrf
+      - type: definition
+        id: def-config
+        term: "Mauvaise configuration"
+        md: |
+          Une maison avec une **porte blindée**… et la clé sous le paillasson. Le code est bon, mais un réglage
+          laisse une entrée : console d'administration ouverte, mot de passe par défaut, erreurs détaillées.
+      - type: code
+        id: code-config-prod
+        language: properties
+        title: "application-prod.properties"
+        code: |
+          server.error.include-stacktrace=never
+          server.error.include-message=never
+          management.endpoints.web.exposure.include=health
+          spring.jpa.show-sql=false
+          logging.level.root=INFO
+        lines:
+          - n: 1
+            note: "Jamais de trace Java dans les réponses."
+          - n: 2
+            note: "Pas de message technique brut non plus."
+          - n: 3
+            note: "Actuator : seulement `/actuator/health`, pas les variables ni les beans."
+          - n: 4
+            note: "Pas de requêtes SQL dans les logs de production."
+      - type: question
+        ref: sec-af-q2
+        review: code-config-prod
+      - type: text
+        md: "Exercice guidé : associe chaque faille à sa parade."
+      - type: exercise
+        ref: sec-ex-parades-guide
+      - type: text
+        md: "En autonomie : sécurise la configuration de production."
+      - type: exercise
+        ref: sec-ex-config-prod
+      - type: jury
+        items:
+          - q: "Qu'est-ce que la faille CSRF et êtes-vous concerné ?"
+            a: "Une requête involontaire déclenchée depuis un autre site en profitant des cookies envoyés automatiquement. Mon API est sans état et le JWT est envoyé dans l'en-tête Authorization, que le navigateur n'ajoute pas tout seul : je ne suis pas exposé. Avec une session par cookie, je garderais la protection CSRF de Spring Security."
+          - q: "Comment suivez-vous les failles de vos dépendances ?"
+            a: "npm audit côté Angular, Dependabot sur GitHub pour les deux dépôts, et des mises à jour régulières des versions de Spring Boot et d'Angular. Une faille critique est corrigée en priorité."
+      - type: quiz
+        items:
+          - ref: sec-af-q3
+            review: def-csrf
+          - ref: sec-af-q4
+            review: def-config
+          - ref: sec-af-q5
+            review: code-config-prod
+    questions:
+      - code: sec-af-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Sur quoi repose une attaque CSRF ?"
+        choices:
+          - label: "Le navigateur envoie automatiquement les cookies de la victime"
+            correct: true
+            why: "La requête piégée paraît légitime."
+          - label: "Un script injecté dans la page"
+            correct: false
+            why: "C'est XSS."
+          - label: "Une requête SQL détournée"
+            correct: false
+            why: "C'est l'injection."
+        explanation: "CSRF abuse de la confiance du serveur envers le navigateur."
+      - code: sec-af-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: securite-owasp
+        prompt: "En production, les réponses d'erreur doivent contenir la trace Java complète pour aider les utilisateurs."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Elle révèle l'intérieur de l'application."
+          - label: "Faux"
+            correct: true
+            why: "Message simple côté client, détails dans les logs serveur."
+        explanation: "C'est une mauvaise configuration classique."
+      - code: sec-af-q3
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quelles parades protègent contre CSRF ? (plusieurs réponses)"
+        choices:
+          - label: "Un jeton CSRF vérifié par le serveur"
+            correct: true
+            why: "Le site piégé ne le connaît pas."
+          - label: "Des cookies SameSite=Strict ou Lax"
+            correct: true
+            why: "Le navigateur ne les envoie pas depuis un autre site."
+          - label: "Un JWT dans l'en-tête Authorization"
+            correct: true
+            why: "Il n'est pas ajouté automatiquement."
+          - label: "Un mot de passe plus long"
+            correct: false
+            why: "La victime est déjà connectée."
+        explanation: "Il faut que la requête contienne quelque chose que le site piégé ne peut pas fournir."
+      - code: sec-af-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quelle commande signale les failles connues des dépendances d'un projet Angular ?"
+        choices:
+          - label: "npm audit"
+            correct: true
+            why: "Elle compare les versions à une base de vulnérabilités."
+          - label: "ng serve"
+            correct: false
+            why: "Elle lance le serveur de développement."
+          - label: "npm start"
+            correct: false
+            why: "Elle démarre l'application."
+        explanation: "Côté Java : OWASP Dependency-Check ou Dependabot."
+      - code: sec-af-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Que journaliser lors d'une connexion échouée ?"
+        choices:
+          - label: "La date, l'e-mail tenté et l'adresse IP, sans le mot de passe"
+            correct: true
+            why: "Utile pour détecter une attaque, sans exposer de secret."
+          - label: "Le mot de passe tapé, pour comprendre l'erreur"
+            correct: false
+            why: "Jamais de mot de passe dans les logs."
+          - label: "Rien du tout"
+            correct: false
+            why: "On ne verrait pas une attaque par force brute."
+        explanation: "Tracer les événements de sécurité fait partie du Top 10 OWASP."
+    exercises:
+      - slug: sec-ex-parades-guide
+        kind: COMPLETER
+        title: "Une faille, une parade"
+        difficulty: FACILE
+        skill: securite-owasp
+        statement: "Complète chaque ligne avec la parade principale."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Injection SQL : requêtes paramétrées."
+          - "Mots de passe : BCrypt. Dépendances : audit."
+          - "paramétrées, échappement, BCrypt, audit."
+        solution: '["paramétrées", "échappement", "BCrypt", "audit"]'
+        explanation: "Chaque grande famille de failles a sa parade connue."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Injection SQL             → requêtes [[1]]
+            XSS                       → [[2]] des données affichées
+            Vol de la base            → mots de passe hachés avec [[3]]
+            Bibliothèque vulnérable   → npm [[4]] et mises à jour
+          blanks:
+            - ["paramétrées", "parametrees", "préparées", "preparees"]
+            - ["échappement", "echappement"]
+            - ["BCrypt", "Argon2"]
+            - ["audit"]
+      - slug: sec-ex-config-prod
+        kind: CORRIGER_ERREUR
+        title: "Une configuration trop bavarde"
+        difficulty: INTERMEDIAIRE
+        skill: securite-owasp
+        statement: |
+          Ce fichier de production expose beaucoup trop de choses. Corrige-le :
+          - plus de trace Java dans les erreurs (`never`) ;
+          - Actuator n'expose que `health` ;
+          - plus de requêtes SQL dans les logs (`false`) ;
+          - le mot de passe de la base vient de la variable `${DB_PASSWORD}`.
+        criteria: "include-stacktrace=never, exposure.include=health, show-sql=false, password=${DB_PASSWORD}."
+        hints:
+          - "`server.error.include-stacktrace=never`"
+          - "`management.endpoints.web.exposure.include=health`"
+          - "`spring.datasource.password=${DB_PASSWORD}`"
+        solution: |
+          server.error.include-stacktrace=never
+          management.endpoints.web.exposure.include=health
+          spring.jpa.show-sql=false
+          spring.datasource.password=${DB_PASSWORD}
+        explanation: "Moins l'application en dit sur elle-même, moins un attaquant a d'indices."
+        xp: 20
+        payload:
+          language: properties
+          starter: |
+            server.error.include-stacktrace=always
+            management.endpoints.web.exposure.include=*
+            spring.jpa.show-sql=true
+            spring.datasource.password=Postgres2024!
+          checks:
+            - pattern: '(?m)^\s*server\.error\.include-stacktrace\s*=\s*never\s*$'
+              message: "Mets `server.error.include-stacktrace=never`."
+            - pattern: '(?m)^\s*management\.endpoints\.web\.exposure\.include\s*=\s*health\s*$'
+              message: "N'expose que `health` dans Actuator."
+            - pattern: '(?m)^\s*spring\.jpa\.show-sql\s*=\s*false\s*$'
+              message: "Mets `spring.jpa.show-sql=false`."
+            - pattern: '(?m)^\s*spring\.datasource\.password\s*=\s*\$\{DB_PASSWORD\}\s*$'
+              message: "Le mot de passe doit venir de `${DB_PASSWORD}`."
+            - pattern: 'Postgres2024!'
+              absent: true
+              message: "Retire le mot de passe écrit en clair."
+
+bank:
+  - code: sec-c3-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: securite-owasp
+    prompt: "Comment ralentir une attaque par force brute sur la connexion ?"
+    choices:
+      - label: "Limiter le nombre de tentatives par compte et par adresse IP"
+        correct: true
+        why: "L'attaquant ne peut plus essayer des milliers de mots de passe."
+      - label: "Afficher le mot de passe attendu après 3 essais"
+        correct: false
+        why: "Évidemment non."
+      - label: "Désactiver HTTPS"
+        correct: false
+        why: "Cela affaiblirait encore la sécurité."
+    explanation: "Limitation de débit, délai progressif, voire CAPTCHA."
+  - code: sec-c3-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: securite-owasp
+    prompt: "Quel est le risque n° 1 du Top 10 OWASP 2021 ?"
+    choices:
+      - label: "Le contrôle d'accès défaillant"
+        correct: true
+        why: "Accéder à des données ou actions non autorisées."
+      - label: "Les mots de passe trop courts"
+        correct: false
+        why: "Ils relèvent d'une autre catégorie."
+      - label: "Les images trop lourdes"
+        correct: false
+        why: "Ce n'est pas un risque de sécurité."
+    explanation: "Vérifier les droits et la propriété côté serveur, à chaque requête."
