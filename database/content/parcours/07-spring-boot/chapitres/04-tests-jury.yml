@@ -1,0 +1,570 @@
+slug: sb-tests-jury
+position: 4
+level: EXAMEN
+title: "Tests, configuration et jury Spring Boot"
+summary: "Tester un service avec JUnit et Mockito, tester un contrôleur avec MockMvc, configurer les profils, puis répondre aux questions du jury."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sb-tests
+    title: "Tester avec JUnit, Mockito et MockMvc"
+    duration: 15
+    objective: "Écrire un test unitaire de service avec une doublure Mockito et un test de contrôleur avec MockMvc."
+    prerequisites: "Chapitre « Persister avec JPA, valider et gérer les erreurs » et chapitre Java sur les tests."
+    skills: [spring-tests, java-tests]
+    xp: 30
+    memo: |
+      - **Test unitaire de service** : pas de Spring, pas de base. On remplace le repository par une **doublure** (`@Mock`).
+      - `when(repo.findById(1L)).thenReturn(Optional.of(livre))` : on dicte la réponse de la doublure.
+      - `assertThrows(Exception.class, () -> service.emprunter(1L, 2L))` : on vérifie qu'une règle est bien appliquée.
+      - `verify(repo).save(any())` : on vérifie qu'une méthode a été appelée.
+      - **Test de contrôleur** : `@WebMvcTest(ProduitController.class)` + `MockMvc` + `@MockitoBean` pour le service.
+      - **Test d'intégration** : `@SpringBootTest` + Testcontainers (un vrai PostgreSQL dans Docker).
+    commonMistakes: |
+      - Démarrer tout Spring (`@SpringBootTest`) pour tester une simple règle : lent et fragile.
+      - Tester seulement le cas qui marche, jamais les erreurs.
+      - Des tests qui dépendent les uns des autres ou de l'ordre d'exécution.
+    blocks:
+      - type: text
+        md: |
+          Un test vérifie **automatiquement** que le code fait ce qu'on attend. On en écrit de plusieurs
+          tailles : beaucoup de petits tests rapides (unitaires), quelques tests plus larges (intégration).
+      - type: definition
+        id: def-mock
+        term: "Doublure (mock)"
+        md: |
+          Une **doublure de cinéma** : elle prend la place du vrai acteur pour une scène précise. Ici, un faux
+          repository répond ce qu'on lui dicte, sans base de données : le test est rapide et ne teste que le
+          service.
+      - type: code
+        id: code-test-service
+        language: java
+        title: "EmpruntServiceTest.java"
+        code: |
+          @ExtendWith(MockitoExtension.class)
+          class EmpruntServiceTest {
+
+              @Mock LivreRepository livres;
+              @Mock EmpruntRepository emprunts;
+              @InjectMocks EmpruntService service;
+
+              @Test
+              void refuseUnLivreDejaEmprunte() {
+                  Livre livre = new Livre("Dune");
+                  livre.setEmprunte(true);
+                  when(livres.findById(1L)).thenReturn(Optional.of(livre));
+
+                  assertThrows(LivreDejaEmprunteException.class, () -> service.emprunter(1L, 7L));
+                  verify(emprunts, never()).save(any());
+              }
+          }
+        lines:
+          - n: 1
+            note: "Active Mockito pour cette classe de test."
+          - n: 4
+            note: "`@Mock` : une doublure de repository."
+          - n: 6
+            note: "`@InjectMocks` : crée le vrai service en lui donnant les doublures."
+          - n: 10
+            note: "**Préparer** : un livre déjà emprunté."
+          - n: 12
+            note: "On dicte : « si on te demande le livre 1, renvoie ce livre »."
+          - n: 14
+            note: "**Agir et vérifier** : l'emprunt doit être refusé."
+          - n: 15
+            note: "Et rien ne doit être enregistré."
+      - type: question
+        ref: sb-tst-q1
+        review: code-test-service
+      - type: code
+        id: code-test-controleur
+        language: java
+        title: "ProduitControllerTest.java"
+        code: |
+          @WebMvcTest(ProduitController.class)
+          class ProduitControllerTest {
+
+              @Autowired MockMvc mvc;
+              @MockitoBean ProduitService service;
+
+              @Test
+              void renvoie404SiIntrouvable() throws Exception {
+                  when(service.lire(99L)).thenThrow(new RessourceIntrouvableException("Produit 99"));
+
+                  mvc.perform(get("/api/produits/99"))
+                     .andExpect(status().isNotFound());
+              }
+          }
+        lines:
+          - n: 1
+            note: "Démarre seulement la partie web, pour ce contrôleur."
+          - n: 4
+            note: "`MockMvc` simule des requêtes HTTP sans vrai serveur."
+          - n: 5
+            note: "Le service est remplacé par une doublure."
+          - n: 11
+            note: "On envoie `GET /api/produits/99`…"
+          - n: 12
+            note: "… et on vérifie le statut 404."
+      - type: question
+        ref: sb-tst-q2
+        review: code-test-controleur
+      - type: text
+        md: "Exercice guidé : complète ce test Mockito."
+      - type: exercise
+        ref: sb-ex-mockito-guide
+      - type: text
+        md: "En autonomie : teste le cas qui réussit."
+      - type: exercise
+        ref: sb-ex-test-service
+      - type: jury
+        items:
+          - q: "Quelle est votre stratégie de tests côté backend ?"
+            a: "La pyramide des tests : beaucoup de tests unitaires sur les services avec JUnit 5 et Mockito, des tests de contrôleurs avec @WebMvcTest et MockMvc pour vérifier statuts, JSON et sécurité, et quelques tests d'intégration @SpringBootTest avec Testcontainers sur un vrai PostgreSQL."
+          - q: "Qu'est-ce qu'un mock ?"
+            a: "Une doublure d'une dépendance, dont on programme les réponses (when…thenReturn) et dont on vérifie les appels (verify). Il isole la classe testée : le test est rapide et ne dépend pas de la base."
+      - type: quiz
+        items:
+          - ref: sb-tst-q3
+            review: def-mock
+          - ref: sb-tst-q4
+            review: code-test-service
+          - ref: sb-tst-q5
+            review: code-test-controleur
+    questions:
+      - code: sb-tst-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-tests
+        prompt: "Que fait `when(repo.findById(1L)).thenReturn(Optional.empty())` ?"
+        choices:
+          - label: "La doublure répondra « aucun élément » quand on lui demandera l'id 1"
+            correct: true
+            why: "On programme sa réponse."
+          - label: "Elle supprime l'élément 1 de la base"
+            correct: false
+            why: "Il n'y a pas de base dans ce test."
+          - label: "Elle vérifie que findById a été appelé"
+            correct: false
+            why: "C'est le rôle de verify."
+        explanation: "when…thenReturn prépare ; verify contrôle."
+      - code: sb-tst-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-tests
+        prompt: "Que démarre `@WebMvcTest(ProduitController.class)` ?"
+        choices:
+          - label: "Seulement la couche web pour ce contrôleur, sans base de données"
+            correct: true
+            why: "Rapide et ciblé."
+          - label: "Toute l'application et la base"
+            correct: false
+            why: "C'est @SpringBootTest."
+          - label: "Un vrai navigateur"
+            correct: false
+            why: "MockMvc simule les requêtes."
+        explanation: "Les services sont fournis par @MockitoBean."
+      - code: sb-tst-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: spring-tests
+        prompt: "Un test unitaire de service a besoin d'une base PostgreSQL démarrée."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Les repositories sont remplacés par des doublures."
+          - label: "Faux"
+            correct: true
+            why: "C'est ce qui le rend rapide."
+        explanation: "La base réelle sert aux tests d'intégration."
+      - code: sb-tst-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Comment vérifier qu'une méthode lance bien une exception ?"
+        choices:
+          - label: "assertThrows(MonException.class, () -> service.methode())"
+            correct: true
+            why: "Le test échoue si l'exception n'arrive pas."
+          - label: "try { … } catch { } sans rien vérifier"
+            correct: false
+            why: "Le test passerait même sans exception."
+          - label: "assertEquals(null, service.methode())"
+            correct: false
+            why: "On ne teste pas l'exception."
+        explanation: "Tester les erreurs est aussi important que tester les réussites."
+      - code: sb-tst-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: spring-tests
+        prompt: "Quelle bibliothèque démarre un vrai PostgreSQL dans Docker pour les tests d'intégration ? (un nom)"
+        answers: ["Testcontainers", "TestContainers"]
+        explanation: "Le test utilise la même base qu'en production, jetable et reproductible."
+    exercises:
+      - slug: sb-ex-mockito-guide
+        kind: COMPLETER
+        title: "Compléter un test Mockito"
+        difficulty: FACILE
+        skill: spring-tests
+        statement: "Complète ce test : livre introuvable → exception."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Une doublure : Mock ; le service réel : InjectMocks."
+          - "On programme avec when… thenReturn."
+          - "Mock, InjectMocks, thenReturn, assertThrows."
+        solution: '["Mock", "InjectMocks", "thenReturn", "assertThrows"]'
+        explanation: "Doublure, service réel, réponse programmée, vérification de l'exception."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @[[1]] LivreRepository livres;
+            @[[2]] LivreService service;
+
+            @Test
+            void livreIntrouvable() {
+                when(livres.findById(5L)).[[3]](Optional.empty());
+                [[4]](RessourceIntrouvableException.class, () -> service.lire(5L));
+            }
+          blanks:
+            - ["Mock"]
+            - ["InjectMocks"]
+            - ["thenReturn"]
+            - ["assertThrows"]
+      - slug: sb-ex-test-service
+        kind: CODE_LIBRE
+        title: "Tester un emprunt réussi"
+        difficulty: DIFFICILE
+        skill: spring-tests
+        statement: |
+          Dans `EmpruntServiceTest` (les champs `livres`, `emprunts` et `service` existent déjà), écris la
+          méthode de test `enregistreUnEmprunt()` :
+          1. crée un `Livre` « Dune » non emprunté ;
+          2. programme `livres.findById(1L)` pour renvoyer ce livre ;
+          3. appelle `service.emprunter(1L, 7L)` ;
+          4. vérifie que `livre.isEmprunte()` est vrai (`assertTrue`) ;
+          5. vérifie que `emprunts.save(...)` a été appelé (`verify`).
+        criteria: "@Test, when…thenReturn(Optional.of(livre)), appel du service, assertTrue et verify(emprunts).save."
+        hints:
+          - "`@Test void enregistreUnEmprunt() { Livre livre = new Livre(\"Dune\"); … }`"
+          - "`when(livres.findById(1L)).thenReturn(Optional.of(livre));`"
+          - "`assertTrue(livre.isEmprunte());` puis `verify(emprunts).save(any(Emprunt.class));`"
+        solution: |
+          @Test
+          void enregistreUnEmprunt() {
+              Livre livre = new Livre("Dune");
+              when(livres.findById(1L)).thenReturn(Optional.of(livre));
+
+              service.emprunter(1L, 7L);
+
+              assertTrue(livre.isEmprunte());
+              verify(emprunts).save(any(Emprunt.class));
+          }
+        explanation: "Préparer, agir, vérifier l'état (le livre) et le comportement (l'enregistrement)."
+        xp: 30
+        payload:
+          language: java
+          starter: |
+            @Test
+            void enregistreUnEmprunt() {
+
+            }
+          checks:
+            - pattern: '@Test\s+(?:public\s+)?void\s+enregistreUnEmprunt\s*\(\s*\)'
+              message: "Garde la méthode `@Test void enregistreUnEmprunt()`."
+            - pattern: 'new\s+Livre\s*\(\s*"Dune"\s*\)'
+              message: "Crée le livre : `new Livre(\"Dune\")`."
+            - pattern: 'when\s*\(\s*livres\.findById\s*\(\s*1L\s*\)\s*\)\s*\.thenReturn\s*\(\s*Optional\.of\s*\(\s*\w+\s*\)\s*\)'
+              message: "Programme `when(livres.findById(1L)).thenReturn(Optional.of(livre));`."
+            - pattern: 'service\.emprunter\s*\(\s*1L\s*,\s*7L\s*\)'
+              message: "Appelle `service.emprunter(1L, 7L);`."
+            - pattern: 'assertTrue\s*\(\s*\w+\.isEmprunte\s*\(\s*\)\s*\)'
+              message: "Vérifie `assertTrue(livre.isEmprunte());`."
+            - pattern: 'verify\s*\(\s*emprunts\s*\)\s*\.save\s*\('
+              message: "Vérifie l'enregistrement : `verify(emprunts).save(any(Emprunt.class));`."
+
+  # ===================================================================== LEÇON 2
+  - slug: sb-questions-jury
+    title: "Spring Boot devant le jury"
+    duration: 13
+    objective: "Expliquer simplement la configuration par profils, la gestion des secrets et répondre aux questions classiques du jury sur Spring Boot."
+    prerequisites: "Leçon « Tester avec JUnit, Mockito et MockMvc »."
+    skills: [spring-structure, oral-cda]
+    xp: 25
+    memo: |
+      - **Profils** : `application-dev.yml`, `application-prod.yml`, choisis avec `SPRING_PROFILES_ACTIVE`.
+      - **Secrets** : jamais dans le code ni dans Git. `spring.datasource.password=${DB_PASSWORD}`.
+      - **Beans** : singletons par défaut, donc **sans état** propre à un utilisateur.
+      - **CORS** : autoriser explicitement l'origine du frontend (`http://localhost:4200`), jamais `*` avec des identifiants.
+      - **Actuator** : `/actuator/health` pour vérifier que l'application tourne.
+    commonMistakes: |
+      - Le mot de passe de la base écrit en clair dans `application.properties` poussé sur GitHub.
+      - Garder des informations d'un utilisateur dans un champ de service (partagé par tout le monde).
+      - Ouvrir CORS à toutes les origines « pour que ça marche ».
+    blocks:
+      - type: text
+        md: |
+          Le jury te demandera comment ton backend est configuré, protégé et testé. Voici les réponses types,
+          à adapter avec les exemples de ton projet.
+      - type: definition
+        id: def-profil
+        term: "Profil Spring"
+        md: |
+          Une **tenue adaptée à l'occasion** : la même application porte une tenue « développement » (base
+          locale, logs bavards) et une tenue « production » (vraie base, logs discrets). On choisit la tenue au
+          démarrage, sans changer le code.
+      - type: code
+        id: code-config
+        language: yaml
+        title: "application.yml"
+        code: |
+          spring:
+            datasource:
+              url: ${DB_URL:jdbc:postgresql://localhost:5432/boutique}
+              username: ${DB_USER:boutique}
+              password: ${DB_PASSWORD}
+            jpa:
+              hibernate:
+                ddl-auto: validate
+          app:
+            jwt-secret: ${JWT_SECRET}
+            cors-origin: ${CORS_ORIGIN:http://localhost:4200}
+        lines:
+          - n: 3
+            note: "`${DB_URL:…}` : la variable d'environnement, ou une valeur par défaut pour le développement."
+          - n: 5
+            note: "Pas de valeur par défaut pour un secret : l'application refuse de démarrer s'il manque."
+          - n: 8
+            note: "`validate` : Hibernate vérifie le schéma créé par Flyway, sans rien modifier."
+          - n: 10
+            note: "Le secret JWT vient de l'environnement, jamais du code."
+      - type: question
+        ref: sb-jq-q1
+        review: code-config
+      - type: jury
+        id: jury-spring
+        title: "Questions fréquentes sur Spring Boot"
+        items:
+          - q: "Qu'est-ce qu'un bean et quelle est sa portée par défaut ?"
+            a: "Un objet créé et géré par le conteneur Spring. Par défaut il est singleton : une seule instance partagée par toutes les requêtes, donc il ne doit pas garder d'état propre à un utilisateur."
+          - q: "Où sont vos secrets ?"
+            a: "Dans des variables d'environnement (fichier .env non versionné en local, secrets du serveur ou de la CI en production). application.yml ne contient que des références ${...}. Le .env est dans .gitignore."
+          - q: "Comment le frontend peut-il appeler votre API depuis un autre port ?"
+            a: "Grâce à la configuration CORS de Spring Security, qui autorise uniquement l'origine du frontend (http://localhost:4200 en développement, le domaine réel en production), avec les méthodes et en-têtes nécessaires."
+          - q: "Quelle différence entre @Component, @Service et @Repository ?"
+            a: "Les trois déclarent un bean. @Service et @Repository précisent le rôle de la classe ; @Repository ajoute en plus la traduction des exceptions techniques de la base en exceptions Spring."
+      - type: question
+        ref: sb-jq-q2
+        review: jury-spring
+      - type: text
+        md: "Exercice guidé : remplace les secrets par des variables d'environnement."
+      - type: exercise
+        ref: sb-ex-config-guide
+      - type: text
+        md: "En autonomie : corrige ce service qui garde un état partagé."
+      - type: exercise
+        ref: sb-ex-etat-partage
+      - type: quiz
+        items:
+          - ref: sb-jq-q3
+            review: def-profil
+          - ref: sb-jq-q4
+            review: jury-spring
+          - ref: sb-jq-q5
+            review: code-config
+    questions:
+      - code: sb-jq-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Que signifie `${DB_USER:boutique}` ?"
+        choices:
+          - label: "La variable d'environnement DB_USER, ou « boutique » si elle n'existe pas"
+            correct: true
+            why: "Valeur par défaut après les deux-points."
+          - label: "Le mot de passe est « boutique »"
+            correct: false
+            why: "C'est le nom d'utilisateur."
+          - label: "Un commentaire"
+            correct: false
+            why: "C'est une référence à une variable."
+        explanation: "Pratique en développement ; jamais de valeur par défaut pour un secret."
+      - code: sb-jq-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Un @Service peut stocker l'utilisateur connecté dans un de ses champs sans risque."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Le service est partagé par toutes les requêtes."
+          - label: "Faux"
+            correct: true
+            why: "Deux utilisateurs simultanés s'écraseraient mutuellement."
+        explanation: "L'utilisateur courant se lit dans le SecurityContext de la requête."
+      - code: sb-jq-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Comment activer le profil de production au démarrage ?"
+        choices:
+          - label: "Avec la variable SPRING_PROFILES_ACTIVE=prod"
+            correct: true
+            why: "Aucune modification du code."
+          - label: "En modifiant le code Java"
+            correct: false
+            why: "Le code reste le même partout."
+          - label: "En renommant pom.xml"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Même jar, configuration différente."
+      - code: sb-jq-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quelle configuration CORS est correcte en production ?"
+        choices:
+          - label: "Autoriser uniquement le domaine du frontend"
+            correct: true
+            why: "Principe du moindre privilège."
+          - label: "Autoriser toutes les origines (*)"
+            correct: false
+            why: "N'importe quel site pourrait appeler l'API."
+          - label: "Désactiver CORS dans le navigateur"
+            correct: false
+            why: "On ne contrôle pas le navigateur des visiteurs."
+        explanation: "Une liste blanche explicite."
+      - code: sb-jq-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: rgpd-secrets
+        prompt: "Tu as poussé un mot de passe de base sur GitHub. Que faire en priorité ?"
+        choices:
+          - label: "Changer ce mot de passe immédiatement, puis le sortir du code"
+            correct: true
+            why: "Il est compromis, même après suppression du fichier (l'historique le garde)."
+          - label: "Supprimer le fichier dans un nouveau commit, ça suffit"
+            correct: false
+            why: "L'historique Git contient toujours le secret."
+          - label: "Rendre le dépôt privé, ça suffit"
+            correct: false
+            why: "Il a pu être copié entre-temps."
+        explanation: "Un secret exposé est un secret à remplacer."
+    exercises:
+      - slug: sb-ex-config-guide
+        kind: COMPLETER
+        title: "Sortir les secrets du code"
+        difficulty: FACILE
+        skill: rgpd-secrets
+        statement: "Remplace les valeurs en clair par des références aux variables d'environnement."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Une variable d'environnement s'écrit ${NOM}."
+          - "Mot de passe : ${DB_PASSWORD}."
+          - "${DB_PASSWORD}, ${JWT_SECRET}, prod."
+        solution: '["${DB_PASSWORD}", "${JWT_SECRET}", "prod"]'
+        explanation: "Plus aucun secret dans le fichier : il peut être versionné sans danger."
+        xp: 10
+        payload:
+          language: yaml
+          template: |
+            spring:
+              datasource:
+                password: [[1]]
+            app:
+              jwt-secret: [[2]]
+            # au démarrage du serveur : SPRING_PROFILES_ACTIVE=[[3]]
+          blanks:
+            - ["${DB_PASSWORD}"]
+            - ["${JWT_SECRET}"]
+            - ["prod"]
+      - slug: sb-ex-etat-partage
+        kind: CORRIGER_ERREUR
+        title: "Un panier partagé par erreur"
+        difficulty: DIFFICILE
+        skill: spring-structure
+        statement: |
+          Ce service garde le panier dans un **champ** : comme le bean est un singleton, tous les clients
+          partagent le même panier ! Corrige-le :
+          - supprime le champ `articles` ;
+          - ajoute un `PanierRepository` injecté par constructeur (champ `private final`) ;
+          - `ajouter(Long clientId, Long produitId)` enregistre avec `panierRepository.save(new LignePanier(clientId, produitId))`.
+        criteria: "Plus de liste en champ ; repository final injecté ; save d'une LignePanier liée au client."
+        hints:
+          - "Un champ de service est partagé entre toutes les requêtes : il ne doit pas contenir de données d'utilisateur."
+          - "`private final PanierRepository panierRepository;` + constructeur."
+          - "`panierRepository.save(new LignePanier(clientId, produitId));`"
+        solution: |
+          @Service
+          public class PanierService {
+
+              private final PanierRepository panierRepository;
+
+              public PanierService(PanierRepository panierRepository) {
+                  this.panierRepository = panierRepository;
+              }
+
+              @Transactional
+              public void ajouter(Long clientId, Long produitId) {
+                  panierRepository.save(new LignePanier(clientId, produitId));
+              }
+          }
+        explanation: "L'état de chaque client est stocké en base, relié à son identifiant. Le service reste sans état."
+        xp: 30
+        payload:
+          language: java
+          starter: |
+            @Service
+            public class PanierService {
+
+                private final List<Long> articles = new ArrayList<>();
+
+                public void ajouter(Long clientId, Long produitId) {
+                    articles.add(produitId);
+                }
+            }
+          checks:
+            - pattern: '\bList\s*<\s*Long\s*>\s+articles'
+              absent: true
+              message: "Supprime le champ `articles` : il est partagé par tous les clients."
+            - pattern: 'private\s+final\s+PanierRepository\s+\w+\s*;'
+              message: "Ajoute `private final PanierRepository panierRepository;`."
+            - pattern: 'public\s+PanierService\s*\(\s*PanierRepository\s+\w+\s*\)'
+              message: "Injecte le repository par constructeur."
+            - pattern: '\.save\s*\(\s*new\s+LignePanier\s*\(\s*clientId\s*,\s*produitId\s*\)\s*\)'
+              message: "Enregistre : `panierRepository.save(new LignePanier(clientId, produitId));`."
+
+bank:
+  - code: sb-c4-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-tests
+    prompt: "Dans la pyramide des tests, quels tests sont les plus nombreux ?"
+    choices:
+      - label: "Les tests unitaires"
+        correct: true
+        why: "Rapides, ciblés, peu coûteux."
+      - label: "Les tests de bout en bout"
+        correct: false
+        why: "Lents : on en garde peu."
+      - label: "Les tests manuels"
+        correct: false
+        why: "Ils ne sont pas automatisés."
+    explanation: "Base large d'unitaires, quelques intégrations, très peu de bout en bout."
+  - code: sb-c4-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-structure
+    prompt: "À quoi sert `/actuator/health` ?"
+    choices:
+      - label: "À vérifier que l'application et ses dépendances (base) fonctionnent"
+        correct: true
+        why: "Utilisé par Docker, la supervision, le déploiement."
+      - label: "À afficher les mots de passe"
+        correct: false
+        why: "Surtout pas."
+      - label: "À redémarrer le serveur"
+        correct: false
+        why: "Il ne fait que renseigner l'état."
+    explanation: "Un healthcheck Docker peut appeler cette adresse."

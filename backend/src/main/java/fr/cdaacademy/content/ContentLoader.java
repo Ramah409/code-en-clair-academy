@@ -35,6 +35,7 @@ public class ContentLoader {
     static final Set<String> SINGLE_ANSWER_KINDS = Set.of("CHOIX_UNIQUE", "VRAI_FAUX", "RESULTAT_CODE");
     static final Set<String> TEXT_KINDS = Set.of("TEXTE", "COMPLETER_CODE");
     static final Set<String> LEVELS = Set.of("DEBUTANT", "INTERMEDIAIRE", "AVANCE", "EXAMEN");
+    static final Set<String> EXERCISE_DIFFICULTIES = Set.of("FACILE", "INTERMEDIAIRE", "DIFFICILE");
     static final Set<String> BLOCK_TYPES = Set.of(
             "text", "definition", "code", "demo", "callout", "question", "exercise", "steps", "compare", "quiz", "jury");
 
@@ -242,6 +243,8 @@ public class ContentLoader {
         String where = "exercice " + ex.slug();
         require(ex.slug() != null && ex.title() != null && ex.statement() != null, file,
                 where + " : slug, title et statement obligatoires");
+        require(ex.difficulty() == null || EXERCISE_DIFFICULTIES.contains(ex.difficulty()), file,
+                where + " : difficulté parmi " + EXERCISE_DIFFICULTIES);
         require(ex.hints() != null && ex.hints().size() == 3, file, where + " : exactement trois indices graduels");
         require(ex.solution() != null && ex.explanation() != null, file, where + " : solution et explication");
         require(ex.payload() != null && ex.payload().isObject(), file, where + " : payload obligatoire");

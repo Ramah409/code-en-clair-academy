@@ -1,0 +1,574 @@
+slug: sb-decouvrir-rest
+position: 1
+level: DEBUTANT
+title: "Découvrir Spring Boot et REST"
+summary: "Comprendre ce que fait un backend, parler HTTP (verbes, statuts, JSON) et écrire son premier contrôleur."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sb-http-rest
+    title: "HTTP et REST : la langue du web"
+    duration: 12
+    objective: "Lire une requête et une réponse HTTP, choisir le bon verbe et reconnaître les codes de statut principaux."
+    prerequisites: "Parcours « Java et la programmation objet »."
+    skills: [api-rest]
+    xp: 20
+    memo: |
+      - Une **requête** HTTP = un **verbe** + une **adresse** (+ parfois un corps JSON).
+      - **GET** lire, **POST** créer, **PUT** remplacer, **PATCH** modifier une partie, **DELETE** supprimer.
+      - **Statuts** : 200 OK, 201 créé, 204 sans contenu, 400 demande invalide, 401 non connecté, 403 interdit, 404 introuvable, 500 erreur du serveur.
+      - **REST** : des adresses qui nomment des **ressources** au pluriel (`/api/produits/12`), et des verbes qui disent l'action.
+      - **JSON** : le format texte des données échangées (`{ "nom": "Café", "prix": 2.5 }`).
+    commonMistakes: |
+      - Mettre l'action dans l'adresse : `/api/supprimerProduit?id=12` au lieu de `DELETE /api/produits/12`.
+      - Répondre 200 avec un message d'erreur dans le corps au lieu du bon statut.
+      - Confondre 401 (qui es-tu ?) et 403 (je sais qui tu es, mais c'est interdit).
+    blocks:
+      - type: text
+        md: |
+          Le frontend et le backend sont deux programmes séparés, parfois sur deux machines différentes.
+          Pour se parler, ils utilisent une langue commune : **HTTP**.
+      - type: definition
+        id: def-http
+        term: "Requête et réponse HTTP"
+        md: |
+          Comme au **guichet de la poste** : tu fais une **demande** (« je veux retirer le colis n° 12 »), le
+          guichetier répond avec un **statut** (« voilà » ou « introuvable ») et, parfois, le colis (les données).
+      - type: code
+        id: code-requete
+        language: text
+        title: "Un échange complet"
+        code: |
+          POST /api/produits HTTP/1.1
+          Content-Type: application/json
+          Authorization: Bearer eyJhbGciOi...
+
+          { "nom": "Café", "prix": 2.5 }
+
+          HTTP/1.1 201 Created
+          Location: /api/produits/12
+          Content-Type: application/json
+
+          { "id": 12, "nom": "Café", "prix": 2.5 }
+        lines:
+          - n: 1
+            note: "Le **verbe** (POST = créer) et l'**adresse** de la ressource."
+          - n: 2
+            note: "Un **en-tête** : le corps est au format JSON."
+          - n: 3
+            note: "Le jeton qui prouve qui fait la demande."
+          - n: 5
+            note: "Le **corps** : le produit à créer."
+          - n: 7
+            note: "La réponse commence par le **statut** : 201 = créé."
+          - n: 8
+            note: "L'adresse de la nouvelle ressource."
+          - n: 11
+            note: "Le produit créé, avec son identifiant donné par le serveur."
+      - type: question
+        ref: sb-http-q1
+        review: code-requete
+      - type: definition
+        id: def-rest
+        term: "REST"
+        md: |
+          Une **façon de ranger** une API, comme les rayons d'une bibliothèque : chaque adresse désigne une
+          **chose** (les produits, le produit 12), et le verbe dit ce qu'on fait avec. Les noms sont au
+          **pluriel**, sans verbe dans l'adresse.
+      - type: compare
+        left:
+          title: "Pas REST"
+          code: |
+            GET  /api/getProduits
+            POST /api/creerProduit
+            GET  /api/supprimerProduit?id=12
+          language: text
+        right:
+          title: "REST"
+          code: |
+            GET    /api/produits
+            POST   /api/produits
+            DELETE /api/produits/12
+          language: text
+      - type: question
+        ref: sb-http-q2
+        review: def-rest
+      - type: text
+        md: "Exercice guidé : associe chaque action au bon verbe et au bon statut."
+      - type: exercise
+        ref: sb-ex-verbes-guide
+      - type: text
+        md: "En autonomie : conçois les routes REST d'une ressource."
+      - type: exercise
+        ref: sb-ex-routes-rest
+      - type: jury
+        items:
+          - q: "Qu'est-ce qu'une API REST ?"
+            a: "Une interface HTTP où chaque URL désigne une ressource (au pluriel, sans verbe) et où les verbes HTTP expriment l'action : GET lire, POST créer, PUT/PATCH modifier, DELETE supprimer. Elle est sans état : chaque requête contient tout ce qu'il faut, comme le jeton JWT. Les échanges se font en JSON."
+          - q: "Quelle différence entre 401 et 403 ?"
+            a: "401 : le serveur ne sait pas qui vous êtes (pas de jeton ou jeton invalide). 403 : il sait qui vous êtes, mais vous n'avez pas le droit, par exemple un utilisateur simple sur une route d'administration."
+      - type: quiz
+        items:
+          - ref: sb-http-q3
+            review: def-http
+          - ref: sb-http-q4
+            review: def-rest
+          - ref: sb-http-q5
+            review: code-requete
+    questions:
+      - code: sb-http-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: api-rest
+        prompt: "Quel statut renvoyer après la création réussie d'une ressource ?"
+        choices:
+          - label: "201 Created"
+            correct: true
+            why: "C'est le statut exact d'une création."
+          - label: "200 OK"
+            correct: false
+            why: "Acceptable, mais 201 est plus précis."
+          - label: "204 No Content"
+            correct: false
+            why: "204 signifie « réussi, sans rien à renvoyer »."
+        explanation: "201 + l'en-tête Location vers la nouvelle ressource."
+      - code: sb-http-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: api-rest
+        prompt: "Quelle adresse respecte REST pour supprimer le client 7 ?"
+        choices:
+          - label: "DELETE /api/clients/7"
+            correct: true
+            why: "Ressource au pluriel + verbe DELETE."
+          - label: "GET /api/supprimerClient/7"
+            correct: false
+            why: "Le verbe est dans l'adresse et GET ne doit rien modifier."
+          - label: "POST /api/client/delete"
+            correct: false
+            why: "Action dans l'adresse, singulier, pas d'identifiant."
+        explanation: "L'adresse nomme la chose, le verbe dit l'action."
+      - code: sb-http-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: api-rest
+        prompt: "Une personne connectée, mais pas administratrice, appelle une route d'administration. Quel statut ?"
+        choices:
+          - label: "403 Forbidden"
+            correct: true
+            why: "Identité connue, droit refusé."
+          - label: "401 Unauthorized"
+            correct: false
+            why: "401 = identité inconnue."
+          - label: "404 Not Found"
+            correct: false
+            why: "La route existe."
+        explanation: "401 : qui es-tu ? 403 : je te connais, mais non."
+      - code: sb-http-q4
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: api-rest
+        prompt: "Quels verbes HTTP modifient des données sur le serveur ? (plusieurs réponses)"
+        choices:
+          - label: "POST"
+            correct: true
+            why: "Il crée."
+          - label: "PUT"
+            correct: true
+            why: "Il remplace."
+          - label: "GET"
+            correct: false
+            why: "GET lit seulement."
+          - label: "DELETE"
+            correct: true
+            why: "Il supprime."
+        explanation: "GET ne doit jamais rien modifier."
+      - code: sb-http-q5
+        kind: TEXTE
+        difficulty: 1
+        skill: api-rest
+        prompt: "Quel statut HTTP signifie « ressource introuvable » ? (le nombre)"
+        answers: ["404"]
+        explanation: "404 Not Found : par exemple GET /api/produits/999 si ce produit n'existe pas."
+    exercises:
+      - slug: sb-ex-verbes-guide
+        kind: COMPLETER
+        title: "Verbes et statuts"
+        difficulty: FACILE
+        skill: api-rest
+        statement: "Complète chaque ligne avec le bon verbe ou le bon statut."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Lire : GET. Créer : POST."
+          - "Une création réussie : 201."
+          - "GET, POST, 201, DELETE."
+        solution: '["GET", "POST", "201", "DELETE"]'
+        explanation: "Lire, créer (201), supprimer : les gestes de base d'une API."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            Lister les commandes      : [[1]] /api/commandes        → 200
+            Créer une commande        : [[2]] /api/commandes        → [[3]]
+            Supprimer la commande 5   : [[4]] /api/commandes/5      → 204
+          blanks:
+            - ["GET"]
+            - ["POST"]
+            - ["201"]
+            - ["DELETE"]
+      - slug: sb-ex-routes-rest
+        kind: CODE_LIBRE
+        title: "Les routes d'une médiathèque"
+        difficulty: INTERMEDIAIRE
+        skill: api-rest
+        statement: |
+          Écris les **cinq routes REST** de la ressource « livres », une par ligne, sous la forme
+          `VERBE /adresse`. Il faut : lister, lire un livre par son id, créer, modifier entièrement, supprimer.
+          Utilise `/api/livres` et `{id}` pour l'identifiant.
+        criteria: "Cinq routes correctes, adresses au pluriel, aucun verbe dans l'adresse."
+        hints:
+          - "Lister et créer utilisent la même adresse, sans id."
+          - "Lire, modifier et supprimer utilisent /api/livres/{id}."
+          - "Verbes : GET, GET, POST, PUT, DELETE."
+        solution: |
+          GET /api/livres
+          GET /api/livres/{id}
+          POST /api/livres
+          PUT /api/livres/{id}
+          DELETE /api/livres/{id}
+        explanation: "Deux adresses seulement, cinq actions grâce aux verbes."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            GET /api/livres
+          checks:
+            - pattern: '(?m)^\s*GET\s+/api/livres\s*$'
+              message: "Il manque la liste : `GET /api/livres`."
+            - pattern: '(?m)^\s*GET\s+/api/livres/\{id\}\s*$'
+              message: "Il manque la lecture d'un livre : `GET /api/livres/{id}`."
+            - pattern: '(?m)^\s*POST\s+/api/livres\s*$'
+              message: "Il manque la création : `POST /api/livres`."
+            - pattern: '(?m)^\s*PUT\s+/api/livres/\{id\}\s*$'
+              message: "Il manque la modification : `PUT /api/livres/{id}`."
+            - pattern: '(?m)^\s*DELETE\s+/api/livres/\{id\}\s*$'
+              message: "Il manque la suppression : `DELETE /api/livres/{id}`."
+            - pattern: '(?i)/api/(?:get|creer|créer|ajouter|supprimer|modifier|delete|update|create)'
+              absent: true
+              message: "Pas de verbe dans l'adresse : c'est le verbe HTTP qui dit l'action."
+
+  # ===================================================================== LEÇON 2
+  - slug: sb-premier-controleur
+    title: "Mon premier contrôleur Spring Boot"
+    duration: 14
+    objective: "Comprendre ce que fait Spring Boot au démarrage, ce qu'est un bean, et écrire un contrôleur REST qui renvoie du JSON."
+    prerequisites: "Leçon « HTTP et REST : la langue du web »."
+    skills: [spring-structure, spring-rest]
+    xp: 25
+    memo: |
+      - `@SpringBootApplication` + `main` : démarre l'application et un serveur web (Tomcat) intégré.
+      - Un **bean** : un objet créé et géré par Spring. On le déclare avec `@RestController`, `@Service`, `@Repository`, `@Component`.
+      - **Injection par constructeur** : Spring fournit les beans dont une classe a besoin.
+      - `@RestController` + `@RequestMapping("/api/produits")` : une classe qui répond aux requêtes de cette adresse.
+      - `@GetMapping` : cette méthode répond aux GET ; l'objet renvoyé est converti en **JSON** automatiquement.
+      - La configuration (port, base de données) est dans `application.properties` ou `application.yml`.
+    commonMistakes: |
+      - Utiliser `@Controller` au lieu de `@RestController` : Spring cherche une page HTML.
+      - Créer les dépendances avec `new` au lieu de les recevoir dans le constructeur.
+      - Placer des classes hors du package de la classe principale : Spring ne les trouve pas.
+    blocks:
+      - type: text
+        md: |
+          Sans Spring Boot, il faudrait installer un serveur, écrire des pages de configuration et relier tous
+          les objets à la main. Spring Boot le fait pour toi, avec des **réglages par défaut raisonnables**.
+      - type: definition
+        id: def-bean
+        term: "Bean et conteneur Spring"
+        md: |
+          Spring est un **chef d'orchestre** : au démarrage, il crée les objets importants de ton application
+          (les **beans**), puis les donne à ceux qui en ont besoin. Tu ne fais plus `new` toi-même : c'est
+          l'**inversion de contrôle**.
+      - type: code
+        id: code-application
+        language: java
+        title: "BoutiqueApplication.java"
+        code: |
+          @SpringBootApplication
+          public class BoutiqueApplication {
+              public static void main(String[] args) {
+                  SpringApplication.run(BoutiqueApplication.class, args);
+              }
+          }
+        lines:
+          - n: 1
+            note: "Active la configuration automatique et la recherche des beans dans ce package et ses sous-packages."
+          - n: 4
+            note: "Démarre Spring, crée les beans et lance le serveur web (port 8080 par défaut)."
+      - type: definition
+        id: def-controleur
+        term: "Contrôleur REST"
+        md: |
+          Le **standardiste** de l'API : il reçoit les requêtes HTTP, appelle la bonne personne (le service),
+          et renvoie la réponse. Il ne contient pas de règle métier.
+      - type: code
+        id: code-controleur
+        language: java
+        title: "ProduitController.java"
+        code: |
+          @RestController
+          @RequestMapping("/api/produits")
+          public class ProduitController {
+
+              private final ProduitService service;
+
+              public ProduitController(ProduitService service) {
+                  this.service = service;
+              }
+
+              @GetMapping
+              public List<ProduitDto> lister() {
+                  return service.lister();
+              }
+          }
+        lines:
+          - n: 1
+            note: "`@RestController` : les réponses sont des données (JSON), pas des pages."
+          - n: 2
+            note: "Toutes les méthodes de la classe répondent sous `/api/produits`."
+          - n: 5
+            note: "`final` : la dépendance ne changera plus après la création."
+          - n: 7
+            note: "Injection par constructeur : Spring fournit le `ProduitService`."
+          - n: 11
+            note: "`@GetMapping` : répond à `GET /api/produits`."
+          - n: 13
+            note: "La liste renvoyée est transformée en tableau JSON par Jackson."
+      - type: question
+        ref: sb-ctrl-q1
+        review: code-controleur
+      - type: question
+        ref: sb-ctrl-q2
+        review: def-bean
+      - type: text
+        md: "Exercice guidé : complète ce contrôleur."
+      - type: exercise
+        ref: sb-ex-controleur-guide
+      - type: text
+        md: "En autonomie : écris un contrôleur de catégories."
+      - type: exercise
+        ref: sb-ex-controleur
+      - type: jury
+        items:
+          - q: "Qu'apporte Spring Boot par rapport à Spring ?"
+            a: "L'auto-configuration (DataSource, Jackson, serveur web configurés selon les dépendances présentes), les starters qui regroupent les dépendances, un serveur Tomcat intégré qui permet de lancer un simple jar, et des réglages externalisés dans application.properties."
+          - q: "Qu'est-ce que l'inversion de contrôle ?"
+            a: "Ce n'est plus ma classe qui crée ses dépendances : le conteneur Spring les crée et les injecte, de préférence par constructeur. Le code est moins couplé et je peux fournir des doublures dans les tests."
+      - type: quiz
+        items:
+          - ref: sb-ctrl-q3
+            review: code-application
+          - ref: sb-ctrl-q4
+            review: code-controleur
+          - ref: sb-ctrl-q5
+            review: def-controleur
+    questions:
+      - code: sb-ctrl-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Quelle annotation déclare une classe qui répond aux requêtes par du JSON ?"
+        choices:
+          - label: "@RestController"
+            correct: true
+            why: "Contrôleur + réponses converties en JSON."
+          - label: "@Service"
+            correct: false
+            why: "C'est la couche métier."
+          - label: "@Entity"
+            correct: false
+            why: "C'est une table de la base."
+        explanation: "@RestController = @Controller + @ResponseBody."
+      - code: sb-ctrl-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Comment un contrôleur obtient-il le service dont il a besoin ?"
+        choices:
+          - label: "Spring le lui passe dans son constructeur"
+            correct: true
+            why: "Injection par constructeur."
+          - label: "Il fait `new ProduitService()`"
+            correct: false
+            why: "On perdrait le bean géré par Spring et ses dépendances."
+          - label: "Il le lit dans application.properties"
+            correct: false
+            why: "Ce fichier contient des réglages, pas des objets."
+        explanation: "Un constructeur unique suffit : pas besoin de @Autowired."
+      - code: sb-ctrl-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Spring trouve automatiquement un contrôleur placé dans un package qui n'est pas sous celui de la classe `@SpringBootApplication`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "La recherche part du package de la classe principale."
+          - label: "Faux"
+            correct: true
+            why: "Il faut ranger les classes dans ce package ou ses sous-packages."
+        explanation: "Exemple : `fr.boutique` puis `fr.boutique.produit`, `fr.boutique.commande`…"
+      - code: sb-ctrl-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Avec `@RequestMapping(\"/api/produits\")` sur la classe et `@GetMapping` sur `lister()`, quelle requête appelle `lister()` ?"
+        choices:
+          - label: "GET /api/produits"
+            correct: true
+            why: "L'adresse de la classe, sans complément."
+          - label: "GET /lister"
+            correct: false
+            why: "Le nom de la méthode ne compte pas."
+          - label: "POST /api/produits"
+            correct: false
+            why: "@GetMapping répond aux GET."
+        explanation: "Adresse de la classe + adresse de la méthode."
+      - code: sb-ctrl-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Où placer la règle « une commande ne peut pas dépasser 50 articles » ?"
+        choices:
+          - label: "Dans le service"
+            correct: true
+            why: "C'est une règle métier."
+          - label: "Dans le contrôleur"
+            correct: false
+            why: "Le contrôleur reçoit et répond, sans règle métier."
+          - label: "Dans la classe principale"
+            correct: false
+            why: "Elle ne fait que démarrer l'application."
+        explanation: "Contrôleur = standardiste ; service = expert métier."
+    exercises:
+      - slug: sb-ex-controleur-guide
+        kind: COMPLETER
+        title: "Compléter un contrôleur"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: "Complète ce contrôleur qui liste les clients."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Un contrôleur qui renvoie du JSON : RestController."
+          - "Le préfixe d'adresse se déclare avec RequestMapping."
+          - "RestController, RequestMapping, final, GetMapping."
+        solution: '["RestController", "RequestMapping", "final", "GetMapping"]'
+        explanation: "Annotation de classe, préfixe, dépendance finale, méthode GET."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @[[1]]
+            @[[2]]("/api/clients")
+            public class ClientController {
+                private [[3]] ClientService service;
+
+                public ClientController(ClientService service) { this.service = service; }
+
+                @[[4]]
+                public List<ClientDto> lister() { return service.lister(); }
+            }
+          blanks:
+            - ["RestController"]
+            - ["RequestMapping"]
+            - ["final"]
+            - ["GetMapping"]
+      - slug: sb-ex-controleur
+        kind: CODE_LIBRE
+        title: "Le contrôleur des catégories"
+        difficulty: INTERMEDIAIRE
+        skill: spring-rest
+        statement: |
+          Écris `CategorieController` :
+          - répond sous `/api/categories` ;
+          - reçoit un `CategorieService` par **injection par constructeur** (champ `private final`) ;
+          - une méthode `lister()` en GET qui renvoie `List<CategorieDto>` en appelant `service.lister()`.
+        criteria: "@RestController, @RequestMapping correct, champ final, constructeur, @GetMapping et délégation au service."
+        hints:
+          - "Deux annotations sur la classe : `@RestController` et `@RequestMapping(\"/api/categories\")`."
+          - "`private final CategorieService service;` et un constructeur qui le reçoit."
+          - "`@GetMapping public List<CategorieDto> lister() { return service.lister(); }`"
+        solution: |
+          @RestController
+          @RequestMapping("/api/categories")
+          public class CategorieController {
+
+              private final CategorieService service;
+
+              public CategorieController(CategorieService service) {
+                  this.service = service;
+              }
+
+              @GetMapping
+              public List<CategorieDto> lister() {
+                  return service.lister();
+              }
+          }
+        explanation: "Ce modèle se retrouve dans chaque contrôleur : annotations, injection, délégation."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            public class CategorieController {
+
+            }
+          checks:
+            - pattern: '@RestController\s+(?:@\w+(?:\([^)]*\))?\s+)*public\s+class\s+CategorieController|@RequestMapping\([^)]*\)\s+@RestController'
+              message: "Annote la classe avec `@RestController`."
+            - pattern: '@RequestMapping\s*\(\s*(?:value\s*=\s*|path\s*=\s*)?"/api/categories"\s*\)'
+              message: "Ajoute `@RequestMapping(\"/api/categories\")`."
+            - pattern: 'private\s+final\s+CategorieService\s+\w+\s*;'
+              message: "Déclare `private final CategorieService service;`."
+            - pattern: 'public\s+CategorieController\s*\(\s*CategorieService\s+\w+\s*\)'
+              message: "Écris le constructeur qui reçoit le `CategorieService`."
+            - pattern: 'new\s+CategorieService\s*\('
+              absent: true
+              message: "Ne crée pas le service avec `new` : reçois-le dans le constructeur."
+            - pattern: '@GetMapping\s+public\s+List\s*<\s*CategorieDto\s*>\s+lister\s*\(\s*\)'
+              message: "Écris `@GetMapping public List<CategorieDto> lister()`."
+            - pattern: 'return\s+(?:this\.)?\w+\.lister\s*\(\s*\)\s*;'
+              message: "La méthode renvoie `service.lister()`."
+
+bank:
+  - code: sb-c1-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: api-rest
+    prompt: "Quel format de données utilise généralement une API REST moderne ?"
+    choices:
+      - label: "JSON"
+        correct: true
+        why: "Léger et lisible, compris par JavaScript."
+      - label: "PDF"
+        correct: false
+        why: "C'est un format de document."
+      - label: "Excel"
+        correct: false
+        why: "C'est un format de tableur."
+    explanation: "`{ \"nom\": \"Café\", \"prix\": 2.5 }`"
+  - code: sb-c1-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-structure
+    prompt: "Où règle-t-on le port du serveur ou l'adresse de la base ?"
+    choices:
+      - label: "Dans application.properties (ou application.yml)"
+        correct: true
+        why: "Configuration externalisée."
+      - label: "Dans le contrôleur"
+        correct: false
+        why: "Le code ne doit pas contenir la configuration."
+      - label: "Dans pom.xml"
+        correct: false
+        why: "pom.xml liste les dépendances."
+    explanation: "Les secrets viennent de variables d'environnement : `spring.datasource.password=${DB_PASSWORD}`."

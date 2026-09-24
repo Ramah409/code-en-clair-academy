@@ -1,0 +1,24 @@
+slug: spring-boot
+version: 1
+position: 7
+title: "Spring Boot : construire l'API"
+category: SPRING
+icon: bolt
+summary: "Créer une API REST en Java : contrôleurs, DTO, services, JPA et PostgreSQL, validation, gestion des erreurs et tests."
+description: |
+  **Spring Boot** est un outil pour écrire le **backend** d'une application en Java : la partie qui tourne
+  sur le serveur, applique les règles et parle à la base de données.
+
+  Le frontend Angular pose des questions (« donne-moi la liste des produits ») ; le backend répond avec
+  des **données JSON**. Cet échange suit des règles simples appelées **REST**.
+
+  Spring Boot fait beaucoup de choses pour toi : il démarre un serveur web, crée les objets dont ton code
+  a besoin et se connecte à la base. Toi, tu écris surtout **tes règles métier**.
+
+  **Au programme** : les bases de HTTP et REST, les contrôleurs, les DTO, la couche service, JPA avec
+  PostgreSQL, la validation, la gestion des erreurs, les tests avec JUnit, Mockito et MockMvc, puis les
+  questions du jury.
+
+  **Prérequis** : le parcours « Java et la programmation objet » et le parcours « SQL et PostgreSQL ».
+examQuestionCount: 30
+examTimeLimitMinutes: 35

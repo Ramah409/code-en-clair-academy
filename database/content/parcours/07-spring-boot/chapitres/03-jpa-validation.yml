@@ -1,0 +1,601 @@
+slug: sb-jpa-validation
+position: 3
+level: AVANCE
+title: "Persister avec JPA, valider et gérer les erreurs"
+summary: "Relier les classes Java aux tables PostgreSQL avec JPA, écrire des requêtes avec Spring Data, valider les entrées et renvoyer des erreurs claires."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sb-jpa
+    title: "Entités JPA et repositories"
+    duration: 15
+    objective: "Écrire une entité JPA avec son identifiant et une relation, déclarer un repository Spring Data et écrire des méthodes de recherche."
+    prerequisites: "Chapitre « Construire une API en couches » et parcours « SQL et PostgreSQL »."
+    skills: [spring-jpa]
+    xp: 30
+    memo: |
+      - **ORM** : l'outil qui traduit les objets Java en lignes de tables (et inversement). JPA est la norme, Hibernate l'outil.
+      - `@Entity` + `@Table(name = "produits")` : cette classe correspond à une table.
+      - `@Id @GeneratedValue(strategy = GenerationType.IDENTITY)` : la clé primaire, générée par PostgreSQL.
+      - `@ManyToOne` + `@JoinColumn(name = "categorie_id")` : la clé étrangère vers une autre table.
+      - `interface ProduitRepository extends JpaRepository<Produit, Long>` : `save`, `findById`, `findAll`, `deleteById` offerts.
+      - Méthodes par le nom : `findByNomContainingIgnoreCase(String nom)` ; ou une requête `@Query("select p from Produit p where …")`.
+    commonMistakes: |
+      - Oublier le constructeur sans argument : Hibernate ne peut pas créer l'objet.
+      - Charger une liste puis appeler une relation paresseuse pour chaque élément : le problème des **N+1 requêtes**.
+      - Laisser `spring.jpa.hibernate.ddl-auto=update` en production au lieu de migrations (Flyway).
+    blocks:
+      - type: text
+        md: |
+          En Java, on manipule des **objets**. PostgreSQL range des **lignes** dans des **tables**. JPA fait
+          la traduction : tu enregistres un objet, il écrit l'`INSERT` pour toi.
+      - type: definition
+        id: def-orm
+        term: "ORM et JPA"
+        md: |
+          Un **interprète** entre deux langues : le Java (objets) et le SQL (tables). **JPA** est le
+          dictionnaire officiel ; **Hibernate** est l'interprète qui l'applique.
+      - type: code
+        id: code-entite
+        language: java
+        title: "Produit.java"
+        code: |
+          @Entity
+          @Table(name = "produits")
+          public class Produit {
+
+              @Id
+              @GeneratedValue(strategy = GenerationType.IDENTITY)
+              private Long id;
+
+              @Column(nullable = false, length = 100)
+              private String nom;
+
+              private BigDecimal prix;
+
+              @ManyToOne(fetch = FetchType.LAZY)
+              @JoinColumn(name = "categorie_id")
+              private Categorie categorie;
+
+              protected Produit() {}
+
+              // constructeur, getters…
+          }
+        lines:
+          - n: 1
+            note: "`@Entity` : cette classe est gérée par JPA."
+          - n: 2
+            note: "Le nom de la table dans PostgreSQL."
+          - n: 5
+            note: "`@Id` : la clé primaire."
+          - n: 6
+            note: "`IDENTITY` : PostgreSQL donne le numéro (colonne `GENERATED ... AS IDENTITY` ou `SERIAL`)."
+          - n: 9
+            note: "`@Column` précise les contraintes : `NOT NULL`, 100 caractères maximum."
+          - n: 14
+            note: "Plusieurs produits pour **une** catégorie. `LAZY` : la catégorie n'est chargée que si on en a besoin."
+          - n: 15
+            note: "La colonne clé étrangère dans la table `produits`."
+          - n: 18
+            note: "Constructeur vide exigé par JPA (`protected` pour ne pas l'utiliser ailleurs)."
+      - type: question
+        ref: sb-jpa-q1
+        review: code-entite
+      - type: definition
+        id: def-repository
+        term: "Repository Spring Data"
+        md: |
+          Le **commis de la réserve** : tu lui dis ce que tu veux (« tous les produits dont le nom contient
+          café »), il va le chercher. Avec Spring Data, il suffit d'écrire une **interface** : Spring écrit le
+          code à ta place.
+      - type: code
+        id: code-repository
+        language: java
+        title: "ProduitRepository.java"
+        code: |
+          public interface ProduitRepository extends JpaRepository<Produit, Long> {
+
+              List<Produit> findByNomContainingIgnoreCase(String morceau);
+
+              List<Produit> findByCategorieIdOrderByPrixAsc(Long categorieId);
+
+              @Query("select p from Produit p join fetch p.categorie where p.prix < :max")
+              List<Produit> moinsChersQue(@Param("max") BigDecimal max);
+          }
+        lines:
+          - n: 1
+            note: "`<Produit, Long>` : l'entité gérée et le type de son identifiant."
+          - n: 3
+            note: "Spring lit le nom : `WHERE LOWER(nom) LIKE LOWER('%morceau%')`."
+          - n: 5
+            note: "Filtre sur la catégorie, trié par prix croissant."
+          - n: 7
+            note: "Une requête JPQL (sur les **classes**, pas les tables). `join fetch` charge la catégorie en une seule requête."
+      - type: question
+        ref: sb-jpa-q2
+        review: code-repository
+      - type: text
+        md: "Exercice guidé : complète l'entité."
+      - type: exercise
+        ref: sb-ex-entite-guide
+      - type: text
+        md: "En autonomie : écris un repository."
+      - type: exercise
+        ref: sb-ex-repository
+      - type: jury
+        items:
+          - q: "Qu'est-ce que JPA et Hibernate ?"
+            a: "JPA est la spécification Java de mapping objet-relationnel ; Hibernate en est l'implémentation utilisée par Spring Boot. Les classes annotées @Entity correspondent aux tables, et Spring Data JPA génère les repositories à partir d'interfaces."
+          - q: "Qu'est-ce que le problème N+1 ?"
+            a: "Une requête charge N éléments, puis une requête supplémentaire part pour la relation de chacun. On le corrige avec un join fetch, un @EntityGraph, ou une projection DTO qui récupère tout en une requête."
+      - type: quiz
+        items:
+          - ref: sb-jpa-q3
+            review: code-entite
+          - ref: sb-jpa-q4
+            review: code-repository
+          - ref: sb-jpa-q5
+            review: def-orm
+    questions:
+      - code: sb-jpa-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Quelle annotation représente « plusieurs produits appartiennent à une catégorie » côté Produit ?"
+        choices:
+          - label: "@ManyToOne"
+            correct: true
+            why: "Plusieurs (Many) produits vers une (One) catégorie."
+          - label: "@OneToMany"
+            correct: false
+            why: "C'est le côté Catégorie (une catégorie, plusieurs produits)."
+          - label: "@ManyToMany"
+            correct: false
+            why: "Un produit n'a qu'une catégorie ici."
+        explanation: "Le côté @ManyToOne porte la clé étrangère."
+      - code: sb-jpa-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Que fait `findByEmail(String email)` dans un repository Spring Data ?"
+        choices:
+          - label: "Spring génère la requête `WHERE email = ?` d'après le nom de la méthode"
+            correct: true
+            why: "Les méthodes dérivées lisent leur nom."
+          - label: "Il faut écrire le corps de la méthode"
+            correct: false
+            why: "C'est une interface, Spring écrit le code."
+          - label: "Rien, il faut @Query obligatoirement"
+            correct: false
+            why: "@Query est facultative pour les cas simples."
+        explanation: "findBy + nom du champ + mots-clés (Containing, OrderBy…)."
+      - code: sb-jpa-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Une entité JPA doit avoir un constructeur sans argument."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Hibernate crée l'objet vide puis le remplit."
+          - label: "Faux"
+            correct: false
+            why: "Sans lui, le chargement échoue."
+        explanation: "Il peut être `protected`."
+      - code: sb-jpa-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: spring-jpa
+        prompt: "La page liste 50 produits et affiche leur catégorie : 51 requêtes partent. Quelle solution ?"
+        choices:
+          - label: "Une requête avec `join fetch p.categorie`"
+            correct: true
+            why: "Tout est chargé en une requête."
+          - label: "Passer toutes les relations en EAGER"
+            correct: false
+            why: "On chargerait trop de données partout."
+          - label: "Ajouter un index"
+            correct: false
+            why: "Le nombre de requêtes ne change pas."
+        explanation: "C'est le problème N+1."
+      - code: sb-jpa-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Quelle implémentation de JPA Spring Boot utilise-t-il par défaut ? (un nom)"
+        answers: ["Hibernate"]
+        explanation: "JPA = la norme ; Hibernate = l'outil qui l'applique."
+    exercises:
+      - slug: sb-ex-entite-guide
+        kind: COMPLETER
+        title: "Compléter l'entité Livre"
+        difficulty: FACILE
+        skill: spring-jpa
+        statement: "Complète les annotations de l'entité."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "La classe est une Entity."
+          - "La clé primaire : Id ; la clé étrangère : JoinColumn."
+          - "Entity, Id, ManyToOne, JoinColumn."
+        solution: '["Entity", "Id", "ManyToOne", "JoinColumn"]'
+        explanation: "Entité, clé primaire, relation, clé étrangère."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @[[1]]
+            @Table(name = "livres")
+            public class Livre {
+                @[[2]]
+                @GeneratedValue(strategy = GenerationType.IDENTITY)
+                private Long id;
+
+                @[[3]]
+                @[[4]](name = "auteur_id")
+                private Auteur auteur;
+            }
+          blanks:
+            - ["Entity"]
+            - ["Id"]
+            - ["ManyToOne"]
+            - ["JoinColumn"]
+      - slug: sb-ex-repository
+        kind: CODE_LIBRE
+        title: "Le repository des adhérents"
+        difficulty: INTERMEDIAIRE
+        skill: spring-jpa
+        statement: |
+          Écris `AdherentRepository` pour l'entité `Adherent` (identifiant `Long`) avec :
+          - `findByEmail(String email)` qui renvoie un `Optional<Adherent>` ;
+          - `existsByEmail(String email)` qui renvoie un `boolean` ;
+          - `findByVilleOrderByNomAsc(String ville)` qui renvoie une `List<Adherent>`.
+        criteria: "Interface qui étend JpaRepository<Adherent, Long> avec les trois méthodes dérivées."
+        hints:
+          - "`public interface AdherentRepository extends JpaRepository<Adherent, Long> {`"
+          - "`Optional<Adherent> findByEmail(String email);`"
+          - "Pas de corps : ce sont des déclarations terminées par un point-virgule."
+        solution: |
+          public interface AdherentRepository extends JpaRepository<Adherent, Long> {
+
+              Optional<Adherent> findByEmail(String email);
+
+              boolean existsByEmail(String email);
+
+              List<Adherent> findByVilleOrderByNomAsc(String ville);
+          }
+        explanation: "Trois méthodes, zéro ligne de SQL : Spring Data les génère."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            public interface AdherentRepository {
+
+            }
+          checks:
+            - pattern: 'interface\s+AdherentRepository\s+extends\s+JpaRepository\s*<\s*Adherent\s*,\s*Long\s*>'
+              message: "L'interface doit étendre `JpaRepository<Adherent, Long>`."
+            - pattern: 'Optional\s*<\s*Adherent\s*>\s+findByEmail\s*\(\s*String\s+\w+\s*\)\s*;'
+              message: "Déclare `Optional<Adherent> findByEmail(String email);`."
+            - pattern: 'boolean\s+existsByEmail\s*\(\s*String\s+\w+\s*\)\s*;'
+              message: "Déclare `boolean existsByEmail(String email);`."
+            - pattern: 'List\s*<\s*Adherent\s*>\s+findByVilleOrderByNomAsc\s*\(\s*String\s+\w+\s*\)\s*;'
+              message: "Déclare `List<Adherent> findByVilleOrderByNomAsc(String ville);`."
+            - pattern: 'class\s+AdherentRepository'
+              absent: true
+              message: "Un repository Spring Data est une interface, pas une classe."
+
+  # ===================================================================== LEÇON 2
+  - slug: sb-validation-erreurs
+    title: "Valider les entrées et renvoyer des erreurs claires"
+    duration: 14
+    objective: "Valider un DTO avec Bean Validation, centraliser la gestion des erreurs avec @RestControllerAdvice et renvoyer 400, 404 ou 409 avec un message utile."
+    prerequisites: "Leçon « Entités JPA et repositories »."
+    skills: [spring-rest, api-rest]
+    xp: 30
+    memo: |
+      - Annotations de validation sur le DTO : `@NotBlank`, `@Email`, `@Size(min = 12)`, `@Positive`, `@NotNull`.
+      - `@Valid @RequestBody` : Spring vérifie avant d'entrer dans la méthode ; sinon **400**.
+      - `@RestControllerAdvice` + `@ExceptionHandler` : **un seul endroit** transforme les exceptions en réponses.
+      - Correspondances : introuvable → **404**, conflit (e-mail déjà pris) → **409**, données invalides → **400**.
+      - `ProblemDetail` : un format standard de réponse d'erreur (`title`, `status`, `detail`).
+      - Ne jamais renvoyer la trace Java (stack trace) au client.
+    commonMistakes: |
+      - Oublier `@Valid` : les annotations du DTO sont ignorées.
+      - Un `try/catch` dans chaque contrôleur au lieu d'un gestionnaire global.
+      - Renvoyer le message technique de l'exception (nom de table, requête SQL) à l'utilisateur.
+    blocks:
+      - type: text
+        md: |
+          Le frontend valide déjà les formulaires… mais n'importe qui peut appeler l'API directement, avec
+          n'importe quelles données. Le backend doit donc **tout revérifier**.
+      - type: definition
+        id: def-validation
+        term: "Bean Validation"
+        md: |
+          Des **étiquettes de contrôle** collées sur les champs du DTO, comme les règles d'un formulaire
+          administratif : « obligatoire », « format e-mail », « au moins 12 caractères ». `@Valid` demande à
+          Spring de les vérifier.
+      - type: code
+        id: code-validation
+        language: java
+        title: "Un DTO validé"
+        code: |
+          public record InscriptionRequest(
+                  @NotBlank @Size(max = 60) String nom,
+                  @NotBlank @Email String email,
+                  @NotBlank @Size(min = 12) String motDePasse) {}
+
+          @PostMapping("/inscription")
+          public ResponseEntity<UtilisateurDto> inscrire(@Valid @RequestBody InscriptionRequest req) {
+              return ResponseEntity.status(HttpStatus.CREATED).body(service.inscrire(req));
+          }
+        lines:
+          - n: 2
+            note: "`@NotBlank` : ni null, ni vide, ni seulement des espaces."
+          - n: 3
+            note: "`@Email` : doit ressembler à une adresse e-mail."
+          - n: 4
+            note: "`@Size(min = 12)` : au moins 12 caractères."
+          - n: 7
+            note: "`@Valid` déclenche la vérification. En cas d'échec : **400**, sans entrer dans la méthode."
+      - type: question
+        ref: sb-val-q1
+        review: code-validation
+      - type: definition
+        id: def-advice
+        term: "Gestionnaire global d'erreurs"
+        md: |
+          Un **service réclamations** unique pour toute l'API : quelle que soit l'erreur et l'endroit où elle
+          arrive, c'est lui qui rédige une réponse polie, avec le bon statut.
+      - type: code
+        id: code-advice
+        language: java
+        title: "GestionErreurs.java"
+        code: |
+          @RestControllerAdvice
+          public class GestionErreurs {
+
+              @ExceptionHandler(RessourceIntrouvableException.class)
+              public ProblemDetail introuvable(RessourceIntrouvableException e) {
+                  return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+              }
+
+              @ExceptionHandler(EmailDejaUtiliseException.class)
+              public ProblemDetail conflit(EmailDejaUtiliseException e) {
+                  return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Cet e-mail est déjà utilisé.");
+              }
+
+              @ExceptionHandler(MethodArgumentNotValidException.class)
+              public ProblemDetail invalide(MethodArgumentNotValidException e) {
+                  ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Données invalides.");
+                  pd.setProperty("champs", e.getFieldErrors().stream()
+                          .map(f -> f.getField() + " : " + f.getDefaultMessage()).toList());
+                  return pd;
+              }
+          }
+        lines:
+          - n: 1
+            note: "S'applique à **tous** les contrôleurs."
+          - n: 4
+            note: "Cette méthode s'occupe d'un type d'exception précis."
+          - n: 6
+            note: "404 avec un message clair."
+          - n: 11
+            note: "409 Conflict : la demande entre en conflit avec l'état actuel."
+          - n: 14
+            note: "L'exception lancée quand `@Valid` échoue."
+          - n: 17
+            note: "On liste les champs en erreur pour que le frontend les affiche."
+      - type: question
+        ref: sb-val-q2
+        review: code-advice
+      - type: text
+        md: "Exercice guidé : complète les annotations de validation."
+      - type: exercise
+        ref: sb-ex-validation-guide
+      - type: text
+        md: "En autonomie : écris un gestionnaire d'erreurs."
+      - type: exercise
+        ref: sb-ex-advice
+      - type: jury
+        items:
+          - q: "Comment validez-vous les données reçues par l'API ?"
+            a: "Avec Bean Validation sur les DTO (@NotBlank, @Email, @Size…) et @Valid dans le contrôleur. Les règles métier plus complexes, comme un e-mail déjà utilisé, sont vérifiées dans le service. La validation Angular améliore l'expérience, mais seule celle du backend protège."
+          - q: "Comment gérez-vous les erreurs ?"
+            a: "Les services lancent des exceptions métier. Un @RestControllerAdvice les traduit en réponses ProblemDetail avec le bon statut : 400, 404, 409. Les erreurs inattendues donnent un 500 générique, journalisé côté serveur, sans trace technique pour le client."
+      - type: quiz
+        items:
+          - ref: sb-val-q3
+            review: def-validation
+          - ref: sb-val-q4
+            review: code-advice
+          - ref: sb-val-q5
+            review: def-advice
+    questions:
+      - code: sb-val-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Le DTO a `@NotBlank` sur `nom`, mais un nom vide est accepté. Que manque-t-il ?"
+        choices:
+          - label: "@Valid devant @RequestBody"
+            correct: true
+            why: "Sans @Valid, les annotations sont ignorées."
+          - label: "@NotNull en plus"
+            correct: false
+            why: "@NotBlank refuse déjà null."
+          - label: "Un try/catch"
+            correct: false
+            why: "La validation ne s'est même pas déclenchée."
+        explanation: "`@Valid @RequestBody InscriptionRequest req`."
+      - code: sb-val-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: api-rest
+        prompt: "Une inscription avec un e-mail déjà utilisé : quel statut ?"
+        choices:
+          - label: "409 Conflict"
+            correct: true
+            why: "Conflit avec une donnée existante."
+          - label: "500"
+            correct: false
+            why: "Ce n'est pas une panne du serveur."
+          - label: "200 avec un message d'erreur"
+            correct: false
+            why: "Le statut doit dire la vérité."
+        explanation: "400 données invalides, 404 introuvable, 409 conflit."
+      - code: sb-val-q3
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Quelles annotations Bean Validation existent ? (plusieurs réponses)"
+        choices:
+          - label: "@NotBlank"
+            correct: true
+            why: "Texte non vide."
+          - label: "@Email"
+            correct: true
+            why: "Format e-mail."
+          - label: "@Size(min = 12)"
+            correct: true
+            why: "Longueur."
+          - label: "@Password"
+            correct: false
+            why: "N'existe pas dans la norme."
+        explanation: "Aussi : @Positive, @Min, @Max, @Pattern, @NotNull, @Past…"
+      - code: sb-val-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: api-rest
+        prompt: "Renvoyer la trace complète de l'exception (stack trace) au client aide à la sécurité."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Elle révèle des détails internes utiles à un attaquant."
+          - label: "Faux"
+            correct: true
+            why: "On journalise côté serveur et on renvoie un message simple."
+        explanation: "Message clair pour l'utilisateur, détails dans les logs."
+      - code: sb-val-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Quelle annotation de classe centralise la gestion des exceptions de tous les contrôleurs REST ? (sans @)"
+        answers: ["RestControllerAdvice", "@RestControllerAdvice", "ControllerAdvice"]
+        explanation: "`@RestControllerAdvice` + une méthode `@ExceptionHandler` par type d'erreur."
+    exercises:
+      - slug: sb-ex-validation-guide
+        kind: COMPLETER
+        title: "Valider un rendez-vous"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: "Complète : motif obligatoire, date dans le futur, durée positive, et déclenchement de la validation."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Texte obligatoire : NotBlank. Date dans le futur : Future."
+          - "Nombre strictement positif : Positive."
+          - "NotBlank, Future, Positive, Valid."
+        solution: '["NotBlank", "Future", "Positive", "Valid"]'
+        explanation: "Les règles sur le DTO, le déclenchement dans le contrôleur."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            public record RendezVousRequest(
+                    @[[1]] String motif,
+                    @NotNull @[[2]] LocalDateTime debut,
+                    @[[3]] int dureeMinutes) {}
+
+            public RendezVousDto creer(@[[4]] @RequestBody RendezVousRequest req) { … }
+          blanks:
+            - ["NotBlank"]
+            - ["Future", "FutureOrPresent"]
+            - ["Positive"]
+            - ["Valid"]
+      - slug: sb-ex-advice
+        kind: CODE_LIBRE
+        title: "Un gestionnaire d'erreurs"
+        difficulty: DIFFICILE
+        skill: spring-rest
+        statement: |
+          Écris la classe `GestionErreurs` :
+          - annotée `@RestControllerAdvice` ;
+          - une méthode qui gère `RessourceIntrouvableException` et renvoie un `ProblemDetail` **404** avec
+            le message de l'exception ;
+          - une méthode qui gère `CreneauIndisponibleException` et renvoie un `ProblemDetail` **409** avec
+            le texte « Ce créneau n'est plus disponible. ».
+        criteria: "@RestControllerAdvice, deux @ExceptionHandler, ProblemDetail avec NOT_FOUND et CONFLICT."
+        hints:
+          - "`@ExceptionHandler(RessourceIntrouvableException.class)` au-dessus de la méthode."
+          - "`return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());`"
+          - "Pour le conflit : `HttpStatus.CONFLICT`."
+        solution: |
+          @RestControllerAdvice
+          public class GestionErreurs {
+
+              @ExceptionHandler(RessourceIntrouvableException.class)
+              public ProblemDetail introuvable(RessourceIntrouvableException e) {
+                  return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+              }
+
+              @ExceptionHandler(CreneauIndisponibleException.class)
+              public ProblemDetail conflit(CreneauIndisponibleException e) {
+                  return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Ce créneau n'est plus disponible.");
+              }
+          }
+        explanation: "Chaque exception métier a son statut, défini une seule fois pour toute l'API."
+        xp: 30
+        payload:
+          language: java
+          starter: |
+            public class GestionErreurs {
+
+            }
+          checks:
+            - pattern: '@RestControllerAdvice\s+public\s+class\s+GestionErreurs'
+              message: "Annote la classe avec `@RestControllerAdvice`."
+            - pattern: '@ExceptionHandler\s*\(\s*RessourceIntrouvableException\.class\s*\)'
+              message: "Ajoute `@ExceptionHandler(RessourceIntrouvableException.class)`."
+            - pattern: '@ExceptionHandler\s*\(\s*CreneauIndisponibleException\.class\s*\)'
+              message: "Ajoute `@ExceptionHandler(CreneauIndisponibleException.class)`."
+            - pattern: 'HttpStatus\.NOT_FOUND\s*,\s*\w+\.getMessage\s*\(\s*\)'
+              message: "Renvoie un 404 avec le message de l'exception : `HttpStatus.NOT_FOUND, e.getMessage()`."
+            - pattern: 'HttpStatus\.CONFLICT\s*,\s*"Ce créneau n''est plus disponible\.?"'
+              message: "Renvoie un 409 (`HttpStatus.CONFLICT`) avec « Ce créneau n'est plus disponible. »."
+            - pattern: '\A(?>[\s\S]*?ProblemDetail\.forStatusAndDetail\s*\(){2}'
+              message: "Utilise `ProblemDetail.forStatusAndDetail(…)` dans les deux méthodes."
+
+bank:
+  - code: sb-c3-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-jpa
+    prompt: "Pourquoi utiliser Flyway plutôt que `ddl-auto=update` en production ?"
+    choices:
+      - label: "Les migrations SQL sont versionnées, relues et rejouables à l'identique"
+        correct: true
+        why: "On sait exactement ce qui change dans la base."
+      - label: "Flyway est plus rapide que Hibernate"
+        correct: false
+        why: "Ce n'est pas une question de vitesse."
+      - label: "ddl-auto n'existe plus"
+        correct: false
+        why: "Il existe, mais il est risqué en production."
+    explanation: "`V1__schema_initial.sql`, `V2__…` : l'histoire de la base, dans Git."
+  - code: sb-c3-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-jpa
+    prompt: "Quelle est la différence entre JPQL et SQL ?"
+    choices:
+      - label: "JPQL s'écrit avec les noms des classes et des attributs Java, SQL avec les tables et les colonnes"
+        correct: true
+        why: "`select p from Produit p` vs `SELECT * FROM produits`."
+      - label: "JPQL est plus rapide"
+        correct: false
+        why: "Il est traduit en SQL."
+      - label: "Aucune différence"
+        correct: false
+        why: "Les noms utilisés ne sont pas les mêmes."
+    explanation: "Hibernate traduit le JPQL en SQL PostgreSQL."

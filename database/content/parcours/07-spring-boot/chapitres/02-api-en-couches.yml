@@ -1,0 +1,567 @@
+slug: sb-api-en-couches
+position: 2
+level: INTERMEDIAIRE
+title: "Construire une API en couches"
+summary: "Recevoir des paramètres et un corps JSON, répondre avec le bon statut, échanger des DTO, et placer les règles dans un service."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sb-controleur-dto
+    title: "Paramètres, corps JSON et DTO"
+    duration: 15
+    objective: "Lire un identifiant dans l'adresse, recevoir un objet JSON, répondre avec ResponseEntity et utiliser des records comme DTO."
+    prerequisites: "Chapitre « Découvrir Spring Boot et REST »."
+    skills: [spring-rest, api-rest]
+    xp: 25
+    memo: |
+      - `@PathVariable Long id` : lit `{id}` dans l'adresse (`/api/produits/12`).
+      - `@RequestParam String q` : lit un paramètre après `?` (`/api/produits?q=café`).
+      - `@RequestBody ProduitRequest req` : transforme le JSON reçu en objet Java.
+      - `ResponseEntity.status(201).body(dto)` ou `ResponseEntity.created(uri).body(dto)` : choisir le statut.
+      - **DTO** (objet de transfert) : un `record` qui contient **seulement** ce qui entre ou sort de l'API.
+    commonMistakes: |
+      - Renvoyer directement l'entité JPA : on expose des champs internes (mot de passe haché, relations).
+      - Oublier `@RequestBody` : l'objet reçu reste vide.
+      - Toujours répondre 200, même après une création ou une suppression.
+    blocks:
+      - type: text
+        md: |
+          Un contrôleur doit souvent **recevoir** des informations : quel produit ? quelle recherche ? quelles
+          données créer ? Spring les lit pour toi grâce à trois annotations.
+      - type: code
+        id: code-parametres
+        language: java
+        title: "Lire l'adresse et le corps"
+        code: |
+          @GetMapping("/{id}")
+          public ProduitDto lire(@PathVariable Long id) {
+              return service.lire(id);
+          }
+
+          @GetMapping(params = "q")
+          public List<ProduitDto> chercher(@RequestParam String q) {
+              return service.chercher(q);
+          }
+
+          @PostMapping
+          public ResponseEntity<ProduitDto> creer(@RequestBody ProduitRequest req) {
+              ProduitDto cree = service.creer(req);
+              return ResponseEntity.created(URI.create("/api/produits/" + cree.id())).body(cree);
+          }
+        lines:
+          - n: 1
+            note: "`{id}` est une partie variable de l'adresse."
+          - n: 2
+            note: "`@PathVariable` copie cette partie dans le paramètre `id`."
+          - n: 7
+            note: "`@RequestParam` lit `?q=…` : `/api/produits?q=café`."
+          - n: 12
+            note: "`@RequestBody` : le JSON reçu devient un objet `ProduitRequest`."
+          - n: 14
+            note: "Statut **201** + en-tête `Location` vers la nouvelle ressource."
+      - type: question
+        ref: sb-dto-q1
+        review: code-parametres
+      - type: definition
+        id: def-dto
+        term: "DTO (objet de transfert de données)"
+        md: |
+          Le **bon de livraison** de l'API : il liste seulement ce qui voyage, pas tout le contenu de
+          l'entrepôt. L'entité (la table) peut contenir un mot de passe haché ou des dates internes : le DTO,
+          lui, ne montre que ce que le frontend doit voir.
+      - type: code
+        id: code-dto
+        language: java
+        title: "Deux records : l'entrée et la sortie"
+        code: |
+          public record ProduitRequest(String nom, BigDecimal prix, Long categorieId) {}
+
+          public record ProduitDto(Long id, String nom, BigDecimal prix, String categorie) {
+              public static ProduitDto from(Produit p) {
+                  return new ProduitDto(p.getId(), p.getNom(), p.getPrix(), p.getCategorie().getNom());
+              }
+          }
+        lines:
+          - n: 1
+            note: "Ce que le frontend **envoie** : pas d'`id`, c'est la base qui le donne."
+          - n: 3
+            note: "Ce que l'API **renvoie** : le nom de la catégorie plutôt que l'objet entier."
+          - n: 4
+            note: "Une méthode pratique pour transformer l'entité en DTO."
+      - type: question
+        ref: sb-dto-q2
+        review: def-dto
+      - type: text
+        md: "Exercice guidé : complète le contrôleur."
+      - type: exercise
+        ref: sb-ex-dto-guide
+      - type: text
+        md: "En autonomie : écris la création et la suppression."
+      - type: exercise
+        ref: sb-ex-creer-supprimer
+      - type: jury
+        items:
+          - q: "Pourquoi utiliser des DTO plutôt que renvoyer les entités ?"
+            a: "Pour contrôler exactement ce qui entre et sort de l'API : on n'expose pas le mot de passe haché ni les champs internes, on évite les boucles de sérialisation des relations JPA, et on peut faire évoluer la base sans casser le contrat de l'API. J'utilise des records Java, immuables et concis."
+          - q: "Quelle différence entre @PathVariable et @RequestParam ?"
+            a: "@PathVariable lit une partie de l'adresse qui identifie la ressource (/produits/12). @RequestParam lit un paramètre après le point d'interrogation, souvent pour filtrer, trier ou paginer (/produits?page=2)."
+      - type: quiz
+        items:
+          - ref: sb-dto-q3
+            review: code-parametres
+          - ref: sb-dto-q4
+            review: code-dto
+          - ref: sb-dto-q5
+            review: code-parametres
+    questions:
+      - code: sb-dto-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Quelle annotation lit `12` dans `GET /api/produits/12` ?"
+        choices:
+          - label: "@PathVariable"
+            correct: true
+            why: "La valeur fait partie du chemin."
+          - label: "@RequestBody"
+            correct: false
+            why: "Le corps est vide pour un GET."
+          - label: "@RequestParam"
+            correct: false
+            why: "Il lit ce qui suit `?`."
+        explanation: "Chemin → @PathVariable."
+      - code: sb-dto-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Quel est le principal danger de renvoyer l'entité `Utilisateur` directement ?"
+        choices:
+          - label: "Exposer des champs sensibles comme le mot de passe haché"
+            correct: true
+            why: "Tout ce qui est dans l'entité part dans le JSON."
+          - label: "La réponse est plus lente"
+            correct: false
+            why: "Le problème est la sécurité et le couplage."
+          - label: "Spring refuse de compiler"
+            correct: false
+            why: "Il compile, c'est justement le piège."
+        explanation: "Le DTO choisit ce qui sort."
+      - code: sb-dto-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Le produit reçu dans `creer(ProduitRequest req)` a tous ses champs à null. Pourquoi ?"
+        choices:
+          - label: "Il manque @RequestBody devant le paramètre"
+            correct: true
+            why: "Sans lui, Spring ne lit pas le JSON."
+          - label: "Il manque @PathVariable"
+            correct: false
+            why: "Rien n'est lu dans l'adresse ici."
+          - label: "Le record n'a pas de setters"
+            correct: false
+            why: "Jackson sait créer des records."
+        explanation: "JSON dans le corps → @RequestBody."
+      - code: sb-dto-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Un `record` Java est pratique pour un DTO car il est court et immuable."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Constructeur, accesseurs, equals et toString sont générés."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement l'usage recommandé."
+        explanation: "`public record ProduitDto(Long id, String nom) {}`"
+      - code: sb-dto-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: api-rest
+        prompt: "Quel statut renvoie `ResponseEntity.noContent().build()` ? (le nombre)"
+        answers: ["204"]
+        explanation: "204 No Content : réussi, rien à renvoyer. Typique après un DELETE."
+    exercises:
+      - slug: sb-ex-dto-guide
+        kind: COMPLETER
+        title: "Lire un produit"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: "Complète : lire un produit par son id, puis mettre à jour un produit."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Une partie de l'adresse : PathVariable."
+          - "Le JSON reçu : RequestBody."
+          - "GetMapping, PathVariable, PutMapping, RequestBody."
+        solution: '["GetMapping", "PathVariable", "PutMapping", "RequestBody"]'
+        explanation: "Lire l'adresse, lire le corps : deux annotations à ne pas confondre."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @[[1]]("/{id}")
+            public ProduitDto lire(@[[2]] Long id) { return service.lire(id); }
+
+            @[[3]]("/{id}")
+            public ProduitDto modifier(@PathVariable Long id, @[[4]] ProduitRequest req) {
+                return service.modifier(id, req);
+            }
+          blanks:
+            - ["GetMapping"]
+            - ["PathVariable"]
+            - ["PutMapping"]
+            - ["RequestBody"]
+      - slug: sb-ex-creer-supprimer
+        kind: CODE_LIBRE
+        title: "Créer et supprimer un rendez-vous"
+        difficulty: INTERMEDIAIRE
+        skill: spring-rest
+        statement: |
+          Dans `RendezVousController` (le champ `service` existe déjà), écris :
+          1. `creer` : `POST`, reçoit un `RendezVousRequest` dans le corps, appelle `service.creer(req)` et
+             répond **201** avec le `RendezVousDto` créé (`ResponseEntity<RendezVousDto>`) ;
+          2. `supprimer` : `DELETE /{id}`, appelle `service.supprimer(id)` et répond **204**
+             (`ResponseEntity<Void>`).
+        criteria: "@PostMapping + @RequestBody + 201 ; @DeleteMapping(\"/{id}\") + @PathVariable + 204."
+        hints:
+          - "`@PostMapping public ResponseEntity<RendezVousDto> creer(@RequestBody RendezVousRequest req)`"
+          - "201 : `ResponseEntity.status(HttpStatus.CREATED).body(dto)` ou `ResponseEntity.created(uri).body(dto)`."
+          - "204 : `return ResponseEntity.noContent().build();`"
+        solution: |
+          @PostMapping
+          public ResponseEntity<RendezVousDto> creer(@RequestBody RendezVousRequest req) {
+              RendezVousDto cree = service.creer(req);
+              return ResponseEntity.status(HttpStatus.CREATED).body(cree);
+          }
+
+          @DeleteMapping("/{id}")
+          public ResponseEntity<Void> supprimer(@PathVariable Long id) {
+              service.supprimer(id);
+              return ResponseEntity.noContent().build();
+          }
+        explanation: "Chaque action a son verbe et son statut : 201 pour une création, 204 pour une suppression."
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            // private final RendezVousService service; (déjà présent)
+
+          checks:
+            - pattern: '@PostMapping\s+public\s+ResponseEntity\s*<\s*RendezVousDto\s*>\s+creer\s*\('
+              message: "Déclare `@PostMapping public ResponseEntity<RendezVousDto> creer(…)`."
+            - pattern: 'creer\s*\(\s*@RequestBody\s+RendezVousRequest\s+\w+\s*\)'
+              message: "Le paramètre doit être `@RequestBody RendezVousRequest req`."
+            - pattern: 'service\.creer\s*\('
+              message: "Appelle `service.creer(req)`."
+            - pattern: 'HttpStatus\.CREATED|status\s*\(\s*201\s*\)|ResponseEntity\.created\s*\('
+              message: "Réponds avec le statut 201 (Created)."
+            - pattern: '@DeleteMapping\s*\(\s*"/\{id\}"\s*\)'
+              message: "Ajoute `@DeleteMapping(\"/{id}\")`."
+            - pattern: 'supprimer\s*\(\s*@PathVariable\s+(?:Long|long)\s+id\s*\)'
+              message: "Le paramètre doit être `@PathVariable Long id`."
+            - pattern: 'service\.supprimer\s*\(\s*id\s*\)'
+              message: "Appelle `service.supprimer(id)`."
+            - pattern: 'noContent\s*\(\s*\)\s*\.build\s*\(\s*\)|HttpStatus\.NO_CONTENT'
+              message: "Réponds 204 : `ResponseEntity.noContent().build()`."
+
+  # ===================================================================== LEÇON 2
+  - slug: sb-service
+    title: "La couche service et les règles métier"
+    duration: 14
+    objective: "Placer les règles métier dans un service, signaler un problème avec une exception métier et comprendre les transactions."
+    prerequisites: "Leçon « Paramètres, corps JSON et DTO »."
+    skills: [spring-structure]
+    xp: 25
+    memo: |
+      - **Contrôleur** → **Service** → **Repository** : chaque couche n'appelle que la suivante.
+      - `@Service` : la classe contient les **règles métier** (vérifier le stock, calculer un total).
+      - Quand une règle est violée, le service **lance une exception** (`throw new StockInsuffisantException(...)`).
+      - `@Transactional` : toutes les écritures de la méthode réussissent **ensemble** ou sont **toutes annulées**.
+      - Le service travaille avec des entités et renvoie des DTO.
+    commonMistakes: |
+      - Mettre `if (stock < quantite)` dans le contrôleur.
+      - Renvoyer `null` quand un élément est introuvable au lieu de lancer une exception claire.
+      - Oublier `@Transactional` sur une méthode qui écrit dans plusieurs tables.
+    blocks:
+      - type: text
+        md: |
+          Le contrôleur est un standardiste : il ne décide rien. Les décisions sont prises par le **service**,
+          l'expert métier. Ainsi, les règles sont **au même endroit** et faciles à tester.
+      - type: definition
+        id: def-couches
+        term: "Architecture en couches"
+        md: |
+          Comme dans un restaurant : le **serveur** (contrôleur) prend la commande, le **chef** (service)
+          décide comment cuisiner et vérifie les ingrédients, le **commis** (repository) va chercher les
+          produits dans la réserve (la base). Personne ne saute d'étape.
+      - type: code
+        id: code-service
+        language: java
+        title: "CommandeService.java"
+        code: |
+          @Service
+          public class CommandeService {
+
+              private final ProduitRepository produits;
+              private final CommandeRepository commandes;
+
+              public CommandeService(ProduitRepository produits, CommandeRepository commandes) {
+                  this.produits = produits;
+                  this.commandes = commandes;
+              }
+
+              @Transactional
+              public CommandeDto commander(Long produitId, int quantite) {
+                  Produit p = produits.findById(produitId)
+                          .orElseThrow(() -> new RessourceIntrouvableException("Produit " + produitId));
+                  if (p.getStock() < quantite) {
+                      throw new StockInsuffisantException(p.getNom());
+                  }
+                  p.setStock(p.getStock() - quantite);
+                  Commande c = commandes.save(new Commande(p, quantite));
+                  return CommandeDto.from(c);
+              }
+          }
+        lines:
+          - n: 1
+            note: "`@Service` : un bean qui porte la logique métier."
+          - n: 7
+            note: "Injection par constructeur des deux repositories."
+          - n: 12
+            note: "`@Transactional` : baisse du stock **et** création de la commande, ensemble ou pas du tout."
+          - n: 15
+            note: "`orElseThrow` : si le produit n'existe pas, on lance une exception claire (qui deviendra un 404)."
+          - n: 16
+            note: "La **règle métier** : pas de commande sans stock suffisant."
+          - n: 21
+            note: "On renvoie un DTO, jamais l'entité."
+      - type: question
+        ref: sb-sv-q1
+        review: code-service
+      - type: definition
+        id: def-transaction
+        term: "Transaction"
+        md: |
+          Un **virement bancaire** : retirer d'un compte **et** créditer l'autre. Si la seconde étape échoue,
+          la première doit être **annulée**. Une transaction garantit « tout ou rien ».
+      - type: question
+        ref: sb-sv-q2
+        review: def-transaction
+      - type: text
+        md: "Exercice guidé : remets ce service dans l'ordre."
+      - type: exercise
+        ref: sb-ex-service-ordre
+      - type: text
+        md: "En autonomie : écris une règle métier."
+      - type: exercise
+        ref: sb-ex-regle-metier
+      - type: jury
+        items:
+          - q: "Pourquoi une couche service ?"
+            a: "Pour séparer les responsabilités : le contrôleur gère HTTP, le service porte les règles métier et les transactions, le repository accède aux données. Les règles sont testables avec de simples tests unitaires en simulant les repositories."
+          - q: "À quoi sert @Transactional ?"
+            a: "À exécuter plusieurs opérations en base de façon atomique : si une exception non vérifiée survient, tout est annulé (rollback). Je la place sur les méthodes de service qui écrivent, et readOnly = true sur les lectures."
+      - type: quiz
+        items:
+          - ref: sb-sv-q3
+            review: def-couches
+          - ref: sb-sv-q4
+            review: code-service
+          - ref: sb-sv-q5
+            review: def-transaction
+    questions:
+      - code: sb-sv-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Que fait `findById(id).orElseThrow(...)` si le produit n'existe pas ?"
+        choices:
+          - label: "Il lance l'exception fournie"
+            correct: true
+            why: "L'Optional est vide."
+          - label: "Il renvoie null"
+            correct: false
+            why: "orElseThrow ne renvoie jamais null."
+          - label: "Il crée le produit"
+            correct: false
+            why: "Il ne crée rien."
+        explanation: "Une absence devient une erreur claire, transformée en 404."
+      - code: sb-sv-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Avec `@Transactional`, si une exception survient après la baisse du stock, la baisse est annulée."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Rollback : tout ou rien."
+          - label: "Faux"
+            correct: false
+            why: "C'est exactement le rôle d'une transaction."
+        explanation: "Par défaut, le rollback a lieu sur les exceptions non vérifiées (RuntimeException)."
+      - code: sb-sv-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-structure
+        prompt: "Dans quel ordre les couches s'appellent-elles ?"
+        choices:
+          - label: "Contrôleur → Service → Repository"
+            correct: true
+            why: "Chaque couche appelle la suivante."
+          - label: "Repository → Contrôleur → Service"
+            correct: false
+            why: "Le repository est la dernière couche."
+          - label: "Contrôleur → Repository directement"
+            correct: false
+            why: "On saute la couche métier."
+        explanation: "Serveur, chef, commis."
+      - code: sb-sv-q4
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Qu'est-ce qui a sa place dans un service ? (plusieurs réponses)"
+        choices:
+          - label: "Vérifier qu'il reste du stock"
+            correct: true
+            why: "Règle métier."
+          - label: "Gérer une transaction"
+            correct: true
+            why: "@Transactional se place sur le service."
+          - label: "Choisir l'annotation @GetMapping"
+            correct: false
+            why: "C'est le rôle du contrôleur."
+          - label: "Transformer les entités en DTO"
+            correct: true
+            why: "Le service renvoie des DTO au contrôleur."
+        explanation: "Le service décide et orchestre."
+      - code: sb-sv-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Un paiement débite le client puis échoue à créer la facture. Sans transaction, que se passe-t-il ?"
+        choices:
+          - label: "Le client est débité sans facture : données incohérentes"
+            correct: true
+            why: "La première écriture reste."
+          - label: "Tout est annulé automatiquement"
+            correct: false
+            why: "Seulement avec une transaction."
+          - label: "La base refuse la première écriture"
+            correct: false
+            why: "Elle l'a déjà acceptée."
+        explanation: "La transaction protège la cohérence."
+    exercises:
+      - slug: sb-ex-service-ordre
+        kind: REMETTRE_ORDRE
+        title: "Remettre un service dans l'ordre"
+        difficulty: FACILE
+        skill: spring-structure
+        statement: "Remets dans l'ordre la méthode qui lit un livre ou lance une exception."
+        criteria: "Annotation, signature, recherche, exception, conversion en DTO."
+        hints:
+          - "L'annotation @Transactional vient avant la signature."
+          - "On cherche d'abord le livre, puis on gère l'absence."
+          - "On renvoie un DTO à la fin."
+        solution: |
+          @Transactional(readOnly = true)
+          public LivreDto lire(Long id) {
+              Livre livre = livres.findById(id)
+                      .orElseThrow(() -> new RessourceIntrouvableException("Livre " + id));
+              return LivreDto.from(livre);
+          }
+        explanation: "Chercher, échouer proprement si absent, convertir en DTO."
+        xp: 10
+        payload:
+          language: java
+          lines:
+            - "@Transactional(readOnly = true)"
+            - "public LivreDto lire(Long id) {"
+            - "    Livre livre = livres.findById(id)"
+            - "            .orElseThrow(() -> new RessourceIntrouvableException(\"Livre \" + id));"
+            - "    return LivreDto.from(livre);"
+            - "}"
+      - slug: sb-ex-regle-metier
+        kind: CODE_LIBRE
+        title: "La règle des emprunts"
+        difficulty: INTERMEDIAIRE
+        skill: spring-structure
+        statement: |
+          Écris la méthode `emprunter(Long livreId, Long adherentId)` de `EmpruntService` :
+          - annotée `@Transactional` ;
+          - cherche le livre avec `livres.findById(livreId)` et lance `RessourceIntrouvableException` s'il n'existe pas ;
+          - si `livre.isEmprunte()` est vrai, lance `LivreDejaEmprunteException` ;
+          - sinon appelle `livre.setEmprunte(true)` puis `emprunts.save(new Emprunt(livre, adherentId))`.
+        criteria: "@Transactional, orElseThrow, test isEmprunte avec exception, setEmprunte(true) et save."
+        hints:
+          - "`Livre livre = livres.findById(livreId).orElseThrow(() -> new RessourceIntrouvableException(\"Livre\"));`"
+          - "`if (livre.isEmprunte()) { throw new LivreDejaEmprunteException(); }`"
+          - "Termine par `livre.setEmprunte(true);` puis `emprunts.save(new Emprunt(livre, adherentId));`."
+        solution: |
+          @Transactional
+          public void emprunter(Long livreId, Long adherentId) {
+              Livre livre = livres.findById(livreId)
+                      .orElseThrow(() -> new RessourceIntrouvableException("Livre " + livreId));
+              if (livre.isEmprunte()) {
+                  throw new LivreDejaEmprunteException(livre.getTitre());
+              }
+              livre.setEmprunte(true);
+              emprunts.save(new Emprunt(livre, adherentId));
+          }
+        explanation: "La règle « un livre à la fois » est au bon endroit, et les deux écritures sont dans la même transaction."
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            public void emprunter(Long livreId, Long adherentId) {
+
+            }
+          checks:
+            - pattern: '@Transactional\s+public\s+void\s+emprunter\s*\('
+              message: "Annote la méthode avec `@Transactional`."
+            - pattern: 'livres\.findById\s*\(\s*livreId\s*\)\s*\.orElseThrow\s*\(\s*\(\s*\)\s*->\s*new\s+RessourceIntrouvableException'
+              message: "Cherche le livre et lance `RessourceIntrouvableException` avec `orElseThrow`."
+            - pattern: 'if\s*\(\s*\w+\.isEmprunte\s*\(\s*\)\s*\)\s*\{?\s*throw\s+new\s+LivreDejaEmprunteException'
+              message: "Si le livre est déjà emprunté, lance `LivreDejaEmprunteException`."
+            - pattern: '\.setEmprunte\s*\(\s*true\s*\)'
+              message: "Marque le livre comme emprunté : `setEmprunte(true)`."
+            - pattern: 'emprunts\.save\s*\(\s*new\s+Emprunt\s*\(\s*\w+\s*,\s*adherentId\s*\)\s*\)'
+              message: "Enregistre l'emprunt : `emprunts.save(new Emprunt(livre, adherentId))`."
+            - pattern: 'return\s+null'
+              absent: true
+              message: "Ne renvoie pas null : lance une exception claire."
+
+bank:
+  - code: sb-c2-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-rest
+    prompt: "Quelle méthode HTTP convient pour modifier seulement le prix d'un produit ?"
+    choices:
+      - label: "PATCH"
+        correct: true
+        why: "Modification partielle."
+      - label: "PUT"
+        correct: false
+        why: "PUT remplace toute la ressource."
+      - label: "POST"
+        correct: false
+        why: "POST crée."
+    explanation: "PUT = tout remplacer ; PATCH = modifier une partie."
+  - code: sb-c2-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-structure
+    prompt: "Pourquoi l'injection par constructeur est-elle recommandée ?"
+    choices:
+      - label: "Les dépendances sont final, obligatoires et faciles à fournir dans un test"
+        correct: true
+        why: "On peut faire `new Service(fauxRepository)` dans un test."
+      - label: "Elle est plus rapide à l'exécution"
+        correct: false
+        why: "La différence n'est pas là."
+      - label: "C'est la seule possible"
+        correct: false
+        why: "Il existe aussi l'injection par champ, déconseillée."
+    explanation: "Constructeur = dépendances visibles et immuables."

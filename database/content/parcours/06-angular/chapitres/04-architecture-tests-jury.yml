@@ -1,0 +1,559 @@
+slug: ng-architecture-tests-jury
+position: 4
+level: EXAMEN
+title: "Architecture, tests et jury Angular"
+summary: "Organiser les dossiers d'une vraie application, tester un service et un composant, puis répondre aux questions du jury."
+quizQuestionCount: 12
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: ng-architecture-tests
+    title: "Organiser et tester une application Angular"
+    duration: 15
+    objective: "Ranger une application en core / shared / features, écrire un test unitaire de service et un test de composant avec TestBed."
+    prerequisites: "Chapitre « Routage, formulaires et appels HTTP »."
+    skills: [angular-composants, tests-strategie]
+    xp: 30
+    memo: |
+      - **core/** : ce qui existe une seule fois (authentification, intercepteurs, gardes, services API).
+      - **shared/** : les briques réutilisables (boutons, cartes, pipes).
+      - **features/** : un dossier par fonctionnalité (catalogue, panier, compte), chargé à la demande.
+      - Test de service : on crée le service, on appelle une méthode, on vérifie le résultat avec `expect`.
+      - Test de composant : `TestBed.createComponent`, `fixture.detectChanges()`, puis on lit le HTML produit.
+      - Appels HTTP en test : `provideHttpClientTesting()` + `HttpTestingController` (aucune vraie requête).
+    commonMistakes: |
+      - Un dossier `components/` fourre-tout avec 50 fichiers.
+      - Oublier `fixture.detectChanges()` : le template n'est pas encore affiché.
+      - Tester des détails internes au lieu de ce que voit l'utilisatrice.
+    blocks:
+      - type: text
+        md: |
+          Une application grandit vite. Sans rangement, on ne retrouve plus rien. Et sans tests, chaque
+          modification fait peur. Cette leçon règle les deux problèmes.
+      - type: definition
+        id: def-architecture
+        term: "core, shared, features"
+        md: |
+          Pense à une **maison** : **core** est la chaudière et le compteur électrique (un seul exemplaire,
+          indispensable) ; **shared** est la boîte à outils (utilisée dans toutes les pièces) ; **features**
+          sont les pièces (cuisine, chambre), chacune avec ses propres meubles.
+      - type: code
+        id: code-arborescence
+        language: text
+        title: "Arborescence type"
+        code: |
+          src/app/
+            core/
+              auth/ (auth.service.ts, auth.guard.ts, auth.interceptor.ts)
+              api/  (api.service.ts, models.ts)
+            shared/
+              carte-produit.component.ts
+              prix.pipe.ts
+            features/
+              catalogue/  (catalogue.component.ts, detail-produit.component.ts)
+              panier/     (panier.component.ts, panier.service.ts)
+              compte/     (compte.component.ts)
+            app.routes.ts
+            app.config.ts
+        lines:
+          - n: 2
+            note: "Le cœur technique : authentification, accès à l'API."
+          - n: 5
+            note: "Les briques partagées par plusieurs pages."
+          - n: 8
+            note: "Une fonctionnalité = un dossier, chargé avec `loadComponent`."
+      - type: question
+        ref: ng-at-q1
+        review: def-architecture
+      - type: definition
+        id: def-test-unitaire
+        term: "Test unitaire"
+        md: |
+          Un petit **contrôle automatique** d'un seul morceau de code, comme vérifier une ampoule avant de
+          l'installer. Il suit trois temps : **préparer** (arrange), **agir** (act), **vérifier** (assert).
+      - type: code
+        id: code-test-service
+        language: typescript
+        title: "panier.service.spec.ts"
+        code: |
+          describe('PanierService', () => {
+            let service: PanierService;
+
+            beforeEach(() => {
+              TestBed.configureTestingModule({});
+              service = TestBed.inject(PanierService);
+            });
+
+            it('compte les articles ajoutés', () => {
+              service.ajouter('Café');
+              service.ajouter('Thé');
+              expect(service.nombre()).toBe(2);
+            });
+          });
+        lines:
+          - n: 1
+            note: "`describe` : un groupe de tests pour un même élément."
+          - n: 4
+            note: "`beforeEach` : exécuté avant **chaque** test, pour repartir de zéro."
+          - n: 6
+            note: "Préparer : on obtient le service comme Angular le ferait."
+          - n: 10
+            note: "Agir : on ajoute deux articles."
+          - n: 12
+            note: "Vérifier : `expect(valeur).toBe(attendu)`."
+      - type: code
+        id: code-test-composant
+        language: typescript
+        title: "profil.component.spec.ts"
+        code: |
+          it('affiche le prénom', () => {
+            TestBed.configureTestingModule({ imports: [ProfilComponent] });
+            const fixture = TestBed.createComponent(ProfilComponent);
+            fixture.detectChanges();
+
+            const titre = fixture.nativeElement.querySelector('h2');
+            expect(titre.textContent).toContain('Awa');
+          });
+        lines:
+          - n: 2
+            note: "Le composant standalone est placé dans `imports`."
+          - n: 3
+            note: "`fixture` : le composant monté dans un mini-navigateur de test."
+          - n: 4
+            note: "Indispensable : Angular dessine le template."
+          - n: 6
+            note: "On cherche le `<h2>` dans le HTML produit."
+      - type: question
+        ref: ng-at-q2
+        review: code-test-composant
+      - type: text
+        md: "Exercice guidé : complète ce test de service."
+      - type: exercise
+        ref: ng-ex-test-guide
+      - type: text
+        md: "En autonomie : écris un test de composant."
+      - type: exercise
+        ref: ng-ex-test-composant
+      - type: jury
+        items:
+          - q: "Comment est organisé votre frontend ?"
+            a: "En trois zones : core pour les éléments uniques (authentification, intercepteur, gardes, accès API), shared pour les composants réutilisables, et features avec un dossier par fonctionnalité chargé à la demande. Les composants sont standalone et utilisent des signaux."
+          - q: "Comment testez-vous votre application Angular ?"
+            a: "Des tests unitaires sur les services (logique, calculs) et des tests de composants avec TestBed pour vérifier l'affichage. Les appels HTTP sont simulés avec HttpTestingController. Les parcours complets peuvent être couverts par des tests de bout en bout (Playwright ou Cypress)."
+      - type: quiz
+        items:
+          - ref: ng-at-q3
+            review: code-test-service
+          - ref: ng-at-q4
+            review: code-arborescence
+          - ref: ng-at-q5
+            review: def-test-unitaire
+    questions:
+      - code: ng-at-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Où ranger l'intercepteur qui ajoute le jeton JWT ?"
+        choices:
+          - label: "core/"
+            correct: true
+            why: "Il existe une seule fois pour toute l'application."
+          - label: "shared/"
+            correct: false
+            why: "shared contient des briques d'interface réutilisables."
+          - label: "features/panier/"
+            correct: false
+            why: "Il ne concerne pas que le panier."
+        explanation: "core = les éléments techniques uniques."
+      - code: ng-at-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Dans un test de composant, le `<h2>` est vide. Qu'a-t-on probablement oublié ?"
+        choices:
+          - label: "fixture.detectChanges()"
+            correct: true
+            why: "Sans cet appel, le template n'est pas rendu."
+          - label: "Un point-virgule"
+            correct: false
+            why: "Le code compile."
+          - label: "De lancer le backend"
+            correct: false
+            why: "Un test unitaire n'a pas besoin du backend."
+        explanation: "detectChanges = « dessine maintenant »."
+      - code: ng-at-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Dans quel ordre s'écrit un test unitaire ?"
+        choices:
+          - label: "Préparer, agir, vérifier"
+            correct: true
+            why: "Arrange, Act, Assert."
+          - label: "Vérifier, préparer, agir"
+            correct: false
+            why: "On ne peut pas vérifier avant d'agir."
+          - label: "Agir, vérifier, préparer"
+            correct: false
+            why: "Il faut préparer d'abord."
+        explanation: "Le modèle AAA rend chaque test lisible."
+      - code: ng-at-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Un composant réutilisé dans plusieurs pages (carte produit) se range dans shared/."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "C'est une brique de la boîte à outils."
+          - label: "Faux"
+            correct: false
+            why: "features/ contient ce qui est propre à une seule fonctionnalité."
+        explanation: "Partagé → shared ; propre à une fonctionnalité → features."
+      - code: ng-at-q5
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Quels sont les avantages des tests automatisés ? (plusieurs réponses)"
+        choices:
+          - label: "Détecter une régression dès qu'on modifie le code"
+            correct: true
+            why: "Un test qui passait et échoue alerte tout de suite."
+          - label: "Documenter le comportement attendu"
+            correct: true
+            why: "Un test se lit comme un exemple d'utilisation."
+          - label: "Remplacer la validation côté serveur"
+            correct: false
+            why: "Aucun rapport."
+          - label: "Modifier le code avec confiance"
+            correct: true
+            why: "Refactoriser sans peur."
+        explanation: "Les tests sont un filet de sécurité."
+    exercises:
+      - slug: ng-ex-test-guide
+        kind: COMPLETER
+        title: "Compléter un test de service"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: "Complète ce test qui vérifie que `vider()` remet le panier à zéro."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Avant chaque test : beforeEach."
+          - "On obtient le service avec TestBed.inject."
+          - "beforeEach, inject, expect, toBe."
+        solution: '["beforeEach", "inject", "expect", "toBe"]'
+        explanation: "Préparer (beforeEach + inject), agir (vider), vérifier (expect + toBe)."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            let service: PanierService;
+
+            [[1]](() => {
+              service = TestBed.[[2]](PanierService);
+            });
+
+            it('vide le panier', () => {
+              service.ajouter('Café');
+              service.vider();
+              [[3]](service.nombre()).[[4]](0);
+            });
+          blanks:
+            - ["beforeEach"]
+            - ["inject"]
+            - ["expect"]
+            - ["toBe", "toEqual"]
+      - slug: ng-ex-test-composant
+        kind: CODE_LIBRE
+        title: "Tester l'affichage d'un compteur"
+        difficulty: DIFFICILE
+        skill: tests-strategie
+        statement: |
+          Le composant `CompteurComponent` affiche `<p>{{ valeur() }}</p>` et a un bouton `+` qui appelle
+          `plusUn()`. Écris un test `it('augmente au clic', …)` qui :
+          1. configure TestBed avec le composant dans `imports` ;
+          2. crée le composant et appelle `detectChanges()` ;
+          3. clique sur le bouton (`querySelector('button').click()`) ;
+          4. rappelle `detectChanges()` ;
+          5. vérifie que le `<p>` contient `1`.
+        criteria: "TestBed configuré, createComponent, clic sur le bouton, deux detectChanges, expect sur le texte du paragraphe."
+        hints:
+          - "`TestBed.configureTestingModule({ imports: [CompteurComponent] });`"
+          - "`const fixture = TestBed.createComponent(CompteurComponent);` puis `fixture.detectChanges();`"
+          - "`fixture.nativeElement.querySelector('button').click();` puis `detectChanges()` et `expect(…textContent).toContain('1')`."
+        solution: |
+          it('augmente au clic', () => {
+            TestBed.configureTestingModule({ imports: [CompteurComponent] });
+            const fixture = TestBed.createComponent(CompteurComponent);
+            fixture.detectChanges();
+
+            fixture.nativeElement.querySelector('button').click();
+            fixture.detectChanges();
+
+            const p = fixture.nativeElement.querySelector('p');
+            expect(p.textContent).toContain('1');
+          });
+        explanation: "On teste ce que voit l'utilisatrice : elle clique, le chiffre change."
+        xp: 30
+        payload:
+          language: typescript
+          starter: |
+            it('augmente au clic', () => {
+
+            });
+          checks:
+            - pattern: 'TestBed\.configureTestingModule\s*\(\s*\{\s*imports\s*:\s*\[\s*CompteurComponent\s*\]'
+              message: "Configure TestBed : `imports: [CompteurComponent]`."
+            - pattern: 'TestBed\.createComponent\s*\(\s*CompteurComponent\s*\)'
+              message: "Crée le composant avec `TestBed.createComponent(CompteurComponent)`."
+            - pattern: "querySelector\\s*\\(\\s*['\"]button['\"]\\s*\\)\\s*\\.click\\s*\\(\\s*\\)"
+              message: "Clique sur le bouton : `querySelector('button').click()`."
+            - pattern: '\A(?>[\s\S]*?\.detectChanges\s*\(\s*\)){2}'
+              message: "Appelle `detectChanges()` deux fois : après la création et après le clic."
+            - pattern: '\.click\s*\(\s*\)[\s\S]*?\.detectChanges\s*\(\s*\)'
+              message: "Rappelle `detectChanges()` après le clic."
+            - pattern: "expect\\s*\\([^;]*textContent[^;]*\\)\\s*\\.\\s*(?:toContain|toBe|toEqual)\\s*\\(\\s*['\"]\\s*1\\s*['\"]\\s*\\)"
+              message: "Vérifie le texte : `expect(p.textContent).toContain('1')`."
+
+  # ===================================================================== LEÇON 2
+  - slug: ng-questions-jury
+    title: "Angular devant le jury"
+    duration: 12
+    objective: "Répondre avec des mots simples aux questions classiques du jury sur Angular : cycle de vie, détection des changements, sécurité, performance."
+    prerequisites: "Leçon « Organiser et tester une application Angular »."
+    skills: [angular-composants, oral-cda]
+    xp: 25
+    memo: |
+      - **Cycle de vie** : `constructor` → `ngOnInit` (entrées reçues) → … → `ngOnDestroy` (nettoyage).
+      - **Détection des changements** : Angular met l'écran à jour ; avec `OnPush` et les signaux, seulement quand c'est nécessaire.
+      - **Sécurité** : l'interpolation **échappe** le HTML (protection XSS) ; ne jamais contourner `DomSanitizer` sans raison.
+      - **Performance** : chargement différé des routes, `@defer`, `track` dans `@for`, `OnPush`.
+      - **SPA** : une seule page HTML, le routeur change les composants.
+    commonMistakes: |
+      - Réciter une définition sans exemple tiré de son projet.
+      - Dire que le frontend « sécurise » les données.
+      - Oublier de se désabonner d'un Observable infini (utiliser `takeUntilDestroyed` ou `toSignal`).
+    blocks:
+      - type: text
+        md: |
+          Devant le jury, une bonne réponse tient en trois temps : **une définition simple**, **un exemple de
+          ton projet**, **une limite ou une bonne pratique**.
+      - type: definition
+        id: def-cycle-vie
+        term: "Cycle de vie d'un composant"
+        md: |
+          Les grandes étapes de la vie d'un composant, comme une journée de travail : **arriver**
+          (`ngOnInit`, on prépare), **travailler** (les mises à jour), **partir** (`ngOnDestroy`, on range et on
+          éteint la lumière).
+      - type: definition
+        id: def-xss
+        term: "Faille XSS"
+        md: |
+          Une attaque où quelqu'un glisse du **code JavaScript** dans un texte (un commentaire, un nom) pour
+          qu'il s'exécute chez les autres. Angular **échappe** automatiquement ce qu'il affiche avec `{{ }}` :
+          le code s'affiche comme du texte au lieu de s'exécuter.
+      - type: question
+        ref: ng-jq-q1
+        review: def-cycle-vie
+      - type: question
+        ref: ng-jq-q2
+        review: def-xss
+      - type: jury
+        id: jury-angular
+        title: "Questions fréquentes sur Angular"
+        items:
+          - q: "Qu'est-ce qu'une SPA ?"
+            a: "Une Single Page Application : le navigateur charge une seule page HTML, puis Angular change les composants affichés selon l'adresse, sans recharger. Les données viennent de l'API en JSON."
+          - q: "À quoi sert ngOnInit ?"
+            a: "C'est le moment où les inputs du composant sont disponibles : on y lance l'initialisation (chargement de données). Le constructeur sert seulement à l'injection."
+          - q: "Qu'est-ce que la stratégie OnPush ?"
+            a: "Le composant n'est revérifié que si ses inputs changent, si un événement s'y produit ou si un signal qu'il lit change. Moins de vérifications, donc de meilleures performances."
+          - q: "Comment Angular vous protège-t-il des failles XSS ?"
+            a: "Toute valeur affichée par interpolation ou liaison est échappée ou assainie. Je n'utilise jamais bypassSecurityTrustHtml sur des données saisies par les utilisateurs. Côté serveur, les entrées sont aussi validées."
+          - q: "Comment éviter les fuites de mémoire avec RxJS ?"
+            a: "HttpClient se termine tout seul après la réponse. Pour les flux infinis, j'utilise takeUntilDestroyed() ou toSignal(), qui se désabonnent automatiquement à la destruction du composant."
+      - type: text
+        md: "Exercice guidé : associe chaque étape du cycle de vie à son rôle."
+      - type: exercise
+        ref: ng-ex-cycle-guide
+      - type: text
+        md: "En autonomie : prépare ta réponse en trois temps."
+      - type: exercise
+        ref: ng-ex-reponse-jury
+      - type: quiz
+        items:
+          - ref: ng-jq-q3
+            review: jury-angular
+          - ref: ng-jq-q4
+            review: jury-angular
+          - ref: ng-jq-q5
+            review: def-xss
+    questions:
+      - code: ng-jq-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Dans quelle méthode du cycle de vie nettoie-t-on (arrêter un minuteur, se désabonner) ?"
+        choices:
+          - label: "ngOnDestroy"
+            correct: true
+            why: "Appelée juste avant la destruction du composant."
+          - label: "ngOnInit"
+            correct: false
+            why: "C'est l'initialisation."
+          - label: "constructor"
+            correct: false
+            why: "Le composant vient seulement de naître."
+        explanation: "On « éteint la lumière » en partant."
+      - code: ng-jq-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Avec `{{ commentaire }}`, un texte contenant `<script>` s'exécute dans le navigateur."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Angular échappe la valeur."
+          - label: "Faux"
+            correct: true
+            why: "Le texte s'affiche tel quel, sans s'exécuter."
+        explanation: "L'interpolation protège contre les XSS."
+      - code: ng-jq-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Qu'est-ce qu'une SPA ?"
+        choices:
+          - label: "Une application qui charge une seule page HTML et change les composants affichés sans recharger"
+            correct: true
+            why: "Single Page Application."
+          - label: "Une application avec une seule fonctionnalité"
+            correct: false
+            why: "Elle peut en avoir beaucoup."
+          - label: "Une application sans backend"
+            correct: false
+            why: "Elle dialogue avec une API."
+        explanation: "Le routeur change les pages côté navigateur."
+      - code: ng-jq-q4
+        kind: CHOIX_MULTIPLE
+        difficulty: 3
+        skill: angular-composants
+        prompt: "Quelles techniques améliorent les performances d'une application Angular ? (plusieurs réponses)"
+        choices:
+          - label: "Charger les routes à la demande (loadComponent)"
+            correct: true
+            why: "Premier chargement plus léger."
+          - label: "La stratégie OnPush et les signaux"
+            correct: true
+            why: "Moins de vérifications."
+          - label: "`track` dans les boucles @for"
+            correct: true
+            why: "Moins d'éléments recréés."
+          - label: "Mettre tout le code dans un seul composant"
+            correct: false
+            why: "Plus difficile à maintenir et à optimiser."
+        explanation: "Charger moins, vérifier moins, redessiner moins."
+      - code: ng-jq-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quel est le sigle de la faille qui consiste à injecter du JavaScript dans une page ? (trois lettres)"
+        answers: ["XSS"]
+        explanation: "Cross-Site Scripting. Angular s'en protège en échappant les valeurs affichées."
+    exercises:
+      - slug: ng-ex-cycle-guide
+        kind: COMPLETER
+        title: "Le cycle de vie"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: "Complète avec : constructor, ngOnInit, ngOnDestroy."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "L'injection se fait à la naissance : constructor."
+          - "Les inputs sont prêts dans ngOnInit."
+          - "constructor, ngOnInit, ngOnDestroy."
+        solution: '["constructor", "ngOnInit", "ngOnDestroy"]'
+        explanation: "Naître, s'initialiser, partir."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            [[1]] : le composant est créé, on reçoit les services injectés.
+            [[2]] : les inputs sont disponibles, on charge les données.
+            [[3]] : le composant va disparaître, on nettoie.
+          blanks:
+            - ["constructor"]
+            - ["ngOnInit"]
+            - ["ngOnDestroy"]
+      - slug: ng-ex-reponse-jury
+        kind: CODE_LIBRE
+        title: "Répondre en trois temps"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Question du jury : « **Pourquoi avez-vous utilisé des services dans votre application Angular ?** »
+
+          Réponds en trois lignes commençant par `Définition :`, `Exemple :` et `Bonne pratique :`.
+          Ta réponse doit parler d'**injection** et donner le nom d'un de tes services (qui finit par `Service`).
+        criteria: "Les trois temps sont présents, avec le mot injection et un nom de service."
+        hints:
+          - "Définition : un service contient la logique partagée, fourni par injection de dépendances."
+          - "Exemple : mon AuthService garde l'utilisatrice connectée…"
+          - "Bonne pratique : le composant affiche, le service sait faire ; c'est plus facile à tester."
+        solution: |
+          Définition : un service est une classe qui contient la logique partagée, fournie aux composants par injection de dépendances.
+          Exemple : mon AuthService garde l'utilisatrice connectée dans un signal et est utilisé par l'en-tête, les gardes et l'intercepteur.
+          Bonne pratique : le composant affiche, le service sait faire ; la logique est réutilisable et testable sans interface.
+        explanation: "Définition, exemple concret, bonne pratique : une réponse complète en moins d'une minute."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            Définition :
+            Exemple :
+            Bonne pratique :
+          checks:
+            - pattern: '(?im)^\s*D[ée]finition\s*:\s*\S.{15,}'
+              message: "Écris une définition après « Définition : »."
+            - pattern: '(?im)^\s*Exemple\s*:\s*\S.{15,}'
+              message: "Donne un exemple après « Exemple : »."
+            - pattern: '(?im)^\s*Bonne\s+pratique\s*:\s*\S.{15,}'
+              message: "Écris une bonne pratique après « Bonne pratique : »."
+            - pattern: '(?i)inject'
+              message: "Parle de l'injection de dépendances."
+            - pattern: '\b[A-Z]\w*Service\b'
+              message: "Cite un de tes services (par exemple AuthService)."
+
+bank:
+  - code: ng-c4-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 3
+    skill: angular-composants
+    prompt: "À quoi sert le bloc `@defer (on viewport) { … }` ?"
+    choices:
+      - label: "À charger ce morceau de page seulement quand il devient visible"
+        correct: true
+        why: "Son code est téléchargé plus tard."
+      - label: "À retarder l'appel à l'API de 5 secondes"
+        correct: false
+        why: "Il concerne le chargement du code des composants."
+      - label: "À masquer un élément aux lecteurs d'écran"
+        correct: false
+        why: "Aucun rapport."
+    explanation: "Utile pour un commentaire, une carte ou un graphique en bas de page."
+  - code: ng-c4-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: tests-strategie
+    prompt: "Comment tester un service qui fait des appels HTTP sans appeler le vrai serveur ?"
+    choices:
+      - label: "Avec provideHttpClientTesting() et HttpTestingController"
+        correct: true
+        why: "On intercepte la requête et on renvoie une fausse réponse."
+      - label: "En lançant le backend avant les tests"
+        correct: false
+        why: "Ce serait un test d'intégration, lent et fragile."
+      - label: "Ce n'est pas possible"
+        correct: false
+        why: "Angular le prévoit."
+    explanation: "`httpMock.expectOne('/api/produits').flush([...])` renvoie les données voulues."

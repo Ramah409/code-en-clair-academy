@@ -1,0 +1,24 @@
+slug: angular
+version: 1
+position: 6
+title: "Angular : construire l'interface"
+category: ANGULAR
+icon: template
+summary: "TypeScript, composants, templates, services, routage, formulaires, appels HTTP et tests : construire le frontend d'une application complète."
+description: |
+  **Angular** est un outil (un *framework*) pour construire l'**interface** d'une application web : les
+  écrans, les boutons, les formulaires. C'est la partie que l'utilisatrice voit dans son navigateur.
+
+  Une application Angular se construit comme un **jeu de briques** : chaque brique est un **composant**
+  (une carte produit, un menu, un formulaire). On assemble les briques pour faire des pages.
+
+  Angular s'écrit en **TypeScript** : du JavaScript avec des **types** (on précise si une valeur est un
+  texte, un nombre…). On commence donc par là.
+
+  **Au programme** : TypeScript, composants et templates, signaux, services et injection, routage et
+  gardes, formulaires réactifs, appels HTTP avec RxJS, architecture et tests, puis les questions du jury.
+
+  **Prérequis** : le parcours « Premiers pas en programmation » (variables, conditions, boucles, fonctions
+  en JavaScript).
+examQuestionCount: 30
+examTimeLimitMinutes: 35
