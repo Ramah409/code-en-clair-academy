@@ -1,0 +1,23 @@
+slug: merise
+version: 1
+position: 4
+title: "Concevoir une base : Merise et normalisation"
+category: DONNEES
+icon: diagram
+summary: "Passer d'un besoin exprimé en français à un MCD Merise, le traduire en MLD puis en script SQL, et vérifier la qualité avec la normalisation."
+description: |
+  Avant de créer des tables, il faut **réfléchir aux données** : quelles informations garder, et quels
+  liens entre elles ? La méthode **Merise**, très utilisée en France et attendue au titre CDA, t'aide à
+  le faire en trois étapes :
+
+  1. le **MCD** (modèle conceptuel) : un dessin des données, sans technique ;
+  2. le **MLD** (modèle logique) : les tables, clés primaires et clés étrangères ;
+  3. le **MPD** (modèle physique) : le script SQL pour PostgreSQL.
+
+  Tu construis tes modèles dans l'**éditeur visuel** : entités, associations et cardinalités se dessinent
+  à la souris, et la correction automatique te dit précisément ce qui manque.
+
+  Le parcours se termine par la **normalisation** (1FN, 2FN, 3FN) et les questions de modélisation du
+  jury.
+examQuestionCount: 30
+examTimeLimitMinutes: 35

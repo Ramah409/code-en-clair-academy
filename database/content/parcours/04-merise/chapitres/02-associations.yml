@@ -1,0 +1,537 @@
+slug: merise-associations
+position: 2
+level: INTERMEDIAIRE
+title: "Associations et cardinalités"
+summary: "Relier les entités par des associations, lire et écrire les cardinalités, et placer les attributs portés par une association."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: merise-cardinalites
+    title: "Associations et cardinalités"
+    duration: 14
+    objective: "Dessiner une association entre deux entités et écrire ses cardinalités à partir des règles de gestion."
+    prerequisites: "Chapitre « Comprendre les données d'un projet »."
+    skills: [merise-mcd]
+    xp: 20
+    memo: |
+      - Une **association** relie des entités ; on la nomme avec un **verbe** (ENCADRER, PASSER).
+      - Chaque patte porte une **cardinalité** `min,max` lue **depuis l'entité** : « un COURS est encadré par au minimum 1 et au maximum 1 coach ».
+      - Minimum : 0 (« peut ») ou 1 (« doit, au moins un »). Maximum : 1 (« un seul ») ou n (« plusieurs »).
+      - Les quatre cardinalités : `0,1`, `1,1`, `0,n`, `1,n`.
+    commonMistakes: |
+      - Lire la cardinalité depuis le mauvais côté.
+      - Mettre `1,1` partout par habitude : un coach nouvellement embauché n'encadre encore aucun cours (0,n).
+      - Nommer l'association avec un nom au lieu d'un verbe.
+    blocks:
+      - type: text
+        md: |
+          Les entités seules ne suffisent pas : il faut dire **comment elles sont liées**. Un coach
+          **encadre** des cours. C'est une **association**.
+      - type: definition
+        id: def-association
+        term: "Association"
+        md: |
+          Un **lien** entre des entités, dessiné comme une **ellipse** reliée à chacune par une patte. On la
+          nomme avec un verbe à l'infinitif : ENCADRER, INSCRIRE, PASSER.
+      - type: definition
+        id: def-cardinalite
+        term: "Cardinalité"
+        md: |
+          Sur chaque patte, deux nombres `min,max` qui répondent à la question : « **pour une** occurrence de
+          cette entité, combien de fois au minimum et au maximum participe-t-elle à l'association ? ». C'est
+          comme le nombre de places autorisées : « chaque cours a exactement un coach » → `1,1`.
+      - type: code
+        id: code-encadrer
+        language: text
+        title: "Lecture des cardinalités"
+        code: |
+          COACH 0,n —— ENCADRER —— 1,1 COURS
+        lines:
+          - n: 1
+            note: "Côté COACH, `0,n` : un coach encadre de 0 cours (nouvelle recrue) à plusieurs cours. Côté COURS, `1,1` : un cours est encadré par exactement un coach."
+      - type: question
+        ref: mer-ca-q1
+        review: def-cardinalite
+      - type: steps
+        id: etapes-cardinalite
+        title: "Méthode pour trouver une cardinalité"
+        items:
+          - "Choisir **une** occurrence de l'entité : « un cours »."
+          - "Se demander le **minimum** : peut-il exister sans coach ? Non → 1."
+          - "Se demander le **maximum** : peut-il avoir plusieurs coachs ? Non (RG3) → 1."
+          - "Écrire `1,1` sur la patte **côté COURS**."
+      - type: question
+        ref: mer-ca-q2
+        review: etapes-cardinalite
+      - type: text
+        md: "Exercice guidé : complète les cardinalités."
+      - type: exercise
+        ref: mer-ex-cardinalites-guide
+      - type: text
+        md: |
+          En autonomie : dans l'éditeur, construis le MCD « un client passe des commandes » :
+          - CLIENT (id_client, nom, email) ; COMMANDE (id_commande, date_commande) ;
+          - un client peut passer **zéro ou plusieurs** commandes ; une commande est passée par **un seul** client.
+      - type: exercise
+        ref: mer-ex-mcd-client-commande
+      - type: jury
+        items:
+          - q: "Comment lisez-vous les cardinalités 0,n et 1,1 entre CLIENT et COMMANDE ?"
+            a: "Un client passe zéro ou plusieurs commandes ; une commande est passée par un et un seul client. On lit toujours depuis l'entité vers l'association."
+      - type: quiz
+        items:
+          - ref: mer-ca-q3
+            review: def-cardinalite
+          - ref: mer-ca-q4
+            review: def-association
+          - ref: mer-ca-q5
+            review: code-encadrer
+    questions:
+      - code: mer-ca-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "« Un salarié appartient à un seul service ; un service compte au moins un salarié. » Cardinalité côté SERVICE ?"
+        choices:
+          - label: "1,n"
+            correct: true
+            why: "Au moins un salarié, éventuellement plusieurs."
+          - label: "1,1"
+            correct: false
+            why: "Un service peut avoir plusieurs salariés."
+          - label: "0,n"
+            correct: false
+            why: "La règle impose au moins un salarié."
+        explanation: "« au moins un » → minimum 1 ; « plusieurs » → maximum n."
+      - code: mer-ca-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "Pour trouver la cardinalité côté COMMANDE, on se demande…"
+        choices:
+          - label: "Pour UNE commande, combien de clients au minimum et au maximum ?"
+            correct: true
+            why: "On part toujours d'une occurrence de l'entité."
+          - label: "Combien de commandes existent en tout ?"
+            correct: false
+            why: "La cardinalité ne compte pas le total."
+          - label: "Pour un client, combien de commandes ?"
+            correct: false
+            why: "Ça, c'est la cardinalité côté CLIENT."
+        explanation: "Lecture depuis l'entité qui porte la cardinalité."
+      - code: mer-ca-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mcd
+        prompt: "Que signifie le minimum 0 dans `0,n` ?"
+        choices:
+          - label: "L'occurrence peut ne participer à aucune association"
+            correct: true
+            why: "« peut » → facultatif."
+          - label: "L'occurrence n'existe pas"
+            correct: false
+            why: "Elle existe, sans lien pour l'instant."
+          - label: "La valeur est vide"
+            correct: false
+            why: "On parle de participation, pas de valeur."
+        explanation: "0 = facultatif ; 1 = obligatoire."
+      - code: mer-ca-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mcd
+        prompt: "Quel est le meilleur nom pour l'association entre MEMBRE et COURS ?"
+        choices:
+          - label: "S'INSCRIRE"
+            correct: true
+            why: "Un verbe qui décrit le lien."
+          - label: "INSCRIPTION_COURS_MEMBRE"
+            correct: false
+            why: "Trop long et c'est un nom."
+          - label: "LIEN"
+            correct: false
+            why: "Trop vague."
+        explanation: "Association = verbe à l'infinitif."
+      - code: mer-ca-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "Dans COACH 0,n — ENCADRER — 1,1 COURS, un cours peut avoir deux coachs."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : côté COURS, le maximum est 1."
+          - label: "Faux"
+            correct: true
+            why: "Exact : 1,1 = exactement un coach."
+        explanation: "La cardinalité du côté COURS répond à « combien de coachs pour un cours ? »."
+    exercises:
+      - slug: mer-ex-cardinalites-guide
+        kind: COMPLETER
+        title: "Écrire des cardinalités"
+        difficulty: FACILE
+        skill: merise-mcd
+        statement: "Complète avec 0,1 / 1,1 / 0,n ou 1,n."
+        criteria: "Les quatre cardinalités sont correctes."
+        hints:
+          - "Un livre est écrit par au moins un auteur, parfois plusieurs."
+          - "Un auteur enregistré a écrit au moins un livre."
+          - "1,n ; 1,n ; 0,n ; 1,1."
+        solution: '["1,n", "1,n", "0,n", "1,1"]'
+        explanation: "LIVRE 1,n / AUTEUR 1,n pour ÉCRIRE ; LECTEUR 0,n / EMPRUNT 1,1 pour EFFECTUER."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            ÉCRIRE : un livre est écrit par au moins un auteur ; un auteur enregistré a écrit au moins un livre.
+            LIVRE [[1]] —— ÉCRIRE —— [[2]] AUTEUR
+
+            EFFECTUER : un lecteur peut n'avoir fait aucun emprunt ; un emprunt concerne un seul lecteur.
+            LECTEUR [[3]] —— EFFECTUER —— [[4]] EMPRUNT
+          blanks:
+            - ["1,n", "1,N"]
+            - ["1,n", "1,N"]
+            - ["0,n", "0,N"]
+            - ["1,1"]
+      - slug: mer-ex-mcd-client-commande
+        kind: MCD
+        title: "MCD : un client passe des commandes"
+        difficulty: INTERMEDIAIRE
+        skill: merise-mcd
+        statement: |
+          Construis le MCD :
+          - **CLIENT** (id_client, nom, email) et **COMMANDE** (id_commande, date_commande) ;
+          - une association **PASSER** : un client passe zéro ou plusieurs commandes ; une commande est passée
+            par un seul client.
+        criteria: "Deux entités identifiées, une association, cardinalités 0,n côté CLIENT et 1,1 côté COMMANDE."
+        hints:
+          - "Crée les deux entités et coche leurs identifiants."
+          - "Ajoute une association, nomme-la PASSER et relie-la aux deux entités."
+          - "Côté CLIENT : 0,n ; côté COMMANDE : 1,1."
+        solution: |
+          CLIENT (id_client, nom, email)
+          COMMANDE (id_commande, date_commande)
+          CLIENT 0,n —— PASSER —— 1,1 COMMANDE
+        explanation: "« peut … zéro ou plusieurs » donne 0,n ; « un seul » avec une commande qui existe forcément pour un client donne 1,1."
+        xp: 25
+        payload:
+          expected:
+            entities:
+              - name: CLIENT
+                aliases: [CLIENTE]
+                attributes: [nom, email]
+              - name: COMMANDE
+                attributes: [{ name: date_commande, aliases: [date] }]
+            associations:
+              - entities: [CLIENT, COMMANDE]
+                cards: { CLIENT: "0,n", COMMANDE: "1,1" }
+          solutionModel:
+            entities:
+              - id: e1
+                name: CLIENT
+                x: 40
+                y: 60
+                attributes:
+                  - { name: id_client, identifier: true }
+                  - { name: nom }
+                  - { name: email }
+              - id: e2
+                name: COMMANDE
+                x: 520
+                y: 60
+                attributes:
+                  - { name: id_commande, identifier: true }
+                  - { name: date_commande }
+            associations:
+              - id: a1
+                name: PASSER
+                x: 300
+                y: 80
+                attributes: []
+                links:
+                  - { entity: e1, card: "0,n" }
+                  - { entity: e2, card: "1,1" }
+
+  # ===================================================================== LEÇON 2
+  - slug: merise-associations-porteuses
+    title: "Associations porteuses et cas particuliers"
+    duration: 14
+    objective: "Placer un attribut sur une association plusieurs-à-plusieurs, et reconnaître les associations réflexives et ternaires."
+    prerequisites: "Leçon « Associations et cardinalités »."
+    skills: [merise-mcd]
+    xp: 25
+    memo: |
+      - Une association **porteuse** a ses propres attributs, qui dépendent du **couple** d'entités : la date d'inscription d'un membre à un cours.
+      - On la rencontre surtout quand les deux maximums valent n (`x,n — x,n`).
+      - **Réflexive** : une entité reliée à elle-même (un employé **encadre** d'autres employés).
+      - **Ternaire** : une association entre trois entités (un professeur enseigne une matière dans une classe).
+    commonMistakes: |
+      - Mettre la date d'inscription dans MEMBRE (un membre a plusieurs inscriptions) ou dans COURS.
+      - Créer une entité INSCRIPTION sans identifiant propre au lieu d'une association porteuse (les deux sont possibles, mais il faut savoir justifier).
+      - Oublier que les deux pattes d'une association réflexive ont chacune leur cardinalité.
+    blocks:
+      - type: text
+        md: |
+          Un membre s'inscrit à un cours **à une certaine date**. Où ranger cette date ? Ni dans MEMBRE (il a
+          plusieurs inscriptions), ni dans COURS (plusieurs membres) : dans l'**association** elle-même.
+      - type: definition
+        id: def-porteuse
+        term: "Association porteuse"
+        md: |
+          Une association qui **porte des attributs**. Ces attributs décrivent le **lien**, pas les entités.
+          Comme la **date d'un mariage** : elle n'appartient ni à l'un ni à l'autre, mais au couple.
+      - type: code
+        id: code-porteuse
+        language: text
+        title: "L'inscription au club"
+        code: |
+          MEMBRE 0,n —— S'INSCRIRE (date_inscription) —— 0,n COURS
+        lines:
+          - n: 1
+            note: "Un membre peut s'inscrire à 0 ou plusieurs cours ; un cours peut accueillir 0 ou plusieurs membres. La date dépend du couple membre + cours : elle est portée par l'association."
+      - type: question
+        ref: mer-po-q1
+        review: def-porteuse
+      - type: definition
+        id: def-reflexive
+        term: "Association réflexive"
+        md: |
+          Une association qui relie une entité **à elle-même**. Exemple : EMPLOYÉ **ENCADRER** EMPLOYÉ (un
+          manager encadre d'autres employés). Comme dans un arbre généalogique, où une personne est parent
+          d'autres personnes.
+      - type: code
+        id: code-reflexive
+        language: text
+        title: "Un employé encadre des employés"
+        code: |
+          EMPLOYE 0,n —— ENCADRER —— 0,1 EMPLOYE
+        lines:
+          - n: 1
+            note: "Rôle « manager » : encadre 0 à n employés. Rôle « encadré » : a 0 (la directrice) ou 1 manager."
+      - type: question
+        ref: mer-po-q2
+        review: def-reflexive
+      - type: text
+        md: "Exercice guidé : place les attributs au bon endroit."
+      - type: exercise
+        ref: mer-ex-porteuse-guide
+      - type: text
+        md: |
+          En autonomie : construis le MCD de l'inscription au club :
+          - MEMBRE (id_membre, nom, email) et COURS (id_cours, intitule) ;
+          - un membre peut s'inscrire à zéro ou plusieurs cours ; un cours accueille zéro ou plusieurs membres ;
+          - la **date_inscription** est portée par l'association.
+      - type: exercise
+        ref: mer-ex-mcd-inscription
+      - type: jury
+        items:
+          - q: "Qu'est-ce qu'une association porteuse ?"
+            a: "Une association qui possède ses propres attributs, parce qu'ils dépendent du couple d'entités reliées : par exemple la quantité commandée d'un produit dans une commande."
+          - q: "Donnez un exemple d'association réflexive."
+            a: "Un employé encadre d'autres employés : l'association ENCADRER relie EMPLOYÉ à lui-même, avec deux rôles (manager et encadré)."
+      - type: quiz
+        items:
+          - ref: mer-po-q3
+            review: code-porteuse
+          - ref: mer-po-q4
+            review: code-reflexive
+          - ref: mer-po-q5
+            review: def-porteuse
+    questions:
+      - code: mer-po-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "Où placer la « note » obtenue par un étudiant dans une matière ?"
+        choices:
+          - label: "Dans l'association entre ÉTUDIANT et MATIÈRE"
+            correct: true
+            why: "Elle dépend du couple étudiant + matière."
+          - label: "Dans ÉTUDIANT"
+            correct: false
+            why: "Un étudiant a une note par matière."
+          - label: "Dans MATIÈRE"
+            correct: false
+            why: "Une matière a une note par étudiant."
+        explanation: "Attribut qui dépend de plusieurs entités → association porteuse."
+      - code: mer-po-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "« Une personne peut être marraine d'autres personnes du club. » Quel type d'association ?"
+        choices:
+          - label: "Réflexive"
+            correct: true
+            why: "PERSONNE est reliée à PERSONNE."
+          - label: "Ternaire"
+            correct: false
+            why: "Il n'y a qu'une entité, pas trois."
+          - label: "Porteuse"
+            correct: false
+            why: "Aucun attribut n'est mentionné."
+        explanation: "Même entité des deux côtés → réflexive."
+      - code: mer-po-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "Dans MEMBRE 0,n — S'INSCRIRE — 0,n COURS, un cours peut exister sans aucun inscrit."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Côté COURS, le minimum est 0."
+          - label: "Faux"
+            correct: false
+            why: "0,n autorise zéro inscrit."
+        explanation: "Minimum 0 : participation facultative."
+      - code: mer-po-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: merise-mcd
+        prompt: "Dans EMPLOYE 0,n — ENCADRER — 0,1 EMPLOYE, pourquoi `0,1` d'un côté ?"
+        choices:
+          - label: "Un employé a au plus un manager, et la directrice n'en a aucun"
+            correct: true
+            why: "Minimum 0 pour la directrice, maximum 1."
+          - label: "Un manager encadre au plus une personne"
+            correct: false
+            why: "Ça, c'est l'autre patte (0,n)."
+          - label: "Parce qu'une association réflexive a toujours 0,1"
+            correct: false
+            why: "Les cardinalités dépendent des règles de gestion."
+        explanation: "Chaque patte correspond à un rôle, avec sa propre cardinalité."
+      - code: mer-po-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "Une association porteuse apparaît le plus souvent entre deux entités de cardinalités maximales…"
+        choices:
+          - label: "n et n"
+            correct: true
+            why: "Le lien plusieurs-à-plusieurs deviendra une table avec ses attributs."
+          - label: "1 et 1"
+            correct: false
+            why: "Ce cas est rare et l'attribut irait dans une entité."
+          - label: "0 et 0"
+            correct: false
+            why: "Un maximum de 0 n'a pas de sens."
+        explanation: "x,n — x,n : la future table d'association porte les attributs."
+    exercises:
+      - slug: mer-ex-porteuse-guide
+        kind: COMPLETER
+        title: "Placer les attributs"
+        difficulty: FACILE
+        skill: merise-mcd
+        statement: "Complète chaque ligne avec PRODUIT, COMMANDE ou CONTENIR (l'association)."
+        criteria: "Les trois emplacements sont corrects."
+        hints:
+          - "Le prix catalogue décrit le produit lui-même."
+          - "La date concerne toute la commande."
+          - "PRODUIT, COMMANDE, CONTENIR."
+        solution: '["PRODUIT", "COMMANDE", "CONTENIR"]'
+        explanation: "La quantité dépend du couple commande + produit : elle est portée par CONTENIR."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            prix_catalogue → [[1]]
+            date_commande → [[2]]
+            quantite → [[3]]
+          blanks:
+            - ["PRODUIT"]
+            - ["COMMANDE"]
+            - ["CONTENIR"]
+      - slug: mer-ex-mcd-inscription
+        kind: MCD
+        title: "MCD : l'inscription aux cours"
+        difficulty: INTERMEDIAIRE
+        skill: merise-mcd
+        statement: |
+          Construis le MCD :
+          - **MEMBRE** (id_membre, nom, email) et **COURS** (id_cours, intitule) ;
+          - une association **S'INSCRIRE** portant l'attribut **date_inscription** ;
+          - cardinalités : 0,n des deux côtés.
+        criteria: "Deux entités, une association porteuse de date_inscription, cardinalités 0,n et 0,n."
+        hints:
+          - "Crée MEMBRE et COURS avec leurs identifiants."
+          - "Ajoute l'association S'INSCRIRE et relie-la aux deux entités."
+          - "Ajoute l'attribut date_inscription à l'association (pas aux entités) ; cardinalités 0,n et 0,n."
+        solution: |
+          MEMBRE (id_membre, nom, email)
+          COURS (id_cours, intitule)
+          MEMBRE 0,n —— S'INSCRIRE (date_inscription) —— 0,n COURS
+        explanation: "La date dépend du couple membre + cours : c'est un attribut de l'association."
+        xp: 25
+        payload:
+          expected:
+            entities:
+              - name: MEMBRE
+                aliases: [ADHERENT]
+                attributes: [nom, email]
+              - name: COURS
+                attributes: [intitule]
+            associations:
+              - entities: [MEMBRE, COURS]
+                cards: { MEMBRE: "0,n", COURS: "0,n" }
+                attributes: [{ name: date_inscription, aliases: [date] }]
+          solutionModel:
+            entities:
+              - id: e1
+                name: MEMBRE
+                x: 40
+                y: 60
+                attributes:
+                  - { name: id_membre, identifier: true }
+                  - { name: nom }
+                  - { name: email }
+              - id: e2
+                name: COURS
+                x: 540
+                y: 60
+                attributes:
+                  - { name: id_cours, identifier: true }
+                  - { name: intitule }
+            associations:
+              - id: a1
+                name: S'INSCRIRE
+                x: 290
+                y: 70
+                attributes:
+                  - { name: date_inscription }
+                links:
+                  - { entity: e1, card: "0,n" }
+                  - { entity: e2, card: "0,n" }
+
+bank:
+  - code: mer-c2-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: merise-mcd
+    prompt: "« Un professeur enseigne une matière dans une classe. » Quel type d'association convient le mieux ?"
+    choices:
+      - label: "Une association ternaire (PROFESSEUR, MATIÈRE, CLASSE)"
+        correct: true
+        why: "Le fait « enseigner » relie les trois à la fois."
+      - label: "Une association réflexive"
+        correct: false
+        why: "Il y a trois entités différentes."
+      - label: "Aucune association"
+        correct: false
+        why: "Il y a bien un lien entre les entités."
+    explanation: "Ternaire : un seul fait qui relie trois entités."
+  - code: mer-c2-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: merise-mcd
+    prompt: "Quelle forme représente une association dans un MCD Merise ?"
+    choices:
+      - label: "Une ellipse (ou un ovale)"
+        correct: true
+        why: "Convention Merise."
+      - label: "Un rectangle"
+        correct: false
+        why: "Réservé aux entités."
+      - label: "Un losange"
+        correct: false
+        why: "C'est la notation d'autres méthodes (Chen)."
+    explanation: "Entité = rectangle ; association = ellipse ; cardinalités sur les pattes."

@@ -1,0 +1,492 @@
+slug: merise-normalisation-jury
+position: 4
+level: EXAMEN
+title: "Normalisation et questions du jury"
+summary: "Vérifier un modèle avec les trois premières formes normales, corriger une table mal conçue et répondre aux questions de modélisation du jury."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: merise-formes-normales
+    title: "Les formes normales : 1FN, 2FN, 3FN"
+    duration: 14
+    objective: "Reconnaître une table qui viole la 1FN, la 2FN ou la 3FN, et la corriger en la découpant."
+    prerequisites: "Chapitre « Du MCD au MLD et au MPD »."
+    skills: [normalisation]
+    xp: 25
+    memo: |
+      - **But** : chaque information à un seul endroit, pour éviter les incohérences (anomalies de mise à jour).
+      - **1FN** : chaque case contient **une seule valeur** (pas de liste « Java, SQL ») et il y a une clé primaire.
+      - **2FN** : 1FN + chaque colonne dépend de **toute** la clé (pas d'une partie seulement d'une clé composée).
+      - **3FN** : 2FN + aucune colonne ne dépend d'une **autre colonne non clé** (pas de dépendance transitive).
+      - Correction : on **découpe** la table et on relie par des clés étrangères.
+    commonMistakes: |
+      - Ranger plusieurs valeurs dans une colonne séparées par des virgules.
+      - Garder le nom du produit dans la table des lignes de commande (il dépend de id_produit seul).
+      - Garder la ville et le code postal d'un client quand la ville se déduit… (selon les règles, à discuter).
+    blocks:
+      - type: text
+        md: |
+          Un MCD bien construit donne presque toujours des tables **normalisées**. La normalisation sert à
+          **vérifier** une table existante, ou une table proposée dans un sujet d'examen.
+      - type: definition
+        id: def-normalisation
+        term: "Normalisation"
+        md: |
+          Une série de **règles de rangement** qui évitent de stocker deux fois la même information. Comme un
+          carnet d'adresses : si l'adresse d'un ami est recopiée dans dix pages, un déménagement oblige à
+          corriger dix pages… et on en oublie toujours une.
+      - type: code
+        id: code-1fn
+        language: text
+        title: "Violation de la 1FN"
+        code: |
+          etudiant (id_etudiant, nom, cours_suivis)
+          1 | Awa | "Java, SQL, Angular"
+        lines:
+          - n: 2
+            note: "La case `cours_suivis` contient une **liste** : impossible de chercher proprement « qui suit SQL ? ». Correction : une table `inscription (#id_etudiant, #id_cours)`."
+      - type: code
+        id: code-2fn
+        language: text
+        title: "Violation de la 2FN"
+        code: |
+          ligne_commande (#id_commande, #id_produit, quantite, nom_produit)
+        lines:
+          - n: 1
+            note: "La clé est (id_commande, id_produit). `nom_produit` dépend **seulement** de `id_produit` : une partie de la clé. Il doit rester dans la table `produit`."
+      - type: code
+        id: code-3fn
+        language: text
+        title: "Violation de la 3FN"
+        code: |
+          salarie (id_salarie, nom, id_service, nom_service)
+        lines:
+          - n: 1
+            note: "`nom_service` dépend de `id_service`, qui n'est pas la clé : dépendance **transitive**. On crée `service (id_service, nom_service)` et on garde seulement `#id_service` dans `salarie`."
+      - type: question
+        ref: mer-fn-q1
+        review: code-1fn
+      - type: question
+        ref: mer-fn-q2
+        review: code-3fn
+      - type: text
+        md: "Exercice guidé : associe chaque table à la forme normale qu'elle viole."
+      - type: exercise
+        ref: mer-ex-fn-guide
+      - type: text
+        md: "En autonomie : normalise une table de commandes mal conçue dans l'éditeur de tables."
+      - type: exercise
+        ref: mer-ex-normaliser
+      - type: jury
+        items:
+          - q: "Qu'est-ce que la normalisation et pourquoi l'appliquer ?"
+            a: "Un ensemble de règles (1FN, 2FN, 3FN…) qui évitent la redondance : chaque information est stockée une seule fois, ce qui évite les incohérences lors des mises à jour."
+          - q: "Énoncez la 3e forme normale."
+            a: "La table est en 2FN et aucune colonne non clé ne dépend d'une autre colonne non clé : tout dépend de la clé, de toute la clé, et de rien d'autre que la clé."
+          - q: "Peut-on volontairement dénormaliser ?"
+            a: "Oui, pour des raisons de performance (tableaux de bord, historiques), en le justifiant et en maîtrisant la mise à jour des données dupliquées."
+      - type: quiz
+        items:
+          - ref: mer-fn-q3
+            review: code-2fn
+          - ref: mer-fn-q4
+            review: def-normalisation
+          - ref: mer-fn-q5
+            review: code-3fn
+    questions:
+      - code: mer-fn-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: normalisation
+        prompt: "Une colonne `telephones` contient « 0601…, 0611… ». Quelle forme normale est violée ?"
+        choices:
+          - label: "La 1FN"
+            correct: true
+            why: "Plusieurs valeurs dans une case."
+          - label: "La 2FN"
+            correct: false
+            why: "La 2FN concerne les clés composées."
+          - label: "Aucune"
+            correct: false
+            why: "Une case doit contenir une valeur atomique."
+        explanation: "1FN : une valeur par case. Correction : une table des téléphones."
+      - code: mer-fn-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: normalisation
+        prompt: "`livre (id_livre, titre, id_editeur, ville_editeur)`. Quel est le problème ?"
+        choices:
+          - label: "ville_editeur dépend de id_editeur (dépendance transitive) : violation de la 3FN"
+            correct: true
+            why: "Il faut une table editeur."
+          - label: "Violation de la 1FN"
+            correct: false
+            why: "Chaque case contient une seule valeur."
+          - label: "Aucun problème"
+            correct: false
+            why: "La ville de l'éditeur serait répétée pour chacun de ses livres."
+        explanation: "3FN : une colonne non clé ne dépend pas d'une autre colonne non clé."
+      - code: mer-fn-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: normalisation
+        prompt: "Dans `ligne_commande (#id_commande, #id_produit, quantite, prix_unitaire_catalogue)`, que faire de `prix_unitaire_catalogue` ?"
+        choices:
+          - label: "Le laisser dans produit : il dépend seulement de id_produit (violation 2FN)"
+            correct: true
+            why: "Il dépend d'une partie de la clé."
+          - label: "Le garder : tout va bien"
+            correct: false
+            why: "Il dépend d'une partie de la clé seulement."
+          - label: "Le mettre dans commande"
+            correct: false
+            why: "Il concerne le produit, pas la commande."
+        explanation: "Attention : un **prix au moment de la commande** (qui ne doit pas changer avec le catalogue) peut, lui, légitimement être stocké dans la ligne. C'est une vraie règle métier à justifier."
+      - code: mer-fn-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: normalisation
+        prompt: "La normalisation vise à éviter la redondance des données."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Une information à un seul endroit."
+          - label: "Faux"
+            correct: false
+            why: "C'est exactement son but."
+        explanation: "Moins de redondance, moins d'incohérences."
+      - code: mer-fn-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: normalisation
+        prompt: "Comment corrige-t-on une violation de la 3FN ?"
+        choices:
+          - label: "En déplaçant les colonnes dépendantes dans une nouvelle table reliée par une clé étrangère"
+            correct: true
+            why: "On découpe."
+          - label: "En supprimant la clé primaire"
+            correct: false
+            why: "La clé est indispensable."
+          - label: "En fusionnant toutes les tables"
+            correct: false
+            why: "Cela aggraverait la redondance."
+        explanation: "Découper et relier."
+    exercises:
+      - slug: mer-ex-fn-guide
+        kind: COMPLETER
+        title: "Quelle forme normale est violée ?"
+        difficulty: FACILE
+        skill: normalisation
+        statement: "Complète avec 1FN, 2FN ou 3FN."
+        criteria: "Les trois réponses sont correctes."
+        hints:
+          - "Une liste dans une case : 1FN."
+          - "Une dépendance à une partie d'une clé composée : 2FN."
+          - "1FN, 2FN, 3FN."
+        solution: '["1FN", "2FN", "3FN"]'
+        explanation: "Liste → 1FN ; partie de clé → 2FN ; colonne non clé → 3FN."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            client (id_client, nom, emails)  avec emails = "a@x.fr; b@y.fr"   → [[1]]
+            note (#id_etudiant, #id_matiere, valeur, nom_matiere)             → [[2]]
+            employe (id_employe, nom, id_agence, adresse_agence)               → [[3]]
+          blanks:
+            - ["1FN"]
+            - ["2FN"]
+            - ["3FN"]
+      - slug: mer-ex-normaliser
+        kind: MCD_VERS_MLD
+        title: "Normaliser une table de commandes"
+        difficulty: DIFFICILE
+        skill: normalisation
+        statement: |
+          Une application stocke tout dans une seule table :
+
+          `commande_tout (id_commande, date_commande, id_client, nom_client, email_client, id_produit, nom_produit, prix, quantite)`
+
+          Le MCD correct est affiché. Construis les tables normalisées (3FN) : client, produit, commande et la
+          table des lignes (contenir).
+        criteria: "Quatre tables ; les informations client et produit ne sont stockées qu'une fois ; clés étrangères correctes."
+        hints:
+          - "Les informations du client (nom, email) vont dans une table client."
+          - "commande garde seulement sa date et #id_client."
+          - "contenir (#id_commande, #id_produit, quantite) : clé primaire composée."
+        solution: |
+          client (id_client, nom_client, email_client)
+          produit (id_produit, nom_produit, prix)
+          commande (id_commande, date_commande, #id_client)
+          contenir (#id_commande, #id_produit, quantite)
+        explanation: "Chaque information est à un seul endroit : changer l'e-mail d'un client ne touche qu'une ligne, quel que soit son nombre de commandes."
+        xp: 30
+        payload:
+          mcd:
+            entities:
+              - { id: e1, name: CLIENT, x: 40, y: 40, attributes: [{ name: id_client, identifier: true }, { name: nom_client }, { name: email_client }] }
+              - { id: e2, name: COMMANDE, x: 480, y: 40, attributes: [{ name: id_commande, identifier: true }, { name: date_commande }] }
+              - { id: e3, name: PRODUIT, x: 480, y: 300, attributes: [{ name: id_produit, identifier: true }, { name: nom_produit }, { name: prix }] }
+            associations:
+              - { id: a1, name: PASSER, x: 260, y: 50, attributes: [], links: [{ entity: e1, card: "0,n" }, { entity: e2, card: "1,1" }] }
+              - { id: a2, name: CONTENIR, x: 520, y: 180, attributes: [{ name: quantite }], links: [{ entity: e2, card: "1,n" }, { entity: e3, card: "0,n" }] }
+          expected:
+            tables:
+              - { name: client, aliases: [clients], pkCount: 1, fks: [], columns: [{ name: nom_client, aliases: [nom] }, { name: email_client, aliases: [email] }] }
+              - { name: produit, aliases: [produits], pkCount: 1, fks: [], columns: [{ name: nom_produit, aliases: [nom] }, prix] }
+              - { name: commande, aliases: [commandes], pkCount: 1, fks: [client], columns: [{ name: date_commande, aliases: [date] }] }
+              - { name: contenir, aliases: [ligne_commande, lignes_commande], pkCount: 2, pkFks: [commande, produit], fks: [commande, produit], columns: [quantite] }
+          solutionModel:
+            tables:
+              - { id: t1, name: client, columns: [{ name: id_client, pk: true, fk: "" }, { name: nom_client, pk: false, fk: "" }, { name: email_client, pk: false, fk: "" }] }
+              - { id: t2, name: produit, columns: [{ name: id_produit, pk: true, fk: "" }, { name: nom_produit, pk: false, fk: "" }, { name: prix, pk: false, fk: "" }] }
+              - { id: t3, name: commande, columns: [{ name: id_commande, pk: true, fk: "" }, { name: date_commande, pk: false, fk: "" }, { name: id_client, pk: false, fk: client }] }
+              - { id: t4, name: contenir, columns: [{ name: id_commande, pk: true, fk: commande }, { name: id_produit, pk: true, fk: produit }, { name: quantite, pk: false, fk: "" }] }
+
+  # ===================================================================== LEÇON 2
+  - slug: merise-questions-jury
+    title: "La modélisation devant le jury"
+    duration: 13
+    objective: "Présenter et justifier un MCD, et répondre aux questions de modélisation classiques."
+    prerequisites: "Leçon « Les formes normales »."
+    skills: [merise-mcd, oral-cda]
+    xp: 25
+    memo: |
+      - Présenter un MCD : entités principales → associations → cardinalités lues à voix haute → cas particuliers.
+      - Justifier chaque cardinalité par une **règle de gestion**.
+      - Merise ≠ UML : le MCD décrit les **données** ; le diagramme de classes UML décrit aussi le **comportement** (méthodes).
+      - Savoir dire pourquoi un attribut est sur une association, pourquoi une table d'association existe, et comment le MLD a été obtenu.
+    commonMistakes: |
+      - Présenter un MCD en notation « pattes de corbeau » en l'appelant Merise.
+      - Oublier les identifiants.
+      - Ne pas savoir lire à voix haute ses propres cardinalités.
+    blocks:
+      - type: text
+        md: |
+          Au titre CDA, tu présentes le modèle de données de ton projet. Le jury vérifie que tu sais le
+          **lire**, le **justifier** et l'**expliquer** simplement.
+      - type: steps
+        id: etapes-presentation
+        title: "Présenter son MCD en une minute"
+        items:
+          - "« Mon application gère… » : les **entités** principales, en une phrase."
+          - "Les **associations** : qui est relié à qui, avec un verbe."
+          - "Deux ou trois **cardinalités** lues à voix haute, justifiées par une règle de gestion."
+          - "Un **cas particulier** : association porteuse, réflexive ou contrainte forte."
+          - "Le passage au **MLD** : « cette association plusieurs-à-plusieurs est devenue une table »."
+      - type: definition
+        id: def-merise-uml
+        term: "Merise ou UML ?"
+        md: |
+          **Merise** (MCD/MLD) décrit les **données** et leurs liens : c'est la méthode de référence en France
+          pour la base de données. **UML** (diagramme de classes) décrit les **objets du code**, avec leurs
+          méthodes. Les deux se ressemblent ; au jury, on utilise Merise pour la base et UML pour la conception
+          applicative.
+      - type: question
+        ref: mer-jq-q1
+        review: def-merise-uml
+      - type: jury
+        id: jury-modelisation
+        title: "Questions de modélisation"
+        items:
+          - q: "Lisez la cardinalité 1,n du côté COMMANDE dans COMMANDE — CONTENIR — PRODUIT."
+            a: "Une commande contient au minimum un produit et au maximum plusieurs produits."
+          - q: "Pourquoi la quantité est-elle sur l'association CONTENIR ?"
+            a: "Parce qu'elle dépend à la fois de la commande et du produit : une commande a plusieurs produits, et un produit apparaît dans plusieurs commandes."
+          - q: "Qu'est-ce qu'une CIF (contrainte d'intégrité fonctionnelle) ?"
+            a: "Une association dont une patte a une cardinalité maximale de 1 : l'entité de ce côté détermine l'autre. Elle se traduit par une clé étrangère dans le MLD."
+          - q: "Comment avez-vous choisi vos identifiants ?"
+            a: "Des identifiants techniques (id numériques générés), stables et sans signification métier ; les données métier uniques (e-mail) ont une contrainte UNIQUE."
+          - q: "Votre modèle est-il normalisé ?"
+            a: "Oui, en 3FN : chaque information est stockée une seule fois, les données calculées (totaux) ne sont pas stockées, et chaque colonne dépend uniquement de la clé de sa table."
+      - type: question
+        ref: mer-jq-q2
+        review: etapes-presentation
+      - type: text
+        md: "Exercice guidé : remets la présentation dans l'ordre."
+      - type: exercise
+        ref: mer-ex-presentation-ordre
+      - type: text
+        md: "En autonomie : lis des cardinalités à voix haute (réponses écrites)."
+      - type: exercise
+        ref: mer-ex-lecture-cardinalites
+      - type: quiz
+        items:
+          - ref: mer-jq-q3
+            review: jury-modelisation
+          - ref: mer-jq-q4
+            review: jury-modelisation
+          - ref: mer-jq-q5
+            review: def-merise-uml
+    questions:
+      - code: mer-jq-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Quelle différence principale entre un MCD Merise et un diagramme de classes UML ?"
+        choices:
+          - label: "Le MCD décrit les données ; le diagramme de classes décrit aussi les méthodes des objets"
+            correct: true
+            why: "Données vs objets du code."
+          - label: "Aucune différence"
+            correct: false
+            why: "Ils se ressemblent mais n'ont pas le même but."
+          - label: "Le MCD est réservé aux applications mobiles"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Merise pour la base, UML pour la conception objet."
+      - code: mer-jq-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Par quoi commencer la présentation de son MCD ?"
+        choices:
+          - label: "Les entités principales, en une phrase"
+            correct: true
+            why: "Le jury comprend le domaine avant les détails."
+          - label: "Le script SQL complet"
+            correct: false
+            why: "Trop technique pour commencer."
+          - label: "Les types de chaque colonne"
+            correct: false
+            why: "C'est le niveau physique."
+        explanation: "Du général au particulier."
+      - code: mer-jq-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: merise-mcd
+        prompt: "Qu'est-ce qu'une CIF en Merise ?"
+        choices:
+          - label: "Une association avec une cardinalité maximale de 1 d'un côté, traduite par une clé étrangère"
+            correct: true
+            why: "Contrainte d'intégrité fonctionnelle."
+          - label: "Une clé primaire composée"
+            correct: false
+            why: "C'est ce que donne une association n-n."
+          - label: "Un index"
+            correct: false
+            why: "Un index est une notion physique."
+        explanation: "CIF : un côté détermine l'autre (x,1)."
+      - code: mer-jq-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "Un total de commande doit apparaître comme attribut dans le MCD."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : il se calcule à partir des lignes."
+          - label: "Faux"
+            correct: true
+            why: "Exact : pas d'attribut calculé."
+        explanation: "On ne stocke pas ce qui se calcule, sauf choix justifié de dénormalisation."
+      - code: mer-jq-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "Le jury montre un modèle avec des « pattes de corbeau ». Que répondre ?"
+        choices:
+          - label: "C'est une notation ERD ; en Merise, on écrit les cardinalités min,max sur chaque patte"
+            correct: true
+            why: "Savoir distinguer les notations."
+          - label: "C'est la notation Merise officielle"
+            correct: false
+            why: "Merise utilise min,max et des ellipses."
+          - label: "C'est du SQL"
+            correct: false
+            why: "C'est un diagramme."
+        explanation: "Notation Merise : rectangles, ellipses, cardinalités 0,1 / 1,1 / 0,n / 1,n."
+    exercises:
+      - slug: mer-ex-presentation-ordre
+        kind: REMETTRE_ORDRE
+        title: "Présenter son MCD"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Remets les étapes de présentation dans l'ordre."
+        criteria: "Du général au particulier, puis le passage au MLD."
+        hints:
+          - "On commence par les entités."
+          - "Les cardinalités viennent après les associations."
+          - "Entités, associations, cardinalités, cas particulier, MLD."
+        solution: |
+          1. Présenter les entités principales
+          2. Présenter les associations
+          3. Lire et justifier les cardinalités
+          4. Expliquer un cas particulier
+          5. Expliquer le passage au MLD
+        explanation: "Une présentation qui suit la logique du modèle."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Présenter les entités principales"
+            - "Présenter les associations"
+            - "Lire et justifier les cardinalités"
+            - "Expliquer un cas particulier"
+            - "Expliquer le passage au MLD"
+      - slug: mer-ex-lecture-cardinalites
+        kind: CODE_LIBRE
+        title: "Lire des cardinalités à voix haute"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Écris, en deux phrases, la lecture de : `AUTEUR 1,n —— ÉCRIRE —— 1,n LIVRE`.
+          - Première phrase : ce que dit la cardinalité côté AUTEUR (commence par « Un auteur ») ;
+          - Deuxième phrase : ce que dit la cardinalité côté LIVRE (commence par « Un livre »).
+        criteria: "Deux phrases correctes avec « au moins un » et « plusieurs »."
+        hints:
+          - "On lit depuis l'entité : « Un auteur écrit… »."
+          - "1,n = au moins un, et éventuellement plusieurs."
+          - "« Un auteur écrit au moins un livre, parfois plusieurs. Un livre est écrit par au moins un auteur, parfois plusieurs. »"
+        solution: |
+          Un auteur écrit au moins un livre et peut en écrire plusieurs.
+          Un livre est écrit par au moins un auteur et peut en avoir plusieurs.
+        explanation: "Lecture depuis chaque entité : minimum puis maximum."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            Un auteur
+            Un livre
+          checks:
+            - pattern: '(?i)^\s*Un\s+auteur\b.*au\s+moins\s+(un|1)\b.*plusieurs'
+              message: "Première phrase : « Un auteur … au moins un livre … plusieurs »."
+            - pattern: '(?i)^\s*Un\s+livre\b.*au\s+moins\s+(un|1)\b.*plusieurs'
+              message: "Deuxième phrase : « Un livre … au moins un auteur … plusieurs »."
+            - pattern: '(?i)Un\s+livre\b.*auteur'
+              message: "La deuxième phrase parle des auteurs d'un livre."
+
+bank:
+  - code: mer-c4-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: normalisation
+    prompt: "Quelle anomalie apparaît quand l'adresse d'un fournisseur est recopiée dans chaque produit ?"
+    choices:
+      - label: "Une anomalie de mise à jour : changer l'adresse oblige à modifier plusieurs lignes"
+        correct: true
+        why: "Et on risque d'en oublier."
+      - label: "Aucune"
+        correct: false
+        why: "La redondance crée des incohérences."
+      - label: "Une erreur de syntaxe SQL"
+        correct: false
+        why: "Le SQL reste valide ; c'est la conception qui pose problème."
+    explanation: "La normalisation supprime ces anomalies."
+  - code: mer-c4-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: merise-mld-mpd
+    prompt: "Quel outil gratuit permet de dessiner un MCD Merise ?"
+    choices:
+      - label: "Looping (ou JMerise)"
+        correct: true
+        why: "Des outils dédiés à Merise."
+      - label: "Postman"
+        correct: false
+        why: "Postman teste des API."
+      - label: "Docker"
+        correct: false
+        why: "Docker gère des conteneurs."
+    explanation: "Looping et JMerise génèrent aussi le MLD et le script SQL."
