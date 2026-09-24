@@ -1,0 +1,584 @@
+slug: prog-algorithmique-examen
+position: 5
+level: EXAMEN
+title: "Algorithmique pour le titre CDA"
+summary: "Rechercher et trier dans une liste, estimer le coût d'un algorithme, et résoudre un problème avec une méthode claire."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: prog-recherche-tri
+    title: "Rechercher et trier"
+    duration: 14
+    objective: "Écrire une recherche dans une liste, utiliser sort correctement et comprendre la complexité O(n)."
+    prerequisites: "Chapitre « Écrire un code robuste »."
+    skills: [algo-tri-recherche]
+    xp: 25
+    memo: |
+      - **Recherche linéaire** : on regarde les éléments un par un jusqu'à trouver ; coût proportionnel à la taille de la liste : **O(n)**.
+      - **Recherche dichotomique** (liste triée) : on coupe en deux à chaque étape ; coût **O(log n)**, bien plus rapide.
+      - Trier des nombres : `liste.sort((a, b) => a - b)` (croissant). Sans fonction, `sort` trie comme du texte (10 avant 9 !).
+      - La **complexité** mesure comment le temps grandit quand les données grandissent.
+    commonMistakes: |
+      - `[10, 9, 1].sort()` donne `[1, 10, 9]` : il faut `(a, b) => a - b`.
+      - Faire une recherche dichotomique sur une liste non triée.
+      - Continuer à chercher après avoir trouvé (oublier `return` ou `break`).
+    blocks:
+      - type: text
+        md: |
+          Le jury peut te demander d'expliquer un algorithme simple. Deux familles reviennent toujours :
+          **chercher** et **trier**.
+      - type: definition
+        id: def-algorithme
+        term: "Algorithme"
+        md: |
+          Une **méthode pas à pas** pour résoudre un problème, indépendante du langage. Une recette de gâteau
+          est un algorithme : on peut la suivre en français, en anglais… ou en JavaScript.
+      - type: code
+        id: code-recherche
+        language: javascript
+        title: "Recherche linéaire"
+        code: |
+          function indexDe(liste, cible) {
+            for (let i = 0; i < liste.length; i++) {
+              if (liste[i] === cible) {
+                return i;
+              }
+            }
+            return -1;
+          }
+          console.log(indexDe(["Awa", "Léo", "Inès"], "Léo"));
+        lines:
+          - n: 2
+            note: "On parcourt toutes les positions, de 0 à la dernière."
+          - n: 4
+            note: "Trouvé : on renvoie la position et on s'arrête tout de suite."
+          - n: 7
+            note: "Arrivée au bout sans trouver : -1, la convention pour « absent »."
+          - n: 9
+            note: "Affiche 1."
+      - type: definition
+        id: def-complexite
+        term: "Complexité (notation O)"
+        md: |
+          Une façon d'estimer le **travail** selon la quantité de données :
+          - **O(n)** : deux fois plus de données, deux fois plus de travail (chercher un nom en lisant tout l'annuaire) ;
+          - **O(log n)** : on divise le problème par deux à chaque étape (ouvrir l'annuaire au milieu, puis au milieu de la bonne moitié…) ;
+          - **O(n²)** : deux boucles imbriquées ; vite très lent sur de grandes listes.
+      - type: question
+        ref: prog-r-q1
+        review: def-complexite
+      - type: compare
+        left:
+          title: "Piège : sort sans fonction"
+          good: false
+          code: |
+            [10, 9, 1].sort();
+            // [1, 10, 9] : trié comme du texte
+          language: javascript
+        right:
+          title: "Tri numérique"
+          good: true
+          code: |
+            [10, 9, 1].sort((a, b) => a - b);
+            // [1, 9, 10]
+          language: javascript
+      - type: demo
+        title: "Trier des produits par prix"
+        language: javascript
+        code: |
+          const produits = [
+            { nom: "Sac", prix: 20 },
+            { nom: "Coque", prix: 10 },
+            { nom: "Alarme", prix: 15 }
+          ];
+          produits.sort((a, b) => a.prix - b.prix);
+          console.log(produits.map(p => p.nom));
+      - type: question
+        ref: prog-r-q2
+        review: def-algorithme
+      - type: text
+        md: "Exercice guidé : complète la recherche linéaire."
+      - type: exercise
+        ref: prog-ex-recherche-guide
+      - type: text
+        md: "En autonomie : compte les occurrences d'un mot dans une liste."
+      - type: exercise
+        ref: prog-ex-compter
+      - type: jury
+        items:
+          - q: "Expliquez la différence entre une recherche linéaire et une recherche dichotomique."
+            a: "La recherche linéaire regarde les éléments un par un : O(n). La dichotomique, sur une liste triée, compare avec l'élément du milieu et élimine une moitié à chaque étape : O(log n)."
+          - q: "Qu'est-ce que la complexité d'un algorithme ?"
+            a: "Une estimation de l'évolution du temps (ou de la mémoire) quand la taille des données augmente, notée avec O : O(1), O(log n), O(n), O(n²)."
+      - type: quiz
+        items:
+          - ref: prog-r-q3
+            review: code-recherche
+          - ref: prog-r-q4
+            review: def-complexite
+          - ref: prog-r-q5
+            review: def-complexite
+    questions:
+      - code: prog-r-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: algo-tri-recherche
+        prompt: "Deux boucles imbriquées qui parcourent chacune toute la liste ont une complexité…"
+        choices:
+          - label: "O(n²)"
+            correct: true
+            why: "n tours de boucle, chacun faisant n tours."
+          - label: "O(n)"
+            correct: false
+            why: "Ce serait une seule boucle."
+          - label: "O(log n)"
+            correct: false
+            why: "Il faudrait diviser le problème à chaque étape."
+        explanation: "Boucle dans une boucle sur les mêmes données : n × n opérations."
+      - code: prog-r-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-tri-recherche
+        prompt: "Un algorithme dépend du langage de programmation utilisé."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : c'est une méthode, qu'on peut écrire dans n'importe quel langage."
+          - label: "Faux"
+            correct: true
+            why: "Exact : on peut l'écrire en pseudo-code, en Java ou en JavaScript."
+        explanation: "L'algorithme est la méthode ; le programme est sa traduction dans un langage."
+      - code: prog-r-q3
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-tri-recherche
+        prompt: "Que renvoie `indexDe([\"a\", \"b\"], \"z\")` ?"
+        snippet: 'indexDe(["a", "b"], "z")'
+        language: javascript
+        choices:
+          - label: "-1"
+            correct: true
+            why: "z n'est pas dans la liste."
+          - label: "0"
+            correct: false
+            why: "0 voudrait dire trouvé en première position."
+          - label: "undefined"
+            correct: false
+            why: "La fonction renvoie explicitement -1."
+        explanation: "-1 est la convention pour « non trouvé » (comme `indexOf`)."
+      - code: prog-r-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: algo-tri-recherche
+        prompt: "Quelle condition est indispensable pour une recherche dichotomique ?"
+        choices:
+          - label: "La liste doit être triée"
+            correct: true
+            why: "Sinon, éliminer une moitié n'a pas de sens."
+          - label: "La liste doit contenir des textes"
+            correct: false
+            why: "Nombres ou textes, peu importe, tant que c'est trié."
+          - label: "La liste doit être courte"
+            correct: false
+            why: "Au contraire, elle brille sur les grandes listes."
+        explanation: "Dichotomie = diviser pour régner, sur des données triées."
+      - code: prog-r-q5
+        kind: RESULTAT_CODE
+        difficulty: 3
+        skill: algo-tri-recherche
+        prompt: "Que donne `[25, 3, 100].sort()` ?"
+        snippet: "[25, 3, 100].sort()"
+        language: javascript
+        choices:
+          - label: "[100, 25, 3]"
+            correct: true
+            why: "Tri alphabétique : \"1…\" < \"2…\" < \"3\"."
+          - label: "[3, 25, 100]"
+            correct: false
+            why: "Il faudrait `(a, b) => a - b`."
+          - label: "[100, 3, 25]"
+            correct: false
+            why: "\"25\" vient avant \"3\" dans l'ordre alphabétique."
+        explanation: "Sans fonction de comparaison, sort compare des textes."
+    exercises:
+      - slug: prog-ex-recherche-guide
+        kind: COMPLETER
+        title: "Compléter la recherche linéaire"
+        difficulty: FACILE
+        skill: algo-tri-recherche
+        statement: "Complète la fonction qui renvoie la position de `cible`, ou -1."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "On s'arrête avant la longueur de la liste."
+          - "On compare avec trois signes égal."
+          - "length, ===, -1."
+        solution: '["length", "===", "-1"]'
+        explanation: "On parcourt jusqu'à `liste.length`, on compare avec `===`, et on renvoie -1 si rien n'est trouvé."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            function indexDe(liste, cible) {
+              for (let i = 0; i < liste.[[1]]; i++) {
+                if (liste[i] [[2]] cible) {
+                  return i;
+                }
+              }
+              return [[3]];
+            }
+          blanks:
+            - ["length"]
+            - ["==="]
+            - ["-1"]
+      - slug: prog-ex-compter
+        kind: CODE_LIBRE
+        title: "Compter les occurrences"
+        difficulty: INTERMEDIAIRE
+        skill: algo-tri-recherche
+        statement: |
+          Écris une fonction `compter(liste, mot)` qui renvoie **combien de fois** `mot` apparaît dans
+          `liste`, avec une boucle et un compteur. Teste-la :
+          `compter(["java", "sql", "java", "angular"], "java")` doit renvoyer 2.
+        criteria: "Fonction avec compteur, boucle, comparaison, retour."
+        hints:
+          - "`let compteur = 0;` au début de la fonction."
+          - "Parcours la liste et, si l'élément vaut `mot`, fais `compteur++`."
+          - "Après la boucle : `return compteur;`"
+        solution: |
+          function compter(liste, mot) {
+            let compteur = 0;
+            for (const element of liste) {
+              if (element === mot) {
+                compteur++;
+              }
+            }
+            return compteur;
+          }
+          console.log(compter(["java", "sql", "java", "angular"], "java"));
+        explanation: "Un parcours complet de la liste : complexité O(n). On aurait aussi pu écrire `liste.filter(e => e === mot).length`."
+        xp: 25
+        payload:
+          language: javascript
+          starter: |
+            // Ta fonction compter
+
+          checks:
+            - pattern: 'function\s+compter\s*\(\s*\w+\s*,\s*\w+\s*\)|const\s+compter\s*=\s*\('
+              message: "Déclare function compter(liste, mot)."
+            - pattern: 'let\s+\w+\s*=\s*0'
+              message: "Initialise un compteur à 0."
+            - pattern: 'for\s*\('
+              message: "Parcours la liste avec une boucle."
+            - pattern: '===\s*\w+|\w+\s*===\s*'
+              message: "Compare chaque élément au mot avec ===."
+            - pattern: '\w+\s*(\+\+|\+=\s*1)'
+              message: "Augmente le compteur quand tu trouves le mot."
+            - pattern: 'return\s+\w+'
+              message: "Renvoie le compteur."
+          output: "2"
+
+  # ===================================================================== LEÇON 2
+  - slug: prog-methode-resolution
+    title: "Résoudre un problème avec méthode"
+    duration: 13
+    objective: "Découper un problème, écrire du pseudo-code, puis le traduire en code et le tester sur des exemples."
+    prerequisites: "Leçon « Rechercher et trier »."
+    skills: [algo-bases, oral-cda]
+    xp: 25
+    memo: |
+      Méthode en cinq temps :
+      1. **Reformuler** le problème avec ses mots.
+      2. **Exemples** : entrée → sortie attendue, dont les cas limites (liste vide, zéro…).
+      3. **Pseudo-code** : les étapes en français.
+      4. **Coder** étape par étape.
+      5. **Tester** sur les exemples, y compris les cas limites.
+    commonMistakes: |
+      - Coder avant d'avoir compris le problème.
+      - Oublier les cas limites : liste vide, valeur négative, texte vide.
+      - Écrire tout le programme d'un coup sans rien tester.
+    blocks:
+      - type: text
+        md: |
+          Face à un exercice nouveau, la panique vient de l'envie de tout coder d'un coup. Une **méthode**
+          simple évite de se perdre, à l'examen comme en entreprise.
+      - type: definition
+        id: def-pseudocode
+        term: "Pseudo-code"
+        md: |
+          Les étapes d'un algorithme écrites en **français structuré**, sans se soucier de la syntaxe. C'est
+          le **brouillon** avant la copie au propre.
+      - type: steps
+        id: etapes-methode
+        title: "Exemple : « Renvoyer le mot le plus long d'une liste »"
+        items:
+          - "**Reformuler** : parmi des mots, je veux celui qui a le plus de lettres."
+          - "**Exemples** : `[\"sql\", \"angular\", \"java\"]` → `\"angular\"` ; liste vide → `null`."
+          - "**Pseudo-code** : si la liste est vide, renvoyer null ; plusLong ← premier mot ; pour chaque mot, si sa longueur > longueur de plusLong, plusLong ← mot ; renvoyer plusLong."
+          - "**Coder** en suivant exactement le pseudo-code."
+          - "**Tester** les deux exemples, dont la liste vide."
+      - type: code
+        id: code-plus-long
+        language: javascript
+        title: "Traduction du pseudo-code"
+        code: |
+          function plusLong(mots) {
+            if (mots.length === 0) {
+              return null;
+            }
+            let resultat = mots[0];
+            for (const mot of mots) {
+              if (mot.length > resultat.length) {
+                resultat = mot;
+              }
+            }
+            return resultat;
+          }
+          console.log(plusLong(["sql", "angular", "java"]));
+          console.log(plusLong([]));
+        lines:
+          - n: 2
+            note: "Le **cas limite** est traité d'abord : une liste vide n'a pas de plus long mot."
+          - n: 5
+            note: "On part du premier mot, comme pour le maximum."
+          - n: 13
+            note: "Test du cas normal : angular."
+          - n: 14
+            note: "Test du cas limite : null."
+      - type: question
+        ref: prog-mr-q1
+        review: def-pseudocode
+      - type: definition
+        id: def-cas-limite
+        term: "Cas limite"
+        md: |
+          Une situation **au bord** de ce qui est prévu : liste vide, zéro, valeur négative, texte vide. C'est
+          là que se cachent la plupart des bugs. Un bon test vérifie toujours ces cas.
+      - type: question
+        ref: prog-mr-q2
+        review: def-cas-limite
+      - type: text
+        md: "Exercice guidé : remets la méthode dans l'ordre."
+      - type: exercise
+        ref: prog-ex-methode-ordre
+      - type: text
+        md: "En autonomie : applique la méthode à un nouveau problème."
+      - type: exercise
+        ref: prog-ex-moyenne-securisee
+      - type: jury
+        items:
+          - q: "Comment abordez-vous un problème algorithmique que vous ne connaissez pas ?"
+            a: "Je reformule le besoin, je prends des exemples avec les résultats attendus (dont les cas limites), j'écris le pseudo-code, je code étape par étape, puis je teste sur ces exemples."
+      - type: quiz
+        items:
+          - ref: prog-mr-q3
+            review: etapes-methode
+          - ref: prog-mr-q4
+            review: code-plus-long
+          - ref: prog-mr-q5
+            review: def-cas-limite
+    questions:
+      - code: prog-mr-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "À quoi sert le pseudo-code ?"
+        choices:
+          - label: "À écrire les étapes en français avant de coder"
+            correct: true
+            why: "C'est le brouillon de l'algorithme."
+          - label: "À exécuter le programme plus vite"
+            correct: false
+            why: "Le pseudo-code ne s'exécute pas."
+          - label: "À remplacer les tests"
+            correct: false
+            why: "Il faut toujours tester."
+        explanation: "On réfléchit d'abord à la méthode, puis à la syntaxe."
+      - code: prog-mr-q2
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Pour une fonction qui calcule une moyenne, quels sont des cas limites à tester ?"
+        choices:
+          - label: "Une liste vide"
+            correct: true
+            why: "Division par zéro !"
+          - label: "Une liste d'un seul élément"
+            correct: true
+            why: "La moyenne est l'élément lui-même."
+          - label: "Une liste de trois notes ordinaires"
+            correct: false
+            why: "C'est le cas normal, pas un cas limite."
+        explanation: "Vide et un seul élément sont les cas limites classiques d'une liste."
+      - code: prog-mr-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Quelle est la première étape de la méthode ?"
+        choices:
+          - label: "Reformuler le problème"
+            correct: true
+            why: "Comprendre avant d'agir."
+          - label: "Écrire le code"
+            correct: false
+            why: "Coder trop tôt mène souvent à une impasse."
+          - label: "Tester"
+            correct: false
+            why: "On teste à la fin."
+        explanation: "Reformuler, exemples, pseudo-code, code, tests."
+      - code: prog-mr-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Que renvoie `plusLong([\"ab\", \"cd\"])` ?"
+        snippet: 'plusLong(["ab", "cd"])'
+        language: javascript
+        choices:
+          - label: "\"ab\""
+            correct: true
+            why: "cd n'est pas strictement plus long : on garde le premier."
+          - label: "\"cd\""
+            correct: false
+            why: "La condition est `>` et non `>=`."
+          - label: "null"
+            correct: false
+            why: "La liste n'est pas vide."
+        explanation: "À égalité, `>` garde le premier trouvé."
+      - code: prog-mr-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "La plupart des bugs se cachent dans les cas limites."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Liste vide, zéro, valeurs extrêmes."
+          - label: "Faux"
+            correct: false
+            why: "C'est un constat très courant."
+        explanation: "On teste toujours les bords."
+    exercises:
+      - slug: prog-ex-methode-ordre
+        kind: REMETTRE_ORDRE
+        title: "Les cinq temps de la méthode"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Remets les étapes dans l'ordre."
+        criteria: "Comprendre, illustrer, planifier, coder, vérifier."
+        hints:
+          - "On comprend avant d'écrire."
+          - "Le pseudo-code vient avant le code."
+          - "Reformuler, exemples, pseudo-code, coder, tester."
+        solution: |
+          1. Reformuler le problème
+          2. Trouver des exemples et des cas limites
+          3. Écrire le pseudo-code
+          4. Coder étape par étape
+          5. Tester sur les exemples
+        explanation: "Chaque étape prépare la suivante."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Reformuler le problème"
+            - "Trouver des exemples et des cas limites"
+            - "Écrire le pseudo-code"
+            - "Coder étape par étape"
+            - "Tester sur les exemples"
+      - slug: prog-ex-moyenne-securisee
+        kind: CODE_LIBRE
+        title: "Une moyenne qui ne plante jamais"
+        difficulty: INTERMEDIAIRE
+        skill: algo-bases
+        statement: |
+          Écris `moyenne(notes)` :
+          - si la liste est vide, renvoie `0` (cas limite) ;
+          - sinon, renvoie la somme des notes divisée par leur nombre.
+
+          Teste avec `[10, 14]` (résultat 12) et avec `[]` (résultat 0).
+        criteria: "Cas de la liste vide traité avant la division ; somme ; division par length ; deux tests."
+        hints:
+          - "Commence par `if (notes.length === 0) { return 0; }`."
+          - "Additionne avec une boucle ou `reduce`."
+          - "`return somme / notes.length;` puis `console.log(moyenne([10, 14]));` et `console.log(moyenne([]));`"
+        solution: |
+          function moyenne(notes) {
+            if (notes.length === 0) {
+              return 0;
+            }
+            const somme = notes.reduce((total, n) => total + n, 0);
+            return somme / notes.length;
+          }
+          console.log(moyenne([10, 14]));
+          console.log(moyenne([]));
+        explanation: "Sans le test de la liste vide, on diviserait 0 par 0 et on obtiendrait `NaN` (« pas un nombre »)."
+        xp: 25
+        payload:
+          language: javascript
+          starter: |
+            // Ta fonction moyenne
+
+          checks:
+            - pattern: 'function\s+moyenne\s*\(\s*\w+\s*\)|const\s+moyenne\s*='
+              message: "Déclare function moyenne(notes)."
+            - pattern: '\w+\.length\s*===?\s*0|!\s*\w+\.length'
+              message: "Traite d'abord le cas de la liste vide : if (notes.length === 0)."
+            - pattern: 'return\s+0\b'
+              message: "Pour une liste vide, renvoie 0."
+            - pattern: '/\s*\w+\.length'
+              message: "Divise la somme par le nombre de notes : / notes.length."
+            - pattern: 'moyenne\s*\(\s*\[\s*\]\s*\)'
+              message: "Teste le cas limite : moyenne([])."
+          output: |
+            12
+            0
+
+bank:
+  - code: prog-c5-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: algo-tri-recherche
+    prompt: "Combien de comparaisons au maximum pour trouver un élément par dichotomie dans une liste triée de 1 000 éléments ?"
+    choices:
+      - label: "Environ 10"
+        correct: true
+        why: "2¹⁰ = 1 024 : on divise par deux environ 10 fois."
+      - label: "1 000"
+        correct: false
+        why: "C'est le pire cas de la recherche linéaire."
+      - label: "500"
+        correct: false
+        why: "On élimine une moitié à chaque étape."
+    explanation: "O(log n) : log₂(1000) ≈ 10."
+  - code: prog-c5-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: algo-bases
+    prompt: "Que vaut `0 / 0` en JavaScript ?"
+    choices:
+      - label: "NaN (Not a Number)"
+        correct: true
+        why: "Le résultat n'est pas un nombre défini."
+      - label: "0"
+        correct: false
+        why: "0/0 n'est pas défini."
+      - label: "Une erreur"
+        correct: false
+        why: "JavaScript ne lève pas d'erreur : il renvoie NaN."
+    explanation: "D'où l'importance de traiter le cas de la liste vide."
+  - code: prog-c5-b3
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: algo-bases
+    prompt: "Quelle complexité a la lecture de `liste[5]` ?"
+    choices:
+      - label: "O(1) : un accès direct, quelle que soit la taille"
+        correct: true
+        why: "On va directement à la case."
+      - label: "O(n)"
+        correct: false
+        why: "On ne parcourt pas la liste."
+      - label: "O(n²)"
+        correct: false
+        why: "Aucune boucle."
+    explanation: "L'accès par indice est immédiat."

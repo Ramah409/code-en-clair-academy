@@ -121,6 +121,13 @@ public class ContentImporter implements ApplicationRunner {
 
     void importCourse(CourseBundle bundle) {
         CourseFile c = bundle.course();
+        // Position déjà prise par un autre parcours (réordonnancement du catalogue) : on lui attribue une place
+        // libre ; il retrouvera sa position définitive à l'import de son propre fichier.
+        jdbc.update("""
+                update courses set level_number = (select min(n) from generate_series(1, 20) n
+                                                   where n not in (select level_number from courses))
+                where level_number = ? and slug <> ?
+                """, c.position(), c.slug());
         long courseId = jdbc.queryForObject("""
                 insert into courses (slug, level_number, title, summary, description, category, icon, content_version,
                                      exam_question_count, exam_time_limit_minutes, mandatory)

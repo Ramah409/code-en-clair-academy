@@ -61,7 +61,8 @@
         <app-code-editor [language]="language()" [value]="code()" [minHeight]="compact() ? 120 : 170"
                          [schema]="isSql() ? schema.completion() : undefined"
                          [ariaLabel]="'Éditeur pour l’exercice ' + e.title"
-                         (valueChange)="onCode($event)" (run)="isSql() ? test() : submit()" />
+                         (valueChange)="onCode($event)" (run)="isSql() ? test() : isJs() ? runJs() : submit()" />
+        @if (jsResult(); as r) { <app-js-console [result]="r" /> }
       }
     }
 
@@ -69,6 +70,11 @@
       @if (isSql()) {
         <button type="button" class="btn btn--secondary" (click)="test()" [disabled]="busy()">
           <app-icon name="play" [size]="18" /> Tester
+        </button>
+      }
+      @if (isJs()) {
+        <button type="button" class="btn btn--secondary" (click)="runJs()">
+          <app-icon name="play" [size]="18" /> Exécuter
         </button>
       }
       <button type="button" class="btn" (click)="submit()" [disabled]="busy()">

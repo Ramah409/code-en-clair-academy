@@ -1,0 +1,24 @@
+slug: premiers-pas-programmation
+version: 1
+position: 1
+title: "Premiers pas en programmation"
+category: ALGO
+icon: footprints
+summary: "Apprendre à programmer depuis zéro : instructions, variables, conditions, boucles, fonctions et objets, en JavaScript puis en TypeScript."
+description: |
+  Tu n'as jamais écrit une ligne de code ? Ce parcours est fait pour toi. On part de **zéro** et on avance
+  une idée à la fois, avec des mots simples.
+
+  Tu écris du **JavaScript**, le langage des navigateurs web, directement dans la page : un bouton
+  **Exécuter** lance ton code et affiche le résultat. Tu peux te tromper autant que tu veux : rien ne se
+  casse, et chaque erreur est expliquée.
+
+  **Au programme** : ce qu'est un programme, les variables, les calculs et les textes, les conditions, les
+  boucles, les listes, les fonctions, les objets, la gestion des erreurs, puis une introduction à
+  **TypeScript** (utilisé par Angular) et à l'**asynchrone**. Le dernier chapitre te prépare aux questions
+  d'algorithmique du titre CDA.
+
+  Ces bases servent partout ensuite : en Java, en Angular et en Spring Boot, on retrouve exactement les
+  mêmes idées.
+examQuestionCount: 30
+examTimeLimitMinutes: 35

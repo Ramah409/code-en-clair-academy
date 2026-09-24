@@ -1,0 +1,834 @@
+slug: prog-code-robuste
+position: 4
+level: AVANCE
+title: "Écrire un code robuste"
+summary: "Comprendre et gérer les erreurs, typer son code avec TypeScript et attendre une réponse avec l'asynchrone."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: prog-erreurs
+    title: "Les erreurs : les lire, les gérer"
+    duration: 12
+    objective: "Lire un message d'erreur, déboguer avec console.log et gérer une erreur avec try / catch."
+    prerequisites: "Chapitre « Organiser son code »."
+    skills: [algo-fonctions]
+    xp: 20
+    memo: |
+      - Une erreur n'est pas un échec : c'est un **message** qui dit ce qui ne va pas et où.
+      - Types fréquents : `ReferenceError` (nom inconnu), `TypeError` (mauvaise sorte de valeur), `SyntaxError` (code mal écrit).
+      - Déboguer : afficher les valeurs intermédiaires avec `console.log`, réduire le problème, lire la ligne indiquée.
+      - `throw new Error("message")` signale une erreur ; `try { ... } catch (e) { ... }` l'attrape pour réagir proprement.
+    commonMistakes: |
+      - Ignorer le message d'erreur au lieu de le lire.
+      - Mettre un `try / catch` vide qui cache l'erreur sans rien faire.
+      - Modifier plusieurs choses à la fois : on ne sait plus ce qui a réglé le problème.
+    blocks:
+      - type: text
+        md: |
+          Tous les développeurs voient des erreurs, tous les jours. La différence entre une débutante et une
+          professionnelle ? La professionnelle **lit le message**.
+      - type: definition
+        id: def-erreur
+        term: "Erreur (exception)"
+        md: |
+          Un **signal d'alarme** lancé quand le programme ne peut pas continuer. Comme le voyant du tableau de
+          bord d'une voiture : il indique quoi vérifier. Le message dit **quoi**, la ligne dit **où**.
+      - type: steps
+        id: etapes-debogage
+        title: "Méthode pour déboguer"
+        items:
+          - "**Lire** le message : son type (`TypeError`…) et sa phrase."
+          - "**Trouver** la ligne indiquée."
+          - "**Afficher** les valeurs juste avant cette ligne avec `console.log`."
+          - "**Changer une seule chose** et réessayer."
+      - type: demo
+        title: "Provoque une erreur et lis le message"
+        md: "Exécute : une faute de frappe dans un nom provoque une `ReferenceError`. Corrige `prenon` en `prenom`."
+        language: javascript
+        code: |
+          const prenom = "Awa";
+          console.log("Bonjour " + prenon);
+      - type: question
+        ref: prog-e-q1
+        review: def-erreur
+      - type: definition
+        id: def-try-catch
+        term: "try / catch"
+        md: |
+          « **Essaie** ceci ; **si** une alarme sonne, fais cela ». C'est un filet de sécurité : l'erreur est
+          attrapée et le programme continue au lieu de s'arrêter net.
+      - type: code
+        id: code-try
+        language: javascript
+        title: "Signaler et attraper une erreur"
+        code: |
+          function diviser(a, b) {
+            if (b === 0) {
+              throw new Error("Division par zéro impossible");
+            }
+            return a / b;
+          }
+          try {
+            console.log(diviser(10, 0));
+          } catch (e) {
+            console.log("Problème : " + e.message);
+          }
+        lines:
+          - n: 3
+            note: "`throw` lance une erreur avec un message clair. La fonction s'arrête ici."
+          - n: 7
+            note: "`try` : on essaie d'exécuter ce bloc."
+          - n: 9
+            note: "`catch (e)` : si une erreur survient, on arrive ici. `e.message` contient le texte de l'erreur."
+      - type: question
+        ref: prog-e-q2
+        review: code-try
+      - type: text
+        md: "Exercice guidé : remets les étapes de débogage dans l'ordre."
+      - type: exercise
+        ref: prog-ex-debug-ordre
+      - type: text
+        md: "**Trouver et corriger un bug** : ce code contient trois erreurs."
+      - type: exercise
+        ref: prog-ex-corriger-bugs
+      - type: jury
+        items:
+          - q: "Comment déboguez-vous un programme ?"
+            a: "Je lis le message d'erreur et la ligne indiquée, j'affiche les valeurs intermédiaires (console.log ou point d'arrêt dans l'outil de débogage), je réduis le problème et je change une seule chose à la fois."
+      - type: quiz
+        items:
+          - ref: prog-e-q3
+            review: code-try
+          - ref: prog-e-q4
+            review: etapes-debogage
+          - ref: prog-e-q5
+            review: def-erreur
+    questions:
+      - code: prog-e-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "« ReferenceError: prenon is not defined ». Que signifie ce message ?"
+        choices:
+          - label: "Le nom `prenon` n'existe pas : sans doute une faute de frappe"
+            correct: true
+            why: "Oui : la variable s'appelle prenom."
+          - label: "L'ordinateur est en panne"
+            correct: false
+            why: "Le message désigne un problème précis dans le code."
+          - label: "Le texte est trop long"
+            correct: false
+            why: "Aucun rapport avec la longueur."
+        explanation: "ReferenceError : on utilise un nom qui n'a jamais été déclaré."
+      - code: prog-e-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-fonctions
+        prompt: "Qu'affiche l'exemple `diviser(10, 0)` avec try / catch ?"
+        snippet: |
+          try {
+            console.log(diviser(10, 0));
+          } catch (e) {
+            console.log("Problème : " + e.message);
+          }
+        language: javascript
+        choices:
+          - label: "Problème : Division par zéro impossible"
+            correct: true
+            why: "L'erreur est lancée puis attrapée par catch."
+          - label: "Infinity"
+            correct: false
+            why: "La fonction lance une erreur avant de diviser."
+          - label: "Rien, le programme plante"
+            correct: false
+            why: "catch attrape l'erreur."
+        explanation: "throw lance l'erreur, catch la récupère avec son message."
+      - code: prog-e-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: algo-fonctions
+        prompt: "Un `catch` vide (`catch (e) {}`) est une bonne pratique pour éviter les erreurs."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : il cache le problème, qui devient très difficile à trouver."
+          - label: "Faux"
+            correct: true
+            why: "Exact : on doit au moins informer ou journaliser."
+        explanation: "Attraper une erreur, c'est pour y réagir : message, valeur de secours, journal."
+      - code: prog-e-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Quelle est la première chose à faire face à une erreur ?"
+        choices:
+          - label: "Lire le message et la ligne indiquée"
+            correct: true
+            why: "Le message dit quoi, la ligne dit où."
+          - label: "Tout effacer et recommencer"
+            correct: false
+            why: "On perd le travail et on ne comprend pas l'erreur."
+          - label: "Changer plusieurs lignes au hasard"
+            correct: false
+            why: "On ne saurait plus ce qui a réglé le problème."
+        explanation: "Lire, localiser, afficher les valeurs, changer une chose à la fois."
+      - code: prog-e-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: algo-fonctions
+        prompt: "Quelle erreur obtient-on avec `const x = 5; x = 6;` ?"
+        choices:
+          - label: "TypeError : on ne peut pas réaffecter une constante"
+            correct: true
+            why: "Assignment to constant variable."
+          - label: "SyntaxError"
+            correct: false
+            why: "La syntaxe est correcte ; c'est l'opération qui est interdite."
+          - label: "Aucune"
+            correct: false
+            why: "`const` interdit la réaffectation."
+        explanation: "Réaffecter une const provoque une TypeError."
+    exercises:
+      - slug: prog-ex-debug-ordre
+        kind: REMETTRE_ORDRE
+        title: "Les étapes du débogage"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: "Remets les étapes dans l'ordre."
+        criteria: "Lire, localiser, observer, corriger, vérifier."
+        hints:
+          - "On commence par lire."
+          - "On change une seule chose avant de vérifier."
+          - "Lire, trouver la ligne, afficher, changer, réexécuter."
+        solution: |
+          1. Lire le message d'erreur
+          2. Trouver la ligne indiquée
+          3. Afficher les valeurs avec console.log
+          4. Changer une seule chose
+          5. Réexécuter pour vérifier
+        explanation: "Une démarche calme et méthodique, qui marche pour tous les langages."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Lire le message d'erreur"
+            - "Trouver la ligne indiquée"
+            - "Afficher les valeurs avec console.log"
+            - "Changer une seule chose"
+            - "Réexécuter pour vérifier"
+      - slug: prog-ex-corriger-bugs
+        kind: CORRIGER_ERREUR
+        title: "Trois bugs à corriger"
+        difficulty: INTERMEDIAIRE
+        skill: algo-fonctions
+        statement: |
+          Ce programme doit afficher la moyenne des notes (13). Exécute-le, lis les erreurs et corrige les
+          **trois** problèmes : une faute de frappe dans un nom, une réaffectation d'une `const`, et une
+          division par le mauvais nombre.
+        criteria: "Le programme calcule la moyenne sans erreur."
+        hints:
+          - "`somme` doit pouvoir changer : ce ne peut pas être une const."
+          - "Regarde bien le nom `notes` dans la boucle."
+          - "On divise par le nombre de notes : `notes.length`."
+        solution: |
+          const notes = [12, 14, 13];
+          let somme = 0;
+          for (const note of notes) {
+            somme += note;
+          }
+          console.log(somme / notes.length);
+        explanation: "`let` car la somme évolue, `notes` bien orthographié, et division par `notes.length` (3) pour obtenir 13."
+        xp: 25
+        payload:
+          language: javascript
+          starter: |
+            const notes = [12, 14, 13];
+            const somme = 0;
+            for (const note of note) {
+              somme += note;
+            }
+            console.log(somme / 2);
+          checks:
+            - pattern: 'let\s+somme\s*=\s*0'
+              message: "somme change à chaque tour : déclare-la avec let."
+            - pattern: 'for\s*\(\s*const\s+note\s+of\s+notes\s*\)'
+              message: "La boucle parcourt la liste notes (avec un s)."
+            - pattern: 'somme\s*/\s*notes\.length'
+              message: "Divise par le nombre de notes : somme / notes.length."
+            - pattern: 'const\s+somme'
+              absent: true
+              message: "somme ne peut pas être une const."
+          output: "13"
+
+  # ===================================================================== LEÇON 2
+  - slug: prog-typescript
+    title: "TypeScript : JavaScript avec des étiquettes de type"
+    duration: 13
+    objective: "Annoter les variables, les paramètres et les retours, et décrire un objet avec une interface."
+    prerequisites: "Leçon « Les erreurs »."
+    skills: [typescript]
+    xp: 20
+    memo: |
+      - **TypeScript** = JavaScript + des **types** vérifiés **avant** l'exécution. Angular est écrit en TypeScript.
+      - Annotation : `let age: number = 18;` ; `function saluer(nom: string): string { ... }`.
+      - `interface Produit { nom: string; prix: number; }` décrit la forme d'un objet.
+      - Une propriété facultative s'écrit avec `?` : `description?: string`.
+      - Types courants : `number`, `string`, `boolean`, `string[]`, `Produit[]`.
+    commonMistakes: |
+      - Croire que les types existent à l'exécution : ils disparaissent après la compilation.
+      - Utiliser `any` partout : on perd toute la protection.
+      - Oublier le `?` d'une propriété facultative, puis être obligée de toujours la remplir.
+    blocks:
+      - type: text
+        md: |
+          En JavaScript, `produit.prx` donnait `undefined` sans prévenir. **TypeScript** repère ce genre
+          d'erreur **pendant que tu écris**, avant même d'exécuter.
+      - type: definition
+        id: def-typescript
+        term: "TypeScript"
+        md: |
+          Une version de JavaScript où l'on colle des **étiquettes de type** sur les valeurs, comme les
+          étiquettes « verre » ou « papier » sur les poubelles de tri : si on met une bouteille dans la
+          poubelle papier, on est prévenue tout de suite.
+      - type: code
+        id: code-ts-base
+        language: typescript
+        title: "Des annotations de type"
+        code: |
+          let age: number = 18;
+          const prenom: string = "Awa";
+          function prixTTC(prixHT: number): number {
+            return prixHT * 1.2;
+          }
+          prixTTC("50");
+        lines:
+          - n: 1
+            note: "`: number` : age ne contiendra que des nombres."
+          - n: 3
+            note: "Le paramètre est un nombre, et la fonction renvoie un nombre (`): number`)."
+          - n: 6
+            note: "Erreur signalée **avant** l'exécution : on passe un texte là où un nombre est attendu."
+      - type: question
+        ref: prog-ts-q1
+        review: def-typescript
+      - type: definition
+        id: def-interface
+        term: "Interface"
+        md: |
+          Le **plan** d'un objet : la liste des propriétés et de leurs types. Comme un formulaire vierge qui
+          dit « nom : texte, prix : nombre ». Tout objet de ce type doit respecter le plan.
+      - type: code
+        id: code-interface
+        language: typescript
+        title: "Décrire un produit"
+        code: |
+          interface Produit {
+            nom: string;
+            prix: number;
+            description?: string;
+          }
+
+          const alarme: Produit = { nom: "Alarme", prix: 15 };
+          const produits: Produit[] = [alarme];
+          console.log(alarme.prx);
+        lines:
+          - n: 1
+            note: "`interface` déclare la forme attendue d'un objet."
+          - n: 4
+            note: "`?` : propriété facultative."
+          - n: 7
+            note: "L'objet respecte l'interface : pas d'erreur."
+          - n: 8
+            note: "`Produit[]` : une liste de produits."
+          - n: 9
+            note: "Erreur détectée tout de suite : la propriété `prx` n'existe pas dans `Produit`."
+      - type: question
+        ref: prog-ts-q2
+        review: def-interface
+      - type: text
+        md: "Exercice guidé : complète les annotations."
+      - type: exercise
+        ref: prog-ex-ts-guide
+      - type: text
+        md: "En autonomie : écris une interface et une fonction typée."
+      - type: exercise
+        ref: prog-ex-ts-interface
+      - type: jury
+        items:
+          - q: "Pourquoi utiliser TypeScript plutôt que JavaScript ?"
+            a: "Les types permettent de détecter des erreurs avant l'exécution, rendent le code plus lisible et améliorent l'autocomplétion. Angular utilise TypeScript par défaut."
+          - q: "Qu'est-ce qu'une interface en TypeScript ?"
+            a: "Un contrat qui décrit la forme d'un objet : ses propriétés et leurs types. Elle sert à vérifier le code, puis disparaît à la compilation."
+      - type: quiz
+        items:
+          - ref: prog-ts-q3
+            review: code-interface
+          - ref: prog-ts-q4
+            review: code-ts-base
+          - ref: prog-ts-q5
+            review: def-typescript
+    questions:
+      - code: prog-ts-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: typescript
+        prompt: "Quand TypeScript signale-t-il une erreur de type ?"
+        choices:
+          - label: "Avant l'exécution, pendant l'écriture ou la compilation"
+            correct: true
+            why: "C'est tout son intérêt."
+          - label: "Seulement quand l'utilisatrice clique"
+            correct: false
+            why: "Ce serait trop tard."
+          - label: "Jamais"
+            correct: false
+            why: "Il vérifie les types en permanence dans l'éditeur."
+        explanation: "TypeScript vérifie le code avant de le transformer en JavaScript."
+      - code: prog-ts-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: typescript
+        prompt: "Avec l'interface `Produit`, quel objet est valide ?"
+        choices:
+          - label: "`{ nom: \"Sac\", prix: 20 }`"
+            correct: true
+            why: "description est facultative."
+          - label: "`{ nom: \"Sac\" }`"
+            correct: false
+            why: "prix est obligatoire."
+          - label: "`{ nom: \"Sac\", prix: \"20\" }`"
+            correct: false
+            why: "prix doit être un nombre."
+        explanation: "Les propriétés sans `?` sont obligatoires et doivent avoir le bon type."
+      - code: prog-ts-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: typescript
+        prompt: "Comment s'écrit le type « liste de textes » ?"
+        choices:
+          - label: "`string[]`"
+            correct: true
+            why: "Le type des éléments, suivi de crochets."
+          - label: "`[string]list`"
+            correct: false
+            why: "Cette syntaxe n'existe pas."
+          - label: "`text[]`"
+            correct: false
+            why: "Le type texte s'appelle string."
+        explanation: "`number[]`, `string[]`, `Produit[]`…"
+      - code: prog-ts-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: typescript
+        prompt: "Que signifie `function f(n: number): string` ?"
+        choices:
+          - label: "f reçoit un nombre et renvoie un texte"
+            correct: true
+            why: "Le type après les parenthèses est celui du retour."
+          - label: "f reçoit un texte et renvoie un nombre"
+            correct: false
+            why: "C'est l'inverse."
+          - label: "f reçoit deux paramètres"
+            correct: false
+            why: "Un seul paramètre : n."
+        explanation: "Paramètres typés entre parenthèses, type de retour après les deux-points."
+      - code: prog-ts-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: typescript
+        prompt: "Utiliser `any` partout garde toute la protection de TypeScript."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : `any` désactive la vérification."
+          - label: "Faux"
+            correct: true
+            why: "Exact : `any` accepte tout, donc ne vérifie rien."
+        explanation: "On évite `any` ; en dernier recours, on préfère `unknown`."
+    exercises:
+      - slug: prog-ex-ts-guide
+        kind: COMPLETER
+        title: "Compléter les types"
+        difficulty: FACILE
+        skill: typescript
+        statement: "Complète avec les bons types."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Un texte : string ; un nombre : number."
+          - "Vrai ou faux : boolean."
+          - "string, number, boolean."
+        solution: '["string", "number", "boolean"]'
+        explanation: "Chaque valeur reçoit l'étiquette de son type."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            const ville: [[1]] = "Lyon";
+            let temperature: [[2]] = 21;
+            let ensoleille: [[3]] = true;
+          blanks:
+            - ["string"]
+            - ["number"]
+            - ["boolean"]
+      - slug: prog-ex-ts-interface
+        kind: CODE_LIBRE
+        title: "Une interface Utilisatrice"
+        difficulty: INTERMEDIAIRE
+        skill: typescript
+        statement: |
+          1. déclare une interface `Utilisatrice` avec `nom` (texte), `email` (texte) et `admin` (booléen) ;
+          2. écris une fonction `presenter(u: Utilisatrice): string` qui renvoie
+             `` `${u.nom} (${u.email})` `` ;
+          3. crée une utilisatrice et affiche le résultat de `presenter`.
+        criteria: "Interface complète, fonction typée avec retour string, un appel."
+        hints:
+          - "`interface Utilisatrice { nom: string; email: string; admin: boolean; }`"
+          - "`function presenter(u: Utilisatrice): string { return `...`; }`"
+          - "`const awa: Utilisatrice = { nom: \"Awa\", email: \"awa@exemple.fr\", admin: false };`"
+        solution: |
+          interface Utilisatrice {
+            nom: string;
+            email: string;
+            admin: boolean;
+          }
+
+          function presenter(u: Utilisatrice): string {
+            return `${u.nom} (${u.email})`;
+          }
+
+          const awa: Utilisatrice = { nom: "Awa", email: "awa@exemple.fr", admin: false };
+          console.log(presenter(awa));
+        explanation: "L'interface garantit que chaque utilisatrice a bien un nom, un e-mail et un indicateur admin du bon type."
+        xp: 20
+        payload:
+          language: typescript
+          starter: |
+            // Interface, fonction et appel
+
+          checks:
+            - pattern: 'interface\s+Utilisatrice\s*\{'
+              message: "Déclare interface Utilisatrice { ... }."
+            - pattern: 'nom\s*:\s*string'
+              message: "Propriété nom : string."
+            - pattern: 'email\s*:\s*string'
+              message: "Propriété email : string."
+            - pattern: 'admin\s*:\s*boolean'
+              message: "Propriété admin : boolean."
+            - pattern: 'function\s+presenter\s*\(\s*\w+\s*:\s*Utilisatrice\s*\)\s*:\s*string'
+              message: "Signature : function presenter(u: Utilisatrice): string."
+            - pattern: 'presenter\s*\(\s*\w+\s*\)\s*\)'
+              message: "Affiche le résultat : console.log(presenter(...))."
+            - pattern: ':\s*any\b'
+              absent: true
+              message: "N'utilise pas any : garde les vrais types."
+
+  # ===================================================================== LEÇON 3
+  - slug: prog-asynchrone
+    title: "L'asynchrone : attendre sans bloquer"
+    duration: 13
+    objective: "Comprendre ce qu'est une opération asynchrone et utiliser une promesse avec async / await."
+    prerequisites: "Leçon « TypeScript »."
+    skills: [javascript-bases, angular-services]
+    xp: 20
+    memo: |
+      - Une opération **asynchrone** prend du temps (appel au serveur, minuteur) : le programme continue en attendant.
+      - Une **promesse** (`Promise`) représente un résultat qui arrivera plus tard (ou une erreur).
+      - Dans une fonction `async`, `await` attend la promesse sans bloquer la page.
+      - Les erreurs se gèrent avec `try / catch` autour de `await`.
+      - En Angular, les appels HTTP utilisent des **Observables**, une idée proche.
+    commonMistakes: |
+      - Utiliser le résultat avant qu'il soit arrivé (oublier `await`).
+      - Écrire `await` hors d'une fonction `async`.
+      - Oublier de gérer l'erreur d'un appel réseau.
+    blocks:
+      - type: text
+        md: |
+          Quand tu commandes au comptoir d'un café, on te donne un **ticket**. Tu ne restes pas figée devant
+          la machine : tu vas t'asseoir, et on t'appelle quand c'est prêt. C'est l'**asynchrone**.
+      - type: definition
+        id: def-async
+        term: "Asynchrone"
+        md: |
+          Une tâche qui **prend du temps** et dont le résultat arrive **plus tard**. Pendant ce temps, le
+          programme continue (la page reste utilisable). Exemple : demander des données à un serveur.
+      - type: definition
+        id: def-promesse
+        term: "Promesse (Promise)"
+        md: |
+          Le **ticket** du café : l'engagement qu'un résultat arrivera (ou qu'on te préviendra d'un
+          problème). `await` = « j'attends mon ticket à cet endroit précis du code ».
+      - type: code
+        id: code-await
+        language: javascript
+        title: "Attendre une réponse simulée"
+        code: |
+          function attendre(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+          }
+
+          async function commander() {
+            console.log("Commande passée");
+            await attendre(500);
+            console.log("Café prêt !");
+          }
+
+          commander();
+          console.log("Je m'assois en attendant");
+        lines:
+          - n: 2
+            note: "Une promesse qui se réalise après `ms` millisecondes (500 = une demi-seconde)."
+          - n: 5
+            note: "`async` : cette fonction peut utiliser `await`."
+          - n: 7
+            note: "`await` met **cette fonction** en pause jusqu'à la fin de l'attente."
+          - n: 12
+            note: "Pendant la pause, le reste du programme continue : cette ligne s'affiche **avant** « Café prêt ! »."
+      - type: demo
+        title: "Observe l'ordre d'affichage"
+        language: javascript
+        code: |
+          function attendre(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+          }
+          async function commander() {
+            console.log("Commande passée");
+            await attendre(500);
+            console.log("Café prêt !");
+          }
+          commander();
+          console.log("Je m'assois en attendant");
+      - type: question
+        ref: prog-a-q1
+        review: code-await
+      - type: code
+        id: code-fetch
+        language: javascript
+        title: "Le cas réel : appeler une API"
+        code: |
+          async function chargerProduits() {
+            try {
+              const reponse = await fetch("/api/produits");
+              const produits = await reponse.json();
+              console.log(produits.length + " produits");
+            } catch (e) {
+              console.log("Impossible de charger les produits");
+            }
+          }
+        lines:
+          - n: 3
+            note: "`fetch` envoie une requête HTTP et renvoie une promesse de réponse."
+          - n: 4
+            note: "Lire le JSON prend aussi du temps : encore `await`."
+          - n: 6
+            note: "Serveur éteint, réseau coupé : on affiche un message clair au lieu de planter."
+      - type: question
+        ref: prog-a-q2
+        review: def-promesse
+      - type: text
+        md: "Exercice guidé : complète la fonction asynchrone."
+      - type: exercise
+        ref: prog-ex-async-guide
+      - type: text
+        md: "En autonomie : écris une fonction asynchrone avec gestion d'erreur."
+      - type: exercise
+        ref: prog-ex-async
+      - type: jury
+        items:
+          - q: "Qu'est-ce que l'asynchrone et pourquoi est-ce important dans une application web ?"
+            a: "C'est l'exécution d'une tâche longue (appel HTTP) sans bloquer le reste : l'interface reste utilisable et le résultat est traité quand il arrive, via une promesse ou un Observable."
+      - type: quiz
+        items:
+          - ref: prog-a-q3
+            review: code-fetch
+          - ref: prog-a-q4
+            review: def-async
+          - ref: prog-a-q5
+            review: code-await
+    questions:
+      - code: prog-a-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: javascript-bases
+        prompt: "Dans l'exemple du café, dans quel ordre s'affichent les messages ?"
+        choices:
+          - label: "Commande passée, Je m'assois en attendant, Café prêt !"
+            correct: true
+            why: "Pendant l'await, le reste du programme continue."
+          - label: "Commande passée, Café prêt !, Je m'assois en attendant"
+            correct: false
+            why: "await ne bloque que la fonction commander."
+          - label: "Je m'assois en attendant, Commande passée, Café prêt !"
+            correct: false
+            why: "commander() est appelée avant, et affiche tout de suite « Commande passée »."
+        explanation: "await met en pause la fonction async, pas tout le programme."
+      - code: prog-a-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Une promesse représente…"
+        choices:
+          - label: "un résultat qui arrivera plus tard, ou une erreur"
+            correct: true
+            why: "C'est le ticket du café."
+          - label: "une variable constante"
+            correct: false
+            why: "Aucun rapport."
+          - label: "une boucle"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Promise : valeur future (réussite) ou raison d'échec."
+      - code: prog-a-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: javascript-bases
+        prompt: "Les erreurs d'un `await` peuvent être attrapées avec `try / catch`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Oui, comme les erreurs classiques."
+          - label: "Faux"
+            correct: false
+            why: "try / catch fonctionne avec await."
+        explanation: "C'est la façon la plus lisible de gérer un échec réseau."
+      - code: prog-a-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Quelle opération est typiquement asynchrone ?"
+        choices:
+          - label: "Demander des données à un serveur"
+            correct: true
+            why: "Le réseau prend du temps."
+          - label: "Additionner deux nombres"
+            correct: false
+            why: "C'est instantané."
+          - label: "Déclarer une variable"
+            correct: false
+            why: "C'est instantané."
+        explanation: "Réseau, fichiers, minuteurs : opérations asynchrones."
+      - code: prog-a-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: javascript-bases
+        prompt: "Où peut-on écrire `await` ?"
+        choices:
+          - label: "Dans une fonction déclarée `async`"
+            correct: true
+            why: "Oui (ou au plus haut niveau d'un module)."
+          - label: "Dans n'importe quelle fonction"
+            correct: false
+            why: "Il faut `async`."
+          - label: "Seulement dans une boucle"
+            correct: false
+            why: "Aucune obligation de boucle."
+        explanation: "`async function f() { await ... }`."
+    exercises:
+      - slug: prog-ex-async-guide
+        kind: COMPLETER
+        title: "Compléter une fonction asynchrone"
+        difficulty: FACILE
+        skill: javascript-bases
+        statement: "Complète les mots-clés."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La fonction doit être marquée asynchrone."
+          - "Pour attendre une promesse : await."
+          - "async, await, catch."
+        solution: '["async", "await", "catch"]'
+        explanation: "`async` autorise `await` ; `catch` attrape l'erreur réseau."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            [[1]] function charger() {
+              try {
+                const reponse = [[2]] fetch("/api/profil");
+                return await reponse.json();
+              } [[3]] (e) {
+                console.log("Erreur de chargement");
+              }
+            }
+          blanks:
+            - ["async"]
+            - ["await"]
+            - ["catch"]
+      - slug: prog-ex-async
+        kind: CODE_LIBRE
+        title: "Charger une liste de cours"
+        difficulty: INTERMEDIAIRE
+        skill: javascript-bases
+        statement: |
+          Écris une fonction asynchrone `chargerCours()` qui :
+          1. appelle `fetch("/api/courses")` avec `await` ;
+          2. transforme la réponse avec `await reponse.json()` ;
+          3. affiche le nombre de cours ;
+          4. en cas d'erreur, affiche `Chargement impossible` (try / catch).
+        criteria: "async, deux await, try / catch avec le message demandé."
+        hints:
+          - "`async function chargerCours() { try { ... } catch (e) { ... } }`"
+          - "`const reponse = await fetch(\"/api/courses\");`"
+          - "`const cours = await reponse.json(); console.log(cours.length);`"
+        solution: |
+          async function chargerCours() {
+            try {
+              const reponse = await fetch("/api/courses");
+              const cours = await reponse.json();
+              console.log(cours.length);
+            } catch (e) {
+              console.log("Chargement impossible");
+            }
+          }
+          chargerCours();
+        explanation: "On attend la réponse, puis son contenu, et on prévoit le cas où le réseau échoue."
+        xp: 20
+        payload:
+          language: javascript
+          starter: |
+            // Ta fonction asynchrone
+
+          checks:
+            - pattern: 'async\s+function\s+chargerCours\s*\(\s*\)|const\s+chargerCours\s*=\s*async'
+              message: "Déclare async function chargerCours()."
+            - pattern: 'await\s+fetch\s*\(\s*["''`]/api/courses["''`]\s*\)'
+              message: "Appelle l'API avec await fetch(\"/api/courses\")."
+            - pattern: 'await\s+\w+\.json\s*\(\s*\)'
+              message: "Lis le JSON avec await reponse.json()."
+            - pattern: 'try\s*\{[\s\S]*\}\s*catch\s*\('
+              message: "Entoure l'appel d'un try / catch."
+            - pattern: 'console\.log\s*\(\s*["''`]Chargement impossible["''`]\s*\)'
+              message: "Dans le catch, affiche \"Chargement impossible\"."
+
+bank:
+  - code: prog-c4-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: typescript
+    prompt: "Que devient le code TypeScript avant d'être exécuté par le navigateur ?"
+    choices:
+      - label: "Il est compilé en JavaScript, sans les types"
+        correct: true
+        why: "Les navigateurs exécutent du JavaScript."
+      - label: "Il est exécuté tel quel"
+        correct: false
+        why: "Les navigateurs ne comprennent pas TypeScript directement."
+      - label: "Il est transformé en Java"
+        correct: false
+        why: "Aucun rapport avec Java."
+    explanation: "TypeScript → compilation → JavaScript."
+  - code: prog-c4-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: algo-fonctions
+    prompt: "Quel type d'erreur provoque `null.length` ?"
+    choices:
+      - label: "TypeError"
+        correct: true
+        why: "On lit une propriété sur une valeur qui n'en a pas."
+      - label: "ReferenceError"
+        correct: false
+        why: "Le nom null est connu."
+      - label: "SyntaxError"
+        correct: false
+        why: "La syntaxe est correcte."
+    explanation: "TypeError : la valeur n'est pas de la sorte attendue (ici null)."

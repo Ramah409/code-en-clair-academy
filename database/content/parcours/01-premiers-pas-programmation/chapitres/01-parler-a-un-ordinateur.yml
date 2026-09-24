@@ -1,0 +1,775 @@
+slug: prog-parler-ordinateur
+position: 1
+level: DEBUTANT
+title: "Parler à un ordinateur"
+summary: "Comprendre ce qu'est un programme, afficher un message, ranger des valeurs dans des variables et faire des calculs."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: prog-programme
+    title: "Qu'est-ce qu'un programme ?"
+    duration: 8
+    objective: "Savoir ce qu'est un programme et afficher un message avec console.log."
+    prerequisites: "Aucun : c'est le tout début."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - Un **programme** est une liste d'**instructions** que l'ordinateur suit **dans l'ordre**, de haut en bas.
+      - Une **instruction** = un ordre précis. En JavaScript, on la termine par un point-virgule `;`.
+      - `console.log("Bonjour");` **affiche** le texte « Bonjour » dans la console.
+      - Un texte s'écrit **entre guillemets** : `"Bonjour"` ou `'Bonjour'`.
+      - L'ordinateur ne devine rien : une faute de frappe (`consol.log`) provoque une erreur.
+    commonMistakes: |
+      - Oublier les guillemets autour d'un texte : `console.log(Bonjour)` provoque une erreur.
+      - Écrire `Console.log` avec une majuscule : JavaScript fait la différence entre majuscules et minuscules.
+      - Oublier une parenthèse fermante.
+    blocks:
+      - type: text
+        md: |
+          Un ordinateur est très rapide, mais il ne comprend rien tout seul. Il faut lui dire **exactement**
+          quoi faire, étape par étape. C'est ce qu'on appelle **programmer**.
+      - type: definition
+        id: def-programme
+        term: "Programme"
+        md: |
+          Une **liste d'instructions** que l'ordinateur suit dans l'ordre, de haut en bas. C'est comme une
+          **recette de cuisine** : « casser les œufs, battre, verser dans la poêle ». Si on inverse les
+          étapes, le résultat n'est pas le même.
+      - type: definition
+        id: def-instruction
+        term: "Instruction"
+        md: |
+          Un ordre précis donné à l'ordinateur. En JavaScript, chaque instruction se termine en général par
+          un **point-virgule** `;`, comme le point à la fin d'une phrase.
+      - type: code
+        id: code-bonjour
+        language: javascript
+        title: "Ton premier programme"
+        code: |
+          console.log("Bonjour !");
+          console.log("Je découvre la programmation.");
+        lines:
+          - n: 1
+            note: "`console.log(...)` affiche ce qu'on met entre les parenthèses. Le texte est entre guillemets."
+          - n: 2
+            note: "Deuxième instruction : elle s'exécute **après** la première."
+      - type: demo
+        title: "À toi : exécute ce programme"
+        md: "Clique sur **Exécuter**. Puis change le texte et exécute de nouveau."
+        language: javascript
+        code: |
+          console.log("Bonjour !");
+          console.log("Je découvre la programmation.");
+      - type: question
+        ref: prog-p-q1
+        review: def-programme
+      - type: definition
+        id: def-console
+        term: "Console"
+        md: |
+          Une **zone de texte** où le programme écrit ses messages. C'est le carnet de bord du
+          programme : on y lit ce qu'il affiche, et les erreurs s'il y en a.
+      - type: callout
+        variant: tip
+        title: "L'ordinateur est très pointilleux"
+        md: |
+          `console.log` s'écrit toujours de la même façon : tout en minuscules, un point au milieu, des
+          parenthèses. `Console.log` ou `consolelog` provoquent une erreur. Ce n'est pas grave : lis le
+          message, corrige, recommence.
+      - type: text
+        md: "Exercice guidé : complète le programme pour qu'il affiche deux messages."
+      - type: exercise
+        ref: prog-ex-bonjour-guide
+      - type: text
+        md: "En autonomie : écris un programme qui se présente en trois lignes."
+      - type: exercise
+        ref: prog-ex-presentation
+      - type: jury
+        items:
+          - q: "Qu'est-ce qu'un programme ?"
+            a: "Une suite d'instructions exécutées dans l'ordre par l'ordinateur pour obtenir un résultat, comme une recette de cuisine."
+      - type: quiz
+        items:
+          - ref: prog-p-q2
+            review: def-instruction
+          - ref: prog-p-q3
+            review: code-bonjour
+          - ref: prog-p-q4
+            review: def-console
+    questions:
+      - code: prog-p-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Dans quel ordre l'ordinateur exécute-t-il les instructions d'un programme simple ?"
+        choices:
+          - label: "De haut en bas, une par une"
+            correct: true
+            why: "Oui, comme les étapes d'une recette."
+          - label: "Dans le désordre"
+            correct: false
+            why: "Non : l'ordre est toujours respecté."
+          - label: "Toutes en même temps"
+            correct: false
+            why: "Non : chaque instruction attend la fin de la précédente."
+        explanation: "Un programme se lit de haut en bas : l'ordre des instructions compte."
+      - code: prog-p-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "En JavaScript, une instruction se termine en général par un point-virgule `;`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Oui, comme le point à la fin d'une phrase."
+          - label: "Faux"
+            correct: false
+            why: "Si : c'est la convention habituelle."
+        explanation: "Le point-virgule marque la fin d'une instruction."
+      - code: prog-p-q3
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce programme ?"
+        snippet: |
+          console.log("A");
+          console.log("B");
+        language: javascript
+        choices:
+          - label: "A puis B, sur deux lignes"
+            correct: true
+            why: "Oui : deux instructions, deux lignes, dans l'ordre."
+          - label: "B puis A"
+            correct: false
+            why: "L'ordre est de haut en bas."
+          - label: "AB sur une seule ligne"
+            correct: false
+            why: "Chaque `console.log` affiche une nouvelle ligne."
+        explanation: "Chaque `console.log` écrit une ligne dans la console, dans l'ordre du programme."
+      - code: prog-p-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Pourquoi `console.log(Bonjour);` provoque-t-il une erreur ?"
+        choices:
+          - label: "Parce qu'un texte doit être écrit entre guillemets"
+            correct: true
+            why: "Oui : sans guillemets, JavaScript cherche une variable nommée Bonjour."
+          - label: "Parce que Bonjour est trop long"
+            correct: false
+            why: "La longueur n'a aucune importance."
+          - label: "Parce qu'il faut écrire Console avec une majuscule"
+            correct: false
+            why: "C'est l'inverse : tout en minuscules."
+        explanation: "`\"Bonjour\"` est un texte ; `Bonjour` sans guillemets est un nom (de variable) que JavaScript ne connaît pas."
+    exercises:
+      - slug: prog-ex-bonjour-guide
+        kind: COMPLETER
+        title: "Compléter un premier programme"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète le programme pour qu'il affiche « Bonjour » puis « À bientôt »."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La commande pour afficher commence par console…"
+          - "Le texte s'écrit entre guillemets."
+          - "log, Bonjour, log."
+        solution: '["log", "Bonjour", "log"]'
+        explanation: "`console.log(\"Bonjour\");` affiche Bonjour. La deuxième instruction affiche ensuite « À bientôt »."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            console.[[1]]("[[2]]");
+            console.[[3]]("À bientôt");
+          blanks:
+            - ["log"]
+            - ["Bonjour"]
+            - ["log"]
+      - slug: prog-ex-presentation
+        kind: CODE_LIBRE
+        title: "Se présenter en trois lignes"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Écris un programme qui affiche **trois lignes** avec `console.log` :
+          1. `Bonjour`
+          2. ton prénom (par exemple `Je m'appelle Awa`)
+          3. `J'apprends à programmer`
+
+          Clique sur **Exécuter** pour voir le résultat, puis sur **Valider**.
+        criteria: "Trois console.log, dont « Bonjour » et « J'apprends à programmer »."
+        hints:
+          - "Une instruction par ligne : `console.log(\"...\");`"
+          - "Pour écrire l'apostrophe de « J'apprends », entoure le texte de guillemets doubles."
+          - "`console.log(\"J'apprends à programmer\");`"
+        solution: |
+          console.log("Bonjour");
+          console.log("Je m'appelle Awa");
+          console.log("J'apprends à programmer");
+        explanation: |
+          Trois instructions, trois lignes. Les guillemets doubles permettent d'écrire une apostrophe
+          dans le texte sans le couper.
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Écris tes trois lignes ici
+
+          checks:
+            - pattern: '\A(?>[\s\S]*?console\.log\s*\(){3}'
+              message: "Il faut trois instructions console.log(...)."
+            - pattern: 'console\.log\s*\(\s*["''`]Bonjour["''`]\s*\)'
+              message: "La première ligne affiche \"Bonjour\"."
+            - pattern: 'console\.log\s*\(\s*"J''apprends à programmer"\s*\)|console\.log\s*\(\s*`J''apprends à programmer`\s*\)'
+              message: "Affiche exactement \"J'apprends à programmer\" (avec des guillemets doubles)."
+            - pattern: 'Console\.log'
+              absent: true
+              message: "console s'écrit en minuscules."
+
+  # ===================================================================== LEÇON 2
+  - slug: prog-variables
+    title: "Les variables : des boîtes avec une étiquette"
+    duration: 10
+    objective: "Créer des variables avec let et const, et connaître les trois types de base : nombre, texte, booléen."
+    prerequisites: "Leçon « Qu'est-ce qu'un programme ? »."
+    skills: [algo-bases]
+    xp: 15
+    memo: |
+      - Une **variable** est une boîte avec une étiquette (son nom) qui contient une valeur.
+      - `let age = 18;` crée une variable **modifiable** ; `const prenom = "Awa";` crée une **constante** (non modifiable).
+      - Types de base : **nombre** (`18`, `3.5`), **texte** (`"Awa"`), **booléen** (`true` / `false`).
+      - `age = 19;` change la valeur (sans `let` la deuxième fois).
+      - `typeof age` donne le type : `"number"`, `"string"`, `"boolean"`.
+    commonMistakes: |
+      - Réécrire `let` pour modifier une variable existante : `let age = 19;` une deuxième fois provoque une erreur.
+      - Modifier une `const` : erreur « Assignment to constant variable ».
+      - Mettre un nombre entre guillemets : `"18"` est un texte, pas un nombre.
+      - Utiliser des espaces ou des accents dans un nom : on écrit `dateNaissance`, pas `date naissance`.
+    blocks:
+      - type: text
+        md: |
+          Un programme a souvent besoin de **se souvenir** de choses : un prénom, un âge, un score. Pour
+          ça, on utilise des **variables**.
+      - type: definition
+        id: def-variable
+        term: "Variable"
+        md: |
+          Une **boîte avec une étiquette**. L'étiquette est le **nom** (`age`), le contenu est la **valeur**
+          (`18`). On peut ouvrir la boîte pour lire la valeur, ou la remplacer par une autre.
+      - type: code
+        id: code-let-const
+        language: javascript
+        title: "Créer et utiliser des variables"
+        code: |
+          let age = 18;
+          const prenom = "Awa";
+          console.log(prenom);
+          console.log(age);
+          age = 19;
+          console.log(age);
+        lines:
+          - n: 1
+            note: "`let` crée une boîte nommée `age` et y range 18. Le `=` veut dire « ranger dans », pas « est égal à »."
+          - n: 2
+            note: "`const` crée une boîte **scellée** : sa valeur ne changera plus."
+          - n: 3
+            note: "Sans guillemets : on affiche le **contenu** de la boîte `prenom`, donc Awa."
+          - n: 5
+            note: "On remplace 18 par 19. Pas de `let` : la boîte existe déjà."
+          - n: 6
+            note: "Affiche 19."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis change l'âge et le prénom."
+        language: javascript
+        code: |
+          let age = 18;
+          const prenom = "Awa";
+          console.log(prenom, "a", age, "ans");
+      - type: question
+        ref: prog-v-q1
+        review: def-variable
+      - type: definition
+        id: def-types
+        term: "Type"
+        md: |
+          La **sorte** de valeur rangée dans la boîte :
+          - **nombre** (`number`) : `18`, `-3`, `2.5` (virgule écrite avec un point) ;
+          - **texte** (`string`, « chaîne de caractères ») : `"Awa"`, entre guillemets ;
+          - **booléen** (`boolean`) : `true` (vrai) ou `false` (faux), comme un interrupteur allumé ou éteint.
+      - type: compare
+        left:
+          title: "Nombre"
+          code: |
+            let prix = 20;
+            console.log(prix + 5); // 25
+          language: javascript
+        right:
+          title: "Texte qui ressemble à un nombre"
+          code: |
+            let prix = "20";
+            console.log(prix + 5); // "205" !
+          language: javascript
+      - type: question
+        ref: prog-v-q2
+        review: def-types
+      - type: text
+        md: "Exercice guidé : complète la déclaration des variables."
+      - type: exercise
+        ref: prog-ex-variables-guide
+      - type: text
+        md: "En autonomie : crée tes propres variables et affiche-les."
+      - type: exercise
+        ref: prog-ex-variables
+      - type: jury
+        items:
+          - q: "Quelle différence entre let et const ?"
+            a: "`let` déclare une variable dont la valeur peut changer ; `const` déclare une valeur qui ne sera plus réaffectée. On utilise `const` par défaut, `let` quand la valeur doit évoluer."
+      - type: quiz
+        items:
+          - ref: prog-v-q3
+            review: code-let-const
+          - ref: prog-v-q4
+            review: def-types
+          - ref: prog-v-q5
+            review: code-let-const
+    questions:
+      - code: prog-v-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Dans `let age = 18;`, que fait le signe `=` ?"
+        choices:
+          - label: "Il range la valeur 18 dans la variable age"
+            correct: true
+            why: "Oui : c'est une affectation."
+          - label: "Il vérifie si age est égal à 18"
+            correct: false
+            why: "Pour comparer, on utilise `===`."
+          - label: "Il affiche 18"
+            correct: false
+            why: "Pour afficher, on utilise `console.log`."
+        explanation: "En programmation, `=` signifie « ranger dans la boîte ». La comparaison s'écrit `===`."
+      - code: prog-v-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quel est le type de la valeur `true` ?"
+        choices:
+          - label: "Booléen"
+            correct: true
+            why: "Oui : vrai ou faux."
+          - label: "Texte"
+            correct: false
+            why: "Sans guillemets, `true` n'est pas un texte."
+          - label: "Nombre"
+            correct: false
+            why: "Ce n'est pas un nombre."
+        explanation: "Les booléens n'ont que deux valeurs : `true` et `false`."
+      - code: prog-v-q3
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          let score = 10;
+          score = 15;
+          console.log(score);
+        language: javascript
+        choices:
+          - label: "15"
+            correct: true
+            why: "La deuxième ligne remplace 10 par 15."
+          - label: "10"
+            correct: false
+            why: "La valeur a été remplacée avant l'affichage."
+          - label: "25"
+            correct: false
+            why: "On remplace, on n'additionne pas."
+        explanation: "Une affectation remplace l'ancienne valeur."
+      - code: prog-v-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          let a = "3";
+          console.log(a + 2);
+        language: javascript
+        choices:
+          - label: "32"
+            correct: true
+            why: "\"3\" est un texte : `+` colle les deux morceaux."
+          - label: "5"
+            correct: false
+            why: "Ce serait le cas avec le nombre 3, sans guillemets."
+          - label: "Une erreur"
+            correct: false
+            why: "JavaScript transforme 2 en texte et colle."
+        explanation: "Avec un texte, `+` sert à coller (concaténer). Attention aux nombres écrits entre guillemets."
+      - code: prog-v-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "On peut changer la valeur d'une variable déclarée avec `const`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : JavaScript refuse (« Assignment to constant variable »)."
+          - label: "Faux"
+            correct: true
+            why: "Exact : `const` fige la valeur."
+        explanation: "`const` pour ce qui ne change pas, `let` pour ce qui change."
+    exercises:
+      - slug: prog-ex-variables-guide
+        kind: COMPLETER
+        title: "Déclarer deux variables"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Le prénom ne changera pas, l'âge oui. Complète avec le bon mot-clé, puis affiche l'âge."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Une valeur qui ne change pas : mot-clé de cinq lettres."
+          - "Une valeur qui change : mot-clé de trois lettres."
+          - "const, let, age."
+        solution: '["const", "let", "age"]'
+        explanation: "`const prenom` car le prénom ne change pas ; `let age` car il augmente chaque année."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            [[1]] prenom = "Inès";
+            [[2]] age = 25;
+            console.log([[3]]);
+          blanks:
+            - ["const"]
+            - ["let"]
+            - ["age"]
+      - slug: prog-ex-variables
+        kind: CODE_LIBRE
+        title: "Mes trois variables"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          1. crée une constante `ville` qui contient le texte `"Lyon"` ;
+          2. crée une variable `temperature` (avec `let`) qui vaut le nombre `21` ;
+          3. crée une variable `ensoleille` qui vaut `true` ;
+          4. affiche les trois avec `console.log`.
+        criteria: "Trois déclarations correctes et un affichage."
+        hints:
+          - "`const ville = \"Lyon\";`"
+          - "Un nombre s'écrit sans guillemets : `let temperature = 21;`"
+          - "`let ensoleille = true;` puis `console.log(ville, temperature, ensoleille);`"
+        solution: |
+          const ville = "Lyon";
+          let temperature = 21;
+          let ensoleille = true;
+          console.log(ville, temperature, ensoleille);
+        explanation: "Trois types différents : un texte, un nombre, un booléen. `console.log` peut afficher plusieurs valeurs séparées par des virgules."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Tes variables ici
+
+          checks:
+            - pattern: 'const\s+ville\s*=\s*["''`]Lyon["''`]'
+              message: "Déclare la constante : const ville = \"Lyon\";"
+            - pattern: 'let\s+temperature\s*=\s*21\b'
+              message: "Déclare la variable : let temperature = 21; (sans guillemets, c'est un nombre)."
+            - pattern: '(let|const)\s+ensoleille\s*=\s*true\b'
+              message: "Déclare ensoleille avec la valeur true (sans guillemets)."
+            - pattern: 'console\.log\s*\('
+              message: "Affiche les valeurs avec console.log."
+            - pattern: 'temperature\s*=\s*["''`]21'
+              absent: true
+              message: "21 est un nombre : pas de guillemets."
+
+  # ===================================================================== LEÇON 3
+  - slug: prog-calculs-textes
+    title: "Calculer et assembler des textes"
+    duration: 10
+    objective: "Faire des calculs, coller des textes et construire un message avec les gabarits `${}`."
+    prerequisites: "Leçon « Les variables »."
+    skills: [algo-bases]
+    xp: 15
+    memo: |
+      - Opérateurs : `+` addition, `-` soustraction, `*` multiplication, `/` division, `%` reste de la division.
+      - Les parenthèses fixent l'ordre : `(2 + 3) * 4` vaut 20.
+      - Avec des textes, `+` **colle** : `"Bon" + "jour"` donne `"Bonjour"`.
+      - Gabarit : `` `Bonjour ${prenom}` `` insère la valeur de la variable dans le texte (accents graves).
+      - `Number("12")` transforme un texte en nombre.
+    commonMistakes: |
+      - Utiliser des guillemets normaux au lieu des accents graves pour un gabarit : `"${prenom}"` s'affiche tel quel.
+      - Oublier les parenthèses : `2 + 3 * 4` vaut 14, pas 20.
+      - Additionner un nombre et un texte en croyant faire un calcul.
+    blocks:
+      - type: text
+        md: "Un ordinateur est d'abord une **calculatrice** géante. Voyons comment lui faire calculer."
+      - type: definition
+        id: def-operateur
+        term: "Opérateur"
+        md: |
+          Un **symbole** qui fait une opération : `+`, `-`, `*` (multiplier), `/` (diviser), `%` (le **reste**
+          d'une division). Comme sur une calculatrice, mais `*` remplace `×`.
+      - type: code
+        id: code-calculs
+        language: javascript
+        title: "Calculer un prix total"
+        code: |
+          const prixUnitaire = 12;
+          const quantite = 3;
+          const total = prixUnitaire * quantite;
+          console.log(total);
+          console.log(10 % 3);
+        lines:
+          - n: 3
+            note: "On calcule 12 × 3 et on range le résultat (36) dans `total`."
+          - n: 4
+            note: "Affiche 36."
+          - n: 5
+            note: "`%` donne le reste : 10 divisé par 3 fait 3, reste **1**. Utile pour savoir si un nombre est pair (`n % 2 === 0`)."
+      - type: question
+        ref: prog-c-q1
+        review: def-operateur
+      - type: definition
+        id: def-gabarit
+        term: "Gabarit de texte (template literal)"
+        md: |
+          Un texte écrit entre **accents graves** `` ` `` (touche AltGr + 7 sur un clavier français) dans
+          lequel on insère des valeurs avec `${...}`. C'est un **texte à trous** qu'on remplit
+          automatiquement.
+      - type: compare
+        left:
+          title: "Coller avec +"
+          code: |
+            const prenom = "Awa";
+            console.log("Bonjour " + prenom + " !");
+          language: javascript
+        right:
+          title: "Gabarit (plus lisible)"
+          code: |
+            const prenom = "Awa";
+            console.log(`Bonjour ${prenom} !`);
+          language: javascript
+      - type: demo
+        title: "Essaie les deux façons"
+        language: javascript
+        code: |
+          const prenom = "Awa";
+          const age = 25;
+          console.log("Bonjour " + prenom + " !");
+          console.log(`${prenom} a ${age} ans, et ${age + 1} l'année prochaine.`);
+      - type: question
+        ref: prog-c-q2
+        review: def-gabarit
+      - type: text
+        md: "Exercice guidé : complète le calcul d'une note moyenne."
+      - type: exercise
+        ref: prog-ex-moyenne-guide
+      - type: text
+        md: "En autonomie : calcule le prix d'un panier et affiche un message avec un gabarit."
+      - type: exercise
+        ref: prog-ex-panier
+      - type: jury
+        items:
+          - q: "Qu'est-ce qu'une concaténation ?"
+            a: "Le fait de coller des textes bout à bout, par exemple avec `+` ou un gabarit `${}` en JavaScript."
+      - type: quiz
+        items:
+          - ref: prog-c-q3
+            review: code-calculs
+          - ref: prog-c-q4
+            review: def-operateur
+          - ref: prog-c-q5
+            review: def-gabarit
+    questions:
+      - code: prog-c-q1
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche `console.log((2 + 3) * 4);` ?"
+        snippet: "console.log((2 + 3) * 4);"
+        language: javascript
+        choices:
+          - label: "20"
+            correct: true
+            why: "Les parenthèses d'abord : 5 × 4."
+          - label: "14"
+            correct: false
+            why: "Ce serait sans parenthèses : 2 + 12."
+          - label: "234"
+            correct: false
+            why: "Ce sont des nombres, pas des textes."
+        explanation: "Comme en maths : parenthèses, puis multiplications, puis additions."
+      - code: prog-c-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quel code affiche `Salut Léo` si `prenom` vaut `\"Léo\"` ?"
+        choices:
+          - label: "``console.log(`Salut ${prenom}`);``"
+            correct: true
+            why: "Accents graves et `${}` : le gabarit insère la valeur."
+          - label: "`console.log(\"Salut ${prenom}\");`"
+            correct: false
+            why: "Avec des guillemets normaux, `${prenom}` s'affiche tel quel."
+          - label: "`console.log(Salut prenom);`"
+            correct: false
+            why: "Il manque les guillemets autour du texte."
+        explanation: "Un gabarit s'écrit entre accents graves `` ` ``."
+      - code: prog-c-q3
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const n = 7;
+          console.log(n % 2);
+        language: javascript
+        choices:
+          - label: "1"
+            correct: true
+            why: "7 = 2 × 3 + 1 : le reste est 1, donc 7 est impair."
+          - label: "3.5"
+            correct: false
+            why: "Ce serait `7 / 2`."
+          - label: "0"
+            correct: false
+            why: "0 signifierait que 7 est pair."
+        explanation: "`%` donne le reste de la division entière."
+      - code: prog-c-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quel symbole sert à multiplier en JavaScript ?"
+        choices:
+          - label: "`*`"
+            correct: true
+            why: "Oui."
+          - label: "`x`"
+            correct: false
+            why: "`x` serait lu comme un nom de variable."
+          - label: "`×`"
+            correct: false
+            why: "Ce caractère n'est pas un opérateur en programmation."
+        explanation: "`*` multiplie, `/` divise."
+      - code: prog-c-q5
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const a = 4;
+          console.log(`${a} + 1 = ${a + 1}`);
+        language: javascript
+        choices:
+          - label: "4 + 1 = 5"
+            correct: true
+            why: "Le premier `${a}` affiche 4, le second calcule 5."
+          - label: "a + 1 = a + 1"
+            correct: false
+            why: "Ce qui est dans `${}` est remplacé par sa valeur."
+          - label: "5 = 5"
+            correct: false
+            why: "Le texte `+ 1 =` hors des `${}` reste tel quel."
+        explanation: "Dans un gabarit, seul ce qui est entre `${ }` est calculé."
+    exercises:
+      - slug: prog-ex-moyenne-guide
+        kind: COMPLETER
+        title: "Calculer une moyenne"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Calcule la moyenne de trois notes : additionne-les puis divise par 3."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "On additionne d'abord : il faut des parenthèses."
+          - "Le symbole de la division est la barre oblique."
+          - "( , ) , /"
+        solution: '["(", ")", "/"]'
+        explanation: "`(12 + 15 + 9) / 3` : les parenthèses font l'addition avant la division. Résultat : 12."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const moyenne = [[1]]12 + 15 + 9[[2]] [[3]] 3;
+            console.log(moyenne);
+          blanks:
+            - ["("]
+            - [")"]
+            - ["/"]
+      - slug: prog-ex-panier
+        kind: CODE_LIBRE
+        title: "Le prix d'un panier"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          1. crée `prix` qui vaut `20` et `quantite` qui vaut `3` ;
+          2. crée `total` qui vaut `prix * quantite` ;
+          3. affiche avec un **gabarit** : `Total : 60 €` (utilise `${total}`).
+        criteria: "Variables, calcul et gabarit avec ${total}."
+        hints:
+          - "`const prix = 20;` et `const quantite = 3;`"
+          - "`const total = prix * quantite;`"
+          - "``console.log(`Total : ${total} €`);``"
+        solution: |
+          const prix = 20;
+          const quantite = 3;
+          const total = prix * quantite;
+          console.log(`Total : ${total} €`);
+        explanation: "Le calcul est fait une seule fois et rangé dans `total`, puis inséré dans le message."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ton code ici
+
+          checks:
+            - pattern: '(const|let)\s+prix\s*=\s*20\b'
+              message: "Déclare prix = 20."
+            - pattern: '(const|let)\s+quantite\s*=\s*3\b'
+              message: "Déclare quantite = 3."
+            - pattern: '(const|let)\s+total\s*=\s*(prix\s*\*\s*quantite|quantite\s*\*\s*prix)'
+              message: "Calcule total = prix * quantite."
+            - pattern: '`[^`]*\$\{\s*total\s*\}[^`]*`'
+              message: "Affiche le total avec un gabarit entre accents graves : `Total : ${total} €`."
+            - pattern: 'console\.log\s*\('
+              message: "Affiche le message avec console.log."
+
+bank:
+  - code: prog-c1-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: algo-bases
+    prompt: "Quel nom de variable est valide en JavaScript ?"
+    choices:
+      - label: "`dateNaissance`"
+        correct: true
+        why: "Oui : pas d'espace, commence par une lettre."
+      - label: "`date naissance`"
+        correct: false
+        why: "Un nom ne peut pas contenir d'espace."
+      - label: "`2date`"
+        correct: false
+        why: "Un nom ne peut pas commencer par un chiffre."
+    explanation: "Convention : camelCase, sans espace ni accent, commençant par une lettre."
+  - code: prog-c1-b2
+    kind: RESULTAT_CODE
+    difficulty: 1
+    skill: algo-bases
+    prompt: "Qu'affiche `console.log(typeof 42);` ?"
+    snippet: "console.log(typeof 42);"
+    language: javascript
+    choices:
+      - label: "number"
+        correct: true
+        why: "42 est un nombre."
+      - label: "string"
+        correct: false
+        why: "Ce serait avec `\"42\"`."
+      - label: "42"
+        correct: false
+        why: "`typeof` donne le type, pas la valeur."
+    explanation: "`typeof` renvoie le nom du type : number, string, boolean…"

@@ -22,6 +22,7 @@ import { IconComponent } from '../../shared/icon.component';
 import { MarkdownComponent } from '../../shared/markdown.component';
 import { QuestionCardComponent } from '../../shared/question-card.component';
 import { SqlRunnerComponent } from '../../shared/sql-runner.component';
+import { JsPlaygroundComponent } from '../../shared/js-playground.component';
 
 /** Étape de la leçon : une suite de blocs qui se termine par une interaction (question ou exercice). */
 interface Step {
@@ -39,6 +40,7 @@ interface Step {
     MarkdownComponent,
     QuestionCardComponent,
     SqlRunnerComponent,
+    JsPlaygroundComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './lesson-player.component.html',

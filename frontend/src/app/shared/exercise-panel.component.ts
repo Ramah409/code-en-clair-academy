@@ -11,6 +11,8 @@ import { CodeViewComponent } from './code-view.component';
 import { IconComponent } from './icon.component';
 import { MarkdownComponent } from './markdown.component';
 import { ResultTableComponent } from './result-table.component';
+import { JsConsoleComponent } from './js-console.component';
+import { JsRunResult, runJavaScript } from './js-runner';
 import { McdDiagramComponent } from './modeling/mcd-diagram.component';
 import { McdEditorComponent } from './modeling/mcd-editor.component';
 import { MldEditorComponent, MldViewComponent } from './modeling/mld-editor.component';
@@ -31,6 +33,7 @@ interface OrderLine {
     IconComponent,
     MarkdownComponent,
     ResultTableComponent,
+    JsConsoleComponent,
     McdDiagramComponent,
     McdEditorComponent,
     MldEditorComponent,
@@ -92,6 +95,14 @@ export class ExercisePanelComponent implements OnInit {
     parts.push({ text: template.slice(last) });
     return parts;
   });
+
+  readonly isJs = computed(() => ['javascript', 'js'].includes(this.language()) && this.isCode());
+  readonly jsResult = signal<JsRunResult | null>(null);
+
+  /** Exécute le code JavaScript dans le navigateur (aperçu, sans validation). */
+  async runJs(): Promise<void> {
+    this.jsResult.set(await runJavaScript(this.currentCode));
+  }
 
   readonly sqlDetails = computed(() => (this.isSql() ? this.result()?.details : null));
 

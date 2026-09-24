@@ -50,6 +50,8 @@
                   }
                   @if (asAny(b).language === 'sql') {
                     <app-sql-runner [initial]="asAny(b).code" />
+                  } @else if (asAny(b).language === 'javascript') {
+                    <app-js-playground [initial]="asAny(b).code" />
                   } @else {
                     <app-code-view [code]="asAny(b).code" [language]="asAny(b).language" [output]="asAny(b).output" />
                   }
