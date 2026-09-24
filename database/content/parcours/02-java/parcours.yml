@@ -1,0 +1,24 @@
+slug: java
+version: 1
+position: 2
+title: "Java et la programmation objet"
+category: JAVA
+icon: code
+summary: "Écrire des programmes Java, penser en objets (classes, héritage, interfaces), manipuler des collections et gérer les exceptions."
+description: |
+  **Java** est le langage du backend : c'est lui qui fait tourner Spring Boot. Si tu as suivi « Premiers
+  pas en programmation », tu connais déjà les idées (variables, conditions, boucles, fonctions) : on les
+  retrouve ici avec une écriture un peu plus stricte.
+
+  Java est **typé** (chaque variable annonce son type) et **orienté objet** : on organise le code en
+  **classes**, comme des plans de fabrication. Ce parcours t'explique ces notions pas à pas, avec des
+  exemples tirés d'applications réelles (utilisatrices, produits, commandes).
+
+  **Au programme** : premier programme, types et structures de contrôle, classes et objets,
+  encapsulation, héritage, interfaces, collections (`List`, `Map`), streams, exceptions, puis les bonnes
+  pratiques et les questions Java du jury.
+
+  Les exercices se font dans l'éditeur : une vérification automatique relit ton code et t'explique ce qui
+  manque.
+examQuestionCount: 30
+examTimeLimitMinutes: 35

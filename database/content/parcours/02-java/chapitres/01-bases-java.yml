@@ -1,0 +1,555 @@
+slug: java-bases
+position: 1
+level: DEBUTANT
+title: "Les bases de Java"
+summary: "Écrire, compiler et lancer un programme Java, déclarer des variables typées et utiliser conditions et boucles."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: java-premier-programme
+    title: "Ton premier programme Java"
+    duration: 11
+    objective: "Comprendre la structure d'un programme Java (classe, main) et le rôle de la compilation."
+    prerequisites: "Parcours « Premiers pas en programmation » (chapitre 1) conseillé."
+    skills: [java-bases]
+    xp: 15
+    memo: |
+      - Tout code Java vit dans une **classe** : `public class Bonjour { ... }`.
+      - Le programme démarre dans la méthode `public static void main(String[] args)`.
+      - `System.out.println("…");` affiche une ligne (l'équivalent de `console.log`).
+      - Le **compilateur** (`javac`) transforme le code en **bytecode**, que la **JVM** (`java`) exécute.
+      - Le fichier porte le nom de la classe publique : `Bonjour.java`.
+    commonMistakes: |
+      - Oublier le point-virgule en fin d'instruction : erreur de compilation.
+      - Nom de fichier différent du nom de la classe publique.
+      - Écrire `system.out.println` : Java distingue majuscules et minuscules (`System`).
+    blocks:
+      - type: text
+        md: |
+          En JavaScript, une seule ligne suffisait pour afficher un message. Java demande un petit
+          **cadre** autour : c'est plus strict, mais ce cadre rend les gros programmes plus solides.
+      - type: definition
+        id: def-classe-intro
+        term: "Classe (premier contact)"
+        md: |
+          Pour l'instant, retiens qu'une **classe** est une **boîte qui contient du code**. En Java, tout le
+          code doit être rangé dans une classe. On verra plus tard qu'elle sert aussi de plan pour fabriquer
+          des objets.
+      - type: code
+        id: code-bonjour-java
+        language: java
+        title: "Bonjour.java"
+        code: |
+          public class Bonjour {
+              public static void main(String[] args) {
+                  System.out.println("Bonjour !");
+                  System.out.println("Je découvre Java.");
+              }
+          }
+        lines:
+          - n: 1
+            note: "La classe `Bonjour`. Le fichier doit s'appeler `Bonjour.java`."
+          - n: 2
+            note: "`main` : la **porte d'entrée**. Java commence toujours ici. Les mots `public static void` seront expliqués plus tard."
+          - n: 3
+            note: "`System.out.println` affiche une ligne. Le texte est entre guillemets doubles."
+          - n: 5
+            note: "Accolade qui ferme `main`."
+          - n: 6
+            note: "Accolade qui ferme la classe."
+      - type: question
+        ref: java-pp-q1
+        review: code-bonjour-java
+      - type: definition
+        id: def-compilation
+        term: "Compilation et JVM"
+        md: |
+          Le **compilateur** (`javac`) relit tout ton code et le **traduit** en *bytecode* (un langage
+          intermédiaire), comme un traducteur qui vérifie chaque phrase avant de publier le livre. S'il
+          trouve une faute, il refuse : c'est une **erreur de compilation**. Ensuite, la **JVM** (machine
+          virtuelle Java) exécute ce bytecode sur n'importe quel ordinateur (Windows, Mac, Linux).
+      - type: steps
+        title: "Lancer le programme en ligne de commande"
+        items:
+          - "`javac Bonjour.java` : compile et crée `Bonjour.class`."
+          - "`java Bonjour` : la JVM exécute le programme et affiche les deux lignes."
+          - "Dans IntelliJ ou VS Code, le bouton « Run » fait ces deux étapes pour toi."
+      - type: question
+        ref: java-pp-q2
+        review: def-compilation
+      - type: text
+        md: "Exercice guidé : complète la structure du programme."
+      - type: exercise
+        ref: java-ex-main-guide
+      - type: text
+        md: "En autonomie : écris un programme Java complet qui affiche trois lignes."
+      - type: exercise
+        ref: java-ex-presentation
+      - type: jury
+        items:
+          - q: "Quelle différence entre JDK, JRE et JVM ?"
+            a: "La JVM exécute le bytecode. Le JRE contient la JVM et les bibliothèques pour exécuter. Le JDK ajoute les outils de développement, dont le compilateur `javac`."
+          - q: "Pourquoi dit-on que Java est portable ?"
+            a: "Le code est compilé en bytecode, exécuté par une JVM disponible sur chaque système : le même programme tourne partout sans être recompilé."
+      - type: quiz
+        items:
+          - ref: java-pp-q3
+            review: code-bonjour-java
+          - ref: java-pp-q4
+            review: def-compilation
+          - ref: java-pp-q5
+            review: code-bonjour-java
+    questions:
+      - code: java-pp-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Par quelle méthode un programme Java commence-t-il ?"
+        choices:
+          - label: "`main`"
+            correct: true
+            why: "Oui : `public static void main(String[] args)`."
+          - label: "`start`"
+            correct: false
+            why: "Ce n'est pas le point d'entrée Java."
+          - label: "La première ligne du fichier, quelle qu'elle soit"
+            correct: false
+            why: "Java cherche la méthode main."
+        explanation: "La JVM appelle `main` pour démarrer le programme."
+      - code: java-pp-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Que fait la commande `javac Bonjour.java` ?"
+        choices:
+          - label: "Elle compile le code en bytecode (Bonjour.class)"
+            correct: true
+            why: "javac = Java compiler."
+          - label: "Elle exécute le programme"
+            correct: false
+            why: "C'est la commande `java`."
+          - label: "Elle installe Java"
+            correct: false
+            why: "Java doit déjà être installé (JDK)."
+        explanation: "Compiler (javac), puis exécuter (java)."
+      - code: java-pp-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quelle instruction affiche « Salut » en Java ?"
+        choices:
+          - label: "`System.out.println(\"Salut\");`"
+            correct: true
+            why: "Oui, avec le point-virgule."
+          - label: "`console.log(\"Salut\");`"
+            correct: false
+            why: "C'est du JavaScript."
+          - label: "`print Salut`"
+            correct: false
+            why: "Syntaxe inconnue en Java."
+        explanation: "`System.out.println` affiche une ligne dans la console."
+      - code: java-pp-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-bases
+        prompt: "Une erreur de compilation empêche le programme de démarrer."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le compilateur refuse de produire le bytecode."
+          - label: "Faux"
+            correct: false
+            why: "Sans compilation réussie, rien à exécuter."
+        explanation: "C'est un avantage : beaucoup d'erreurs sont trouvées avant même l'exécution."
+      - code: java-pp-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Comment doit s'appeler le fichier qui contient `public class Commande` ?"
+        choices:
+          - label: "`Commande.java`"
+            correct: true
+            why: "Même nom que la classe publique, extension .java."
+          - label: "`commande.txt`"
+            correct: false
+            why: "L'extension doit être .java et la casse respectée."
+          - label: "`Main.java`"
+            correct: false
+            why: "Le nom doit correspondre à la classe publique."
+        explanation: "Règle Java : une classe publique par fichier, fichier au même nom."
+    exercises:
+      - slug: java-ex-main-guide
+        kind: COMPLETER
+        title: "La structure d'un programme Java"
+        difficulty: FACILE
+        skill: java-bases
+        statement: "Complète le programme. Respecte les majuscules."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot-clé qui déclare une classe."
+          - "Le nom de la méthode de démarrage."
+          - "class, main, println."
+        solution: '["class", "main", "println"]'
+        explanation: "`public class Salut`, `public static void main(String[] args)`, `System.out.println(...)`."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            public [[1]] Salut {
+                public static void [[2]](String[] args) {
+                    System.out.[[3]]("Salut !");
+                }
+            }
+          blanks:
+            - ["class"]
+            - ["main"]
+            - ["println"]
+      - slug: java-ex-presentation
+        kind: CODE_LIBRE
+        title: "Un programme Java complet"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Écris une classe `Presentation` avec une méthode `main` qui affiche trois lignes :
+          `Bonjour`, `J'apprends Java` et `À bientôt`.
+        criteria: "Classe Presentation, méthode main, trois System.out.println."
+        hints:
+          - "`public class Presentation { ... }`"
+          - "`public static void main(String[] args) { ... }`"
+          - "Trois lignes `System.out.println(\"...\");`"
+        solution: |
+          public class Presentation {
+              public static void main(String[] args) {
+                  System.out.println("Bonjour");
+                  System.out.println("J'apprends Java");
+                  System.out.println("À bientôt");
+              }
+          }
+        explanation: "Le cadre (classe + main) entoure les instructions, exécutées dans l'ordre."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            // Ta classe Presentation
+
+          checks:
+            - pattern: 'public\s+class\s+Presentation\s*\{'
+              message: "Déclare public class Presentation { ... }."
+            - pattern: 'public\s+static\s+void\s+main\s*\(\s*String\s*\[\]\s*\w+\s*\)'
+              message: "Écris la méthode public static void main(String[] args)."
+            - pattern: '\A(?>[\s\S]*?System\.out\.println\s*\(){3}'
+              message: "Affiche trois lignes avec System.out.println."
+            - pattern: 'System\.out\.println\s*\(\s*"Bonjour"\s*\)\s*;'
+              message: "La première ligne affiche \"Bonjour\" (n'oublie pas le point-virgule)."
+          output: |
+            Bonjour
+            J'apprends Java
+            À bientôt
+
+  # ===================================================================== LEÇON 2
+  - slug: java-types-conditions
+    title: "Types, conditions et boucles en Java"
+    duration: 13
+    objective: "Déclarer des variables typées (int, double, boolean, String), écrire des if et des for, et comparer des textes avec equals."
+    prerequisites: "Leçon « Ton premier programme Java »."
+    skills: [java-bases]
+    xp: 20
+    memo: |
+      - Java est **typé statiquement** : `int age = 18;` — le type est annoncé et ne change plus.
+      - Types de base : `int` (entier), `double` (décimal), `boolean` (vrai/faux), `char` (un caractère) ; `String` pour les textes.
+      - Conditions et boucles : mêmes écritures qu'en JavaScript (`if`, `else`, `for`, `while`, `&&`, `||`).
+      - Comparer deux textes : `a.equals(b)`, **jamais** `a == b`.
+      - `final` : une valeur qui ne change plus (comme `const`).
+      - `var` peut déduire le type (`var ville = "Lyon";`), mais le type reste fixé.
+    commonMistakes: |
+      - Comparer des `String` avec `==` : on compare les adresses mémoire, pas le contenu.
+      - Mettre un décimal dans un `int` : `int prix = 9.99;` ne compile pas.
+      - Division entière : `7 / 2` vaut `3` avec des `int`.
+    blocks:
+      - type: text
+        md: |
+          En JavaScript, une variable pouvait contenir un nombre puis un texte. En Java, **non** : chaque
+          variable a un **type fixe**. Le compilateur vérifie tout.
+      - type: definition
+        id: def-typage-statique
+        term: "Typage statique"
+        md: |
+          Le type de chaque variable est **décidé une fois pour toutes** et vérifié à la compilation. C'est
+          comme des **bocaux étiquetés** : dans le bocal « sucre », on ne peut pas verser du sel.
+      - type: code
+        id: code-types
+        language: java
+        title: "Des variables typées"
+        code: |
+          int age = 25;
+          double prix = 19.99;
+          boolean abonne = true;
+          String prenom = "Awa";
+          final int MAJORITE = 18;
+
+          if (age >= MAJORITE && abonne) {
+              System.out.println(prenom + " a accès au contenu.");
+          }
+          for (int i = 1; i <= 3; i++) {
+              System.out.println("Tour " + i);
+          }
+        lines:
+          - n: 1
+            note: "`int` : nombre entier."
+          - n: 2
+            note: "`double` : nombre à virgule (écrite avec un point)."
+          - n: 3
+            note: "`boolean` : true ou false."
+          - n: 4
+            note: "`String` (avec une majuscule) : un texte."
+          - n: 5
+            note: "`final` : la valeur ne changera plus. Par convention, en MAJUSCULES."
+          - n: 7
+            note: "Même syntaxe qu'en JavaScript pour `if` et `&&`."
+          - n: 10
+            note: "La variable de boucle est typée : `int i`."
+      - type: question
+        ref: java-tc-q1
+        review: def-typage-statique
+      - type: definition
+        id: def-equals
+        term: "Comparer des textes : equals"
+        md: |
+          `==` vérifie si deux variables désignent **le même objet en mémoire** (le même exemplaire),
+          `equals` vérifie si elles ont **le même contenu**. Deux livres identiques achetés séparément ont
+          le même contenu (`equals` vrai) mais ne sont pas le même exemplaire (`==` faux).
+      - type: compare
+        left:
+          title: "Piège"
+          good: false
+          code: |
+            String saisie = lireClavier();
+            if (saisie == "oui") { ... }
+          language: java
+        right:
+          title: "Correct"
+          good: true
+          code: |
+            String saisie = lireClavier();
+            if ("oui".equals(saisie)) { ... }
+          language: java
+      - type: question
+        ref: java-tc-q2
+        review: def-equals
+      - type: text
+        md: "Exercice guidé : complète les types."
+      - type: exercise
+        ref: java-ex-types-guide
+      - type: text
+        md: "En autonomie : écris une méthode qui calcule un tarif."
+      - type: exercise
+        ref: java-ex-tarif
+      - type: jury
+        items:
+          - q: "Pourquoi compare-t-on les String avec equals et pas avec == ?"
+            a: "`==` compare les références (le même objet en mémoire) ; `equals` compare le contenu. Deux textes identiques peuvent être deux objets différents."
+          - q: "Quelle différence entre un type primitif et un objet en Java ?"
+            a: "Les primitifs (`int`, `double`, `boolean`) contiennent directement une valeur ; les objets (`String`, `Integer`, tes classes) sont manipulés par référence et ont des méthodes."
+      - type: quiz
+        items:
+          - ref: java-tc-q3
+            review: code-types
+          - ref: java-tc-q4
+            review: code-types
+          - ref: java-tc-q5
+            review: def-equals
+    questions:
+      - code: java-tc-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quelle déclaration compile ?"
+        choices:
+          - label: "`double prix = 9.99;`"
+            correct: true
+            why: "Un décimal dans un double."
+          - label: "`int prix = 9.99;`"
+            correct: false
+            why: "Un int ne peut pas contenir de décimales."
+          - label: "`int age = \"18\";`"
+            correct: false
+            why: "\"18\" est un texte."
+        explanation: "Le type annoncé doit correspondre à la valeur."
+      - code: java-tc-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Comment vérifier que `role` contient le texte ADMIN ?"
+        choices:
+          - label: "`\"ADMIN\".equals(role)`"
+            correct: true
+            why: "equals compare le contenu (et évite une erreur si role est null)."
+          - label: "`role == \"ADMIN\"`"
+            correct: false
+            why: "== compare les références, pas le contenu."
+          - label: "`role = \"ADMIN\"`"
+            correct: false
+            why: "C'est une affectation."
+        explanation: "Pour les objets (dont String) : equals."
+      - code: java-tc-q3
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          int a = 7;
+          int b = 2;
+          System.out.println(a / b);
+        language: java
+        choices:
+          - label: "3"
+            correct: true
+            why: "Division entière entre deux int : la partie décimale est perdue."
+          - label: "3.5"
+            correct: false
+            why: "Il faudrait des double."
+          - label: "Une erreur"
+            correct: false
+            why: "C'est valide, mais le résultat est entier."
+        explanation: "Entier ÷ entier = entier en Java. Utilise `7.0 / 2` ou des double pour 3.5."
+      - code: java-tc-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quel mot-clé rend une variable non modifiable ?"
+        choices:
+          - label: "`final`"
+            correct: true
+            why: "L'équivalent de const."
+          - label: "`static`"
+            correct: false
+            why: "static signifie « partagé par la classe »."
+          - label: "`public`"
+            correct: false
+            why: "public règle la visibilité."
+        explanation: "`final int MAJORITE = 18;`"
+      - code: java-tc-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: java-bases
+        prompt: "En Java, une variable déclarée `int` peut plus tard recevoir un texte."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : le type est fixé (typage statique)."
+          - label: "Faux"
+            correct: true
+            why: "Exact : le compilateur refuse."
+        explanation: "C'est la différence majeure avec JavaScript."
+    exercises:
+      - slug: java-ex-types-guide
+        kind: COMPLETER
+        title: "Choisir les bons types"
+        difficulty: FACILE
+        skill: java-bases
+        statement: "Complète avec le type Java qui convient."
+        criteria: "Les quatre types sont corrects."
+        hints:
+          - "Un âge entier : int. Un prix à virgule : double."
+          - "Un texte : String, avec une majuscule."
+          - "int, double, String, boolean."
+        solution: '["int", "double", "String", "boolean"]'
+        explanation: "Chaque valeur dans le bocal qui lui correspond."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            [[1]] age = 30;
+            [[2]] prix = 12.50;
+            [[3]] ville = "Lille";
+            [[4]] connecte = false;
+          blanks:
+            - ["int"]
+            - ["double"]
+            - ["String"]
+            - ["boolean"]
+      - slug: java-ex-tarif
+        kind: CODE_LIBRE
+        title: "Calculer un tarif"
+        difficulty: INTERMEDIAIRE
+        skill: java-bases
+        statement: |
+          Écris une méthode `static double tarif(int age, boolean etudiant)` qui renvoie :
+          - `0.0` si l'âge est inférieur à 12 ;
+          - `5.0` si la personne est étudiante ;
+          - `9.5` sinon.
+        criteria: "Signature correcte, trois cas traités dans le bon ordre, valeurs de retour."
+        hints:
+          - "`static double tarif(int age, boolean etudiant) { ... }`"
+          - "`if (age < 12) { return 0.0; }` en premier."
+          - "`else if (etudiant) { return 5.0; }` puis `return 9.5;`"
+        solution: |
+          static double tarif(int age, boolean etudiant) {
+              if (age < 12) {
+                  return 0.0;
+              } else if (etudiant) {
+                  return 5.0;
+              }
+              return 9.5;
+          }
+        explanation: "Les cas sont testés du plus particulier au plus général. `static` permet d'appeler la méthode sans créer d'objet (depuis main par exemple)."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            // Ta méthode tarif
+
+          checks:
+            - pattern: 'static\s+double\s+tarif\s*\(\s*int\s+age\s*,\s*boolean\s+etudiant\s*\)'
+              message: "Signature attendue : static double tarif(int age, boolean etudiant)."
+            - pattern: 'if\s*\(\s*age\s*<\s*12\s*\)'
+              message: "Teste d'abord l'âge : if (age < 12)."
+            - pattern: 'return\s+0(\.0)?\s*;'
+              message: "Les moins de 12 ans ne paient rien : return 0.0;"
+            - pattern: 'if\s*\(\s*etudiant\s*(==\s*true\s*)?\)'
+              message: "Teste le statut étudiant : else if (etudiant)."
+            - pattern: 'return\s+5(\.0)?\s*;'
+              message: "Tarif étudiant : return 5.0;"
+            - pattern: 'return\s+9\.5\s*;'
+              message: "Tarif normal : return 9.5;"
+            - pattern: 'age\s*<\s*12[\s\S]*etudiant'
+              message: "Teste l'âge AVANT le statut étudiant (un enfant étudiant ne paie pas)."
+
+bank:
+  - code: java-c1-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: java-bases
+    prompt: "Que signifie `void` dans `public static void main` ?"
+    choices:
+      - label: "La méthode ne renvoie rien"
+        correct: true
+        why: "void = vide."
+      - label: "La méthode est vide"
+        correct: false
+        why: "Elle peut contenir du code ; elle ne renvoie simplement pas de valeur."
+      - label: "La méthode est privée"
+        correct: false
+        why: "La visibilité est donnée par public/private."
+    explanation: "Le type de retour `void` indique l'absence de valeur renvoyée."
+  - code: java-c1-b2
+    kind: RESULTAT_CODE
+    difficulty: 2
+    skill: java-bases
+    prompt: "Qu'affiche ce code ?"
+    snippet: |
+      String a = "Java";
+      System.out.println(a.length());
+    language: java
+    choices:
+      - label: "4"
+        correct: true
+        why: "Quatre caractères."
+      - label: "Java"
+        correct: false
+        why: "length() renvoie le nombre de caractères."
+      - label: "3"
+        correct: false
+        why: "On compte tous les caractères."
+    explanation: "`String.length()` : nombre de caractères (avec des parenthèses, c'est une méthode)."

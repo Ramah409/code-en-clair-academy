@@ -1,0 +1,585 @@
+slug: java-collections-exceptions
+position: 3
+level: AVANCE
+title: "Collections et exceptions"
+summary: "Manipuler des listes et des dictionnaires (List, Map), les transformer avec les streams, et gérer proprement les erreurs avec les exceptions."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: java-collections
+    title: "List, Map et streams"
+    duration: 14
+    objective: "Utiliser ArrayList et HashMap, et filtrer ou transformer une liste avec les streams."
+    prerequisites: "Chapitre « La programmation orientée objet »."
+    skills: [java-collections]
+    xp: 25
+    memo: |
+      - `List<String> noms = new ArrayList<>();` — une liste ordonnée, qui grandit : `add`, `get(i)`, `size()`.
+      - `Map<String, Integer> stock = new HashMap<>();` — un dictionnaire clé → valeur : `put`, `get`, `containsKey`.
+      - Les `< >` (génériques) précisent le type des éléments.
+      - Streams : `liste.stream().filter(...).map(...).toList()` — comme filter/map en JavaScript.
+      - Parcourir : `for (String nom : noms) { ... }`.
+    commonMistakes: |
+      - Mettre un type primitif dans les génériques : `List<int>` ne compile pas, il faut `List<Integer>`.
+      - Lire `map.get(cle)` sans vérifier : `null` si la clé n'existe pas.
+      - Modifier une liste pendant qu'on la parcourt avec `for` : `ConcurrentModificationException`.
+    blocks:
+      - type: text
+        md: |
+          Les tableaux Java ont une taille fixe. Au quotidien, on utilise plutôt des **collections**, qui
+          grandissent toutes seules.
+      - type: definition
+        id: def-list
+        term: "List"
+        md: |
+          Une **liste ordonnée** d'éléments, comme la file d'attente d'un guichet : chacun a sa place
+          (indice 0, 1, 2…), et on peut en ajouter autant qu'on veut. `ArrayList` est la version la plus
+          utilisée.
+      - type: definition
+        id: def-map
+        term: "Map"
+        md: |
+          Un **dictionnaire** : on retrouve une **valeur** à partir d'une **clé**, comme on retrouve la
+          définition d'un mot. Chaque clé est unique. `HashMap` est la version la plus utilisée.
+      - type: code
+        id: code-collections
+        language: java
+        title: "Une liste et un dictionnaire"
+        code: |
+          List<String> cours = new ArrayList<>();
+          cours.add("Java");
+          cours.add("SQL");
+          System.out.println(cours.get(0) + " / " + cours.size());
+
+          Map<String, Integer> stock = new HashMap<>();
+          stock.put("alarme", 12);
+          stock.put("coque", 0);
+          System.out.println(stock.get("alarme"));
+          System.out.println(stock.getOrDefault("sac", 0));
+        lines:
+          - n: 1
+            note: "`List<String>` : une liste de textes. `<>` à droite reprend le type annoncé à gauche."
+          - n: 4
+            note: "`get(0)` : premier élément ; `size()` : nombre d'éléments. Affiche « Java / 2 »."
+          - n: 6
+            note: "`Map<String, Integer>` : des clés texte, des valeurs entières (Integer, l'objet qui enveloppe int)."
+          - n: 9
+            note: "Affiche 12."
+          - n: 10
+            note: "`getOrDefault` : 0 si la clé n'existe pas, au lieu de null."
+      - type: question
+        ref: java-col-q1
+        review: def-map
+      - type: definition
+        id: def-stream
+        term: "Stream"
+        md: |
+          Un **tapis roulant** sur lequel passent les éléments d'une collection : on y installe des postes
+          (filtrer, transformer, trier) et on récupère le résultat au bout. Rien n'est modifié dans la liste
+          d'origine.
+      - type: code
+        id: code-stream
+        language: java
+        title: "Filtrer et transformer avec un stream"
+        code: |
+          List<Produit> produits = catalogue();
+          List<String> abordables = produits.stream()
+                  .filter(p -> p.getPrix() <= 15)
+                  .map(Produit::getNom)
+                  .toList();
+        lines:
+          - n: 2
+            note: "`stream()` ouvre le tapis roulant."
+          - n: 3
+            note: "`filter` garde les produits à 15 € ou moins. `p -> ...` est une **lambda** : une petite fonction, comme `p => ...` en JavaScript."
+          - n: 4
+            note: "`map(Produit::getNom)` transforme chaque produit en son nom (référence de méthode)."
+          - n: 5
+            note: "`toList()` récupère le résultat dans une nouvelle liste."
+      - type: question
+        ref: java-col-q2
+        review: def-stream
+      - type: text
+        md: "Exercice guidé : complète le code des collections."
+      - type: exercise
+        ref: java-ex-collections-guide
+      - type: text
+        md: "En autonomie : écris un stream qui calcule les e-mails des comptes actifs."
+      - type: exercise
+        ref: java-ex-stream
+      - type: jury
+        items:
+          - q: "Quelle différence entre une List et une Map ?"
+            a: "Une List est une suite ordonnée d'éléments accessibles par leur position ; une Map associe des clés uniques à des valeurs."
+          - q: "À quoi servent les génériques (List<String>) ?"
+            a: "À préciser le type des éléments : le compilateur vérifie qu'on n'y met que des String et on n'a pas besoin de conversion à la lecture."
+      - type: quiz
+        items:
+          - ref: java-col-q3
+            review: code-collections
+          - ref: java-col-q4
+            review: code-stream
+          - ref: java-col-q5
+            review: def-list
+    questions:
+      - code: java-col-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-collections
+        prompt: "Pour retrouver le stock d'un produit à partir de son nom, quelle collection choisir ?"
+        choices:
+          - label: "Une `Map<String, Integer>`"
+            correct: true
+            why: "Clé = nom, valeur = stock."
+          - label: "Une `List<Integer>`"
+            correct: false
+            why: "Il faudrait connaître la position de chaque produit."
+          - label: "Un `String`"
+            correct: false
+            why: "Un texte ne range pas des associations."
+        explanation: "Map : recherche directe par clé."
+      - code: java-col-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: java-collections
+        prompt: "`liste.stream().filter(...)` modifie la liste d'origine."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : le stream produit un nouveau résultat."
+          - label: "Faux"
+            correct: true
+            why: "Exact : l'origine reste intacte."
+        explanation: "Comme filter/map en JavaScript."
+      - code: java-col-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-collections
+        prompt: "Pourquoi `List<int>` ne compile-t-il pas ?"
+        choices:
+          - label: "Les génériques n'acceptent que des objets : il faut `List<Integer>`"
+            correct: true
+            why: "Integer enveloppe int."
+          - label: "Parce que les listes ne peuvent contenir que du texte"
+            correct: false
+            why: "Elles contiennent n'importe quel type d'objet."
+          - label: "Parce qu'il manque new"
+            correct: false
+            why: "Le problème est le type entre chevrons."
+        explanation: "int → Integer, double → Double, boolean → Boolean."
+      - code: java-col-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-collections
+        prompt: "Dans `filter(p -> p.getPrix() <= 15)`, que représente `p -> ...` ?"
+        choices:
+          - label: "Une lambda : une petite fonction qui reçoit un produit p"
+            correct: true
+            why: "Comme une fonction fléchée en JavaScript."
+          - label: "Une comparaison entre p et 15"
+            correct: false
+            why: "La comparaison est à l'intérieur de la lambda."
+          - label: "Une nouvelle variable globale"
+            correct: false
+            why: "p n'existe que dans la lambda."
+        explanation: "Lambda : paramètre -> expression."
+      - code: java-col-q5
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: java-collections
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          List<String> l = new ArrayList<>();
+          l.add("a");
+          l.add("b");
+          l.add("c");
+          System.out.println(l.get(2) + l.size());
+        language: java
+        choices:
+          - label: "c3"
+            correct: true
+            why: "get(2) vaut c, size() vaut 3, concaténés."
+          - label: "b3"
+            correct: false
+            why: "L'indice 2 est le troisième élément."
+          - label: "c2"
+            correct: false
+            why: "Il y a trois éléments."
+        explanation: "Indices à partir de 0 ; size() compte les éléments."
+    exercises:
+      - slug: java-ex-collections-guide
+        kind: COMPLETER
+        title: "Compléter List et Map"
+        difficulty: FACILE
+        skill: java-collections
+        statement: "Complète les méthodes des collections."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Ajouter à une liste : add."
+          - "Ranger dans une Map : put."
+          - "add, size, put, get."
+        solution: '["add", "size", "put", "get"]'
+        explanation: "List : add / size ; Map : put / get."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            List<String> villes = new ArrayList<>();
+            villes.[[1]]("Nantes");
+            System.out.println(villes.[[2]]());
+
+            Map<String, String> capitales = new HashMap<>();
+            capitales.[[3]]("France", "Paris");
+            System.out.println(capitales.[[4]]("France"));
+          blanks:
+            - ["add"]
+            - ["size"]
+            - ["put"]
+            - ["get"]
+      - slug: java-ex-stream
+        kind: CODE_LIBRE
+        title: "Les e-mails des comptes actifs"
+        difficulty: INTERMEDIAIRE
+        skill: java-collections
+        statement: |
+          La classe `Compte` a deux getters : `isActif()` (boolean) et `getEmail()` (String). Écris la
+          méthode `static List<String> emailsActifs(List<Compte> comptes)` qui renvoie les e-mails des comptes
+          actifs, avec un stream (`filter`, `map`, `toList`).
+        criteria: "Signature, stream, filter sur isActif, map vers getEmail, toList."
+        hints:
+          - "`return comptes.stream()...;`"
+          - "`.filter(c -> c.isActif())` ou `.filter(Compte::isActif)`"
+          - "`.map(Compte::getEmail).toList();`"
+        solution: |
+          static List<String> emailsActifs(List<Compte> comptes) {
+              return comptes.stream()
+                      .filter(Compte::isActif)
+                      .map(Compte::getEmail)
+                      .toList();
+          }
+        explanation: "Le stream se lit comme une phrase : parmi les comptes, garde les actifs, prends leur e-mail, mets-les dans une liste."
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            // Méthode emailsActifs
+
+          checks:
+            - pattern: 'static\s+List\s*<\s*String\s*>\s+emailsActifs\s*\(\s*List\s*<\s*Compte\s*>\s+\w+\s*\)'
+              message: "Signature : static List<String> emailsActifs(List<Compte> comptes)."
+            - pattern: '\.stream\s*\(\s*\)'
+              message: "Ouvre un stream : comptes.stream()."
+            - pattern: '\.filter\s*\(\s*(Compte::isActif|\(?\s*\w+\s*\)?\s*->\s*\w+\.isActif\s*\(\s*\))'
+              message: "Garde les comptes actifs : .filter(Compte::isActif)."
+            - pattern: '\.map\s*\(\s*(Compte::getEmail|\(?\s*\w+\s*\)?\s*->\s*\w+\.getEmail\s*\(\s*\))'
+              message: "Transforme en e-mails : .map(Compte::getEmail)."
+            - pattern: '\.toList\s*\(\s*\)|\.collect\s*\(\s*Collectors\.toList\s*\(\s*\)\s*\)'
+              message: "Termine par .toList()."
+            - pattern: 'return\s+\w+\.stream'
+              message: "Renvoie le résultat du stream."
+
+  # ===================================================================== LEÇON 2
+  - slug: java-exceptions
+    title: "Les exceptions en Java"
+    duration: 13
+    objective: "Lever, attraper et créer des exceptions, et distinguer exceptions vérifiées et non vérifiées."
+    prerequisites: "Leçon « List, Map et streams »."
+    skills: [java-exceptions]
+    xp: 25
+    memo: |
+      - `throw new IllegalArgumentException("message")` lève une exception.
+      - `try { ... } catch (TypeException e) { ... } finally { ... }` : `finally` s'exécute toujours.
+      - **Vérifiées** (checked, ex. `IOException`) : le compilateur oblige à les traiter ou à les déclarer (`throws`).
+      - **Non vérifiées** (`RuntimeException` et ses enfants) : pas d'obligation ; elles signalent souvent une erreur de programmation ou une règle métier.
+      - Exception personnalisée : `class DoublonException extends RuntimeException`.
+      - Dans Spring, un `@RestControllerAdvice` transforme les exceptions en réponses HTTP.
+    commonMistakes: |
+      - Attraper `Exception` partout : on masque des bugs.
+      - `catch` vide ou seulement `e.printStackTrace()`.
+      - Utiliser les exceptions pour un déroulement normal (par exemple sortir d'une boucle).
+    blocks:
+      - type: text
+        md: |
+          Tu as vu les erreurs en JavaScript. Java va plus loin : il **classe** les erreurs et oblige parfois à
+          les prévoir.
+      - type: definition
+        id: def-exception-java
+        term: "Exception"
+        md: |
+          Un **objet** qui décrit un problème, lancé (`throw`) là où le problème survient et attrapé
+          (`catch`) là où l'on sait quoi faire. Comme un **signalement** envoyé au service compétent.
+      - type: code
+        id: code-exception-java
+        language: java
+        title: "Lever et attraper"
+        code: |
+          public static int age(String saisie) {
+              try {
+                  return Integer.parseInt(saisie);
+              } catch (NumberFormatException e) {
+                  throw new IllegalArgumentException("L'âge doit être un nombre : " + saisie);
+              } finally {
+                  System.out.println("Vérification terminée");
+              }
+          }
+        lines:
+          - n: 3
+            note: "`parseInt` transforme un texte en entier ; il lève `NumberFormatException` si le texte n'est pas un nombre."
+          - n: 4
+            note: "On attrape une exception **précise**, pas toutes les exceptions."
+          - n: 5
+            note: "On la traduit en une exception plus parlante pour l'appelant."
+          - n: 6
+            note: "`finally` s'exécute dans tous les cas (réussite ou erreur) : idéal pour fermer une ressource."
+      - type: question
+        ref: java-exc-q1
+        review: code-exception-java
+      - type: definition
+        id: def-checked
+        term: "Vérifiée ou non vérifiée"
+        md: |
+          - **Vérifiée** (checked) : un problème **extérieur** et prévisible (fichier absent, réseau). Le
+            compilateur t'oblige à la gérer, comme un contrôle obligatoire avant un vol.
+          - **Non vérifiée** (`RuntimeException`) : une erreur de logique ou une règle métier non respectée
+            (argument invalide, doublon). Pas d'obligation de la déclarer.
+      - type: code
+        id: code-exception-perso
+        language: java
+        title: "Une exception métier personnalisée"
+        code: |
+          public class EmailDejaUtiliseException extends RuntimeException {
+              public EmailDejaUtiliseException(String email) {
+                  super("L'adresse " + email + " est déjà utilisée");
+              }
+          }
+
+          if (repository.existsByEmail(email)) {
+              throw new EmailDejaUtiliseException(email);
+          }
+        lines:
+          - n: 1
+            note: "On hérite de `RuntimeException` : non vérifiée, adaptée à une règle métier."
+          - n: 3
+            note: "`super(message)` : le message sera lisible avec `getMessage()`."
+          - n: 8
+            note: "Dans un service Spring, un gestionnaire d'erreurs la transformera en réponse 409."
+      - type: question
+        ref: java-exc-q2
+        review: def-checked
+      - type: text
+        md: "Exercice guidé : complète le try / catch / finally."
+      - type: exercise
+        ref: java-ex-exceptions-guide
+      - type: text
+        md: "En autonomie : crée une exception métier et utilise-la."
+      - type: exercise
+        ref: java-ex-exception-perso
+      - type: jury
+        items:
+          - q: "Quelle différence entre une exception vérifiée et non vérifiée ?"
+            a: "Une exception vérifiée (checked) doit être attrapée ou déclarée avec throws, le compilateur l'exige ; une RuntimeException n'impose rien et signale souvent une erreur de programmation ou une règle métier."
+          - q: "Comment gérez-vous les erreurs dans votre API Spring ?"
+            a: "Le service lève des exceptions métier ; un @RestControllerAdvice les attrape et renvoie le bon code HTTP avec un message clair, sans détails techniques."
+      - type: quiz
+        items:
+          - ref: java-exc-q3
+            review: code-exception-java
+          - ref: java-exc-q4
+            review: code-exception-perso
+          - ref: java-exc-q5
+            review: def-exception-java
+    questions:
+      - code: java-exc-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-exceptions
+        prompt: "Quand le bloc `finally` s'exécute-t-il ?"
+        choices:
+          - label: "Toujours, qu'il y ait une exception ou non"
+            correct: true
+            why: "C'est sa raison d'être."
+          - label: "Seulement en cas d'exception"
+            correct: false
+            why: "Ça, c'est catch."
+          - label: "Seulement si tout s'est bien passé"
+            correct: false
+            why: "Il s'exécute dans les deux cas."
+        explanation: "finally sert à libérer les ressources (fichier, connexion)."
+      - code: java-exc-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-exceptions
+        prompt: "`IOException` (problème de fichier) est une exception…"
+        choices:
+          - label: "vérifiée : il faut la traiter ou la déclarer avec throws"
+            correct: true
+            why: "Problème extérieur prévisible."
+          - label: "non vérifiée"
+            correct: false
+            why: "Elle n'hérite pas de RuntimeException."
+          - label: "impossible à attraper"
+            correct: false
+            why: "Elle s'attrape avec catch."
+        explanation: "Checked : le compilateur exige un traitement."
+      - code: java-exc-q3
+        kind: RESULTAT_CODE
+        difficulty: 3
+        skill: java-exceptions
+        prompt: "Que se passe-t-il avec `age(\"vingt\")` ?"
+        snippet: 'age("vingt")'
+        language: java
+        choices:
+          - label: "« Vérification terminée » s'affiche, puis une IllegalArgumentException est levée"
+            correct: true
+            why: "finally s'exécute avant que l'exception ne remonte."
+          - label: "La méthode renvoie 0"
+            correct: false
+            why: "Aucun return dans le catch : une exception est levée."
+          - label: "Rien ne s'affiche"
+            correct: false
+            why: "finally s'exécute toujours."
+        explanation: "catch traduit l'exception, finally s'exécute, puis l'exception remonte à l'appelant."
+      - code: java-exc-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-exceptions
+        prompt: "De quelle classe faire hériter une exception métier (doublon, règle non respectée) ?"
+        choices:
+          - label: "`RuntimeException`"
+            correct: true
+            why: "Non vérifiée, pas besoin de throws partout."
+          - label: "`Exception`"
+            correct: false
+            why: "Elle deviendrait vérifiée : throws obligatoire à chaque niveau."
+          - label: "`Error`"
+            correct: false
+            why: "Error est réservée aux problèmes graves de la JVM."
+        explanation: "C'est la pratique habituelle dans les applications Spring."
+      - code: java-exc-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: java-exceptions
+        prompt: "Attraper systématiquement `Exception` dans chaque méthode est une bonne pratique."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : on masque des bugs et on traite mal des problèmes différents."
+          - label: "Faux"
+            correct: true
+            why: "Exact : on attrape les exceptions précises qu'on sait gérer."
+        explanation: "Précision : attraper ce qu'on sait traiter, laisser remonter le reste vers un gestionnaire central."
+    exercises:
+      - slug: java-ex-exceptions-guide
+        kind: COMPLETER
+        title: "try, catch, finally"
+        difficulty: FACILE
+        skill: java-exceptions
+        statement: "Complète les mots-clés."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Essayer : try. Attraper : catch."
+          - "Toujours exécuté : finally. Lever : throw."
+          - "try, catch, throw, finally."
+        solution: '["try", "catch", "throw", "finally"]'
+        explanation: "try / catch / finally structurent la gestion ; throw lève une nouvelle exception."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            [[1]] {
+                lireFichier("notes.csv");
+            } [[2]] (IOException e) {
+                [[3]] new IllegalStateException("Fichier illisible", e);
+            } [[4]] {
+                fermerConnexion();
+            }
+          blanks:
+            - ["try"]
+            - ["catch"]
+            - ["throw"]
+            - ["finally"]
+      - slug: java-ex-exception-perso
+        kind: CODE_LIBRE
+        title: "Une exception StockInsuffisant"
+        difficulty: INTERMEDIAIRE
+        skill: java-exceptions
+        statement: |
+          1. crée `StockInsuffisantException`, qui hérite de `RuntimeException`, avec un constructeur
+             `StockInsuffisantException(String produit)` qui appelle `super("Stock insuffisant pour " + produit)` ;
+          2. écris `static void retirerDuStock(Map<String, Integer> stock, String produit, int quantite)` qui
+             lève cette exception si la quantité demandée dépasse le stock (`getOrDefault(produit, 0)`),
+             sinon met à jour le stock avec `put`.
+        criteria: "Exception personnalisée, contrôle du stock, levée de l'exception, mise à jour."
+        hints:
+          - "`public class StockInsuffisantException extends RuntimeException { ... }`"
+          - "`int disponible = stock.getOrDefault(produit, 0);`"
+          - "`if (quantite > disponible) { throw new StockInsuffisantException(produit); } stock.put(produit, disponible - quantite);`"
+        solution: |
+          public class StockInsuffisantException extends RuntimeException {
+              public StockInsuffisantException(String produit) {
+                  super("Stock insuffisant pour " + produit);
+              }
+          }
+
+          static void retirerDuStock(Map<String, Integer> stock, String produit, int quantite) {
+              int disponible = stock.getOrDefault(produit, 0);
+              if (quantite > disponible) {
+                  throw new StockInsuffisantException(produit);
+              }
+              stock.put(produit, disponible - quantite);
+          }
+        explanation: "L'exception porte un nom métier clair : l'appelant (ou le gestionnaire d'erreurs) sait exactement ce qui s'est passé."
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            // Exception et méthode
+
+          checks:
+            - pattern: 'class\s+StockInsuffisantException\s+extends\s+RuntimeException'
+              message: "L'exception hérite de RuntimeException."
+            - pattern: 'StockInsuffisantException\s*\(\s*String\s+\w+\s*\)\s*\{\s*super\s*\('
+              message: "Le constructeur reçoit le produit et appelle super(message)."
+            - pattern: 'static\s+void\s+retirerDuStock\s*\(\s*Map\s*<\s*String\s*,\s*Integer\s*>\s+\w+\s*,\s*String\s+\w+\s*,\s*int\s+\w+\s*\)'
+              message: "Signature : static void retirerDuStock(Map<String, Integer> stock, String produit, int quantite)."
+            - pattern: 'getOrDefault\s*\(\s*\w+\s*,\s*0\s*\)'
+              message: "Lis le stock disponible avec getOrDefault(produit, 0)."
+            - pattern: 'throw\s+new\s+StockInsuffisantException\s*\('
+              message: "Lève StockInsuffisantException quand la quantité dépasse le stock."
+            - pattern: '\.put\s*\(\s*\w+\s*,\s*\w+\s*-\s*\w+\s*\)'
+              message: "Mets à jour le stock : stock.put(produit, disponible - quantite)."
+
+bank:
+  - code: java-c3-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: java-collections
+    prompt: "Quelle collection garantit qu'aucun élément n'apparaît deux fois ?"
+    choices:
+      - label: "`Set` (par exemple HashSet)"
+        correct: true
+        why: "Un ensemble n'accepte pas les doublons."
+      - label: "`List`"
+        correct: false
+        why: "Une liste accepte les doublons."
+      - label: "`ArrayList`"
+        correct: false
+        why: "C'est une List."
+    explanation: "List (ordonnée, doublons permis), Set (sans doublons), Map (clé → valeur)."
+  - code: java-c3-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: java-exceptions
+    prompt: "Quelle exception obtient-on en appelant une méthode sur une variable qui vaut null ?"
+    choices:
+      - label: "NullPointerException"
+        correct: true
+        why: "L'erreur la plus célèbre de Java."
+      - label: "IOException"
+        correct: false
+        why: "Elle concerne les entrées/sorties."
+      - label: "Aucune"
+        correct: false
+        why: "On ne peut pas appeler de méthode sur null."
+    explanation: "`Optional` et les contrôles de null servent à l'éviter."

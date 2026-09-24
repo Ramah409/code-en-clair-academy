@@ -1,0 +1,598 @@
+slug: java-examen
+position: 4
+level: EXAMEN
+title: "Java pour le titre CDA"
+summary: "Écrire un code Java propre (records, equals et hashCode, immutabilité, principes SOLID) et répondre aux questions Java du jury."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: java-bonnes-pratiques
+    title: "Un code Java propre"
+    duration: 14
+    objective: "Utiliser les records, redéfinir equals et hashCode, préférer l'immutabilité et appliquer les principes SOLID de base."
+    prerequisites: "Chapitre « Collections et exceptions »."
+    skills: [poo, java-bases]
+    xp: 25
+    memo: |
+      - **record** : `public record ProduitDto(Long id, String nom) {}` — une classe de données immuable, avec constructeur, accesseurs, `equals`, `hashCode` et `toString` générés.
+      - Si deux objets sont « égaux » (`equals`), ils doivent avoir le même `hashCode` (sinon les `HashSet`/`HashMap` se trompent).
+      - **Immuable** : l'objet ne change plus après sa création (attributs `final`, pas de setter) → plus simple et plus sûr.
+      - **SOLID** (bases) : une classe = une responsabilité (S) ; dépendre d'interfaces plutôt que de classes concrètes (D).
+      - Nommage : classes en `PascalCase`, méthodes et variables en `camelCase`, constantes en `MAJUSCULES`.
+    commonMistakes: |
+      - Redéfinir `equals` sans `hashCode`.
+      - Des classes « fourre-tout » (un service qui gère utilisateurs, paiements et e-mails).
+      - Des noms vagues (`data`, `tmp`, `traiter()`).
+    blocks:
+      - type: text
+        md: |
+          Un code qui marche n'est pas forcément un bon code. Le jury regarde aussi s'il est **lisible**,
+          **cohérent** et **facile à faire évoluer**.
+      - type: definition
+        id: def-record
+        term: "record"
+        md: |
+          Une classe **pour transporter des données**, écrite en une ligne. Java fabrique tout le reste :
+          constructeur, accès aux champs, comparaison, affichage. C'est l'**enveloppe** idéale pour les DTO
+          d'une API.
+      - type: compare
+        left:
+          title: "Classe classique (extrait)"
+          code: |
+            public class ProduitDto {
+                private final Long id;
+                private final String nom;
+                public ProduitDto(Long id, String nom) { this.id = id; this.nom = nom; }
+                public Long getId() { return id; }
+                public String getNom() { return nom; }
+                // + equals, hashCode, toString…
+            }
+          language: java
+        right:
+          title: "record (équivalent)"
+          good: true
+          code: |
+            public record ProduitDto(Long id, String nom) {
+            }
+          language: java
+      - type: question
+        ref: java-bp-q1
+        review: def-record
+      - type: definition
+        id: def-equals-hashcode
+        term: "equals et hashCode"
+        md: |
+          `equals` dit si deux objets sont **équivalents** ; `hashCode` donne un **numéro de casier** utilisé
+          par les `HashMap` et `HashSet` pour ranger l'objet. Deux objets égaux doivent aller dans le même
+          casier, sinon on ne les retrouve pas.
+      - type: definition
+        id: def-solid
+        term: "SOLID (les deux principes les plus cités)"
+        md: |
+          - **S — responsabilité unique** : une classe fait une seule chose. Le `AuthService` gère
+            l'authentification, pas l'envoi des factures.
+          - **D — inversion des dépendances** : une classe dépend d'un **contrat** (interface), pas d'une
+            classe concrète. On peut alors changer l'implémentation (ou la remplacer par une doublure dans un
+            test).
+      - type: code
+        id: code-solid
+        language: java
+        title: "Dépendre d'une interface"
+        code: |
+          public class InscriptionService {
+              private final Notification notification;
+
+              public InscriptionService(Notification notification) {
+                  this.notification = notification;
+              }
+
+              public void inscrire(String email) {
+                  // ... enregistrer le compte
+                  notification.envoyer("Bienvenue !");
+              }
+          }
+        lines:
+          - n: 2
+            note: "`final` : la dépendance ne changera plus. Son type est l'**interface** `Notification`."
+          - n: 4
+            note: "La dépendance est **fournie** de l'extérieur (injection par le constructeur), comme dans Spring."
+          - n: 10
+            note: "Le service ne sait pas si c'est un e-mail ou un SMS : il suit le contrat."
+      - type: question
+        ref: java-bp-q2
+        review: def-solid
+      - type: text
+        md: "Exercice guidé : complète un record et son utilisation."
+      - type: exercise
+        ref: java-ex-record-guide
+      - type: text
+        md: "**Améliorer un code** : rends cette classe immuable."
+      - type: exercise
+        ref: java-ex-immuable
+      - type: jury
+        items:
+          - q: "Qu'est-ce qu'un record et quand l'utilisez-vous ?"
+            a: "Une classe de données immuable dont Java génère constructeur, accesseurs, equals, hashCode et toString. Je l'utilise pour les DTO de mon API."
+          - q: "Pourquoi redéfinir hashCode quand on redéfinit equals ?"
+            a: "Parce que les collections à hachage (HashMap, HashSet) utilisent hashCode pour ranger les objets ; deux objets égaux doivent avoir le même hashCode, sinon on ne les retrouve pas."
+          - q: "Pouvez-vous citer un principe SOLID appliqué dans votre projet ?"
+            a: "La responsabilité unique : contrôleur, service et repository ont chacun un rôle. Et l'inversion des dépendances : mes services reçoivent leurs dépendances par le constructeur, souvent sous forme d'interfaces."
+      - type: quiz
+        items:
+          - ref: java-bp-q3
+            review: def-equals-hashcode
+          - ref: java-bp-q4
+            review: code-solid
+          - ref: java-bp-q5
+            review: def-record
+    questions:
+      - code: java-bp-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Que génère Java automatiquement pour `record Point(int x, int y)` ?"
+        choices:
+          - label: "Le constructeur, les accesseurs x() et y(), equals, hashCode et toString"
+            correct: true
+            why: "Tout le code répétitif."
+          - label: "Des setters setX et setY"
+            correct: false
+            why: "Un record est immuable : pas de setter."
+          - label: "Rien, il faut tout écrire"
+            correct: false
+            why: "C'est justement l'intérêt du record."
+        explanation: "Records : immuables et concis."
+      - code: java-bp-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "Quel principe est respecté quand un service reçoit une interface par son constructeur ?"
+        choices:
+          - label: "L'inversion des dépendances (le D de SOLID)"
+            correct: true
+            why: "Le service dépend d'un contrat, fourni de l'extérieur."
+          - label: "L'héritage multiple"
+            correct: false
+            why: "Aucun héritage ici."
+          - label: "La récursivité"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "C'est exactement ce que fait Spring avec l'injection de dépendances."
+      - code: java-bp-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: java-collections
+        prompt: "Deux objets égaux selon equals peuvent avoir des hashCode différents sans poser de problème."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : HashSet et HashMap ne les retrouveraient pas."
+          - label: "Faux"
+            correct: true
+            why: "Exact : c'est le contrat equals / hashCode."
+        explanation: "Égaux ⇒ même hashCode."
+      - code: java-bp-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Pourquoi l'attribut `notification` est-il `final` ?"
+        choices:
+          - label: "Pour qu'il ne puisse plus être remplacé après la construction"
+            correct: true
+            why: "La dépendance est fixée une fois pour toutes."
+          - label: "Pour qu'il soit public"
+            correct: false
+            why: "final ne change pas la visibilité."
+          - label: "Parce que c'est une interface"
+            correct: false
+            why: "Aucun lien obligatoire."
+        explanation: "Dépendances final + injection par le constructeur : code plus sûr et testable."
+      - code: java-bp-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quelle convention de nommage est correcte en Java ?"
+        choices:
+          - label: "Classe `CommandeService`, méthode `calculerTotal`, constante `TAUX_TVA`"
+            correct: true
+            why: "PascalCase, camelCase, MAJUSCULES."
+          - label: "Classe `commande_service`, méthode `CalculerTotal`"
+            correct: false
+            why: "Conventions inversées."
+          - label: "Tout en majuscules"
+            correct: false
+            why: "Réservé aux constantes."
+        explanation: "Des conventions partagées rendent le code lisible par toute l'équipe."
+    exercises:
+      - slug: java-ex-record-guide
+        kind: COMPLETER
+        title: "Compléter un record"
+        difficulty: FACILE
+        skill: java-bases
+        statement: "Complète le record et la lecture d'un champ."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot-clé qui remplace class pour une classe de données."
+          - "On lit un champ de record avec son nom suivi de parenthèses."
+          - "record, email, email."
+        solution: '["record", "email", "email"]'
+        explanation: "`record UtilisatriceDto(Long id, String email)` ; on lit avec `dto.email()` (pas `getEmail()`)."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            public [[1]] UtilisatriceDto(Long id, String [[2]]) {
+            }
+
+            UtilisatriceDto dto = new UtilisatriceDto(1L, "awa@exemple.fr");
+            System.out.println(dto.[[3]]());
+          blanks:
+            - ["record"]
+            - ["email"]
+            - ["email"]
+      - slug: java-ex-immuable
+        kind: CORRIGER_ERREUR
+        title: "Rendre une classe immuable"
+        difficulty: INTERMEDIAIRE
+        skill: poo
+        statement: |
+          Cette classe `Adresse` peut être modifiée n'importe quand. Rends-la **immuable** :
+          - attributs `private final` ;
+          - plus aucun setter ;
+          - les getters restent.
+          (Tu peux aussi la remplacer par un `record Adresse(String rue, String ville)`.)
+        criteria: "Aucun setter ; attributs final (ou record)."
+        hints:
+          - "Supprime `setRue` et `setVille`."
+          - "Ajoute `final` : `private final String rue;`"
+          - "Ou plus court : `public record Adresse(String rue, String ville) { }`"
+        solution: |
+          public class Adresse {
+              private final String rue;
+              private final String ville;
+
+              public Adresse(String rue, String ville) {
+                  this.rue = rue;
+                  this.ville = ville;
+              }
+
+              public String getRue() { return rue; }
+              public String getVille() { return ville; }
+          }
+        explanation: "Une adresse qui change se remplace par une nouvelle adresse : aucune autre partie du code ne peut la modifier dans son dos."
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            public class Adresse {
+                private String rue;
+                private String ville;
+
+                public Adresse(String rue, String ville) {
+                    this.rue = rue;
+                    this.ville = ville;
+                }
+
+                public String getRue() { return rue; }
+                public String getVille() { return ville; }
+                public void setRue(String rue) { this.rue = rue; }
+                public void setVille(String ville) { this.ville = ville; }
+            }
+          checks:
+            - pattern: '\bset[A-Z]\w*\s*\('
+              absent: true
+              message: "Supprime les setters : un objet immuable ne se modifie plus."
+            - pattern: 'private\s+final\s+String\s+rue|record\s+Adresse\s*\(\s*String\s+rue'
+              message: "rue doit être final (ou utilise un record)."
+            - pattern: 'private\s+final\s+String\s+ville|record\s+Adresse\s*\([^)]*String\s+ville'
+              message: "ville doit être final (ou utilise un record)."
+
+  # ===================================================================== LEÇON 2
+  - slug: java-questions-jury
+    title: "Java devant le jury"
+    duration: 13
+    objective: "Répondre simplement aux questions classiques sur la JVM, la mémoire, String, static et les tests Java."
+    prerequisites: "Leçon « Un code Java propre »."
+    skills: [java-bases, oral-cda]
+    xp: 25
+    memo: |
+      - **JVM** : exécute le bytecode ; **ramasse-miettes** (garbage collector) : libère la mémoire des objets inutilisés.
+      - **Pile** (stack) : variables locales et appels de méthodes ; **tas** (heap) : les objets créés avec `new`.
+      - `String` est **immuable** : chaque « modification » crée un nouveau texte (`StringBuilder` pour de nombreux ajouts).
+      - `static` : appartient à la **classe**, pas à chaque objet.
+      - Tests : **JUnit 5** (`@Test`, `assertEquals`) et **Mockito** pour les doublures.
+    commonMistakes: |
+      - Réciter une définition sans exemple.
+      - Confondre JVM, JRE et JDK.
+      - Dire que Java n'a pas de problèmes de mémoire : des fuites restent possibles (références gardées inutilement).
+    blocks:
+      - type: text
+        md: |
+          Voici les questions Java qui reviennent le plus souvent. Pour chacune : une phrase simple, puis un
+          exemple.
+      - type: definition
+        id: def-memoire
+        term: "Pile et tas"
+        md: |
+          - La **pile** (stack) est un **bloc-notes** de travail : chaque méthode appelée y pose ses variables
+            locales, qui disparaissent à la fin de la méthode.
+          - Le **tas** (heap) est un **entrepôt** où vivent les objets créés avec `new`. Le **ramasse-miettes**
+            passe régulièrement pour jeter ceux que plus personne n'utilise.
+      - type: definition
+        id: def-static
+        term: "static"
+        md: |
+          Ce qui est `static` appartient à la **classe elle-même**, partagé par tous les objets, comme le
+          règlement affiché dans le hall d'un immeuble (le même pour tous les appartements). `Math.max(…)` est
+          une méthode statique : on l'appelle sans créer d'objet.
+      - type: code
+        id: code-string
+        language: java
+        title: "String est immuable"
+        code: |
+          String s = "CDA";
+          s.toLowerCase();
+          System.out.println(s);
+          s = s.toLowerCase();
+          System.out.println(s);
+
+          StringBuilder sb = new StringBuilder();
+          for (int i = 0; i < 3; i++) {
+              sb.append(i);
+          }
+          System.out.println(sb.toString());
+        lines:
+          - n: 2
+            note: "`toLowerCase()` renvoie un **nouveau** texte ; `s` n'est pas modifié."
+          - n: 3
+            note: "Affiche encore « CDA »."
+          - n: 4
+            note: "On range le nouveau texte dans `s`."
+          - n: 7
+            note: "Pour construire un texte en de nombreux morceaux, `StringBuilder` évite de créer un objet à chaque ajout."
+          - n: 11
+            note: "Affiche « 012 »."
+      - type: question
+        ref: java-jq-q1
+        review: code-string
+      - type: code
+        id: code-junit
+        language: java
+        title: "Un test JUnit 5"
+        code: |
+          class CompteBancaireTest {
+
+              @Test
+              void retraitSuperieurAuSoldeRefuse() {
+                  CompteBancaire compte = new CompteBancaire();
+                  compte.deposer(50);
+
+                  assertThrows(IllegalStateException.class, () -> compte.retirer(80));
+                  assertEquals(50, compte.getSolde());
+              }
+          }
+        lines:
+          - n: 3
+            note: "`@Test` : méthode de test exécutée par JUnit."
+          - n: 8
+            note: "On vérifie qu'une exception est levée."
+          - n: 9
+            note: "Et que le solde n'a pas bougé."
+      - type: question
+        ref: java-jq-q2
+        review: def-memoire
+      - type: text
+        md: "Exercice guidé : associe chaque notion à sa définition."
+      - type: exercise
+        ref: java-ex-jury-guide
+      - type: text
+        md: "En autonomie : écris un test JUnit."
+      - type: exercise
+        ref: java-ex-junit
+      - type: jury
+        items:
+          - q: "Qu'est-ce que le garbage collector ?"
+            a: "Un mécanisme de la JVM qui libère automatiquement la mémoire des objets qui ne sont plus référencés ; le développeur n'a pas à libérer la mémoire à la main."
+          - q: "Que signifie static ?"
+            a: "Un membre static appartient à la classe et non à chaque objet : il est partagé et accessible sans instance, comme `Math.max`."
+          - q: "Pourquoi String est-il immuable ?"
+            a: "Pour la sécurité et le partage : un texte ne peut pas être modifié dans le dos d'un autre code. Chaque transformation renvoie un nouveau String."
+          - q: "Comment testez-vous votre code Java ?"
+            a: "Avec JUnit 5 pour les tests unitaires et Mockito pour simuler les dépendances ; dans Spring, avec @SpringBootTest et MockMvc pour les tests d'intégration."
+      - type: quiz
+        items:
+          - ref: java-jq-q3
+            review: def-static
+          - ref: java-jq-q4
+            review: code-junit
+          - ref: java-jq-q5
+            review: def-memoire
+    questions:
+      - code: java-jq-q1
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          String nom = "awa";
+          nom.toUpperCase();
+          System.out.println(nom);
+        language: java
+        choices:
+          - label: "awa"
+            correct: true
+            why: "toUpperCase renvoie un nouveau texte, non rangé."
+          - label: "AWA"
+            correct: false
+            why: "Il faudrait `nom = nom.toUpperCase();`."
+          - label: "Une erreur"
+            correct: false
+            why: "Le code est valide."
+        explanation: "String est immuable : on récupère toujours le résultat."
+      - code: java-jq-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Où sont stockés les objets créés avec `new` ?"
+        choices:
+          - label: "Dans le tas (heap)"
+            correct: true
+            why: "Les variables locales, elles, sont sur la pile."
+          - label: "Dans la pile (stack)"
+            correct: false
+            why: "La pile contient les variables locales et les références."
+          - label: "Dans le fichier .class"
+            correct: false
+            why: "Le .class contient le bytecode, pas les objets."
+        explanation: "Objets → tas ; variables locales → pile."
+      - code: java-jq-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "Un compteur `static int nombreDeComptes` dans `CompteBancaire`…"
+        choices:
+          - label: "est partagé par tous les comptes"
+            correct: true
+            why: "Il appartient à la classe."
+          - label: "existe en un exemplaire par compte"
+            correct: false
+            why: "Ce serait un attribut non static."
+          - label: "ne peut pas être modifié"
+            correct: false
+            why: "static n'est pas final."
+        explanation: "static = au niveau de la classe."
+      - code: java-jq-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-tests
+        prompt: "Quelle annotation marque une méthode de test JUnit 5 ?"
+        choices:
+          - label: "`@Test`"
+            correct: true
+            why: "Oui."
+          - label: "`@Override`"
+            correct: false
+            why: "C'est pour redéfinir une méthode."
+          - label: "`@Entity`"
+            correct: false
+            why: "C'est JPA."
+        explanation: "`@Test`, puis des assertions (`assertEquals`, `assertThrows`)."
+      - code: java-jq-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: java-bases
+        prompt: "En Java, il faut libérer à la main la mémoire des objets devenus inutiles."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : le garbage collector s'en charge."
+          - label: "Faux"
+            correct: true
+            why: "Exact : c'est automatique."
+        explanation: "Le ramasse-miettes libère les objets qui ne sont plus référencés."
+    exercises:
+      - slug: java-ex-jury-guide
+        kind: COMPLETER
+        title: "Définitions express Java"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Complète chaque phrase avec un mot."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Ce qui exécute le bytecode : JVM."
+          - "Ce qui appartient à la classe : static."
+          - "JVM, static, immuable, JUnit."
+        solution: '["JVM", "static", "immuable", "JUnit"]'
+        explanation: "Quatre réponses prêtes pour l'oral."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            La [[1]] exécute le bytecode Java.
+            Un attribut [[2]] est partagé par tous les objets de la classe.
+            Un String ne change jamais : il est [[3]].
+            Les tests unitaires Java s'écrivent avec [[4]].
+          blanks:
+            - ["JVM"]
+            - ["static"]
+            - ["immuable", "immutable"]
+            - ["JUnit", "JUnit 5"]
+      - slug: java-ex-junit
+        kind: CODE_LIBRE
+        title: "Tester un dépôt refusé"
+        difficulty: INTERMEDIAIRE
+        skill: java-tests
+        statement: |
+          Dans une classe `CompteBancaireTest`, écris le test `depotNegatifRefuse` :
+          1. crée un `CompteBancaire` ;
+          2. vérifie avec `assertThrows` qu'un dépôt de `-10` lève `IllegalArgumentException` ;
+          3. vérifie avec `assertEquals` que le solde vaut toujours `0`.
+        criteria: "Méthode @Test, assertThrows sur deposer(-10), assertEquals du solde."
+        hints:
+          - "`@Test void depotNegatifRefuse() { ... }`"
+          - "`assertThrows(IllegalArgumentException.class, () -> compte.deposer(-10));`"
+          - "`assertEquals(0, compte.getSolde());`"
+        solution: |
+          class CompteBancaireTest {
+
+              @Test
+              void depotNegatifRefuse() {
+                  CompteBancaire compte = new CompteBancaire();
+
+                  assertThrows(IllegalArgumentException.class, () -> compte.deposer(-10));
+                  assertEquals(0, compte.getSolde());
+              }
+          }
+        explanation: "Un test vérifie aussi ce qui NE doit PAS arriver : ici, le solde ne bouge pas après un dépôt refusé."
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            class CompteBancaireTest {
+
+            }
+          checks:
+            - pattern: '@Test\s+(public\s+)?void\s+depotNegatifRefuse\s*\(\s*\)'
+              message: "Déclare la méthode : @Test void depotNegatifRefuse()."
+            - pattern: 'new\s+CompteBancaire\s*\(\s*\)'
+              message: "Crée un compte : new CompteBancaire()."
+            - pattern: 'assertThrows\s*\(\s*IllegalArgumentException\.class\s*,\s*\(\s*\)\s*->\s*\w+\.deposer\s*\(\s*-\s*10\s*\)\s*\)'
+              message: "Vérifie l'exception : assertThrows(IllegalArgumentException.class, () -> compte.deposer(-10));"
+            - pattern: 'assertEquals\s*\(\s*0(\.0)?\s*,\s*\w+\.getSolde\s*\(\s*\)'
+              message: "Vérifie que le solde vaut 0 : assertEquals(0, compte.getSolde());"
+
+bank:
+  - code: java-c4-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: java-tests
+    prompt: "À quoi sert Mockito dans un test unitaire ?"
+    choices:
+      - label: "À créer des doublures des dépendances (repository, service externe)"
+        correct: true
+        why: "On teste la classe seule."
+      - label: "À compiler le projet"
+        correct: false
+        why: "C'est Maven ou Gradle."
+      - label: "À lancer le serveur"
+        correct: false
+        why: "Un test unitaire ne lance pas de serveur."
+    explanation: "Mockito : when(...).thenReturn(...), verify(...)."
+  - code: java-c4-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: java-bases
+    prompt: "Quel outil gère les dépendances et la construction d'un projet Spring Boot ?"
+    choices:
+      - label: "Maven (ou Gradle)"
+        correct: true
+        why: "pom.xml décrit les dépendances et le build."
+      - label: "npm"
+        correct: false
+        why: "npm sert aux projets JavaScript (Angular)."
+      - label: "Docker"
+        correct: false
+        why: "Docker emballe l'application, il ne gère pas les dépendances Java."
+    explanation: "Maven : `./mvnw test`, `./mvnw package`."
