@@ -1,0 +1,524 @@
+slug: uml-cas-utilisation
+position: 1
+level: DEBUTANT
+title: "Les cas d'utilisation"
+summary: "Identifier les acteurs et ce qu'ils font avec l'application, dessiner le diagramme de cas d'utilisation et décrire un scénario."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: uml-diagramme-cas
+    title: "Acteurs et cas d'utilisation"
+    duration: 12
+    objective: "Dessiner un diagramme de cas d'utilisation avec acteurs, cas, include et extend."
+    prerequisites: "Aucun."
+    skills: [uml-architecture]
+    xp: 15
+    memo: |
+      - **UML** : un langage de schémas normalisés pour concevoir une application.
+      - **Acteur** : quelqu'un (ou un système) qui utilise l'application, dessiné comme un bonhomme.
+      - **Cas d'utilisation** : un service rendu à l'acteur, dans une ellipse, avec un verbe (« Passer commande »).
+      - `<<include>>` : le cas inclut **toujours** un autre cas ; `<<extend>>` : ajoute un cas **parfois**.
+      - Le cadre (rectangle) représente le **système** : l'application.
+    commonMistakes: |
+      - Mettre des étapes techniques comme cas (« Cliquer sur le bouton », « Requête SQL »).
+      - Oublier des acteurs (l'administratrice, un service de paiement externe).
+      - Confondre include (toujours) et extend (parfois).
+    blocks:
+      - type: text
+        md: |
+          Avant de coder, on se demande : **qui** va utiliser l'application, et **pour faire quoi** ? Le
+          diagramme de cas d'utilisation répond à ces deux questions sur une seule page.
+      - type: definition
+        id: def-uml
+        term: "UML"
+        md: |
+          *Unified Modeling Language* : un ensemble de **schémas standard**, compris par tous les développeurs,
+          comme les symboles d'un plan d'électricien. Chaque diagramme montre un point de vue différent.
+      - type: definition
+        id: def-acteur
+        term: "Acteur et cas d'utilisation"
+        md: |
+          Un **acteur** est un **rôle** qui interagit avec l'application (Cliente, Administratrice, service
+          de paiement). Un **cas d'utilisation** est un **service** que l'application lui rend, formulé avec
+          un verbe : « S'inscrire », « Gérer son panier ». Au restaurant : le client (acteur) peut
+          « commander un plat » (cas).
+      - type: code
+        id: code-usecase
+        language: text
+        title: "Le diagramme d'une boutique en ligne, en PlantUML"
+        code: |
+          @startuml
+          left to right direction
+          actor Cliente
+          actor Administratrice
+          rectangle Boutique {
+            Cliente --> (S'inscrire)
+            Cliente --> (Se connecter)
+            Cliente --> (Passer commande)
+            (Passer commande) .> (Se connecter) : <<include>>
+            (Appliquer un code promo) .> (Passer commande) : <<extend>>
+            Administratrice --> (Gérer les comptes)
+          }
+          @enduml
+        lines:
+          - n: 1
+            note: "Début du diagramme PlantUML."
+          - n: 3
+            note: "`actor` déclare un acteur (bonhomme)."
+          - n: 5
+            note: "Le rectangle représente le système."
+          - n: 6
+            note: "Une flèche relie l'acteur au cas : la cliente peut s'inscrire."
+          - n: 9
+            note: "`include` : passer commande **nécessite toujours** d'être connectée."
+          - n: 10
+            note: "`extend` : appliquer un code promo **peut** s'ajouter à la commande, pas toujours."
+      - type: question
+        ref: uml-cu-q1
+        review: def-acteur
+      - type: question
+        ref: uml-cu-q2
+        review: code-usecase
+      - type: text
+        md: "Exercice guidé : complète le diagramme."
+      - type: exercise
+        ref: uml-ex-usecase-guide
+      - type: text
+        md: "En autonomie : écris le diagramme de cas d'utilisation d'une bibliothèque en ligne."
+      - type: exercise
+        ref: uml-ex-usecase
+      - type: jury
+        items:
+          - q: "À quoi sert un diagramme de cas d'utilisation ?"
+            a: "À montrer qui utilise l'application (acteurs) et quels services elle leur rend (cas d'utilisation), sans détail technique. C'est un support pour valider le périmètre avec le client."
+          - q: "Quelle différence entre include et extend ?"
+            a: "include : le cas inclus est toujours exécuté (payer inclut s'authentifier). extend : le cas est une extension facultative, sous condition (appliquer un code promo)."
+      - type: quiz
+        items:
+          - ref: uml-cu-q3
+            review: code-usecase
+          - ref: uml-cu-q4
+            review: def-acteur
+          - ref: uml-cu-q5
+            review: def-uml
+    questions:
+      - code: uml-cu-q1
+        kind: CHOIX_MULTIPLE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Lesquels sont de bons cas d'utilisation pour une boutique en ligne ?"
+        choices:
+          - label: "Passer commande"
+            correct: true
+            why: "Un service rendu à la cliente."
+          - label: "Consulter le catalogue"
+            correct: true
+            why: "Un service rendu."
+          - label: "Exécuter une requête SQL"
+            correct: false
+            why: "C'est technique : l'utilisatrice ne le voit pas."
+          - label: "Cliquer sur le bouton vert"
+            correct: false
+            why: "Une action d'interface, pas un service."
+        explanation: "Un cas d'utilisation = un objectif de l'utilisatrice, formulé avec un verbe."
+      - code: uml-cu-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "« Pour payer, il faut toujours être authentifiée. » Quelle relation ?"
+        choices:
+          - label: "`<<include>>`"
+            correct: true
+            why: "Toujours."
+          - label: "`<<extend>>`"
+            correct: false
+            why: "extend signifie « parfois »."
+          - label: "Héritage"
+            correct: false
+            why: "L'héritage relie des acteurs ou des cas plus généraux/plus précis."
+        explanation: "include = obligatoire ; extend = optionnel."
+      - code: uml-cu-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Que représente le rectangle d'un diagramme de cas d'utilisation ?"
+        choices:
+          - label: "Le système : l'application"
+            correct: true
+            why: "Les cas sont dedans, les acteurs dehors."
+          - label: "Un acteur"
+            correct: false
+            why: "Un acteur est un bonhomme."
+          - label: "La base de données"
+            correct: false
+            why: "Le diagramme ne montre pas la technique."
+        explanation: "Frontière du système."
+      - code: uml-cu-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Un service de paiement externe (comme une banque) peut être un acteur."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Un acteur peut être un système extérieur qui interagit avec l'application."
+          - label: "Faux"
+            correct: false
+            why: "Les acteurs ne sont pas forcément humains."
+        explanation: "Acteur = rôle extérieur au système, humain ou non."
+      - code: uml-cu-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "UML signifie…"
+        choices:
+          - label: "Unified Modeling Language"
+            correct: true
+            why: "Langage de modélisation unifié."
+          - label: "Universal Machine Learning"
+            correct: false
+            why: "Aucun rapport."
+          - label: "User Management Language"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Un langage de schémas normalisés."
+    exercises:
+      - slug: uml-ex-usecase-guide
+        kind: COMPLETER
+        title: "Compléter un diagramme de cas"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Complète le PlantUML."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot qui déclare un acteur."
+          - "Relation obligatoire : include."
+          - "actor, include, extend."
+        solution: '["actor", "include", "extend"]'
+        explanation: "Emprunter inclut toujours s'identifier ; prolonger un prêt est une extension facultative."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            [[1]] Lecteur
+            Lecteur --> (Emprunter un livre)
+            (Emprunter un livre) .> (S'identifier) : <<[[2]]>>
+            (Prolonger le prêt) .> (Emprunter un livre) : <<[[3]]>>
+          blanks:
+            - ["actor"]
+            - ["include"]
+            - ["extend"]
+      - slug: uml-ex-usecase
+        kind: CODE_LIBRE
+        title: "Diagramme de cas : bibliothèque en ligne"
+        difficulty: INTERMEDIAIRE
+        skill: uml-architecture
+        statement: |
+          Écris en PlantUML le diagramme de cas d'une bibliothèque en ligne :
+          - deux acteurs : `Lecteur` et `Bibliothecaire` ;
+          - le lecteur peut `(Rechercher un livre)` et `(Réserver un livre)` ;
+          - réserver **inclut toujours** `(Se connecter)` ;
+          - le bibliothécaire peut `(Gérer le catalogue)` ;
+          - le tout dans un `rectangle Bibliotheque { ... }`, entre `@startuml` et `@enduml`.
+        criteria: "Deux acteurs, quatre cas, un include, un rectangle système."
+        hints:
+          - "`actor Lecteur` et `actor Bibliothecaire`."
+          - "`Lecteur --> (Réserver un livre)`"
+          - "`(Réserver un livre) .> (Se connecter) : <<include>>`"
+        solution: |
+          @startuml
+          left to right direction
+          actor Lecteur
+          actor Bibliothecaire
+          rectangle Bibliotheque {
+            Lecteur --> (Rechercher un livre)
+            Lecteur --> (Réserver un livre)
+            (Réserver un livre) .> (Se connecter) : <<include>>
+            Bibliothecaire --> (Gérer le catalogue)
+          }
+          @enduml
+        explanation: "Le diagramme tient en quelques lignes et montre tout le périmètre fonctionnel."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            @startuml
+
+            @enduml
+          checks:
+            - pattern: '@startuml[\s\S]*@enduml'
+              message: "Entoure le diagramme de @startuml et @enduml."
+            - pattern: '\bactor\s+Lecteur\b'
+              message: "Déclare l'acteur Lecteur."
+            - pattern: '\bactor\s+Biblioth[eé]caire\b'
+              message: "Déclare l'acteur Bibliothecaire."
+            - pattern: 'Lecteur\s*-+>\s*\(\s*Rechercher un livre\s*\)'
+              message: "Relie Lecteur à (Rechercher un livre)."
+            - pattern: 'Lecteur\s*-+>\s*\(\s*Réserver un livre\s*\)'
+              message: "Relie Lecteur à (Réserver un livre)."
+            - pattern: '\(\s*Réserver un livre\s*\)\s*\.+>\s*\(\s*Se connecter\s*\)\s*:\s*<<\s*include\s*>>'
+              message: "Réserver inclut toujours la connexion : (Réserver un livre) .> (Se connecter) : <<include>>"
+            - pattern: 'Biblioth[eé]caire\s*-+>\s*\(\s*Gérer le catalogue\s*\)'
+              message: "Relie Bibliothecaire à (Gérer le catalogue)."
+            - pattern: 'rectangle\s+\w+\s*\{'
+              message: "Place les cas dans un rectangle système."
+
+  # ===================================================================== LEÇON 2
+  - slug: uml-scenario
+    title: "Décrire un cas : le scénario"
+    duration: 12
+    objective: "Rédiger la fiche d'un cas d'utilisation : acteur, préconditions, scénario nominal et scénarios alternatifs."
+    prerequisites: "Leçon « Acteurs et cas d'utilisation »."
+    skills: [uml-architecture, gestion-projet]
+    xp: 20
+    memo: |
+      - Une **fiche de cas** précise : acteur, **préconditions**, **scénario nominal** (tout va bien), **scénarios alternatifs** (erreurs), **postconditions**.
+      - Le scénario nominal est une suite numérotée d'échanges acteur ↔ système.
+      - Chaque alternative renvoie à une étape : « 4a. l'e-mail est déjà utilisé : le système affiche un message ».
+      - Les alternatives deviennent des **tests** et des **messages d'erreur**.
+    commonMistakes: |
+      - N'écrire que le cas où tout va bien.
+      - Décrire l'interface (« bouton bleu ») au lieu des échanges.
+      - Oublier les postconditions (ce qui est vrai à la fin : le compte existe).
+    blocks:
+      - type: text
+        md: |
+          Le diagramme donne la liste des cas. Pour les plus importants, on écrit une **fiche** qui raconte
+          le déroulement, étape par étape.
+      - type: definition
+        id: def-scenario
+        term: "Scénario nominal et alternatif"
+        md: |
+          Le **scénario nominal** est le chemin où **tout se passe bien**, comme l'itinéraire prévu sur un
+          GPS. Les **scénarios alternatifs** sont les **déviations** : route barrée, erreur de saisie,
+          doublon. Chacun indique à quelle étape il se branche.
+      - type: code
+        id: code-fiche
+        language: text
+        title: "Fiche du cas « S'inscrire »"
+        code: |
+          Acteur : Visiteuse
+          Précondition : la visiteuse n'est pas connectée.
+          Scénario nominal :
+            1. La visiteuse demande à créer un compte.
+            2. Le système affiche le formulaire.
+            3. La visiteuse saisit nom, e-mail et mot de passe.
+            4. Le système vérifie les données.
+            5. Le système crée le compte et confirme.
+          Scénarios alternatifs :
+            4a. L'e-mail est déjà utilisé : le système l'indique ; retour à l'étape 3.
+            4b. Le mot de passe est trop court : le système l'indique ; retour à l'étape 3.
+          Postcondition : un compte existe avec le rôle USER.
+        lines:
+          - n: 2
+            note: "Ce qui doit être vrai **avant** de commencer."
+          - n: 4
+            note: "Des échanges acteur ↔ système, sans détail d'interface."
+          - n: 10
+            note: "`4a` : l'alternative se branche à l'étape 4. Elle deviendra une réponse 409 dans l'API et un test."
+          - n: 12
+            note: "Ce qui est vrai **après** le cas."
+      - type: question
+        ref: uml-sc-q1
+        review: def-scenario
+      - type: question
+        ref: uml-sc-q2
+        review: code-fiche
+      - type: text
+        md: "Exercice guidé : remets le scénario nominal de connexion dans l'ordre."
+      - type: exercise
+        ref: uml-ex-scenario-ordre
+      - type: text
+        md: "En autonomie : écris les scénarios alternatifs du cas « Se connecter »."
+      - type: exercise
+        ref: uml-ex-alternatifs
+      - type: jury
+        items:
+          - q: "À quoi servent les scénarios alternatifs ?"
+            a: "À prévoir les erreurs et les cas particuliers dès la conception ; ils deviennent des messages d'erreur, des règles de validation et des cas de test."
+      - type: quiz
+        items:
+          - ref: uml-sc-q3
+            review: code-fiche
+          - ref: uml-sc-q4
+            review: def-scenario
+          - ref: uml-sc-q5
+            review: code-fiche
+    questions:
+      - code: uml-sc-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Qu'est-ce que le scénario nominal ?"
+        choices:
+          - label: "Le déroulement où tout se passe bien"
+            correct: true
+            why: "Le chemin prévu."
+          - label: "La liste des erreurs possibles"
+            correct: false
+            why: "Ce sont les scénarios alternatifs."
+          - label: "Le nom du cas"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Nominal = chemin normal ; alternatifs = déviations."
+      - code: uml-sc-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Dans la fiche, que signifie « 4a » ?"
+        choices:
+          - label: "Une alternative qui se branche à l'étape 4"
+            correct: true
+            why: "Elle indique où le déroulement change."
+          - label: "La quatrième alternative"
+            correct: false
+            why: "Le chiffre désigne l'étape, la lettre l'alternative."
+          - label: "Une étape facultative"
+            correct: false
+            why: "C'est une déviation à l'étape 4."
+        explanation: "Numéro d'étape + lettre."
+      - code: uml-sc-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Que devient l'alternative « 4a. e-mail déjà utilisé » dans l'application ?"
+        choices:
+          - label: "Une règle de validation, un message d'erreur (409) et un test"
+            correct: true
+            why: "La conception guide le code et les tests."
+          - label: "Rien, c'est seulement de la documentation"
+            correct: false
+            why: "Chaque alternative doit être traitée."
+          - label: "Un nouveau cas d'utilisation"
+            correct: false
+            why: "C'est une variante du même cas."
+        explanation: "Fiche de cas → code → tests."
+      - code: uml-sc-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Un scénario de cas d'utilisation décrit la couleur des boutons."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : il décrit les échanges, pas l'apparence."
+          - label: "Faux"
+            correct: true
+            why: "Exact : l'interface relève des maquettes."
+        explanation: "Scénario = échanges acteur ↔ système."
+      - code: uml-sc-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Qu'est-ce qu'une postcondition ?"
+        choices:
+          - label: "Ce qui est vrai après l'exécution du cas"
+            correct: true
+            why: "Par exemple : le compte existe."
+          - label: "Ce qui doit être vrai avant"
+            correct: false
+            why: "C'est la précondition."
+          - label: "Une erreur"
+            correct: false
+            why: "Les erreurs sont dans les alternatives."
+        explanation: "Pré = avant, post = après."
+    exercises:
+      - slug: uml-ex-scenario-ordre
+        kind: REMETTRE_ORDRE
+        title: "Scénario nominal de connexion"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Remets les étapes du cas « Se connecter » dans l'ordre."
+        criteria: "Échanges dans l'ordre chronologique."
+        hints:
+          - "L'utilisatrice commence par demander à se connecter."
+          - "Le système vérifie avant d'ouvrir la session."
+          - "Demander, afficher, saisir, vérifier, ouvrir la session."
+        solution: |
+          1. L'utilisatrice demande à se connecter.
+          2. Le système affiche le formulaire.
+          3. L'utilisatrice saisit son e-mail et son mot de passe.
+          4. Le système vérifie les identifiants.
+          5. Le système ouvre la session et affiche l'accueil.
+        explanation: "Alternance acteur / système, sans détail technique."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "L'utilisatrice demande à se connecter."
+            - "Le système affiche le formulaire."
+            - "L'utilisatrice saisit son e-mail et son mot de passe."
+            - "Le système vérifie les identifiants."
+            - "Le système ouvre la session et affiche l'accueil."
+      - slug: uml-ex-alternatifs
+        kind: CODE_LIBRE
+        title: "Écrire les scénarios alternatifs"
+        difficulty: INTERMEDIAIRE
+        skill: uml-architecture
+        statement: |
+          Pour le cas « Se connecter » (étape 4 : le système vérifie les identifiants), écris **deux**
+          scénarios alternatifs, un par ligne, sous la forme `4a. …` et `4b. …` :
+          - identifiants incorrects ;
+          - compte désactivé.
+          Chaque ligne dit ce que fait le système.
+        criteria: "Deux alternatives numérotées 4a et 4b, avec la réaction du système."
+        hints:
+          - "Commence chaque ligne par 4a. puis 4b."
+          - "Précise la situation, puis la réaction : « le système affiche… »."
+          - "4a. Les identifiants sont incorrects : le système affiche un message sans préciser lequel est faux."
+        solution: |
+          4a. Les identifiants sont incorrects : le système affiche « Identifiant ou mot de passe incorrect » et reste sur le formulaire.
+          4b. Le compte est désactivé : le système refuse la connexion et invite à contacter l'administratrice.
+        explanation: "Le message de 4a ne dit pas si c'est l'e-mail ou le mot de passe qui est faux : c'est une bonne pratique de sécurité."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            4a.
+            4b.
+          checks:
+            - pattern: '(?im)^\s*4a\.\s*\S.{10,}'
+              message: "Écris une première alternative complète commençant par 4a."
+            - pattern: '(?im)^\s*4b\.\s*\S.{10,}'
+              message: "Écris une deuxième alternative complète commençant par 4b."
+            - pattern: '(?i)incorrect|faux|erron'
+              message: "Une alternative traite les identifiants incorrects."
+            - pattern: '(?i)d[ée]sactiv|bloqu|suspendu'
+              message: "Une alternative traite le compte désactivé."
+            - pattern: '(?i)syst[eè]me'
+              message: "Dis ce que fait le système dans chaque cas."
+
+bank:
+  - code: uml-c1-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: uml-architecture
+    prompt: "À quel moment du projet réalise-t-on le diagramme de cas d'utilisation ?"
+    choices:
+      - label: "Au début, pendant l'analyse du besoin"
+        correct: true
+        why: "Il sert à valider le périmètre avec le client."
+      - label: "Après la mise en production"
+        correct: false
+        why: "Trop tard pour guider la conception."
+      - label: "Jamais, il est facultatif"
+        correct: false
+        why: "Il est attendu au dossier CDA."
+    explanation: "Analyse → conception → réalisation."
+  - code: uml-c1-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: gestion-projet
+    prompt: "Quel lien entre user story et cas d'utilisation ?"
+    choices:
+      - label: "Les deux décrivent un besoin utilisateur ; la user story est plus courte (« En tant que…, je veux…, afin de… »)"
+        correct: true
+        why: "Ils se complètent."
+      - label: "Aucun lien"
+        correct: false
+        why: "Ils décrivent tous deux ce que veut l'utilisatrice."
+      - label: "La user story remplace le code"
+        correct: false
+        why: "Aucun rapport."
+    explanation: "User story (agile) et cas d'utilisation (UML) expriment le besoin."

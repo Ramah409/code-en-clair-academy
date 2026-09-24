@@ -1,0 +1,537 @@
+slug: uml-classes
+position: 2
+level: INTERMEDIAIRE
+title: "Le diagramme de classes"
+summary: "Représenter les classes avec leurs attributs, méthodes et visibilités, puis les relations : association, multiplicité, composition et héritage."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: uml-classe-simple
+    title: "Classes, attributs, méthodes et visibilité"
+    duration: 12
+    objective: "Dessiner une classe UML complète et faire le lien avec le code Java."
+    prerequisites: "Chapitre « Les cas d'utilisation » ; parcours Java conseillé."
+    skills: [uml-architecture, poo]
+    xp: 20
+    memo: |
+      - Une classe UML : un rectangle en trois cases — **nom**, **attributs**, **méthodes**.
+      - Visibilité : `-` privé, `+` public, `#` protégé.
+      - Attribut : `- email : String` ; méthode : `+ prixTTC() : double`.
+      - Le diagramme de classes correspond directement aux classes Java (entités, services…).
+    commonMistakes: |
+      - Oublier les types.
+      - Mettre tous les attributs en public (`+`) : contraire à l'encapsulation.
+      - Recopier le MCD sans les méthodes : le diagramme de classes montre aussi le comportement.
+    blocks:
+      - type: text
+        md: |
+          Le diagramme de classes est le **plan du code** : il montre les classes de l'application, leurs
+          données et ce qu'elles savent faire.
+      - type: definition
+        id: def-classe-uml
+        term: "Classe UML"
+        md: |
+          Un rectangle en **trois étages** : le nom en haut, les attributs au milieu, les méthodes en bas.
+          Chaque membre est précédé de sa **visibilité** : `-` (privé), `+` (public), `#` (protégé).
+      - type: code
+        id: code-classe-uml
+        language: text
+        title: "La classe Produit en PlantUML"
+        code: |
+          @startuml
+          class Produit {
+            - id : Long
+            - nom : String
+            - prix : BigDecimal
+            + Produit(nom : String, prix : BigDecimal)
+            + getNom() : String
+            + prixTTC() : BigDecimal
+          }
+          @enduml
+        lines:
+          - n: 3
+            note: "`-` : attribut privé, suivi de son type après les deux-points."
+          - n: 6
+            note: "Le constructeur."
+          - n: 8
+            note: "`+` : méthode publique ; le type de retour vient après les deux-points."
+      - type: compare
+        left:
+          title: "UML"
+          code: |
+            - prix : BigDecimal
+            + prixTTC() : BigDecimal
+          language: text
+        right:
+          title: "Java"
+          code: |
+            private BigDecimal prix;
+            public BigDecimal prixTTC() { ... }
+          language: java
+      - type: question
+        ref: uml-cl-q1
+        review: def-classe-uml
+      - type: question
+        ref: uml-cl-q2
+        review: code-classe-uml
+      - type: text
+        md: "Exercice guidé : complète la classe."
+      - type: exercise
+        ref: uml-ex-classe-guide
+      - type: text
+        md: "En autonomie : écris la classe Utilisateur en PlantUML."
+      - type: exercise
+        ref: uml-ex-classe
+      - type: jury
+        items:
+          - q: "Que représentent les symboles + et - dans un diagramme de classes ?"
+            a: "La visibilité : + public, - privé, # protégé. Les attributs sont en général privés et accessibles par des méthodes publiques (encapsulation)."
+      - type: quiz
+        items:
+          - ref: uml-cl-q3
+            review: code-classe-uml
+          - ref: uml-cl-q4
+            review: def-classe-uml
+          - ref: uml-cl-q5
+            review: code-classe-uml
+    questions:
+      - code: uml-cl-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Que contient la case du milieu d'une classe UML ?"
+        choices:
+          - label: "Les attributs"
+            correct: true
+            why: "Nom, attributs, méthodes."
+          - label: "Les méthodes"
+            correct: false
+            why: "Elles sont dans la case du bas."
+          - label: "Le nom"
+            correct: false
+            why: "Il est en haut."
+        explanation: "Trois étages : nom, attributs, méthodes."
+      - code: uml-cl-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Que signifie `- email : String` ?"
+        choices:
+          - label: "Un attribut privé email de type String"
+            correct: true
+            why: "- = privé."
+          - label: "Une méthode publique"
+            correct: false
+            why: "Pas de parenthèses : c'est un attribut."
+          - label: "Un email supprimé"
+            correct: false
+            why: "Le - indique la visibilité."
+        explanation: "Visibilité, nom, deux-points, type."
+      - code: uml-cl-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Comment s'écrit en UML une méthode publique `total` qui renvoie un BigDecimal ?"
+        choices:
+          - label: "`+ total() : BigDecimal`"
+            correct: true
+            why: "Visibilité, nom, parenthèses, type de retour."
+          - label: "`- total : BigDecimal`"
+            correct: false
+            why: "C'est un attribut privé."
+          - label: "`BigDecimal total()`"
+            correct: false
+            why: "C'est l'écriture Java, sans visibilité UML."
+        explanation: "En UML, le type de retour suit les deux-points."
+      - code: uml-cl-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Le diagramme de classes montre les méthodes, contrairement au MCD."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Il décrit aussi le comportement."
+          - label: "Faux"
+            correct: false
+            why: "Le MCD ne montre que les données."
+        explanation: "Classes = données + comportements."
+      - code: uml-cl-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Quel symbole indique la visibilité protégée ?"
+        choices:
+          - label: "`#`"
+            correct: true
+            why: "Protégé : la classe et ses enfants."
+          - label: "`~`"
+            correct: false
+            why: "~ signifie visibilité paquet."
+          - label: "`*`"
+            correct: false
+            why: "Ce n'est pas un symbole de visibilité."
+        explanation: "+ public, - privé, # protégé, ~ paquet."
+    exercises:
+      - slug: uml-ex-classe-guide
+        kind: COMPLETER
+        title: "Compléter une classe UML"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Complète les visibilités et le type de retour."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Un attribut est privé."
+          - "Une méthode utilisable par les autres est publique."
+          - "-, +, boolean."
+        solution: '["-", "+", "boolean"]'
+        explanation: "Attribut privé, méthode publique qui renvoie un booléen."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            class Compte {
+              [[1]] solde : double
+              [[2]] peutRetirer(montant : double) : [[3]]
+            }
+          blanks:
+            - ["-"]
+            - ["+"]
+            - ["boolean"]
+      - slug: uml-ex-classe
+        kind: CODE_LIBRE
+        title: "La classe Utilisateur"
+        difficulty: INTERMEDIAIRE
+        skill: uml-architecture
+        statement: |
+          Écris en PlantUML la classe `Utilisateur` :
+          - attributs privés `id : Long`, `email : String`, `motDePasseHash : String`, `role : Role` ;
+          - méthodes publiques `getEmail() : String` et `estAdmin() : boolean`.
+        criteria: "Classe avec quatre attributs privés typés et deux méthodes publiques typées."
+        hints:
+          - "`class Utilisateur { ... }` entre @startuml et @enduml."
+          - "`- email : String` pour chaque attribut."
+          - "`+ estAdmin() : boolean`"
+        solution: |
+          @startuml
+          class Utilisateur {
+            - id : Long
+            - email : String
+            - motDePasseHash : String
+            - role : Role
+            + getEmail() : String
+            + estAdmin() : boolean
+          }
+          @enduml
+        explanation: "Le hash du mot de passe est privé et n'a pas de getter public dans le diagramme : on documente déjà la sécurité."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            @startuml
+
+            @enduml
+          checks:
+            - pattern: 'class\s+Utilisateur\s*\{'
+              message: "Déclare class Utilisateur { ... }."
+            - pattern: '-\s*id\s*:\s*Long'
+              message: "Attribut privé - id : Long."
+            - pattern: '-\s*email\s*:\s*String'
+              message: "Attribut privé - email : String."
+            - pattern: '-\s*motDePasseHash\s*:\s*String'
+              message: "Attribut privé - motDePasseHash : String."
+            - pattern: '-\s*role\s*:\s*Role'
+              message: "Attribut privé - role : Role."
+            - pattern: '\+\s*getEmail\s*\(\s*\)\s*:\s*String'
+              message: "Méthode publique + getEmail() : String."
+            - pattern: '\+\s*estAdmin\s*\(\s*\)\s*:\s*boolean'
+              message: "Méthode publique + estAdmin() : boolean."
+            - pattern: '\+\s*motDePasseHash'
+              absent: true
+              message: "Le hash du mot de passe ne doit pas être public."
+
+  # ===================================================================== LEÇON 2
+  - slug: uml-relations
+    title: "Les relations entre classes"
+    duration: 13
+    objective: "Représenter association, multiplicités, composition et héritage, et les traduire en Java."
+    prerequisites: "Leçon « Classes, attributs, méthodes et visibilité »."
+    skills: [uml-architecture, poo]
+    xp: 25
+    memo: |
+      - **Association** : un trait entre deux classes, avec des **multiplicités** (`1`, `0..1`, `*`, `1..*`).
+      - **Composition** (losange plein, `*--`) : la partie n'existe pas sans le tout (une ligne de commande sans commande).
+      - **Agrégation** (losange vide, `o--`) : lien plus faible, la partie peut exister seule.
+      - **Héritage** (flèche à triangle, `<|--`) : « est un ».
+      - Multiplicités UML ≈ cardinalités Merise, mais placées **de l'autre côté**.
+    commonMistakes: |
+      - Placer les multiplicités comme des cardinalités Merise (elles sont inversées).
+      - Mettre de l'héritage là où il y a seulement « a un ».
+      - Confondre composition et agrégation.
+    blocks:
+      - type: text
+        md: |
+          Les classes ne vivent pas seules : une commande appartient à une cliente, contient des lignes, un
+          administrateur est un utilisateur. Le diagramme montre ces **relations**.
+      - type: definition
+        id: def-multiplicite
+        term: "Multiplicité"
+        md: |
+          Le nombre d'objets possibles **à l'autre bout** du lien : `1` (exactement un), `0..1` (zéro ou un),
+          `*` (plusieurs), `1..*` (au moins un). Attention : en UML, on lit la multiplicité **près de la
+          classe comptée**, alors qu'en Merise la cardinalité est près de l'entité qui « compte ».
+      - type: code
+        id: code-relations
+        language: text
+        title: "Relations de la boutique"
+        code: |
+          @startuml
+          class Client
+          class Commande
+          class LigneCommande
+          class Produit
+          class Utilisateur
+          class Admin
+
+          Client "1" -- "*" Commande : passe >
+          Commande "1" *-- "1..*" LigneCommande
+          LigneCommande "*" -- "1" Produit
+          Utilisateur <|-- Admin
+          @enduml
+        lines:
+          - n: 9
+            note: "Un client passe plusieurs (`*`) commandes ; une commande a un (`1`) client."
+          - n: 10
+            note: "Composition (losange plein côté Commande) : les lignes n'existent pas sans leur commande ; une commande a au moins une ligne."
+          - n: 11
+            note: "Chaque ligne concerne un seul produit."
+          - n: 12
+            note: "Héritage : un Admin est un Utilisateur (triangle côté parent)."
+      - type: code
+        id: code-relations-java
+        language: java
+        title: "La traduction en Java"
+        code: |
+          public class Commande {
+              private Client client;
+              private List<LigneCommande> lignes = new ArrayList<>();
+          }
+
+          public class Admin extends Utilisateur {
+          }
+        lines:
+          - n: 2
+            note: "Multiplicité `1` : un attribut simple."
+          - n: 3
+            note: "Multiplicité `1..*` : une liste."
+          - n: 6
+            note: "Héritage : `extends`."
+      - type: question
+        ref: uml-rel-q1
+        review: def-multiplicite
+      - type: question
+        ref: uml-rel-q2
+        review: code-relations
+      - type: text
+        md: "Exercice guidé : complète les relations."
+      - type: exercise
+        ref: uml-ex-relations-guide
+      - type: text
+        md: "En autonomie : écris le diagramme de classes d'une école."
+      - type: exercise
+        ref: uml-ex-relations
+      - type: jury
+        items:
+          - q: "Quelle différence entre composition et agrégation ?"
+            a: "Dans une composition, la partie n'existe pas sans le tout et disparaît avec lui (une ligne de commande) ; dans une agrégation, la partie peut exister indépendamment (un joueur dans une équipe)."
+          - q: "Quel lien entre votre diagramme de classes et votre MCD ?"
+            a: "Le MCD décrit les données pour la base ; le diagramme de classes décrit les objets du code. Les entités JPA en sont souvent la traduction, avec les relations @ManyToOne et @OneToMany."
+      - type: quiz
+        items:
+          - ref: uml-rel-q3
+            review: code-relations
+          - ref: uml-rel-q4
+            review: code-relations-java
+          - ref: uml-rel-q5
+            review: def-multiplicite
+    questions:
+      - code: uml-rel-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Que signifie la multiplicité `0..1` ?"
+        choices:
+          - label: "Zéro ou un"
+            correct: true
+            why: "Facultatif, au plus un."
+          - label: "Entre 0 et 100"
+            correct: false
+            why: "Le `..` sépare un minimum et un maximum."
+          - label: "Exactement un"
+            correct: false
+            why: "Ce serait `1`."
+        explanation: "`1`, `0..1`, `*`, `1..*`."
+      - code: uml-rel-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Quelle notation PlantUML représente un héritage (Admin est un Utilisateur) ?"
+        choices:
+          - label: "`Utilisateur <|-- Admin`"
+            correct: true
+            why: "Le triangle pointe vers le parent."
+          - label: "`Utilisateur *-- Admin`"
+            correct: false
+            why: "C'est une composition."
+          - label: "`Utilisateur -- Admin`"
+            correct: false
+            why: "C'est une simple association."
+        explanation: "Triangle vide vers la classe parente."
+      - code: uml-rel-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Pourquoi une composition entre Commande et LigneCommande ?"
+        choices:
+          - label: "Parce qu'une ligne n'existe pas sans sa commande"
+            correct: true
+            why: "Si on supprime la commande, ses lignes disparaissent."
+          - label: "Parce que le produit appartient à la commande"
+            correct: false
+            why: "Le produit existe indépendamment."
+          - label: "Par habitude"
+            correct: false
+            why: "Le choix exprime une règle."
+        explanation: "Composition = cycle de vie commun."
+      - code: uml-rel-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "Comment traduire en Java la multiplicité `*` du côté des commandes d'un client ?"
+        choices:
+          - label: "Un attribut `List<Commande> commandes` dans Client"
+            correct: true
+            why: "Plusieurs objets → collection."
+          - label: "Un attribut `Commande commande`"
+            correct: false
+            why: "Un seul objet ne suffit pas."
+          - label: "Un héritage Client extends Commande"
+            correct: false
+            why: "Aucune relation « est un »."
+        explanation: "`*` → List, `1` → attribut simple."
+      - code: uml-rel-q5
+        kind: VRAI_FAUX
+        difficulty: 3
+        skill: uml-architecture
+        prompt: "Les multiplicités UML se placent au même endroit que les cardinalités Merise."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : elles sont du côté opposé."
+          - label: "Faux"
+            correct: true
+            why: "Exact : c'est une source d'erreur fréquente."
+        explanation: "Merise : cardinalité près de l'entité qui participe. UML : multiplicité près de la classe comptée."
+    exercises:
+      - slug: uml-ex-relations-guide
+        kind: COMPLETER
+        title: "Compléter les relations"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Complète avec la bonne flèche PlantUML ou la bonne multiplicité."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Héritage : triangle vide <|--."
+          - "Composition : losange plein *--."
+          - "<|--, *--, *."
+        solution: '["<|--", "*--", "*"]'
+        explanation: "Un Livre est un Produit ; un chapitre n'existe pas sans son livre ; une autrice écrit plusieurs livres."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            Produit [[1]] Livre
+            Livre "1" [[2]] "1..*" Chapitre
+            Autrice "1..*" -- "[[3]]" Livre : écrit >
+          blanks:
+            - ["<|--"]
+            - ["*--"]
+            - ["*", "0..*", "1..*"]
+      - slug: uml-ex-relations
+        kind: CODE_LIBRE
+        title: "Le diagramme de classes d'une école"
+        difficulty: INTERMEDIAIRE
+        skill: uml-architecture
+        statement: |
+          Écris en PlantUML les relations suivantes (les classes peuvent rester vides) :
+          - `Personne` est la classe parente de `Eleve` et de `Professeur` (héritage) ;
+          - une `Classe` regroupe **plusieurs** élèves ; un élève est dans **une** classe ;
+          - un `Professeur` enseigne dans **plusieurs** classes ; une classe a **au moins un** professeur.
+        criteria: "Deux héritages et deux associations avec multiplicités."
+        hints:
+          - "`Personne <|-- Eleve` et `Personne <|-- Professeur`."
+          - "`Classe \"1\" -- \"*\" Eleve`"
+          - "`Professeur \"1..*\" -- \"*\" Classe`"
+        solution: |
+          @startuml
+          class Personne
+          class Eleve
+          class Professeur
+          class Classe
+          Personne <|-- Eleve
+          Personne <|-- Professeur
+          Classe "1" -- "*" Eleve
+          Professeur "1..*" -- "*" Classe
+          @enduml
+        explanation: "Chaque multiplicité se lit du côté de la classe comptée : « une classe a plusieurs (*) élèves »."
+        xp: 25
+        payload:
+          language: text
+          starter: |
+            @startuml
+
+            @enduml
+          checks:
+            - pattern: 'Personne\s*<\|--\s*Eleve|Eleve\s*--\|>\s*Personne'
+              message: "Eleve hérite de Personne : Personne <|-- Eleve."
+            - pattern: 'Personne\s*<\|--\s*Professeur|Professeur\s*--\|>\s*Personne'
+              message: "Professeur hérite de Personne : Personne <|-- Professeur."
+            - pattern: 'Classe\s*"1"\s*--\s*"(\*|0\.\.\*)"\s*Eleve|Eleve\s*"(\*|0\.\.\*)"\s*--\s*"1"\s*Classe'
+              message: "Une classe a plusieurs élèves, un élève est dans une classe : Classe \"1\" -- \"*\" Eleve."
+            - pattern: 'Professeur\s*"1\.\.\*"\s*--\s*"(\*|0\.\.\*|1\.\.\*)"\s*Classe|Classe\s*"(\*|0\.\.\*|1\.\.\*)"\s*--\s*"1\.\.\*"\s*Professeur'
+              message: "Une classe a au moins un professeur : Professeur \"1..*\" -- \"*\" Classe."
+
+bank:
+  - code: uml-c2-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: uml-architecture
+    prompt: "Quelle relation UML pour « une équipe regroupe des joueurs qui peuvent changer d'équipe » ?"
+    choices:
+      - label: "Agrégation (losange vide)"
+        correct: true
+        why: "Le joueur existe sans l'équipe."
+      - label: "Composition"
+        correct: false
+        why: "Le joueur ne disparaît pas avec l'équipe."
+      - label: "Héritage"
+        correct: false
+        why: "Un joueur n'est pas une équipe."
+    explanation: "Agrégation : lien « contient » faible."
+  - code: uml-c2-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: spring-jpa
+    prompt: "Quelle annotation JPA traduit « plusieurs commandes pour un client » côté Commande ?"
+    choices:
+      - label: "`@ManyToOne`"
+        correct: true
+        why: "Plusieurs commandes vers un client."
+      - label: "`@OneToOne`"
+        correct: false
+        why: "Un client a plusieurs commandes."
+      - label: "`@Id`"
+        correct: false
+        why: "Marque la clé primaire."
+    explanation: "Côté Client : `@OneToMany(mappedBy = \"client\")`."

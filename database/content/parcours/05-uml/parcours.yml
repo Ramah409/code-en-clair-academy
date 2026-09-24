@@ -1,0 +1,20 @@
+slug: uml
+version: 1
+position: 5
+title: "UML : concevoir une application"
+category: PROJET
+icon: diagram
+summary: "Décrire une application avant de la coder : cas d'utilisation, classes, séquences, activités et architecture, avec PlantUML."
+description: |
+  **UML** est un langage de **dessins normalisés** pour concevoir une application : qui l'utilise, quels
+  objets elle manipule, comment ils échangent des messages. Au titre CDA, on attend au minimum un
+  **diagramme de cas d'utilisation**, un **diagramme de classes** et un **diagramme de séquence**.
+
+  Tu écris tes diagrammes avec **PlantUML**, un outil gratuit où l'on décrit le schéma avec du texte
+  (`Client --> (Passer commande)`), et qui le dessine tout seul. Les exercices vérifient automatiquement
+  que ton texte contient les bons éléments.
+
+  **Au programme** : cas d'utilisation et scénarios, classes et relations, séquences, activités,
+  architecture en couches et déploiement, puis les questions de conception du jury.
+examQuestionCount: 30
+examTimeLimitMinutes: 35
