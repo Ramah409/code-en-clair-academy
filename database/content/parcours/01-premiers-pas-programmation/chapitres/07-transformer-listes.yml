@@ -1,0 +1,1077 @@
+slug: prog-transformer-listes
+position: 7
+level: INTERMEDIAIRE
+title: "Transformer des listes"
+summary: "Garder certains éléments avec filter, transformer chaque élément avec map, trouver un élément avec find, puis tout assembler en une seule valeur avec reduce. Une seule notion par leçon."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: prog-filter-map-reduce
+    title: "Garder certains éléments : filter"
+    duration: 10
+    objective: "Créer une nouvelle liste qui ne garde que les éléments qui passent un test, avec filter."
+    prerequisites: "Chapitre « Organiser son code : fonctions et objets »."
+    skills: [algo-fonctions, javascript-bases]
+    xp: 15
+    memo: |
+      - `liste.filter(x => condition)` garde les éléments pour lesquels la condition est **vraie**.
+      - Le résultat est une **nouvelle** liste, souvent plus courte. La liste d'origine ne change pas.
+      - La fonction fléchée reçoit chaque élément à tour de rôle et répond `true` ou `false`.
+    commonMistakes: |
+      - Oublier de ranger le résultat : `liste.filter(...)` seul ne change rien à `liste`.
+      - Écrire une condition qui ne renvoie pas true/false.
+    blocks:
+      - type: text
+        md: |
+          « Garde seulement les produits en stock », « seulement les utilisatrices actives »… Trier le bon grain
+          de l'ivraie, c'est le travail de `filter`.
+      - type: definition
+        id: def-filter
+        term: "filter (filtrer)"
+        md: |
+          Un **tamis** : on verse toute la liste, seuls les éléments qui répondent « vrai » au test restent
+          dans le tamis. Les autres tombent.
+      - type: code
+        id: code-filter
+        language: javascript
+        title: "Garder les produits en stock"
+        code: |
+          const produits = [
+            { nom: "Alarme", enStock: true },
+            { nom: "Coque", enStock: false },
+            { nom: "Sac", enStock: true }
+          ];
+          const disponibles = produits.filter(p => p.enStock);
+          console.log(disponibles);
+        lines:
+          - n: 6
+            note: "Pour chaque produit `p`, le test est `p.enStock`. On garde ceux qui répondent true : Alarme et Sac."
+          - n: 7
+            note: "Une nouvelle liste de deux produits. `produits` n'a pas changé."
+      - type: demo
+        title: "Essaie"
+        md: "Garde plutôt les produits qui ne sont pas en stock : `p => !p.enStock`."
+        language: javascript
+        code: |
+          const produits = [
+            { nom: "Alarme", enStock: true },
+            { nom: "Coque", enStock: false },
+            { nom: "Sac", enStock: true }
+          ];
+          const disponibles = produits.filter(p => p.enStock);
+          console.log(disponibles);
+      - type: question
+        ref: prog-m-q1
+        review: def-filter
+      - type: question
+        ref: prog-m-q4
+        review: code-filter
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le filtre."
+      - type: exercise
+        ref: prog-ex-filter-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : les prénoms longs."
+      - type: exercise
+        ref: prog-ex-filter-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un résultat perdu."
+      - type: exercise
+        ref: prog-ex-filter-bug
+      - type: quiz
+        items:
+          - ref: prog-fi-q3
+            review: def-filter
+          - ref: prog-fi-q4
+            review: code-filter
+          - ref: prog-fi-q5
+            review: def-filter
+    questions:
+      - code: prog-m-q1
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: javascript-bases
+        prompt: "Que vaut `[\"Awa\", \"Léo\", \"Inès\"].filter(p => p !== \"Léo\")` ?"
+        snippet: "[\"Awa\", \"Léo\", \"Inès\"].filter(p => p !== \"Léo\")"
+        language: javascript
+        choices:
+          - label: "[\"Awa\", \"Inès\"]"
+            correct: true
+            why: "Léo est retiré car la condition est fausse pour lui."
+          - label: "[true, false, true]"
+            correct: false
+            why: "filter garde les éléments eux-mêmes, pas les réponses du test."
+          - label: "\"Léo\""
+            correct: false
+            why: "filter renvoie une liste, et garde ceux qui passent le test."
+        explanation: "filter garde les éléments pour lesquels la fonction renvoie vrai."
+      - code: prog-m-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: javascript-bases
+        prompt: "`produits.filter(...)` modifie la liste `produits` d'origine."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : filter crée une nouvelle liste."
+          - label: "Faux"
+            correct: true
+            why: "Exact : l'original est intact."
+        explanation: "On range le résultat dans une nouvelle variable."
+      - code: prog-fi-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "À quoi sert `filter` ?"
+        choices:
+          - label: "À garder seulement les éléments qui passent un test"
+            correct: true
+            why: "C'est le tamis."
+          - label: "À transformer chaque élément"
+            correct: false
+            why: "Ça, ce sera map, à la leçon suivante."
+          - label: "À trier la liste"
+            correct: false
+            why: "filter ne change pas l'ordre."
+        explanation: "filter = garder ceux qui répondent vrai."
+      - code: prog-fi-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Que contient `villes` à la fin ?"
+        snippet: |
+          const toutes = ["Lyon", "Paris", "Lille"];
+          const villes = toutes.filter(v => v.includes("L"));
+        language: javascript
+        choices:
+          - label: "[\"Lyon\", \"Lille\"]"
+            correct: true
+            why: "Seules ces deux villes contiennent un L majuscule."
+          - label: "[\"Paris\"]"
+            correct: false
+            why: "C'est la ville qui ne passe pas le test."
+          - label: "[\"Lyon\", \"Paris\", \"Lille\"]"
+            correct: false
+            why: "Paris est retirée par le filtre."
+        explanation: "Le test peut utiliser tout ce que tu connais : includes, ===, <…"
+      - code: prog-fi-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Que doit répondre la fonction donnée à filter ?"
+        choices:
+          - label: "true pour garder l'élément, false pour l'écarter"
+            correct: true
+            why: "C'est la question posée à chaque élément."
+          - label: "Le nouvel élément"
+            correct: false
+            why: "filter ne transforme pas."
+          - label: "Rien"
+            correct: false
+            why: "Sans réponse, rien n'est gardé."
+        explanation: "La fonction de filter est un test."
+    exercises:
+      - slug: prog-ex-filter-guide
+        kind: COMPLETER
+        title: "Compléter le filtre"
+        difficulty: FACILE
+        skill: javascript-bases
+        statement: "Complète pour garder seulement les tâches terminées."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Garder certains éléments : filter."
+          - "Le test lit la propriété terminee de chaque tâche."
+          - "filter, terminee."
+        solution: '["filter", "terminee"]'
+        explanation: "`taches.filter(t => t.terminee)`"
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const taches = [
+              { nom: "Réviser", terminee: true },
+              { nom: "Coder", terminee: false }
+            ];
+            const faites = taches.[[1]](t => t.[[2]]);
+            console.log(faites);
+          blanks:
+            - ["filter"]
+            - ["terminee"]
+      - slug: prog-ex-filter-libre
+        kind: CODE_LIBRE
+        title: "Les villes de la liste qui contiennent « on »"
+        difficulty: FACILE
+        skill: javascript-bases
+        statement: |
+          Avec `const villes = ["Lyon", "Nice", "Toulon", "Brest"];`, crée `choisies` : les villes qui
+          **contiennent** `"on"` (utilise `filter` et `includes`). Affiche `choisies`.
+        criteria: "filter avec un test includes(\"on\"), résultat rangé et affiché."
+        hints:
+          - "`villes.filter(v => ...)`"
+          - "Le test : `v.includes(\"on\")`."
+          - "`const choisies = villes.filter(v => v.includes(\"on\"));`"
+        solution: |
+          const villes = ["Lyon", "Nice", "Toulon", "Brest"];
+          const choisies = villes.filter(v => v.includes("on"));
+          console.log(choisies);
+        explanation: "Lyon et Toulon contiennent « on » : ce sont les deux gardées."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const villes = ["Lyon", "Nice", "Toulon", "Brest"];
+
+          checks:
+            - pattern: '(const|let)\s+choisies\s*=\s*villes\.filter\s*\('
+              message: "Range le résultat : const choisies = villes.filter(...)."
+            - pattern: '\.includes\s*\(\s*["''`]on["''`]\s*\)'
+              message: "Le test : v.includes(\"on\")."
+            - pattern: 'console\.log\s*\(\s*choisies\s*\)'
+              message: "Affiche choisies."
+      - slug: prog-ex-filter-bug
+        kind: CORRIGER_ERREUR
+        title: "Un résultat perdu"
+        difficulty: FACILE
+        skill: javascript-bases
+        statement: |
+          Ce programme veut afficher seulement les membres actifs, mais il affiche **tout le monde** :
+          le résultat de filter n'est rangé nulle part. Range-le dans `actifs` et affiche `actifs`.
+        criteria: "Le résultat de filter est rangé dans actifs, qui est affiché."
+        hints:
+          - "filter ne modifie pas la liste d'origine."
+          - "Il faut ranger ce qu'il renvoie dans une nouvelle variable."
+          - "`const actifs = membres.filter(m => m.actif);` puis `console.log(actifs);`"
+        solution: |
+          const membres = [
+            { nom: "Awa", actif: true },
+            { nom: "Léo", actif: false }
+          ];
+          const actifs = membres.filter(m => m.actif);
+          console.log(actifs);
+        explanation: "Le résultat de filter est une nouvelle liste : il faut la ranger."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const membres = [
+              { nom: "Awa", actif: true },
+              { nom: "Léo", actif: false }
+            ];
+            membres.filter(m => m.actif);
+            console.log(membres);
+          checks:
+            - pattern: '(const|let)\s+actifs\s*=\s*membres\.filter\s*\('
+              message: "Range le résultat : const actifs = membres.filter(...)."
+            - pattern: 'console\.log\s*\(\s*actifs\s*\)'
+              message: "Affiche actifs."
+
+  # ===================================================================== LEÇON 2
+  - slug: prog-map
+    title: "Transformer chaque élément : map"
+    duration: 10
+    objective: "Créer une nouvelle liste de même taille, où chaque élément est transformé, avec map."
+    prerequisites: "Leçon « Garder certains éléments : filter »."
+    skills: [javascript-bases]
+    xp: 15
+    memo: |
+      - `liste.map(x => transformation)` applique la même transformation à **chaque** élément.
+      - Le résultat est une nouvelle liste **de même taille**.
+      - Cas très courant : `produits.map(p => p.nom)` donne la liste des noms.
+      - On peut enchaîner : `liste.filter(...).map(...)`.
+    commonMistakes: |
+      - Utiliser map pour garder certains éléments : la liste garde sa taille.
+      - Oublier de ranger le résultat.
+    blocks:
+      - type: text
+        md: |
+          « Mets tous les prénoms en majuscules », « ne garde que le nom de chaque produit »… Transformer
+          chaque élément d'une liste, c'est le travail de `map`.
+      - type: definition
+        id: def-map
+        term: "map (transformer)"
+        md: |
+          Une **chaîne de peinture** : chaque objet entre gris et ressort rouge. Autant d'objets en sortie
+          qu'en entrée, tous transformés de la même façon.
+      - type: code
+        id: code-map
+        language: javascript
+        title: "Deux transformations"
+        code: |
+          const prenoms = ["awa", "léo", "inès"];
+          const majuscules = prenoms.map(p => p.toUpperCase());
+          console.log(majuscules);
+
+          const produits = [{ nom: "Alarme" }, { nom: "Sac" }];
+          const noms = produits.map(p => p.nom);
+          console.log(noms);
+        lines:
+          - n: 2
+            note: "Chaque prénom est mis en majuscules : AWA, LÉO, INÈS."
+          - n: 6
+            note: "Chaque produit est transformé en son nom : [\"Alarme\", \"Sac\"]."
+      - type: demo
+        title: "Essaie"
+        md: "Transforme chaque prénom en un message : ``p => `Salut ${p}` ``."
+        language: javascript
+        code: |
+          const prenoms = ["awa", "léo", "inès"];
+          const majuscules = prenoms.map(p => p.toUpperCase());
+          console.log(majuscules);
+      - type: question
+        ref: prog-m-q2
+        review: def-map
+      - type: question
+        ref: prog-m-q5
+        review: code-map
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la transformation."
+      - type: exercise
+        ref: prog-ex-map-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : les e-mails des utilisatrices actives (filter puis map)."
+      - type: exercise
+        ref: prog-ex-methodes
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : map au lieu de filter."
+      - type: exercise
+        ref: prog-ex-map-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre map et filter ?"
+            a: "`map` transforme chaque élément et renvoie une liste de même taille ; `filter` garde seulement les éléments qui passent un test, la liste peut donc être plus courte."
+      - type: quiz
+        items:
+          - ref: prog-c3-b2
+            review: code-map
+          - ref: prog-mp-q4
+            review: def-map
+          - ref: prog-mp-q5
+            review: def-map
+    questions:
+      - code: prog-m-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: javascript-bases
+        prompt: "Que vaut `[\"a\", \"b\"].map(l => l.toUpperCase())` ?"
+        snippet: "[\"a\", \"b\"].map(l => l.toUpperCase())"
+        language: javascript
+        choices:
+          - label: "[\"A\", \"B\"]"
+            correct: true
+            why: "Chaque lettre est transformée en majuscule."
+          - label: "[\"a\", \"b\"]"
+            correct: false
+            why: "map renvoie les valeurs transformées."
+          - label: "\"AB\""
+            correct: false
+            why: "map renvoie une liste, pas un texte."
+        explanation: "map : même nombre d'éléments, chacun transformé."
+      - code: prog-m-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: javascript-bases
+        prompt: "Pour obtenir la liste des noms à partir d'une liste de produits, quelle méthode utiliser ?"
+        choices:
+          - label: "`map`"
+            correct: true
+            why: "On transforme chaque produit en son nom."
+          - label: "`filter`"
+            correct: false
+            why: "filter garde des produits entiers, il ne les transforme pas."
+          - label: "`push`"
+            correct: false
+            why: "push ajoute un élément."
+        explanation: "`produits.map(p => p.nom)`."
+      - code: prog-c3-b2
+        kind: RESULTAT_CODE
+        difficulty: 3
+        skill: javascript-bases
+        prompt: "Que vaut ce résultat ?"
+        snippet: "[\"awa\", \"léo\", \"inès\"].filter(p => p !== \"léo\").map(p => p.toUpperCase())"
+        language: javascript
+        choices:
+          - label: "[\"AWA\", \"INÈS\"]"
+            correct: true
+            why: "On retire léo, puis on met les autres en majuscules."
+          - label: "[\"AWA\", \"LÉO\", \"INÈS\"]"
+            correct: false
+            why: "léo a été retiré par filter."
+          - label: "\"AWAINÈS\""
+            correct: false
+            why: "Le résultat reste une liste."
+        explanation: "Les méthodes enchaînées s'appliquent de gauche à droite."
+      - code: prog-mp-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "La liste renvoyée par map a toujours le même nombre d'éléments que la liste d'origine."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Chaque élément est transformé, aucun n'est retiré."
+          - label: "Faux"
+            correct: false
+            why: "Pour retirer des éléments, on utilise filter."
+        explanation: "map transforme, filter retire."
+      - code: prog-mp-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Que fait `villes.map(v => v.toLowerCase())` ?"
+        choices:
+          - label: "Crée une liste des villes en minuscules"
+            correct: true
+            why: "Chaque ville est transformée."
+          - label: "Garde les villes en minuscules"
+            correct: false
+            why: "map transforme, il ne trie pas."
+          - label: "Modifie la liste villes"
+            correct: false
+            why: "villes reste intacte ; le résultat est une nouvelle liste."
+        explanation: "map crée une nouvelle liste."
+    exercises:
+      - slug: prog-ex-map-guide
+        kind: COMPLETER
+        title: "Compléter la transformation"
+        difficulty: FACILE
+        skill: javascript-bases
+        statement: "Complète pour obtenir la liste des titres des livres."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Transformer chaque élément : map."
+          - "Chaque livre est transformé en son titre."
+          - "map, titre."
+        solution: '["map", "titre"]'
+        explanation: "`livres.map(l => l.titre)`"
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const livres = [{ titre: "Dune" }, { titre: "Kirikou" }];
+            const titres = livres.[[1]](l => l.[[2]]);
+            console.log(titres);
+          blanks:
+            - ["map"]
+            - ["titre"]
+      - slug: prog-ex-methodes
+        kind: CODE_LIBRE
+        title: "Les adresses des utilisatrices actives"
+        difficulty: INTERMEDIAIRE
+        skill: javascript-bases
+        statement: |
+          Avec la liste `utilisatrices` fournie, crée `emails` : la liste des **e-mails** des seules
+          utilisatrices **actives**. Utilise `filter` puis `map`, et affiche `emails`.
+        criteria: "filter sur actif, map vers email, affichage."
+        hints:
+          - "D'abord garder les actives : `.filter(u => u.actif)`."
+          - "Puis ne garder que l'e-mail : `.map(u => u.email)`."
+          - "`const emails = utilisatrices.filter(u => u.actif).map(u => u.email);`"
+        solution: |
+          const utilisatrices = [
+            { email: "awa@exemple.fr", actif: true },
+            { email: "leo@exemple.fr", actif: false },
+            { email: "ines@exemple.fr", actif: true }
+          ];
+          const emails = utilisatrices.filter(u => u.actif).map(u => u.email);
+          console.log(emails);
+        explanation: "On filtre d'abord, puis on transforme. Résultat : les e-mails d'Awa et d'Inès."
+        xp: 20
+        payload:
+          language: javascript
+          starter: |
+            const utilisatrices = [
+              { email: "awa@exemple.fr", actif: true },
+              { email: "leo@exemple.fr", actif: false },
+              { email: "ines@exemple.fr", actif: true }
+            ];
+
+          checks:
+            - pattern: '\.filter\s*\(\s*\(?\s*(\w+)\s*\)?\s*=>\s*\1\.actif'
+              message: "Garde les utilisatrices actives : .filter(u => u.actif)."
+            - pattern: '\.map\s*\(\s*\(?\s*(\w+)\s*\)?\s*=>\s*\1\.email'
+              message: "Transforme chaque utilisatrice en son e-mail : .map(u => u.email)."
+            - pattern: '(const|let)\s+emails\s*='
+              message: "Range le résultat dans une variable emails."
+            - pattern: 'console\.log\s*\(\s*emails\s*\)'
+              message: "Affiche emails."
+      - slug: prog-ex-map-bug
+        kind: CORRIGER_ERREUR
+        title: "map au lieu de filter"
+        difficulty: INTERMEDIAIRE
+        skill: javascript-bases
+        statement: |
+          Ce programme doit garder seulement les fruits qui contiennent un « a », mais il affiche
+          `[ true, false, true ]` : il utilise la mauvaise méthode. Corrige-la.
+        criteria: "La méthode utilisée garde les éléments au lieu de les transformer."
+        hints:
+          - "On veut garder certains éléments, pas les transformer."
+          - "La méthode qui garde, c'est le tamis."
+          - "`fruits.filter(f => f.includes(\"a\"))`"
+        solution: |
+          const fruits = ["banane", "kiwi", "mangue"];
+          const avecA = fruits.filter(f => f.includes("a"));
+          console.log(avecA);
+        explanation: "map renvoie la réponse du test pour chaque fruit ; filter garde les fruits eux-mêmes."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const fruits = ["banane", "kiwi", "mangue"];
+            const avecA = fruits.map(f => f.includes("a"));
+            console.log(avecA);
+          checks:
+            - pattern: 'fruits\.filter\s*\('
+              message: "Utilise filter pour garder les fruits."
+            - pattern: 'fruits\.map\s*\('
+              absent: true
+              message: "map transforme : ici il faut filter."
+
+  # ===================================================================== LEÇON 3
+  - slug: prog-find
+    title: "Trouver un élément : find"
+    duration: 9
+    objective: "Obtenir le premier élément qui passe un test avec find, ou undefined s'il n'y en a pas."
+    prerequisites: "Leçon « Transformer chaque élément : map »."
+    skills: [javascript-bases]
+    xp: 10
+    memo: |
+      - `liste.find(x => condition)` renvoie le **premier** élément qui passe le test.
+      - Il renvoie **un élément** (pas une liste).
+      - Si aucun élément ne passe le test : `undefined`.
+      - Cas courant : trouver un utilisateur par son e-mail.
+    commonMistakes: |
+      - Confondre find (un élément) et filter (une liste).
+      - Oublier le cas undefined quand rien n'est trouvé.
+    blocks:
+      - type: text
+        md: |
+          « Trouve l'utilisatrice dont l'e-mail est awa@exemple.fr » : on ne veut pas une liste, on veut **la**
+          fiche. C'est le travail de `find`.
+      - type: definition
+        id: def-find
+        term: "find (trouver)"
+        md: |
+          Chercher **ses clés** dans un tiroir : on regarde les objets un par un, et dès qu'on les trouve, on
+          s'arrête. Si elles n'y sont pas, on repart les mains vides (undefined).
+      - type: code
+        id: code-find
+        language: javascript
+        title: "Trouver une utilisatrice"
+        code: |
+          const utilisatrices = [
+            { prenom: "Awa", email: "awa@exemple.fr" },
+            { prenom: "Inès", email: "ines@exemple.fr" }
+          ];
+          const trouvee = utilisatrices.find(u => u.email === "ines@exemple.fr");
+          console.log(trouvee.prenom);
+          console.log(utilisatrices.find(u => u.email === "zoe@exemple.fr"));
+        lines:
+          - n: 5
+            note: "Le premier élément dont l'e-mail correspond : la fiche d'Inès."
+          - n: 6
+            note: "C'est un objet : on lit sa propriété prenom. Affiche Inès."
+          - n: 7
+            note: "Personne n'a cet e-mail : undefined."
+      - type: demo
+        title: "Essaie"
+        language: javascript
+        code: |
+          const utilisatrices = [
+            { prenom: "Awa", email: "awa@exemple.fr" },
+            { prenom: "Inès", email: "ines@exemple.fr" }
+          ];
+          const trouvee = utilisatrices.find(u => u.email === "ines@exemple.fr");
+          console.log(trouvee.prenom);
+      - type: question
+        ref: prog-fd-q1
+        review: def-find
+      - type: question
+        ref: prog-fd-q2
+        review: code-find
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la recherche."
+      - type: exercise
+        ref: prog-ex-find-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : trouver un produit par son nom."
+      - type: exercise
+        ref: prog-ex-find-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : filter au lieu de find."
+      - type: exercise
+        ref: prog-ex-find-bug
+      - type: quiz
+        items:
+          - ref: prog-fd-q3
+            review: def-find
+          - ref: prog-fd-q4
+            review: code-find
+          - ref: prog-fd-q5
+            review: def-find
+    questions:
+      - code: prog-fd-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Que renvoie `find` ?"
+        choices:
+          - label: "Le premier élément qui passe le test"
+            correct: true
+            why: "Dès qu'il trouve, il s'arrête."
+          - label: "Tous les éléments qui passent le test"
+            correct: false
+            why: "Ça, c'est filter."
+          - label: "true ou false"
+            correct: false
+            why: "find renvoie l'élément lui-même."
+        explanation: "find = un élément ; filter = une liste."
+      - code: prog-fd-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const villes = ["Lyon", "Lille", "Nice"];
+          console.log(villes.find(v => v.includes("L")));
+        language: javascript
+        choices:
+          - label: "Lyon"
+            correct: true
+            why: "C'est le premier qui contient un L."
+          - label: "[\"Lyon\", \"Lille\"]"
+            correct: false
+            why: "find renvoie un seul élément, le premier."
+          - label: "Lille"
+            correct: false
+            why: "Lyon arrive avant Lille dans la liste."
+        explanation: "find s'arrête au premier élément trouvé."
+      - code: prog-fd-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Si aucun élément ne passe le test, find renvoie `undefined`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Les mains vides."
+          - label: "Faux"
+            correct: false
+            why: "Il n'y a rien à renvoyer : undefined."
+        explanation: "Pense à ce cas : l'élément peut ne pas exister."
+      - code: prog-fd-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: javascript-bases
+        prompt: "Dans l'exemple, pourquoi peut-on écrire `trouvee.prenom` ?"
+        choices:
+          - label: "Parce que find renvoie un objet (une fiche)"
+            correct: true
+            why: "On lit ensuite sa propriété."
+          - label: "Parce que find renvoie une liste"
+            correct: false
+            why: "Une liste n'a pas de propriété prenom."
+          - label: "Parce que prenom est un paramètre"
+            correct: false
+            why: "prenom est une propriété de la fiche trouvée."
+        explanation: "find donne directement l'élément trouvé."
+      - code: prog-fd-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Pour afficher la fiche d'un produit précis, quelle méthode choisir ?"
+        choices:
+          - label: "`find`"
+            correct: true
+            why: "On veut un seul élément."
+          - label: "`map`"
+            correct: false
+            why: "map transforme tous les éléments."
+          - label: "`push`"
+            correct: false
+            why: "push ajoute un élément."
+        explanation: "Un seul élément recherché → find."
+    exercises:
+      - slug: prog-ex-find-guide
+        kind: COMPLETER
+        title: "Compléter la recherche"
+        difficulty: FACILE
+        skill: javascript-bases
+        statement: "Complète pour trouver la tâche nommée « Coder » et afficher si elle est terminée."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Trouver un seul élément : find."
+          - "Comparer deux textes : ===."
+          - "find, ===."
+        solution: '["find", "==="]'
+        explanation: "`taches.find(t => t.nom === \"Coder\")`"
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const taches = [
+              { nom: "Réviser", terminee: true },
+              { nom: "Coder", terminee: false }
+            ];
+            const tache = taches.[[1]](t => t.nom [[2]] "Coder");
+            console.log(tache.terminee);
+          blanks:
+            - ["find"]
+            - ["==="]
+      - slug: prog-ex-find-libre
+        kind: CODE_LIBRE
+        title: "Trouver un produit par son nom"
+        difficulty: FACILE
+        skill: javascript-bases
+        statement: |
+          Avec la liste fournie, trouve le produit dont le nom est `"Sac"` avec `find`, range-le dans
+          `produit`, puis affiche sa couleur.
+        criteria: "find avec une comparaison sur le nom, puis affichage de la couleur."
+        hints:
+          - "`produits.find(p => ...)`"
+          - "Le test : `p.nom === \"Sac\"`."
+          - "`console.log(produit.couleur);`"
+        solution: |
+          const produits = [
+            { nom: "Alarme", couleur: "rouge" },
+            { nom: "Sac", couleur: "noir" }
+          ];
+          const produit = produits.find(p => p.nom === "Sac");
+          console.log(produit.couleur);
+        explanation: "find renvoie la fiche du sac : on lit sa couleur."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const produits = [
+              { nom: "Alarme", couleur: "rouge" },
+              { nom: "Sac", couleur: "noir" }
+            ];
+
+          checks:
+            - pattern: '(const|let)\s+produit\s*=\s*produits\.find\s*\('
+              message: "Range le résultat : const produit = produits.find(...)."
+            - pattern: '\.nom\s*===\s*["''`]Sac["''`]'
+              message: "Le test : p.nom === \"Sac\"."
+            - pattern: 'console\.log\s*\(\s*produit\.couleur\s*\)'
+              message: "Affiche produit.couleur."
+          output: "noir"
+      - slug: prog-ex-find-bug
+        kind: CORRIGER_ERREUR
+        title: "filter au lieu de find"
+        difficulty: INTERMEDIAIRE
+        skill: javascript-bases
+        statement: |
+          Ce programme affiche `undefined` au lieu de `Dakar` : filter renvoie une **liste**, qui n'a pas de
+          propriété ville. Utilise la méthode qui renvoie **un seul** élément.
+        criteria: "La recherche utilise find."
+        hints:
+          - "On veut une seule fiche, pas une liste."
+          - "La méthode qui s'arrête au premier trouvé."
+          - "`membres.find(m => m.prenom === \"Awa\")`"
+        solution: |
+          const membres = [
+            { prenom: "Awa", ville: "Dakar" },
+            { prenom: "Léo", ville: "Nantes" }
+          ];
+          const awa = membres.find(m => m.prenom === "Awa");
+          console.log(awa.ville);
+        explanation: "find renvoie la fiche elle-même : on peut lire sa ville."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const membres = [
+              { prenom: "Awa", ville: "Dakar" },
+              { prenom: "Léo", ville: "Nantes" }
+            ];
+            const awa = membres.filter(m => m.prenom === "Awa");
+            console.log(awa.ville);
+          checks:
+            - pattern: 'membres\.find\s*\('
+              message: "Utilise find pour obtenir une seule fiche."
+            - pattern: 'membres\.filter\s*\('
+              absent: true
+              message: "filter renvoie une liste : ici il faut find."
+          output: "Dakar"
+
+  # ===================================================================== LEÇON 4
+  - slug: prog-reduce
+    title: "Tout assembler en une valeur : reduce"
+    duration: 11
+    objective: "Parcourir une liste en gardant un résultat qui s'enrichit à chaque élément, avec reduce."
+    prerequisites: "Leçon « Trouver un élément : find »."
+    skills: [javascript-bases]
+    xp: 15
+    memo: |
+      - `liste.reduce((acc, x) => acc + x, depart)` part de `depart`, puis ajoute chaque élément à `acc`.
+      - `acc` (l'**accumulateur**) garde le résultat en cours.
+      - Le second argument (`depart`) est la valeur de départ : ne l'oublie pas.
+      - À la fin, il ne reste **qu'une seule valeur**.
+    commonMistakes: |
+      - Oublier la valeur de départ.
+      - Confondre l'ordre des paramètres : d'abord `acc`, ensuite l'élément.
+    blocks:
+      - type: text
+        md: |
+          Parfois, on veut **résumer** toute une liste en **une seule** valeur : une phrase avec tous les
+          prénoms, une liste de mots collés… C'est le travail de `reduce`.
+      - type: definition
+        id: def-reduce
+        term: "reduce (assembler)"
+        md: |
+          Un **collier** : on part d'un fil vide (la valeur de départ), puis on enfile les perles une à une.
+          À la fin, il ne reste qu'un seul objet : le collier. `acc`, c'est le collier en cours de fabrication.
+      - type: code
+        id: code-reduce
+        language: javascript
+        title: "Une phrase avec tous les invités"
+        code: |
+          const prenoms = ["Awa", "Léo", "Inès"];
+          const phrase = prenoms.reduce((acc, p) => acc + p + " ", "Invités : ");
+          console.log(phrase);
+        lines:
+          - n: 2
+            note: "`acc` démarre à « Invités : » (le dernier argument). À chaque tour, on colle le prénom et un espace."
+          - n: 3
+            note: "Affiche : Invités : Awa Léo Inès"
+      - type: demo
+        title: "Essaie"
+        md: "Change la valeur de départ, par exemple `\"Présents : \"`."
+        language: javascript
+        code: |
+          const prenoms = ["Awa", "Léo", "Inès"];
+          const phrase = prenoms.reduce((acc, p) => acc + p + " ", "Invités : ");
+          console.log(phrase);
+      - type: question
+        ref: prog-m-q3
+        review: def-reduce
+      - type: question
+        ref: prog-rd-q2
+        review: code-reduce
+      - type: text
+        md: "**Exercice 1 (guidé)** : filter, map ou reduce ?"
+      - type: exercise
+        ref: prog-ex-methodes-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un mot de passe fabriqué avec des initiales."
+      - type: exercise
+        ref: prog-ex-reduce-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une valeur de départ oubliée."
+      - type: exercise
+        ref: prog-ex-reduce-bug
+      - type: quiz
+        items:
+          - ref: prog-rd-q3
+            review: def-reduce
+          - ref: prog-rd-q4
+            review: code-reduce
+          - ref: prog-rd-q5
+            review: def-reduce
+    questions:
+      - code: prog-m-q3
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: javascript-bases
+        prompt: "Que vaut `[\"a\", \"b\", \"c\"].reduce((acc, l) => acc + l, \"x\")` ?"
+        snippet: "[\"a\", \"b\", \"c\"].reduce((acc, l) => acc + l, \"x\")"
+        language: javascript
+        choices:
+          - label: "\"xabc\""
+            correct: true
+            why: "Départ « x », puis on colle a, b et c."
+          - label: "\"abc\""
+            correct: false
+            why: "La valeur de départ est « x » : elle est au début du résultat."
+          - label: "[\"xa\", \"xb\", \"xc\"]"
+            correct: false
+            why: "reduce renvoie une seule valeur, pas une liste."
+        explanation: "Le second argument de reduce est la valeur de départ de l'accumulateur."
+      - code: prog-rd-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Que contient `acc` pendant un reduce ?"
+        choices:
+          - label: "Le résultat en cours de fabrication"
+            correct: true
+            why: "Le collier qui s'allonge perle après perle."
+          - label: "L'élément du tour en cours"
+            correct: false
+            why: "C'est le deuxième paramètre."
+          - label: "La liste d'origine"
+            correct: false
+            why: "acc contient le résultat qui se construit."
+        explanation: "acc = accumulateur."
+      - code: prog-rd-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Combien de valeurs reste-t-il à la fin d'un reduce ?"
+        choices:
+          - label: "Une seule"
+            correct: true
+            why: "Toute la liste est résumée en une valeur."
+          - label: "Autant que d'éléments"
+            correct: false
+            why: "Ça, c'est map."
+          - label: "Aucune"
+            correct: false
+            why: "reduce renvoie le résultat final."
+        explanation: "reduce = tout assembler en une valeur."
+      - code: prog-rd-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: javascript-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const mots = ["bon", "jour"];
+          console.log(mots.reduce((acc, m) => acc + m, ""));
+        language: javascript
+        choices:
+          - label: "bonjour"
+            correct: true
+            why: "Départ vide, puis on colle bon et jour."
+          - label: "bon jour"
+            correct: false
+            why: "Aucun espace n'est ajouté."
+          - label: "[\"bon\", \"jour\"]"
+            correct: false
+            why: "reduce renvoie une seule valeur."
+        explanation: "Avec un départ vide, reduce colle simplement les éléments."
+      - code: prog-rd-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: javascript-bases
+        prompt: "Le dernier argument de reduce est la valeur de départ."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le fil vide du collier."
+          - label: "Faux"
+            correct: false
+            why: "C'est bien la valeur de départ de acc."
+        explanation: "`reduce((acc, x) => ..., depart)`."
+    exercises:
+      - slug: prog-ex-methodes-guide
+        kind: COMPLETER
+        title: "La bonne méthode"
+        difficulty: FACILE
+        skill: javascript-bases
+        statement: "Complète chaque ligne avec filter, map ou reduce."
+        criteria: "Les trois méthodes sont correctes."
+        hints:
+          - "Garder certains éléments : filter."
+          - "Transformer chaque élément : map."
+          - "filter, map, reduce."
+        solution: '["filter", "map", "reduce"]'
+        explanation: "Garder → filter, transformer → map, assembler → reduce."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const prenoms = ["Awa", "Léo", "Inès"];
+            const sansLeo = prenoms.[[1]](p => p !== "Léo");
+            const enMajuscules = prenoms.[[2]](p => p.toUpperCase());
+            const phrase = prenoms.[[3]]((acc, p) => acc + p + " ", "");
+          blanks:
+            - ["filter"]
+            - ["map"]
+            - ["reduce"]
+      - slug: prog-ex-reduce-libre
+        kind: CODE_LIBRE
+        title: "Un code fait d'initiales"
+        difficulty: INTERMEDIAIRE
+        skill: javascript-bases
+        statement: |
+          Avec `const prenoms = ["Awa", "Léo", "Inès"];`, fabrique avec `reduce` le texte `ALI` : on part
+          d'un texte vide et on colle la **première lettre** (`p[0]`) de chaque prénom. Affiche le résultat.
+        criteria: "Un reduce qui part de \"\" et colle p[0], résultat affiché."
+        hints:
+          - "`prenoms.reduce((acc, p) => ..., \"\")`"
+          - "À chaque tour : `acc + p[0]`."
+          - "`const code = prenoms.reduce((acc, p) => acc + p[0], \"\");`"
+        solution: |
+          const prenoms = ["Awa", "Léo", "Inès"];
+          const code = prenoms.reduce((acc, p) => acc + p[0], "");
+          console.log(code);
+        explanation: "Départ vide, puis A, puis L, puis I : ALI."
+        xp: 20
+        payload:
+          language: javascript
+          starter: |
+            const prenoms = ["Awa", "Léo", "Inès"];
+
+          checks:
+            - pattern: 'prenoms\.reduce\s*\('
+              message: "Utilise prenoms.reduce(...)."
+            - pattern: '\w+\s*\+\s*\w+\s*\[\s*0\s*\]'
+              message: "À chaque tour, colle la première lettre : acc + p[0]."
+            - pattern: ',\s*["''`]["''`]\s*\)'
+              message: "Pars d'un texte vide : dernier argument \"\"."
+          output: "ALI"
+      - slug: prog-ex-reduce-bug
+        kind: CORRIGER_ERREUR
+        title: "Une valeur de départ oubliée"
+        difficulty: INTERMEDIAIRE
+        skill: javascript-bases
+        statement: |
+          Ce programme doit afficher `Au menu : riz poulet salade `. Sans valeur de départ, reduce utilise le
+          premier plat comme départ, et « Au menu : » n'apparaît jamais. Ajoute la valeur de départ
+          `"Au menu : "`.
+        criteria: "reduce a pour dernier argument \"Au menu : \"."
+        hints:
+          - "La valeur de départ est le dernier argument de reduce."
+          - "Elle se place après la fonction fléchée, séparée par une virgule."
+          - "`plats.reduce((acc, p) => acc + p + \" \", \"Au menu : \")`"
+        solution: |
+          const plats = ["riz", "poulet", "salade"];
+          const menu = plats.reduce((acc, p) => acc + p + " ", "Au menu : ");
+          console.log(menu);
+        explanation: "Le fil de départ du collier, c'est « Au menu : »."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const plats = ["riz", "poulet", "salade"];
+            const menu = plats.reduce((acc, p) => acc + p + " ");
+            console.log(menu);
+          checks:
+            - pattern: ',\s*["''`]Au menu : ["''`]\s*\)'
+              message: "Ajoute la valeur de départ \"Au menu : \" en dernier argument."
+          output: "Au menu : riz poulet salade"
+
+bank:
+  - code: prog-c7-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: javascript-bases
+    prompt: "Tu veux la liste des prénoms des membres actifs. Quel enchaînement choisir ?"
+    choices:
+      - label: "`membres.filter(m => m.actif).map(m => m.prenom)`"
+        correct: true
+        why: "On garde les actifs, puis on transforme chacun en son prénom."
+      - label: "`membres.map(m => m.actif).filter(m => m.prenom)`"
+        correct: false
+        why: "Après ce map, on n'a plus que des true/false."
+      - label: "`membres.find(m => m.actif)`"
+        correct: false
+        why: "find ne renvoie qu'un seul membre."
+    explanation: "Filtrer d'abord, transformer ensuite."
+  - code: prog-c7-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: javascript-bases
+    prompt: "Quelle méthode renvoie un seul élément ?"
+    choices:
+      - label: "`find`"
+        correct: true
+        why: "Le premier qui passe le test."
+      - label: "`filter`"
+        correct: false
+        why: "filter renvoie une liste."
+      - label: "`map`"
+        correct: false
+        why: "map renvoie une liste."
+    explanation: "find → un élément ; filter et map → une liste."

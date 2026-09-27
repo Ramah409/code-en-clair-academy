@@ -2,7 +2,7 @@ slug: prog-parler-ordinateur
 position: 1
 level: DEBUTANT
 title: "Parler à un ordinateur"
-summary: "Comprendre ce qu'est un programme, afficher un message, ranger des valeurs dans des variables et faire des calculs."
+summary: "Afficher un message, ranger une valeur dans une variable avec let, figer une valeur avec const, reconnaître les sortes de valeurs. Une seule notion par leçon."
 quizQuestionCount: 10
 
 lessons:
@@ -18,10 +18,10 @@ lessons:
       - Un **programme** est une liste d'**instructions** que l'ordinateur suit **dans l'ordre**, de haut en bas.
       - Une **instruction** = un ordre précis. En JavaScript, on la termine par un point-virgule `;`.
       - `console.log("Bonjour");` **affiche** le texte « Bonjour » dans la console.
-      - Un texte s'écrit **entre guillemets** : `"Bonjour"` ou `'Bonjour'`.
+      - Un texte s'écrit **entre guillemets** : `"Bonjour"`.
       - L'ordinateur ne devine rien : une faute de frappe (`consol.log`) provoque une erreur.
     commonMistakes: |
-      - Oublier les guillemets autour d'un texte : `console.log(Bonjour)` provoque une erreur.
+      - Oublier les guillemets autour d'un texte : `console.log(Bonjour);` provoque une erreur.
       - Écrire `Console.log` avec une majuscule : JavaScript fait la différence entre majuscules et minuscules.
       - Oublier une parenthèse fermante.
     blocks:
@@ -77,14 +77,21 @@ lessons:
           `console.log` s'écrit toujours de la même façon : tout en minuscules, un point au milieu, des
           parenthèses. `Console.log` ou `consolelog` provoquent une erreur. Ce n'est pas grave : lis le
           message, corrige, recommence.
+      - type: question
+        ref: prog-p-q4
+        review: code-bonjour
       - type: text
-        md: "Exercice guidé : complète le programme pour qu'il affiche deux messages."
+        md: "**Exercice 1 (guidé)** : complète le programme pour qu'il affiche deux messages."
       - type: exercise
         ref: prog-ex-bonjour-guide
       - type: text
-        md: "En autonomie : écris un programme qui se présente en trois lignes."
+        md: "**Exercice 2 (en autonomie)** : écris un programme qui se présente en trois lignes."
       - type: exercise
         ref: prog-ex-presentation
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : ce programme contient deux fautes. Corrige-les."
+      - type: exercise
+        ref: prog-ex-programme-bug
       - type: jury
         items:
           - q: "Qu'est-ce qu'un programme ?"
@@ -95,7 +102,7 @@ lessons:
             review: def-instruction
           - ref: prog-p-q3
             review: code-bonjour
-          - ref: prog-p-q4
+          - ref: prog-p-q5
             review: def-console
     questions:
       - code: prog-p-q1
@@ -155,14 +162,30 @@ lessons:
         choices:
           - label: "Parce qu'un texte doit être écrit entre guillemets"
             correct: true
-            why: "Oui : sans guillemets, JavaScript cherche une variable nommée Bonjour."
+            why: "Oui : sans guillemets, JavaScript ne sait pas que c'est un texte."
           - label: "Parce que Bonjour est trop long"
             correct: false
             why: "La longueur n'a aucune importance."
           - label: "Parce qu'il faut écrire Console avec une majuscule"
             correct: false
             why: "C'est l'inverse : tout en minuscules."
-        explanation: "`\"Bonjour\"` est un texte ; `Bonjour` sans guillemets est un nom (de variable) que JavaScript ne connaît pas."
+        explanation: "`\"Bonjour\"` avec guillemets est un texte. Sans guillemets, JavaScript cherche un nom qu'il ne connaît pas."
+      - code: prog-p-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Où apparaît ce qu'affiche `console.log` ?"
+        choices:
+          - label: "Dans la console, la zone de messages du programme"
+            correct: true
+            why: "C'est le carnet de bord du programme."
+          - label: "Dans une nouvelle page web"
+            correct: false
+            why: "console.log écrit dans la console, pas sur une page."
+          - label: "Nulle part"
+            correct: false
+            why: "Le message est bien affiché, dans la console."
+        explanation: "La console montre les messages du programme, et les erreurs."
     exercises:
       - slug: prog-ex-bonjour-guide
         kind: COMPLETER
@@ -227,188 +250,427 @@ lessons:
             - pattern: 'Console\.log'
               absent: true
               message: "console s'écrit en minuscules."
+          output: |
+            Bonjour
+            Je m'appelle Awa
+            J'apprends à programmer
+      - slug: prog-ex-programme-bug
+        kind: CORRIGER_ERREUR
+        title: "Deux fautes à corriger"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme doit afficher `Bonjour` puis `Au revoir`, mais il contient **deux fautes**.
+          Exécute-le, lis le message d'erreur, puis corrige.
+        criteria: "console en minuscules et les deux textes entre guillemets."
+        hints:
+          - "Regarde la première lettre de la première ligne."
+          - "Un texte s'écrit toujours entre guillemets."
+          - "`console.log(\"Bonjour\");` puis `console.log(\"Au revoir\");`"
+        solution: |
+          console.log("Bonjour");
+          console.log("Au revoir");
+        explanation: "`console` s'écrit en minuscules, et chaque texte est entouré de guillemets."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            Console.log("Bonjour");
+            console.log(Au revoir);
+          checks:
+            - pattern: 'Console\.log'
+              absent: true
+              message: "console s'écrit tout en minuscules."
+            - pattern: 'console\.log\s*\(\s*["''`]Bonjour["''`]\s*\)'
+              message: "La première ligne affiche \"Bonjour\"."
+            - pattern: 'console\.log\s*\(\s*["''`]Au revoir["''`]\s*\)'
+              message: "Mets le texte Au revoir entre guillemets."
+          output: |
+            Bonjour
+            Au revoir
 
   # ===================================================================== LEÇON 2
   - slug: prog-variables
-    title: "Les variables : des boîtes avec une étiquette"
+    title: "Ranger une valeur : les variables avec let"
     duration: 10
-    objective: "Créer des variables avec let et const, et connaître les trois types de base : nombre, texte, booléen."
+    objective: "Créer une variable avec let, afficher son contenu, puis changer sa valeur."
     prerequisites: "Leçon « Qu'est-ce qu'un programme ? »."
     skills: [algo-bases]
-    xp: 15
+    xp: 10
     memo: |
       - Une **variable** est une boîte avec une étiquette (son nom) qui contient une valeur.
-      - `let age = 18;` crée une variable **modifiable** ; `const prenom = "Awa";` crée une **constante** (non modifiable).
-      - Types de base : **nombre** (`18`, `3.5`), **texte** (`"Awa"`), **booléen** (`true` / `false`).
-      - `age = 19;` change la valeur (sans `let` la deuxième fois).
-      - `typeof age` donne le type : `"number"`, `"string"`, `"boolean"`.
+      - `let ville = "Lyon";` crée la boîte `ville` et y range le texte « Lyon ».
+      - Le signe `=` veut dire « **ranger dans** », pas « est égal à ».
+      - `console.log(ville);` (sans guillemets) affiche le **contenu** de la boîte : Lyon.
+      - `ville = "Paris";` remplace la valeur. On n'écrit `let` **qu'une seule fois**, à la création.
     commonMistakes: |
-      - Réécrire `let` pour modifier une variable existante : `let age = 19;` une deuxième fois provoque une erreur.
-      - Modifier une `const` : erreur « Assignment to constant variable ».
-      - Mettre un nombre entre guillemets : `"18"` est un texte, pas un nombre.
-      - Utiliser des espaces ou des accents dans un nom : on écrit `dateNaissance`, pas `date naissance`.
+      - Réécrire `let` pour changer la valeur : `let ville = "Paris";` une deuxième fois provoque une erreur.
+      - Mettre le nom de la variable entre guillemets : `console.log("ville")` affiche le mot ville, pas son contenu.
+      - Mettre des espaces ou des accents dans un nom : on écrit `dateNaissance`, pas `date naissance`.
     blocks:
       - type: text
         md: |
-          Un programme a souvent besoin de **se souvenir** de choses : un prénom, un âge, un score. Pour
+          Un programme a souvent besoin de **se souvenir** de choses : un prénom, une ville, un score. Pour
           ça, on utilise des **variables**.
       - type: definition
         id: def-variable
         term: "Variable"
         md: |
-          Une **boîte avec une étiquette**. L'étiquette est le **nom** (`age`), le contenu est la **valeur**
-          (`18`). On peut ouvrir la boîte pour lire la valeur, ou la remplacer par une autre.
+          Une **boîte avec une étiquette**. L'étiquette est le **nom** (`ville`), le contenu est la **valeur**
+          (`"Lyon"`). On peut ouvrir la boîte pour lire la valeur, ou la remplacer par une autre.
       - type: code
-        id: code-let-const
+        id: code-let
         language: javascript
-        title: "Créer et utiliser des variables"
+        title: "Créer, lire et changer une variable"
         code: |
-          let age = 18;
-          const prenom = "Awa";
-          console.log(prenom);
-          console.log(age);
-          age = 19;
-          console.log(age);
+          let ville = "Lyon";
+          console.log(ville);
+          ville = "Paris";
+          console.log(ville);
         lines:
           - n: 1
-            note: "`let` crée une boîte nommée `age` et y range 18. Le `=` veut dire « ranger dans », pas « est égal à »."
+            note: "`let` crée une boîte nommée `ville` et y range « Lyon ». Le `=` veut dire « ranger dans »."
           - n: 2
-            note: "`const` crée une boîte **scellée** : sa valeur ne changera plus."
+            note: "Sans guillemets : on affiche le **contenu** de la boîte, donc Lyon."
           - n: 3
-            note: "Sans guillemets : on affiche le **contenu** de la boîte `prenom`, donc Awa."
-          - n: 5
-            note: "On remplace 18 par 19. Pas de `let` : la boîte existe déjà."
-          - n: 6
-            note: "Affiche 19."
+            note: "On remplace Lyon par Paris. Pas de `let` : la boîte existe déjà."
+          - n: 4
+            note: "Affiche Paris : la boîte contient la nouvelle valeur."
       - type: demo
         title: "Essaie"
-        md: "Exécute, puis change l'âge et le prénom."
+        md: "Exécute, puis change les deux villes."
         language: javascript
         code: |
-          let age = 18;
-          const prenom = "Awa";
-          console.log(prenom, "a", age, "ans");
+          let ville = "Lyon";
+          console.log(ville);
+          ville = "Paris";
+          console.log(ville);
       - type: question
         ref: prog-v-q1
         review: def-variable
-      - type: definition
-        id: def-types
-        term: "Type"
-        md: |
-          La **sorte** de valeur rangée dans la boîte :
-          - **nombre** (`number`) : `18`, `-3`, `2.5` (virgule écrite avec un point) ;
-          - **texte** (`string`, « chaîne de caractères ») : `"Awa"`, entre guillemets ;
-          - **booléen** (`boolean`) : `true` (vrai) ou `false` (faux), comme un interrupteur allumé ou éteint.
       - type: compare
         left:
-          title: "Nombre"
-          code: |
-            let prix = 20;
-            console.log(prix + 5); // 25
+          title: "Afficher le contenu"
+          good: true
           language: javascript
+          code: |
+            let ville = "Lyon";
+            console.log(ville);
+          md: "Affiche **Lyon** : le contenu de la boîte."
         right:
-          title: "Texte qui ressemble à un nombre"
-          code: |
-            let prix = "20";
-            console.log(prix + 5); // "205" !
+          title: "Afficher un texte"
+          good: false
           language: javascript
+          code: |
+            let ville = "Lyon";
+            console.log("ville");
+          md: "Affiche le mot **ville** : avec des guillemets, c'est un texte, pas la boîte."
       - type: question
-        ref: prog-v-q2
-        review: def-types
+        ref: prog-v-q6
+        review: code-let
       - type: text
-        md: "Exercice guidé : complète la déclaration des variables."
+        md: "**Exercice 1 (guidé)** : complète la création d'une variable."
       - type: exercise
-        ref: prog-ex-variables-guide
+        ref: prog-ex-let-guide
       - type: text
-        md: "En autonomie : crée tes propres variables et affiche-les."
+        md: "**Exercice 2 (en autonomie)** : crée une variable, affiche-la, change-la, affiche-la encore."
       - type: exercise
-        ref: prog-ex-variables
+        ref: prog-ex-let-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : ce programme plante. Pourquoi ?"
+      - type: exercise
+        ref: prog-ex-let-bug
       - type: jury
         items:
-          - q: "Quelle différence entre let et const ?"
-            a: "`let` déclare une variable dont la valeur peut changer ; `const` déclare une valeur qui ne sera plus réaffectée. On utilise `const` par défaut, `let` quand la valeur doit évoluer."
+          - q: "Qu'est-ce qu'une variable ?"
+            a: "Un espace nommé qui contient une valeur. On peut lire cette valeur grâce au nom de la variable, et la remplacer si elle est déclarée avec let."
       - type: quiz
         items:
           - ref: prog-v-q3
-            review: code-let-const
-          - ref: prog-v-q4
-            review: def-types
-          - ref: prog-v-q5
-            review: code-let-const
+            review: code-let
+          - ref: prog-v-q7
+            review: code-let
+          - ref: prog-v-q8
+            review: def-variable
     questions:
       - code: prog-v-q1
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: algo-bases
-        prompt: "Dans `let age = 18;`, que fait le signe `=` ?"
+        prompt: "Dans `let ville = \"Lyon\";`, que fait le signe `=` ?"
         choices:
-          - label: "Il range la valeur 18 dans la variable age"
+          - label: "Il range le texte Lyon dans la variable ville"
             correct: true
-            why: "Oui : c'est une affectation."
-          - label: "Il vérifie si age est égal à 18"
+            why: "Oui : on range une valeur dans la boîte."
+          - label: "Il vérifie si ville est égale à Lyon"
             correct: false
-            why: "Pour comparer, on utilise `===`."
-          - label: "Il affiche 18"
+            why: "Non : ici, `=` range une valeur. La comparaison viendra plus tard, avec un autre signe."
+          - label: "Il affiche Lyon"
             correct: false
             why: "Pour afficher, on utilise `console.log`."
-        explanation: "En programmation, `=` signifie « ranger dans la boîte ». La comparaison s'écrit `===`."
-      - code: prog-v-q2
-        kind: CHOIX_UNIQUE
+        explanation: "En programmation, `=` signifie « ranger dans la boîte »."
+      - code: prog-v-q6
+        kind: RESULTAT_CODE
         difficulty: 1
         skill: algo-bases
-        prompt: "Quel est le type de la valeur `true` ?"
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          let animal = "chat";
+          console.log(animal);
+        language: javascript
         choices:
-          - label: "Booléen"
+          - label: "chat"
             correct: true
-            why: "Oui : vrai ou faux."
-          - label: "Texte"
+            why: "Sans guillemets, on affiche le contenu de la boîte animal."
+          - label: "animal"
             correct: false
-            why: "Sans guillemets, `true` n'est pas un texte."
-          - label: "Nombre"
+            why: "Il faudrait des guillemets pour afficher le mot animal."
+          - label: "Une erreur"
             correct: false
-            why: "Ce n'est pas un nombre."
-        explanation: "Les booléens n'ont que deux valeurs : `true` et `false`."
+            why: "La variable existe : tout va bien."
+        explanation: "`console.log(nom)` affiche le contenu de la variable."
       - code: prog-v-q3
         kind: RESULTAT_CODE
         difficulty: 1
         skill: algo-bases
         prompt: "Qu'affiche ce code ?"
         snippet: |
-          let score = 10;
-          score = 15;
-          console.log(score);
+          let couleur = "rouge";
+          couleur = "vert";
+          console.log(couleur);
         language: javascript
         choices:
-          - label: "15"
+          - label: "vert"
             correct: true
-            why: "La deuxième ligne remplace 10 par 15."
-          - label: "10"
+            why: "La deuxième ligne remplace rouge par vert."
+          - label: "rouge"
             correct: false
             why: "La valeur a été remplacée avant l'affichage."
-          - label: "25"
+          - label: "rouge vert"
             correct: false
-            why: "On remplace, on n'additionne pas."
-        explanation: "Une affectation remplace l'ancienne valeur."
-      - code: prog-v-q4
-        kind: RESULTAT_CODE
-        difficulty: 2
+            why: "La boîte ne garde que la dernière valeur rangée."
+        explanation: "Ranger une nouvelle valeur remplace l'ancienne."
+      - code: prog-v-q7
+        kind: CHOIX_UNIQUE
+        difficulty: 1
         skill: algo-bases
-        prompt: "Qu'affiche ce code ?"
-        snippet: |
-          let a = "3";
-          console.log(a + 2);
-        language: javascript
+        prompt: "La variable `prenom` existe déjà. Comment changer sa valeur en « Léo » ?"
         choices:
-          - label: "32"
+          - label: "`prenom = \"Léo\";`"
             correct: true
-            why: "\"3\" est un texte : `+` colle les deux morceaux."
-          - label: "5"
+            why: "Sans let : la boîte existe déjà, on change seulement son contenu."
+          - label: "`let prenom = \"Léo\";`"
             correct: false
-            why: "Ce serait le cas avec le nombre 3, sans guillemets."
-          - label: "Une erreur"
+            why: "Recréer une boîte qui existe déjà provoque une erreur."
+          - label: "`\"prenom\" = \"Léo\";`"
             correct: false
-            why: "JavaScript transforme 2 en texte et colle."
-        explanation: "Avec un texte, `+` sert à coller (concaténer). Attention aux nombres écrits entre guillemets."
+            why: "Le nom d'une variable ne s'écrit pas entre guillemets."
+        explanation: "`let` sert seulement à créer la variable, la première fois."
+      - code: prog-v-q8
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quel nom de variable est valide en JavaScript ?"
+        choices:
+          - label: "`dateNaissance`"
+            correct: true
+            why: "Oui : pas d'espace, commence par une lettre."
+          - label: "`date naissance`"
+            correct: false
+            why: "Un nom ne peut pas contenir d'espace."
+          - label: "`2date`"
+            correct: false
+            why: "Un nom ne peut pas commencer par un chiffre."
+        explanation: "On colle les mots en mettant une majuscule à chaque nouveau mot : `dateNaissance`."
+    exercises:
+      - slug: prog-ex-let-guide
+        kind: COMPLETER
+        title: "Créer une variable"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète pour créer la variable `fruit` qui contient « pomme », puis l'afficher."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot qui crée une variable a trois lettres."
+          - "Le signe qui range une valeur dans la boîte."
+          - "let, =, fruit."
+        solution: '["let", "=", "fruit"]'
+        explanation: "`let fruit = \"pomme\";` puis `console.log(fruit);` affiche pomme."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            [[1]] fruit [[2]] "pomme";
+            console.log([[3]]);
+          blanks:
+            - ["let"]
+            - ["="]
+            - ["fruit"]
+      - slug: prog-ex-let-libre
+        kind: CODE_LIBRE
+        title: "Une variable qui change"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          1. crée une variable `saison` avec `let`, qui contient `"hiver"` ;
+          2. affiche-la ;
+          3. change sa valeur en `"printemps"` (sans réécrire `let`) ;
+          4. affiche-la encore.
+        criteria: "Une variable créée avec let, affichée, modifiée sans let, puis affichée."
+        hints:
+          - "`let saison = \"hiver\";`"
+          - "Pour changer la valeur : `saison = \"printemps\";`"
+          - "Un `console.log(saison);` avant le changement, et un autre après."
+        solution: |
+          let saison = "hiver";
+          console.log(saison);
+          saison = "printemps";
+          console.log(saison);
+        explanation: "La même boîte contient d'abord hiver, puis printemps."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ta variable saison
+
+          checks:
+            - pattern: 'let\s+saison\s*=\s*["''`]hiver["''`]'
+              message: "Crée la variable : let saison = \"hiver\";"
+            - pattern: '(?<!let\s)(?<!let\s\s)\bsaison\s*=\s*["''`]printemps["''`]'
+              message: "Change la valeur : saison = \"printemps\";"
+            - pattern: 'let\s+saison\s*=\s*["''`]printemps'
+              absent: true
+              message: "N'écris pas let une deuxième fois : la variable existe déjà."
+            - pattern: '\A(?>[\s\S]*?console\.log\s*\(\s*saison\s*\)){2}'
+              message: "Affiche saison deux fois : avant et après le changement."
+          output: |
+            hiver
+            printemps
+      - slug: prog-ex-let-bug
+        kind: CORRIGER_ERREUR
+        title: "Un let de trop"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme doit afficher `Lyon` puis `Nantes`, mais il provoque une erreur :
+          « Identifier 'ville' has already been declared » (la variable ville existe déjà). Corrige-le.
+        criteria: "La variable est créée une seule fois avec let."
+        hints:
+          - "Le message dit que ville a déjà été créée."
+          - "Pour changer la valeur d'une variable qui existe, on n'écrit pas let."
+          - "`ville = \"Nantes\";`"
+        solution: |
+          let ville = "Lyon";
+          console.log(ville);
+          ville = "Nantes";
+          console.log(ville);
+        explanation: "`let` crée la boîte ; ensuite, on change seulement son contenu."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            let ville = "Lyon";
+            console.log(ville);
+            let ville = "Nantes";
+            console.log(ville);
+          checks:
+            - pattern: 'let\s+ville\s*=\s*["''`]Nantes'
+              absent: true
+              message: "Ne recrée pas ville avec let : écris seulement ville = \"Nantes\";"
+            - pattern: '\bville\s*=\s*["''`]Nantes["''`]'
+              message: "Change la valeur : ville = \"Nantes\";"
+            - pattern: 'let\s+ville\s*=\s*["''`]Lyon["''`]'
+              message: "Garde la création : let ville = \"Lyon\";"
+          output: |
+            Lyon
+            Nantes
+
+  # ===================================================================== LEÇON 3
+  - slug: prog-const
+    title: "Une valeur qui ne change pas : const"
+    duration: 8
+    objective: "Créer une constante avec const et choisir entre let et const."
+    prerequisites: "Leçon « Ranger une valeur : les variables avec let »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - `const pays = "France";` crée une boîte **scellée** : sa valeur ne changera plus.
+      - Essayer de la changer (`pays = "Italie";`) provoque une erreur.
+      - `let` : la valeur **va changer** (un score, une saison). `const` : elle **ne change pas** (une date de naissance).
+      - Bonne habitude : on utilise `const` par défaut, et `let` seulement quand la valeur doit changer.
+    commonMistakes: |
+      - Changer une `const` : erreur « Assignment to constant variable ».
+      - Utiliser `let` partout : le code dit moins bien ce qui peut changer.
+    blocks:
+      - type: text
+        md: |
+          Certaines valeurs ne bougent jamais : ta date de naissance, le nom d'une ville. Pour elles, on
+          utilise une **constante**.
+      - type: definition
+        id: def-const
+        term: "Constante (const)"
+        md: |
+          Une boîte **scellée** : on y range une valeur à la création, puis plus personne ne peut la
+          changer. Comme une **date gravée** sur une médaille.
+      - type: code
+        id: code-const
+        language: javascript
+        title: "let ou const ?"
+        code: |
+          const prenom = "Awa";
+          let humeur = "fatiguée";
+          console.log(prenom);
+          console.log(humeur);
+          humeur = "en forme";
+          console.log(humeur);
+        lines:
+          - n: 1
+            note: "Le prénom ne changera pas : `const`."
+          - n: 2
+            note: "L'humeur, elle, va changer : `let`."
+          - n: 5
+            note: "On change l'humeur : autorisé, car c'est un `let`."
+      - type: demo
+        title: "Provoque l'erreur"
+        md: "Exécute, puis ajoute la ligne `prenom = \"Inès\";` à la fin : lis le message d'erreur."
+        language: javascript
+        code: |
+          const prenom = "Awa";
+          let humeur = "fatiguée";
+          humeur = "en forme";
+          console.log(prenom);
+          console.log(humeur);
+      - type: question
+        ref: prog-v-q5
+        review: def-const
+      - type: question
+        ref: prog-k-q2
+        review: code-const
+      - type: text
+        md: "**Exercice 1 (guidé)** : choisis let ou const."
+      - type: exercise
+        ref: prog-ex-variables-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une constante et une variable."
+      - type: exercise
+        ref: prog-ex-const-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une constante qu'on essaie de changer."
+      - type: exercise
+        ref: prog-ex-const-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre let et const ?"
+            a: "`let` déclare une variable dont la valeur peut changer ; `const` déclare une valeur qui ne sera plus réaffectée. On utilise `const` par défaut, `let` quand la valeur doit évoluer."
+      - type: quiz
+        items:
+          - ref: prog-k-q3
+            review: def-const
+          - ref: prog-k-q4
+            review: code-const
+          - ref: prog-k-q5
+            review: def-const
+    questions:
       - code: prog-v-q5
         kind: VRAI_FAUX
         difficulty: 1
@@ -422,31 +684,378 @@ lessons:
             correct: true
             why: "Exact : `const` fige la valeur."
         explanation: "`const` pour ce qui ne change pas, `let` pour ce qui change."
+      - code: prog-k-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Pour ranger le **score** d'un jeu, qui augmente pendant la partie, que choisir ?"
+        choices:
+          - label: "`let`"
+            correct: true
+            why: "Le score change : il faut une variable modifiable."
+          - label: "`const`"
+            correct: false
+            why: "Une constante ne pourrait pas changer."
+          - label: "Aucun des deux"
+            correct: false
+            why: "Il faut bien une boîte pour le score."
+        explanation: "Valeur qui change → `let` ; valeur fixe → `const`."
+      - code: prog-k-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Pour ranger une **date de naissance**, que choisir ?"
+        choices:
+          - label: "`const`"
+            correct: true
+            why: "Une date de naissance ne change jamais."
+          - label: "`let`"
+            correct: false
+            why: "Ça marcherait, mais `const` dit mieux que la valeur ne changera pas."
+          - label: "`console.log`"
+            correct: false
+            why: "console.log affiche, il ne crée pas de boîte."
+        explanation: "On choisit `const` par défaut."
+      - code: prog-k-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Que se passe-t-il quand on exécute ce code ?"
+        snippet: |
+          const ville = "Lille";
+          ville = "Nice";
+          console.log(ville);
+        language: javascript
+        choices:
+          - label: "Une erreur : on ne peut pas changer une constante"
+            correct: true
+            why: "La deuxième ligne est refusée."
+          - label: "Nice s'affiche"
+            correct: false
+            why: "La valeur d'une const ne peut pas être remplacée."
+          - label: "Lille s'affiche"
+            correct: false
+            why: "Le programme s'arrête sur l'erreur avant d'afficher."
+        explanation: "Changer une `const` provoque l'erreur « Assignment to constant variable »."
+      - code: prog-k-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "La bonne habitude est d'utiliser `const` par défaut, et `let` seulement quand la valeur doit changer."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Ainsi, on voit tout de suite ce qui peut changer dans le programme."
+          - label: "Faux"
+            correct: false
+            why: "C'est pourtant la règle suivie par la plupart des développeurs."
+        explanation: "`const` protège contre les changements par erreur."
     exercises:
       - slug: prog-ex-variables-guide
         kind: COMPLETER
-        title: "Déclarer deux variables"
+        title: "let ou const ?"
         difficulty: FACILE
         skill: algo-bases
-        statement: "Le prénom ne changera pas, l'âge oui. Complète avec le bon mot-clé, puis affiche l'âge."
+        statement: "Le prénom ne changera pas, la ville oui. Complète avec le bon mot, puis affiche la ville."
         criteria: "Les trois trous sont corrects."
         hints:
-          - "Une valeur qui ne change pas : mot-clé de cinq lettres."
-          - "Une valeur qui change : mot-clé de trois lettres."
-          - "const, let, age."
-        solution: '["const", "let", "age"]'
-        explanation: "`const prenom` car le prénom ne change pas ; `let age` car il augmente chaque année."
+          - "Une valeur qui ne change pas : mot de cinq lettres."
+          - "Une valeur qui change : mot de trois lettres."
+          - "const, let, ville."
+        solution: '["const", "let", "ville"]'
+        explanation: "`const prenom` car le prénom ne change pas ; `let ville` car elle peut changer."
         xp: 10
         payload:
           language: javascript
           template: |
             [[1]] prenom = "Inès";
-            [[2]] age = 25;
+            [[2]] ville = "Lyon";
+            ville = "Bordeaux";
             console.log([[3]]);
           blanks:
             - ["const"]
             - ["let"]
-            - ["age"]
+            - ["ville"]
+      - slug: prog-ex-const-libre
+        kind: CODE_LIBRE
+        title: "Une constante et une variable"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          1. crée une **constante** `pays` qui contient `"Sénégal"` ;
+          2. crée une **variable** `meteo` (avec `let`) qui contient `"pluie"` ;
+          3. change `meteo` en `"soleil"` ;
+          4. affiche `pays`, puis `meteo`.
+        criteria: "pays en const, meteo en let modifiée, deux affichages."
+        hints:
+          - "`const pays = \"Sénégal\";`"
+          - "`let meteo = \"pluie\";` puis `meteo = \"soleil\";`"
+          - "`console.log(pays);` et `console.log(meteo);`"
+        solution: |
+          const pays = "Sénégal";
+          let meteo = "pluie";
+          meteo = "soleil";
+          console.log(pays);
+          console.log(meteo);
+        explanation: "Le pays est fixe (const), la météo change (let)."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ta constante et ta variable
+
+          checks:
+            - pattern: 'const\s+pays\s*=\s*["''`]Sénégal["''`]'
+              message: "Crée la constante : const pays = \"Sénégal\";"
+            - pattern: 'let\s+meteo\s*=\s*["''`]pluie["''`]'
+              message: "Crée la variable : let meteo = \"pluie\";"
+            - pattern: '(?<!let\s)\bmeteo\s*=\s*["''`]soleil["''`]'
+              message: "Change la météo : meteo = \"soleil\";"
+            - pattern: 'console\.log\s*\(\s*pays\s*\)'
+              message: "Affiche pays."
+            - pattern: 'console\.log\s*\(\s*meteo\s*\)'
+              message: "Affiche meteo."
+          output: |
+            Sénégal
+            soleil
+      - slug: prog-ex-const-bug
+        kind: CORRIGER_ERREUR
+        title: "Une constante qui devait changer"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme plante avec « Assignment to constant variable ». Le **niveau** d'une joueuse doit
+          pouvoir changer. Corrige la déclaration.
+        criteria: "niveau est déclaré avec let."
+        hints:
+          - "Le message dit qu'on essaie de changer une constante."
+          - "Une valeur qui change se déclare avec un autre mot."
+          - "`let niveau = \"débutante\";`"
+        solution: |
+          let niveau = "débutante";
+          niveau = "confirmée";
+          console.log(niveau);
+        explanation: "Le niveau change : il faut `let`, pas `const`."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const niveau = "débutante";
+            niveau = "confirmée";
+            console.log(niveau);
+          checks:
+            - pattern: 'const\s+niveau'
+              absent: true
+              message: "niveau change : ce ne peut pas être une const."
+            - pattern: 'let\s+niveau\s*=\s*["''`]débutante["''`]'
+              message: "Déclare let niveau = \"débutante\";"
+            - pattern: 'console\.log\s*\(\s*niveau\s*\)'
+              message: "Garde l'affichage de niveau."
+          output: "confirmée"
+
+  # ===================================================================== LEÇON 4
+  - slug: prog-types
+    title: "Les sortes de valeurs : texte, nombre, vrai/faux"
+    duration: 10
+    objective: "Reconnaître un texte, un nombre et un booléen, et connaître le type d'une valeur avec typeof."
+    prerequisites: "Leçon « Une valeur qui ne change pas : const »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - **Texte** (`string`) : entre guillemets, `"Awa"`, `"18"`.
+      - **Nombre** (`number`) : sans guillemets, `18`, `2.5` (la virgule s'écrit avec un point).
+      - **Booléen** (`boolean`) : `true` (vrai) ou `false` (faux), sans guillemets.
+      - `typeof valeur` donne la sorte : `"string"`, `"number"` ou `"boolean"`.
+    commonMistakes: |
+      - Mettre un nombre entre guillemets : `"18"` est un texte, pas un nombre.
+      - Écrire `"true"` entre guillemets : c'est un texte, pas un booléen.
+    blocks:
+      - type: text
+        md: |
+          Toutes les valeurs ne sont pas de la même **sorte**. Un prénom, un âge et une réponse oui/non ne se
+          rangent pas de la même façon.
+      - type: definition
+        id: def-types
+        term: "Type (la sorte de valeur)"
+        md: |
+          Comme au supermarché, chaque produit a son **rayon** :
+          - **texte** (`string`) : `"Awa"`, toujours entre guillemets ;
+          - **nombre** (`number`) : `18`, sans guillemets ;
+          - **booléen** (`boolean`) : `true` ou `false`, comme un **interrupteur** allumé ou éteint.
+      - type: code
+        id: code-types
+        language: javascript
+        title: "Trois sortes de valeurs"
+        code: |
+          const prenom = "Awa";
+          const age = 25;
+          const inscrite = true;
+          console.log(typeof prenom);
+          console.log(typeof age);
+          console.log(typeof inscrite);
+        lines:
+          - n: 1
+            note: "Entre guillemets : un **texte**."
+          - n: 2
+            note: "Sans guillemets : un **nombre**."
+          - n: 3
+            note: "`true` sans guillemets : un **booléen** (vrai)."
+          - n: 4
+            note: "`typeof` donne la sorte : affiche string."
+          - n: 5
+            note: "Affiche number."
+          - n: 6
+            note: "Affiche boolean."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis mets `25` entre guillemets : `typeof` répond alors string."
+        language: javascript
+        code: |
+          const prenom = "Awa";
+          const age = 25;
+          const inscrite = true;
+          console.log(typeof prenom);
+          console.log(typeof age);
+          console.log(typeof inscrite);
+      - type: question
+        ref: prog-v-q2
+        review: def-types
+      - type: question
+        ref: prog-c1-b2
+        review: code-types
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète avec la bonne sorte."
+      - type: exercise
+        ref: prog-ex-types-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : trois variables, trois sortes."
+      - type: exercise
+        ref: prog-ex-variables
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : les valeurs sont rangées dans la mauvaise sorte."
+      - type: exercise
+        ref: prog-ex-types-bug
+      - type: jury
+        items:
+          - q: "Quels sont les types de base en JavaScript ?"
+            a: "Les principaux sont string (texte), number (nombre) et boolean (vrai ou faux). On peut connaître le type d'une valeur avec typeof."
+      - type: quiz
+        items:
+          - ref: prog-ty-q3
+            review: def-types
+          - ref: prog-ty-q4
+            review: def-types
+          - ref: prog-ty-q5
+            review: code-types
+    questions:
+      - code: prog-v-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quelle est la sorte de la valeur `true` ?"
+        choices:
+          - label: "Booléen"
+            correct: true
+            why: "Oui : vrai ou faux."
+          - label: "Texte"
+            correct: false
+            why: "Sans guillemets, `true` n'est pas un texte."
+          - label: "Nombre"
+            correct: false
+            why: "Ce n'est pas un nombre."
+        explanation: "Les booléens n'ont que deux valeurs : `true` et `false`."
+      - code: prog-c1-b2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche `console.log(typeof 42);` ?"
+        snippet: "console.log(typeof 42);"
+        language: javascript
+        choices:
+          - label: "number"
+            correct: true
+            why: "42 est un nombre."
+          - label: "string"
+            correct: false
+            why: "Ce serait avec `\"42\"`."
+          - label: "42"
+            correct: false
+            why: "`typeof` donne la sorte, pas la valeur."
+        explanation: "`typeof` renvoie le nom de la sorte : number, string, boolean…"
+      - code: prog-ty-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quelle valeur est un **texte** ?"
+        choices:
+          - label: "`\"18\"`"
+            correct: true
+            why: "Les guillemets en font un texte, même s'il contient des chiffres."
+          - label: "`18`"
+            correct: false
+            why: "Sans guillemets, c'est un nombre."
+          - label: "`false`"
+            correct: false
+            why: "C'est un booléen."
+        explanation: "Ce sont les guillemets qui font un texte."
+      - code: prog-ty-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "`\"true\"` (avec des guillemets) est un booléen."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Avec des guillemets, c'est un texte qui contient le mot true."
+          - label: "Faux"
+            correct: true
+            why: "Exact : le booléen s'écrit `true`, sans guillemets."
+        explanation: "`true` = booléen ; `\"true\"` = texte."
+      - code: prog-ty-q5
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const code = "75000";
+          console.log(typeof code);
+        language: javascript
+        choices:
+          - label: "string"
+            correct: true
+            why: "Entre guillemets : c'est un texte."
+          - label: "number"
+            correct: false
+            why: "Les guillemets en font un texte."
+          - label: "75000"
+            correct: false
+            why: "typeof donne la sorte, pas la valeur."
+        explanation: "Un code postal est souvent rangé comme texte, car on ne fait pas de calcul avec."
+    exercises:
+      - slug: prog-ex-types-guide
+        kind: COMPLETER
+        title: "La bonne sorte"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète chaque commentaire avec la sorte que va afficher typeof : string, number ou boolean."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Entre guillemets : string."
+          - "Un nombre sans guillemets : number. Vrai ou faux : boolean."
+          - "string, number, boolean."
+        solution: '["string", "number", "boolean"]'
+        explanation: "\"Lyon\" est un texte, 21 un nombre, true un booléen."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            console.log(typeof "Lyon");   // affiche [[1]]
+            console.log(typeof 21);       // affiche [[2]]
+            console.log(typeof true);     // affiche [[3]]
+          blanks:
+            - ["string"]
+            - ["number"]
+            - ["boolean"]
       - slug: prog-ex-variables
         kind: CODE_LIBRE
         title: "Mes trois variables"
@@ -455,24 +1064,26 @@ lessons:
         statement: |
           1. crée une constante `ville` qui contient le texte `"Lyon"` ;
           2. crée une variable `temperature` (avec `let`) qui vaut le nombre `21` ;
-          3. crée une variable `ensoleille` qui vaut `true` ;
-          4. affiche les trois avec `console.log`.
-        criteria: "Trois déclarations correctes et un affichage."
+          3. crée une constante `ensoleille` qui vaut `true` ;
+          4. affiche la sorte de chacune avec `console.log(typeof ...)`.
+        criteria: "Trois déclarations de trois sortes différentes et trois affichages avec typeof."
         hints:
           - "`const ville = \"Lyon\";`"
-          - "Un nombre s'écrit sans guillemets : `let temperature = 21;`"
-          - "`let ensoleille = true;` puis `console.log(ville, temperature, ensoleille);`"
+          - "Un nombre et un booléen s'écrivent sans guillemets : `let temperature = 21;` et `const ensoleille = true;`"
+          - "`console.log(typeof ville);` (et pareil pour les deux autres)"
         solution: |
           const ville = "Lyon";
           let temperature = 21;
-          let ensoleille = true;
-          console.log(ville, temperature, ensoleille);
-        explanation: "Trois types différents : un texte, un nombre, un booléen. `console.log` peut afficher plusieurs valeurs séparées par des virgules."
+          const ensoleille = true;
+          console.log(typeof ville);
+          console.log(typeof temperature);
+          console.log(typeof ensoleille);
+        explanation: "Trois sortes différentes : un texte, un nombre, un booléen."
         xp: 15
         payload:
           language: javascript
           starter: |
-            // Tes variables ici
+            // Tes trois variables
 
           checks:
             - pattern: 'const\s+ville\s*=\s*["''`]Lyon["''`]'
@@ -481,310 +1092,103 @@ lessons:
               message: "Déclare la variable : let temperature = 21; (sans guillemets, c'est un nombre)."
             - pattern: '(let|const)\s+ensoleille\s*=\s*true\b'
               message: "Déclare ensoleille avec la valeur true (sans guillemets)."
-            - pattern: 'console\.log\s*\('
-              message: "Affiche les valeurs avec console.log."
+            - pattern: '\A(?>[\s\S]*?typeof\s){3}'
+              message: "Affiche la sorte des trois variables avec typeof."
             - pattern: 'temperature\s*=\s*["''`]21'
               absent: true
               message: "21 est un nombre : pas de guillemets."
-
-  # ===================================================================== LEÇON 3
-  - slug: prog-calculs-textes
-    title: "Assembler et transformer des textes"
-    duration: 10
-    objective: "Coller des textes, construire un message avec les gabarits `${}` et utiliser les outils des textes (majuscules, recherche, nettoyage)."
-    prerequisites: "Leçon « Les variables »."
-    skills: [algo-bases]
-    xp: 15
-    memo: |
-      - Avec des textes, `+` **colle** : `"Bon" + "jour"` donne `"Bonjour"`.
-      - Gabarit : `` `Bonjour ${prenom}` `` insère la valeur de la variable dans le texte (accents graves).
-      - `texte.toUpperCase()` met en MAJUSCULES, `texte.toLowerCase()` en minuscules.
-      - `texte.includes("mot")` répond `true` si le texte contient ce mot, sinon `false`.
-      - `texte.trim()` enlève les espaces en trop au début et à la fin.
-    commonMistakes: |
-      - Utiliser des guillemets normaux au lieu des accents graves pour un gabarit : `"${prenom}"` s'affiche tel quel.
-      - Oublier l'espace en collant : `"Bonjour" + "Awa"` donne `"BonjourAwa"`.
-      - Oublier les parenthèses : `prenom.toUpperCase` sans `()` ne transforme rien.
-    blocks:
-      - type: text
-        md: |
-          Un programme passe son temps à fabriquer des **messages** : « Bonjour Awa », « Ta commande est prête »,
-          « Mot de passe incorrect ». Voyons comment assembler et transformer des textes.
-      - type: definition
-        id: def-concatenation
-        term: "Concaténation"
-        md: |
-          Le fait de **coller des textes bout à bout**, comme on accroche des wagons l'un derrière l'autre.
-          En JavaScript, on colle avec le signe `+`. Attention : les espaces ne s'ajoutent pas tout seuls.
-      - type: code
-        id: code-textes
-        language: javascript
-        title: "Fabriquer un message"
-        code: |
-          const prenom = "Awa";
-          const ville = "Lyon";
-          const message = "Bonjour " + prenom + " de " + ville + " !";
-          console.log(message);
-          console.log(prenom.toUpperCase());
-        lines:
-          - n: 3
-            note: "On colle cinq morceaux. Les espaces sont écrits **dans** les guillemets."
-          - n: 4
-            note: "Affiche : Bonjour Awa de Lyon !"
-          - n: 5
-            note: "`toUpperCase()` renvoie le texte en majuscules : AWA."
-      - type: question
-        ref: prog-c-q1
-        review: def-concatenation
-      - type: definition
-        id: def-gabarit
-        term: "Gabarit de texte (template literal)"
-        md: |
-          Un texte écrit entre **accents graves** `` ` `` (touche AltGr + 7 sur un clavier français) dans
-          lequel on insère des valeurs avec `${...}`. C'est un **texte à trous** qu'on remplit
-          automatiquement.
-      - type: compare
-        left:
-          title: "Coller avec +"
-          code: |
-            const prenom = "Awa";
-            console.log("Bonjour " + prenom + " !");
-          language: javascript
-        right:
-          title: "Gabarit (plus lisible)"
-          code: |
-            const prenom = "Awa";
-            console.log(`Bonjour ${prenom} !`);
-          language: javascript
-      - type: demo
-        title: "Essaie les deux façons"
-        language: javascript
-        code: |
-          const prenom = "Awa";
-          const ville = "Lyon";
-          console.log("Bonjour " + prenom + " !");
-          console.log(`${prenom} habite à ${ville}.`);
-          console.log(prenom.toUpperCase());
-      - type: question
-        ref: prog-c-q2
-        review: def-gabarit
-      - type: definition
-        id: def-outils-texte
-        term: "Les outils des textes"
-        md: |
-          Chaque texte a une **boîte à outils** attachée. On l'ouvre avec un point : `prenom.toUpperCase()`.
-          Les plus utiles : `toUpperCase()` (majuscules), `toLowerCase()` (minuscules), `includes("mot")`
-          (le texte contient-il ce mot ? réponse `true` ou `false`) et `trim()` (enlève les espaces en trop).
-      - type: text
-        md: "Exercice guidé : complète le message de bienvenue."
-      - type: exercise
-        ref: prog-ex-bienvenue-guide
-      - type: text
-        md: "En autonomie : fabrique une carte de visite avec un gabarit."
-      - type: exercise
-        ref: prog-ex-carte-visite
-      - type: jury
-        items:
-          - q: "Qu'est-ce qu'une concaténation ?"
-            a: "Le fait de coller des textes bout à bout, par exemple avec `+` ou un gabarit `${}` en JavaScript."
-      - type: quiz
-        items:
-          - ref: prog-c-q3
-            review: def-outils-texte
-          - ref: prog-c-q4
-            review: def-outils-texte
-          - ref: prog-c-q5
-            review: def-gabarit
-    questions:
-      - code: prog-c-q1
-        kind: RESULTAT_CODE
-        difficulty: 1
-        skill: algo-bases
-        prompt: "Qu'affiche ce code ?"
-        snippet: |
-          const debut = "Bon";
-          const fin = "jour";
-          console.log(debut + fin);
-        language: javascript
-        choices:
-          - label: "Bonjour"
-            correct: true
-            why: "Le `+` colle les deux textes."
-          - label: "Bon jour"
-            correct: false
-            why: "Aucun espace n'est ajouté automatiquement."
-          - label: "debut + fin"
-            correct: false
-            why: "Sans guillemets, ce sont les valeurs des variables qui sont utilisées."
-        explanation: "Avec des textes, `+` colle bout à bout, sans ajouter d'espace."
-      - code: prog-c-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: algo-bases
-        prompt: "Quel code affiche `Salut Léo` si `prenom` vaut `\"Léo\"` ?"
-        choices:
-          - label: "``console.log(`Salut ${prenom}`);``"
-            correct: true
-            why: "Accents graves et `${}` : le gabarit insère la valeur."
-          - label: "`console.log(\"Salut ${prenom}\");`"
-            correct: false
-            why: "Avec des guillemets normaux, `${prenom}` s'affiche tel quel."
-          - label: "`console.log(Salut prenom);`"
-            correct: false
-            why: "Il manque les guillemets autour du texte."
-        explanation: "Un gabarit s'écrit entre accents graves `` ` ``."
-      - code: prog-c-q3
-        kind: RESULTAT_CODE
-        difficulty: 2
-        skill: algo-bases
-        prompt: "Qu'affiche ce code ?"
-        snippet: |
-          const phrase = "J'adore le chocolat";
-          console.log(phrase.includes("chocolat"));
-        language: javascript
-        choices:
-          - label: "true"
-            correct: true
-            why: "La phrase contient bien le mot « chocolat »."
-          - label: "false"
-            correct: false
-            why: "Ce serait le cas si le mot n'était pas dans la phrase."
-          - label: "chocolat"
-            correct: false
-            why: "`includes` répond par vrai ou faux, il ne renvoie pas le mot."
-        explanation: "`includes` répond à la question « ce texte contient-il ce mot ? » par `true` ou `false`."
-      - code: prog-c-q4
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: algo-bases
-        prompt: "`prenom` vaut `\"awa\"`. Quel code affiche `AWA` ?"
-        choices:
-          - label: "`console.log(prenom.toUpperCase());`"
-            correct: true
-            why: "`toUpperCase()` met tout le texte en majuscules."
-          - label: "`console.log(prenom.toLowerCase());`"
-            correct: false
-            why: "`toLowerCase()` met en minuscules."
-          - label: "`console.log(prenom.toUpperCase);`"
-            correct: false
-            why: "Sans les parenthèses, l'outil n'est pas utilisé."
-        explanation: "Les outils des textes s'utilisent avec un point et des parenthèses : `texte.outil()`."
-      - code: prog-c-q5
-        kind: RESULTAT_CODE
-        difficulty: 2
-        skill: algo-bases
-        prompt: "Qu'affiche ce code ?"
-        snippet: |
-          const animal = "chat";
-          console.log(`Mon ${animal} dort.`);
-        language: javascript
-        choices:
-          - label: "Mon chat dort."
-            correct: true
-            why: "`${animal}` est remplacé par la valeur de la variable."
-          - label: "Mon ${animal} dort."
-            correct: false
-            why: "Ce serait le cas avec des guillemets normaux."
-          - label: "Mon animal dort."
-            correct: false
-            why: "C'est la valeur de la variable qui est insérée, pas son nom."
-        explanation: "Dans un gabarit, ce qui est entre `${ }` est remplacé par sa valeur."
-    exercises:
-      - slug: prog-ex-bienvenue-guide
-        kind: COMPLETER
-        title: "Un message de bienvenue"
-        difficulty: FACILE
-        skill: algo-bases
-        statement: "Complète : mets le prénom en majuscules, puis affiche un message avec un gabarit."
-        criteria: "Les trois trous sont corrects."
-        hints:
-          - "L'outil qui met en majuscules s'appelle toUpperCase."
-          - "Un gabarit commence et finit par un accent grave `."
-          - "toUpperCase , ` , `"
-        solution: '["toUpperCase", "`", "`"]'
-        explanation: "`prenom.toUpperCase()` donne AWA, puis le gabarit affiche : Bienvenue AWA !"
-        xp: 10
-        payload:
-          language: javascript
-          template: |
-            const prenom = "awa";
-            const nom = prenom.[[1]]();
-            console.log([[2]]Bienvenue ${nom} ![[3]]);
-          blanks:
-            - ["toUpperCase"]
-            - ["`"]
-            - ["`"]
-      - slug: prog-ex-carte-visite
-        kind: CODE_LIBRE
-        title: "Une carte de visite"
+          output: |
+            string
+            number
+            boolean
+      - slug: prog-ex-types-bug
+        kind: CORRIGER_ERREUR
+        title: "La mauvaise sorte"
         difficulty: FACILE
         skill: algo-bases
         statement: |
-          1. crée `prenom` qui vaut `"Awa"` et `metier` qui vaut `"développeuse"` ;
-          2. crée `carte` avec un **gabarit** qui donne : `Awa, développeuse` (utilise `${prenom}` et `${metier}`) ;
-          3. affiche la carte **en majuscules** avec `toUpperCase()`.
-        criteria: "Deux variables, un gabarit avec ${prenom} et ${metier}, affichage en majuscules."
+          `age` devrait être un **nombre** et `abonnee` un **booléen**. Ici, les deux sont des textes :
+          typeof affiche deux fois string. Corrige les deux déclarations pour obtenir number puis boolean.
+        criteria: "age vaut le nombre 30 et abonnee vaut true, sans guillemets."
         hints:
-          - "`const prenom = \"Awa\";` et `const metier = \"développeuse\";`"
-          - "``const carte = `${prenom}, ${metier}`;``"
-          - "`console.log(carte.toUpperCase());`"
+          - "Ce sont les guillemets qui transforment une valeur en texte."
+          - "Enlève les guillemets autour de 30."
+          - "`let age = 30;` et `const abonnee = true;`"
         solution: |
-          const prenom = "Awa";
-          const metier = "développeuse";
-          const carte = `${prenom}, ${metier}`;
-          console.log(carte.toUpperCase());
-        explanation: "Le gabarit assemble le texte une seule fois, puis `toUpperCase()` le transforme. Résultat : AWA, DÉVELOPPEUSE."
-        xp: 15
+          let age = 30;
+          const abonnee = true;
+          console.log(typeof age);
+          console.log(typeof abonnee);
+        explanation: "Sans guillemets, 30 est un nombre et true un booléen."
+        xp: 10
         payload:
           language: javascript
           starter: |
-            // Ton code ici
-
-          output: "AWA, DÉVELOPPEUSE"
+            let age = "30";
+            const abonnee = "true";
+            console.log(typeof age);
+            console.log(typeof abonnee);
           checks:
-            - pattern: '(const|let)\s+prenom\s*=\s*["''`]Awa["''`]'
-              message: "Déclare prenom = \"Awa\"."
-            - pattern: '(const|let)\s+metier\s*=\s*["''`]développeuse["''`]'
-              message: "Déclare metier = \"développeuse\"."
-            - pattern: '(const|let)\s+carte\s*=\s*`[^`]*\$\{\s*prenom\s*\}[^`]*\$\{\s*metier\s*\}[^`]*`'
-              message: "Crée carte avec un gabarit qui contient ${prenom} puis ${metier}."
-            - pattern: '\.toUpperCase\s*\(\s*\)'
-              message: "Mets la carte en majuscules avec toUpperCase()."
-            - pattern: 'console\.log\s*\('
-              message: "Affiche le résultat avec console.log."
+            - pattern: 'let\s+age\s*=\s*30\b'
+              message: "age est un nombre : let age = 30; sans guillemets."
+            - pattern: 'const\s+abonnee\s*=\s*true\b'
+              message: "abonnee est un booléen : const abonnee = true; sans guillemets."
+          output: |
+            number
+            boolean
 
 bank:
   - code: prog-c1-b1
     kind: CHOIX_UNIQUE
     difficulty: 1
     skill: algo-bases
-    prompt: "Quel nom de variable est valide en JavaScript ?"
+    prompt: "Quelle instruction affiche le **contenu** de la variable `ville` ?"
     choices:
-      - label: "`dateNaissance`"
+      - label: "`console.log(ville);`"
         correct: true
-        why: "Oui : pas d'espace, commence par une lettre."
-      - label: "`date naissance`"
+        why: "Sans guillemets : on lit la boîte."
+      - label: "`console.log(\"ville\");`"
         correct: false
-        why: "Un nom ne peut pas contenir d'espace."
-      - label: "`2date`"
+        why: "Affiche le mot ville."
+      - label: "`console.log(let ville);`"
         correct: false
-        why: "Un nom ne peut pas commencer par un chiffre."
-    explanation: "Convention : camelCase, sans espace ni accent, commençant par une lettre."
-  - code: prog-c1-b2
+        why: "let sert à créer, pas à afficher."
+    explanation: "Le nom d'une variable s'écrit sans guillemets."
+  - code: prog-c1-b3
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: algo-bases
+    prompt: "Quelle déclaration crée un booléen ?"
+    choices:
+      - label: "`const connecte = false;`"
+        correct: true
+        why: "false sans guillemets : un booléen."
+      - label: "`const connecte = \"false\";`"
+        correct: false
+        why: "Entre guillemets : un texte."
+      - label: "`const connecte = 0;`"
+        correct: false
+        why: "0 est un nombre."
+    explanation: "true et false s'écrivent sans guillemets."
+  - code: prog-c1-b4
     kind: RESULTAT_CODE
     difficulty: 1
     skill: algo-bases
-    prompt: "Qu'affiche `console.log(typeof 42);` ?"
-    snippet: "console.log(typeof 42);"
+    prompt: "Qu'affiche ce code ?"
+    snippet: |
+      let etape = "début";
+      etape = "milieu";
+      etape = "fin";
+      console.log(etape);
     language: javascript
     choices:
-      - label: "number"
+      - label: "fin"
         correct: true
-        why: "42 est un nombre."
-      - label: "string"
+        why: "Chaque ligne remplace la valeur précédente."
+      - label: "début"
         correct: false
-        why: "Ce serait avec `\"42\"`."
-      - label: "42"
+        why: "La valeur a été remplacée deux fois."
+      - label: "début milieu fin"
         correct: false
-        why: "`typeof` donne le type, pas la valeur."
-    explanation: "`typeof` renvoie le nom du type : number, string, boolean…"
+        why: "Une variable ne garde que sa dernière valeur."
+    explanation: "Une variable contient toujours une seule valeur : la dernière rangée."

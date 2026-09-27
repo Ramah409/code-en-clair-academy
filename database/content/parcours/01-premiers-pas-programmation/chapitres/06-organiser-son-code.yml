@@ -1,0 +1,1922 @@
+slug: prog-organiser-code
+position: 6
+level: INTERMEDIAIRE
+title: "Organiser son code : fonctions et objets"
+summary: "Ranger des instructions dans une fonction, lui donner des paramètres, récupérer un résultat avec return, l'écrire en version courte, puis décrire des choses avec des objets. Une seule notion par leçon."
+quizQuestionCount: 12
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: prog-fonctions
+    title: "Créer et appeler une fonction"
+    duration: 9
+    objective: "Ranger des instructions dans une fonction avec un nom, puis l'appeler pour les exécuter."
+    prerequisites: "Chapitre « Les listes »."
+    skills: [algo-fonctions]
+    xp: 10
+    memo: |
+      - Une **fonction** range des instructions sous un **nom**, pour les réutiliser.
+      - **Déclarer** : `function saluer() { console.log("Bonjour"); }` (on écrit la recette).
+      - **Appeler** : `saluer();` (on cuisine la recette). Sans appel, rien ne se passe.
+      - On peut appeler la même fonction autant de fois qu'on veut.
+    commonMistakes: |
+      - Déclarer la fonction sans jamais l'appeler.
+      - Oublier les parenthèses à l'appel : `saluer;` ne fait rien.
+    blocks:
+      - type: text
+        md: |
+          Quand on répète souvent les mêmes instructions, on les range dans une **fonction**. On l'écrit une
+          fois, on l'utilise autant qu'on veut.
+      - type: definition
+        id: def-fonction
+        term: "Fonction"
+        md: |
+          Une **recette** avec un nom. L'écrire dans le cahier (la déclarer) ne fait pas le gâteau : il faut
+          ensuite la **suivre** (l'appeler). Et on peut la suivre autant de fois qu'on veut.
+      - type: code
+        id: code-fonction
+        language: javascript
+        title: "Une fonction qui salue"
+        code: |
+          function saluer() {
+            console.log("Bonjour !");
+            console.log("Bienvenue sur le site.");
+          }
+
+          saluer();
+          saluer();
+        lines:
+          - n: 1
+            note: "`function`, le nom `saluer`, des parenthèses vides, puis le bloc entre accolades."
+          - n: 6
+            note: "L'**appel** : le nom suivi de parenthèses. Les deux messages s'affichent."
+          - n: 7
+            note: "Deuxième appel : les deux messages s'affichent encore."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis supprime les deux appels : plus rien ne s'affiche."
+        language: javascript
+        code: |
+          function saluer() {
+            console.log("Bonjour !");
+            console.log("Bienvenue sur le site.");
+          }
+          saluer();
+          saluer();
+      - type: question
+        ref: prog-f-q4
+        review: def-fonction
+      - type: question
+        ref: prog-fn-q2
+        review: code-fonction
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la déclaration et l'appel."
+      - type: exercise
+        ref: prog-ex-fonction-appel-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une fonction qui affiche un menu."
+      - type: exercise
+        ref: prog-ex-fonction-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une fonction qui ne fait rien."
+      - type: exercise
+        ref: prog-ex-fonction-bug
+      - type: jury
+        items:
+          - q: "Pourquoi découper son code en fonctions ?"
+            a: "Pour éviter de répéter du code, donner un nom clair à chaque action, et pouvoir tester chaque morceau séparément."
+      - type: quiz
+        items:
+          - ref: prog-fn-q3
+            review: def-fonction
+          - ref: prog-fn-q4
+            review: code-fonction
+          - ref: prog-c3-b1
+            review: def-fonction
+    questions:
+      - code: prog-f-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Une fonction déclarée mais jamais appelée ne s'exécute jamais."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "La déclaration ne fait qu'écrire la recette."
+          - label: "Faux"
+            correct: false
+            why: "Il faut l'appeler pour l'exécuter."
+        explanation: "Déclarer, c'est écrire la recette ; appeler, c'est cuisiner."
+      - code: prog-fn-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Combien de fois « Coucou » s'affiche-t-il ?"
+        snippet: |
+          function dire() {
+            console.log("Coucou");
+          }
+          dire();
+          dire();
+          dire();
+        language: javascript
+        choices:
+          - label: "Trois fois"
+            correct: true
+            why: "Un affichage par appel."
+          - label: "Une fois"
+            correct: false
+            why: "Chaque appel exécute à nouveau la fonction."
+          - label: "Aucune"
+            correct: false
+            why: "La fonction est bien appelée."
+        explanation: "Chaque `dire();` exécute la recette."
+      - code: prog-fn-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Comment appelle-t-on la fonction `ranger` ?"
+        choices:
+          - label: "`ranger();`"
+            correct: true
+            why: "Le nom suivi de parenthèses."
+          - label: "`ranger;`"
+            correct: false
+            why: "Sans parenthèses, la fonction n'est pas exécutée."
+          - label: "`function ranger();`"
+            correct: false
+            why: "function sert à déclarer, pas à appeler."
+        explanation: "Appeler = le nom + des parenthèses."
+      - code: prog-fn-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Où s'écrivent les instructions d'une fonction ?"
+        choices:
+          - label: "Entre les accolades `{ }` qui suivent son nom"
+            correct: true
+            why: "C'est le corps de la recette."
+          - label: "Entre les parenthèses"
+            correct: false
+            why: "Les parenthèses servent à autre chose (on le verra à la leçon suivante)."
+          - label: "Après l'appel"
+            correct: false
+            why: "Elles sont dans la déclaration."
+        explanation: "`function nom() { instructions }`."
+      - code: prog-c3-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Quel nom de fonction est le plus clair ?"
+        choices:
+          - label: "`envoyerMessageBienvenue`"
+            correct: true
+            why: "Un verbe et ce que fait la fonction."
+          - label: "`f1`"
+            correct: false
+            why: "Le nom ne dit rien de son rôle."
+          - label: "`truc`"
+            correct: false
+            why: "Un nom vague rend le code difficile à relire."
+        explanation: "Une fonction se nomme avec un verbe qui décrit son action."
+    exercises:
+      - slug: prog-ex-fonction-appel-guide
+        kind: COMPLETER
+        title: "Déclarer et appeler"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: "Complète pour déclarer la fonction `applaudir`, puis l'appeler."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot qui déclare une fonction."
+          - "Le bloc s'ouvre avec une accolade."
+          - "function, {, applaudir."
+        solution: '["function", "{", "applaudir"]'
+        explanation: "`function applaudir() { ... }` puis `applaudir();`."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            [[1]] applaudir() [[2]]
+              console.log("Clap clap !");
+            }
+            [[3]]();
+          blanks:
+            - ["function"]
+            - ["{"]
+            - ["applaudir"]
+      - slug: prog-ex-fonction-libre
+        kind: CODE_LIBRE
+        title: "Une fonction qui affiche un menu"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          Écris une fonction `afficherMenu()` qui affiche trois lignes : `Entrée`, `Plat`, `Dessert`.
+          Appelle-la **une fois**.
+        criteria: "Une fonction afficherMenu avec trois console.log, et un appel."
+        hints:
+          - "`function afficherMenu() { ... }`"
+          - "Dans le bloc : trois `console.log`."
+          - "Après la fonction : `afficherMenu();`"
+        solution: |
+          function afficherMenu() {
+            console.log("Entrée");
+            console.log("Plat");
+            console.log("Dessert");
+          }
+          afficherMenu();
+        explanation: "La recette est écrite une fois, puis suivie avec l'appel."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ta fonction afficherMenu
+
+          checks:
+            - pattern: 'function\s+afficherMenu\s*\(\s*\)\s*\{'
+              message: "Déclare function afficherMenu() { ... }"
+            - pattern: 'console\.log\s*\(\s*["''`]Dessert["''`]\s*\)'
+              message: "Affiche les trois lignes, dont \"Dessert\"."
+            - pattern: '\}\s*afficherMenu\s*\(\s*\)'
+              message: "Appelle la fonction après l'avoir écrite : afficherMenu();"
+          output: |
+            Entrée
+            Plat
+            Dessert
+      - slug: prog-ex-fonction-bug
+        kind: CORRIGER_ERREUR
+        title: "Une fonction qui ne fait rien"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          Ce programme n'affiche rien : la fonction est écrite, mais l'appel est mal fait. Corrige l'appel
+          pour afficher `Lumière allumée`.
+        criteria: "La fonction est appelée avec des parenthèses."
+        hints:
+          - "Regarde la dernière ligne."
+          - "Un appel a toujours des parenthèses."
+          - "`allumer();`"
+        solution: |
+          function allumer() {
+            console.log("Lumière allumée");
+          }
+          allumer();
+        explanation: "Sans parenthèses, on nomme la fonction mais on ne l'exécute pas."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            function allumer() {
+              console.log("Lumière allumée");
+            }
+            allumer;
+          checks:
+            - pattern: '\}\s*allumer\s*\(\s*\)'
+              message: "Appelle la fonction avec des parenthèses : allumer();"
+          output: "Lumière allumée"
+
+  # ===================================================================== LEÇON 2
+  - slug: prog-parametres
+    title: "Donner une information à une fonction : les paramètres"
+    duration: 10
+    objective: "Déclarer une fonction avec un paramètre et l'appeler avec différents arguments."
+    prerequisites: "Leçon « Créer et appeler une fonction »."
+    skills: [algo-fonctions]
+    xp: 10
+    memo: |
+      - Un **paramètre** est une variable de la fonction, qui reçoit une valeur à chaque appel : `function saluer(prenom) { ... }`.
+      - L'**argument** est la valeur donnée à l'appel : `saluer("Awa")`.
+      - Plusieurs paramètres se séparent par des virgules : `function presenter(prenom, ville)`.
+      - Les arguments sont donnés **dans le même ordre** que les paramètres.
+    commonMistakes: |
+      - Oublier l'argument à l'appel : le paramètre vaut alors `undefined`.
+      - Inverser l'ordre des arguments.
+    blocks:
+      - type: text
+        md: |
+          Une fonction qui dit toujours « Bonjour Awa » n'est pas très utile. On veut pouvoir lui dire **à qui**
+          dire bonjour. C'est le rôle des **paramètres**.
+      - type: definition
+        id: def-parametre
+        term: "Paramètre et argument"
+        md: |
+          La **machine à café** : elle a une fente pour la capsule (le **paramètre**). À chaque utilisation, on
+          y glisse une capsule différente (l'**argument**) : espresso, cappuccino…
+      - type: code
+        id: code-parametre
+        language: javascript
+        title: "Saluer quelqu'un"
+        code: |
+          function saluer(prenom) {
+            console.log(`Bonjour ${prenom} !`);
+          }
+
+          saluer("Awa");
+          saluer("Léo");
+        lines:
+          - n: 1
+            note: "`prenom` est le **paramètre** : une variable qui recevra la valeur donnée à l'appel."
+          - n: 5
+            note: "\"Awa\" est l'**argument** : pendant cet appel, prenom vaut Awa."
+          - n: 6
+            note: "Nouvel appel, nouvel argument : Bonjour Léo !"
+      - type: demo
+        title: "Essaie"
+        md: "Ajoute un appel avec ton prénom."
+        language: javascript
+        code: |
+          function saluer(prenom) {
+            console.log(`Bonjour ${prenom} !`);
+          }
+          saluer("Awa");
+          saluer("Léo");
+      - type: question
+        ref: prog-f-q3
+        review: def-parametre
+      - type: question
+        ref: prog-pa-q2
+        review: code-parametre
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le paramètre et l'appel."
+      - type: exercise
+        ref: prog-ex-parametre-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une fonction à deux paramètres."
+      - type: exercise
+        ref: prog-ex-parametre-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un argument oublié."
+      - type: exercise
+        ref: prog-ex-parametre-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre un paramètre et un argument ?"
+            a: "Le paramètre est le nom utilisé dans la définition de la fonction (`prenom`) ; l'argument est la valeur réelle donnée lors de l'appel (`\"Awa\"`)."
+      - type: quiz
+        items:
+          - ref: prog-pa-q3
+            review: def-parametre
+          - ref: prog-pa-q4
+            review: code-parametre
+          - ref: prog-pa-q5
+            review: def-parametre
+    questions:
+      - code: prog-f-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Dans `function saluer(prenom) { ... }`, que représente `prenom` ?"
+        choices:
+          - label: "Un paramètre : la valeur reçue lors de l'appel"
+            correct: true
+            why: "Oui."
+          - label: "Le nom de la fonction"
+            correct: false
+            why: "Le nom de la fonction est `saluer`."
+          - label: "Un texte à afficher tel quel"
+            correct: false
+            why: "C'est une variable qui recevra une valeur."
+        explanation: "Les paramètres sont les « ingrédients » attendus par la fonction."
+      - code: prog-pa-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          function annoncer(plat) {
+            console.log(`Au menu : ${plat}`);
+          }
+          annoncer("tajine");
+        language: javascript
+        choices:
+          - label: "Au menu : tajine"
+            correct: true
+            why: "Pendant l'appel, plat vaut tajine."
+          - label: "Au menu : plat"
+            correct: false
+            why: "C'est le contenu du paramètre qui est affiché."
+          - label: "Rien"
+            correct: false
+            why: "La fonction est bien appelée."
+        explanation: "Le paramètre reçoit l'argument de l'appel."
+      - code: prog-pa-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Dans `saluer(\"Inès\")`, que représente `\"Inès\"` ?"
+        choices:
+          - label: "L'argument : la valeur donnée à l'appel"
+            correct: true
+            why: "La capsule glissée dans la machine."
+          - label: "Le paramètre"
+            correct: false
+            why: "Le paramètre est le nom dans la déclaration."
+          - label: "Le nom de la fonction"
+            correct: false
+            why: "La fonction s'appelle saluer."
+        explanation: "Paramètre dans la déclaration, argument dans l'appel."
+      - code: prog-pa-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-fonctions
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          function presenter(prenom, ville) {
+            console.log(`${prenom} vit à ${ville}`);
+          }
+          presenter("Nice", "Awa");
+        language: javascript
+        choices:
+          - label: "Nice vit à Awa"
+            correct: true
+            why: "Les arguments arrivent dans l'ordre : prenom reçoit Nice, ville reçoit Awa."
+          - label: "Awa vit à Nice"
+            correct: false
+            why: "Les arguments sont inversés à l'appel."
+          - label: "Une erreur"
+            correct: false
+            why: "Le code s'exécute, mais le résultat n'a pas de sens."
+        explanation: "L'ordre des arguments doit suivre l'ordre des paramètres."
+      - code: prog-pa-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Si on oublie l'argument à l'appel, le paramètre vaut `undefined`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "La fente est vide : rien n'a été donné."
+          - label: "Faux"
+            correct: false
+            why: "JavaScript ne devine pas la valeur."
+        explanation: "`saluer()` sans argument affiche « Bonjour undefined ! »."
+    exercises:
+      - slug: prog-ex-parametre-guide
+        kind: COMPLETER
+        title: "Compléter le paramètre"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: "Complète pour que la fonction affiche `J'adore le thé`."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Le paramètre s'écrit dans les parenthèses de la déclaration."
+          - "L'argument est la valeur donnée à l'appel, entre guillemets."
+          - "boisson, \"thé\"."
+        solution: '["boisson", "\"thé\""]'
+        explanation: "`function adorer(boisson)` puis `adorer(\"thé\")`."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            function adorer([[1]]) {
+              console.log(`J'adore le ${boisson}`);
+            }
+            adorer([[2]]);
+          blanks:
+            - ["boisson"]
+            - ["\"thé\"", "'thé'"]
+      - slug: prog-ex-parametre-libre
+        kind: CODE_LIBRE
+        title: "Une fonction à deux paramètres"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          Écris une fonction `commander(plat, boisson)` qui affiche `Un couscous et un jus`
+          (avec un gabarit qui utilise les deux paramètres). Appelle-la avec `"couscous"` et `"jus"`.
+        criteria: "Une fonction à deux paramètres, un gabarit avec les deux, un appel."
+        hints:
+          - "`function commander(plat, boisson) { ... }`"
+          - "``console.log(`Un ${plat} et un ${boisson}`);``"
+          - "`commander(\"couscous\", \"jus\");`"
+        solution: |
+          function commander(plat, boisson) {
+            console.log(`Un ${plat} et un ${boisson}`);
+          }
+          commander("couscous", "jus");
+        explanation: "Deux paramètres, deux arguments, dans le même ordre."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ta fonction commander
+
+          checks:
+            - pattern: 'function\s+commander\s*\(\s*plat\s*,\s*boisson\s*\)'
+              message: "Déclare function commander(plat, boisson)."
+            - pattern: '`[^`]*\$\{\s*plat\s*\}[^`]*\$\{\s*boisson\s*\}[^`]*`'
+              message: "Utilise un gabarit avec ${plat} puis ${boisson}."
+            - pattern: 'commander\s*\(\s*["''`]couscous["''`]\s*,\s*["''`]jus["''`]\s*\)'
+              message: "Appelle commander(\"couscous\", \"jus\")."
+          output: "Un couscous et un jus"
+      - slug: prog-ex-parametre-bug
+        kind: CORRIGER_ERREUR
+        title: "Un argument oublié"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          Ce programme affiche `Bon anniversaire undefined !`. Corrige l'appel pour souhaiter bon
+          anniversaire à `Karim`.
+        criteria: "La fonction est appelée avec l'argument \"Karim\"."
+        hints:
+          - "undefined veut dire qu'aucune valeur n'a été donnée."
+          - "L'argument se met entre les parenthèses de l'appel."
+          - "`feter(\"Karim\");`"
+        solution: |
+          function feter(prenom) {
+            console.log(`Bon anniversaire ${prenom} !`);
+          }
+          feter("Karim");
+        explanation: "Sans argument, le paramètre prenom reste vide (undefined)."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            function feter(prenom) {
+              console.log(`Bon anniversaire ${prenom} !`);
+            }
+            feter();
+          checks:
+            - pattern: 'feter\s*\(\s*["''`]Karim["''`]\s*\)'
+              message: "Donne l'argument à l'appel : feter(\"Karim\");"
+          output: "Bon anniversaire Karim !"
+
+  # ===================================================================== LEÇON 3
+  - slug: prog-return
+    title: "Obtenir un résultat : return"
+    duration: 11
+    objective: "Renvoyer un résultat avec return, le ranger dans une variable et le réutiliser."
+    prerequisites: "Leçon « Donner une information à une fonction : les paramètres »."
+    skills: [algo-fonctions]
+    xp: 15
+    memo: |
+      - `return valeur;` **renvoie** un résultat à celui qui a appelé la fonction, et **arrête** la fonction.
+      - On récupère le résultat : `const message = saluer("Awa");`.
+      - `console.log` **montre** une valeur ; `return` la **rend** au programme, qui peut la réutiliser.
+      - Sans `return`, une fonction renvoie `undefined`.
+    commonMistakes: |
+      - Afficher (`console.log`) au lieu de renvoyer (`return`) : on ne peut plus réutiliser le résultat.
+      - Écrire des instructions après `return` : elles ne s'exécutent jamais.
+    blocks:
+      - type: text
+        md: |
+          Jusqu'ici, nos fonctions affichaient directement. Souvent, on préfère qu'elles **préparent** un résultat
+          et nous le **rendent** : c'est ensuite à nous de décider quoi en faire.
+      - type: definition
+        id: def-return
+        term: "return (renvoyer)"
+        md: |
+          Le **plat qui sort de la cuisine** : la recette est suivie, et le plat est rendu à la personne qui l'a
+          commandé. Elle peut le manger, le ranger au frigo, le partager…
+      - type: code
+        id: code-return
+        language: javascript
+        title: "Une fonction qui prépare un message"
+        code: |
+          function saluer(prenom) {
+            return `Bonjour ${prenom} !`;
+          }
+
+          const message = saluer("Awa");
+          console.log(message);
+          console.log(saluer("Léo").toUpperCase());
+        lines:
+          - n: 2
+            note: "`return` rend le message préparé à celui qui a appelé la fonction."
+          - n: 5
+            note: "Le résultat (« Bonjour Awa ! ») est rangé dans `message`."
+          - n: 7
+            note: "On réutilise le résultat directement : BONJOUR LÉO !"
+      - type: demo
+        title: "Essaie"
+        language: javascript
+        code: |
+          function saluer(prenom) {
+            return `Bonjour ${prenom} !`;
+          }
+          const message = saluer("Awa");
+          console.log(message);
+          console.log(saluer("Léo").toUpperCase());
+      - type: question
+        ref: prog-f-q1
+        review: code-return
+      - type: callout
+        variant: info
+        title: "return ou console.log ?"
+        md: |
+          `console.log` **montre** une valeur à l'écran. `return` la **rend** au programme, qui peut la
+          réutiliser (la ranger, la comparer, la passer à une autre fonction). Une bonne fonction prépare son
+          résultat et le rend ; c'est l'appelant qui décide de l'afficher.
+      - type: question
+        ref: prog-f-q2
+        review: def-return
+      - type: text
+        md: "**Exercice 1 (guidé)** : une fonction qui présente une personne."
+      - type: exercise
+        ref: prog-ex-fonction-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une fonction qui dit si une personne est majeure."
+      - type: exercise
+        ref: prog-ex-majeur
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un résultat qui vaut undefined."
+      - type: exercise
+        ref: prog-ex-return-bug
+      - type: quiz
+        items:
+          - ref: prog-rt-q3
+            review: def-return
+          - ref: prog-rt-q4
+            review: code-return
+          - ref: prog-rt-q5
+            review: def-return
+    questions:
+      - code: prog-f-q1
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          function initiale(prenom) {
+            return prenom[0];
+          }
+          console.log(initiale("Awa"));
+        language: javascript
+        choices:
+          - label: "A"
+            correct: true
+            why: "`prenom[0]` est la première lettre du prénom (comme la première case d'une liste)."
+          - label: "Awa"
+            correct: false
+            why: "La fonction ne renvoie que la première lettre."
+          - label: "initiale(\"Awa\")"
+            correct: false
+            why: "La fonction est appelée : on affiche son résultat."
+        explanation: "L'appel `initiale(\"Awa\")` exécute la fonction avec prenom = \"Awa\" et renvoie \"A\"."
+      - code: prog-f-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-fonctions
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          function saluer(prenom) {
+            console.log("Salut " + prenom);
+          }
+          const resultat = saluer("Léo");
+          console.log(resultat);
+        language: javascript
+        choices:
+          - label: "Salut Léo puis undefined"
+            correct: true
+            why: "La fonction affiche « Salut Léo » mais ne renvoie rien : resultat vaut undefined."
+          - label: "Salut Léo puis Salut Léo"
+            correct: false
+            why: "Il manque `return` pour que resultat contienne le message."
+          - label: "undefined"
+            correct: false
+            why: "Le console.log de la fonction affiche d'abord « Salut Léo »."
+        explanation: "Sans `return`, une fonction renvoie `undefined`."
+      - code: prog-rt-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Que fait `return` ?"
+        choices:
+          - label: "Il rend un résultat à l'appelant et arrête la fonction"
+            correct: true
+            why: "Le plat sort de la cuisine."
+          - label: "Il affiche le résultat"
+            correct: false
+            why: "C'est console.log qui affiche."
+          - label: "Il recommence la fonction"
+            correct: false
+            why: "Au contraire, il l'arrête."
+        explanation: "return = rendre et s'arrêter."
+      - code: prog-rt-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-fonctions
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          function test() {
+            return "A";
+            console.log("B");
+          }
+          console.log(test());
+        language: javascript
+        choices:
+          - label: "A"
+            correct: true
+            why: "return arrête la fonction : la ligne suivante n'est jamais exécutée."
+          - label: "B puis A"
+            correct: false
+            why: "La ligne après return n'est jamais atteinte."
+          - label: "A puis B"
+            correct: false
+            why: "Le console.log de B ne s'exécute jamais."
+        explanation: "Tout ce qui suit un return dans le même bloc est ignoré."
+      - code: prog-rt-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Une fonction qui renvoie son résultat est plus facile à réutiliser qu'une fonction qui l'affiche."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "On peut ranger le résultat, le transformer, le comparer…"
+          - label: "Faux"
+            correct: false
+            why: "Un résultat seulement affiché est perdu pour le programme."
+        explanation: "Préparer et rendre, puis laisser l'appelant décider."
+    exercises:
+      - slug: prog-ex-fonction-guide
+        kind: COMPLETER
+        title: "Présenter une personne"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: "Complète la fonction et son appel."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot qui déclare une fonction."
+          - "Le mot qui renvoie le résultat."
+          - "function, return, presenter."
+        solution: '["function", "return", "presenter"]'
+        explanation: "`presenter(\"Awa\", \"Lyon\")` renvoie « Awa habite à Lyon »."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            [[1]] presenter(prenom, ville) {
+              [[2]] `${prenom} habite à ${ville}`;
+            }
+            console.log([[3]]("Awa", "Lyon"));
+          blanks:
+            - ["function"]
+            - ["return"]
+            - ["presenter"]
+      - slug: prog-ex-majeur
+        kind: CODE_LIBRE
+        title: "La fonction estMajeur"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          Écris une fonction `estMajeur(age)` qui **renvoie** `true` si l'âge est plus grand ou égal à 18,
+          sinon `false`. Appelle-la avec 16 et avec 20 et affiche les résultats.
+        criteria: "Une fonction estMajeur avec paramètre age, un return, deux appels."
+        hints:
+          - "`function estMajeur(age) { ... }`"
+          - "La comparaison `age >= 18` vaut déjà true ou false : on peut la renvoyer directement."
+          - "`return age >= 18;` puis `console.log(estMajeur(16));` et `console.log(estMajeur(20));`"
+        solution: |
+          function estMajeur(age) {
+            return age >= 18;
+          }
+          console.log(estMajeur(16));
+          console.log(estMajeur(20));
+        explanation: "Une comparaison est déjà un booléen : pas besoin de `if` pour renvoyer true ou false."
+        xp: 20
+        payload:
+          language: javascript
+          starter: |
+            // Ta fonction ici
+
+          checks:
+            - pattern: 'function\s+estMajeur\s*\(\s*age\s*\)'
+              message: "Déclare la fonction : function estMajeur(age) { ... }"
+            - pattern: 'return\b[^;]*age\s*>=\s*18'
+              message: "Renvoie le résultat de la comparaison : return age >= 18;"
+            - pattern: 'estMajeur\s*\(\s*16\s*\)'
+              message: "Appelle la fonction avec 16."
+            - pattern: 'estMajeur\s*\(\s*20\s*\)'
+              message: "Appelle la fonction avec 20."
+          output: |
+            false
+            true
+      - slug: prog-ex-return-bug
+        kind: CORRIGER_ERREUR
+        title: "Un résultat qui vaut undefined"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          Ce programme doit afficher `AWA`, mais il plante : la fonction affiche au lieu de **renvoyer**, donc
+          `crier("awa")` vaut undefined. Corrige la fonction.
+        criteria: "La fonction renvoie le texte en majuscules avec return."
+        hints:
+          - "Le résultat de la fonction est utilisé ensuite : il faut le rendre."
+          - "Remplace console.log par return dans la fonction."
+          - "`return texte.toUpperCase();`"
+        solution: |
+          function crier(texte) {
+            return texte.toUpperCase();
+          }
+          const cri = crier("awa");
+          console.log(cri);
+        explanation: "Avec `return`, `cri` reçoit bien le résultat de la fonction."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            function crier(texte) {
+              console.log(texte.toUpperCase());
+            }
+            const cri = crier("awa");
+            console.log(cri.length);
+          checks:
+            - pattern: 'return\s+texte\.toUpperCase\s*\(\s*\)'
+              message: "Renvoie le résultat : return texte.toUpperCase();"
+            - pattern: 'console\.log\s*\(\s*cri\s*\)'
+              message: "Affiche cri à la fin."
+          output: "AWA"
+
+  # ===================================================================== LEÇON 4
+  - slug: prog-fleches
+    title: "L'écriture courte : les fonctions fléchées"
+    duration: 9
+    objective: "Écrire une petite fonction avec la flèche =>, et savoir quand le return est automatique."
+    prerequisites: "Leçon « Obtenir un résultat : return »."
+    skills: [algo-fonctions]
+    xp: 10
+    memo: |
+      - Fonction fléchée : `const crier = (texte) => texte.toUpperCase();`
+      - **Sans accolades**, le résultat après la flèche est **renvoyé automatiquement** (pas besoin de return).
+      - **Avec accolades**, il faut écrire `return` comme d'habitude.
+      - On la range dans une constante, et on l'appelle pareil : `crier("awa")`.
+    commonMistakes: |
+      - Ajouter des accolades sans `return` : la fonction renvoie undefined.
+      - Écrire `=>` à l'envers (`=<`).
+    blocks:
+      - type: text
+        md: |
+          Pour les petites fonctions d'une ligne, JavaScript propose une écriture courte, avec une flèche `=>`.
+          Tu la verras partout, surtout avec les listes (chapitre suivant).
+      - type: definition
+        id: def-fleche
+        term: "Fonction fléchée"
+        md: |
+          Une **abréviation**, comme « RDV » pour « rendez-vous » : même sens, moins de lettres.
+          `(texte) => texte.toUpperCase()` se lit « à partir de texte, donne texte en majuscules ».
+      - type: compare
+        left:
+          title: "Fonction classique"
+          language: javascript
+          code: |
+            function crier(texte) {
+              return texte.toUpperCase();
+            }
+        right:
+          title: "Fonction fléchée (même résultat)"
+          language: javascript
+          code: |
+            const crier = (texte) => texte.toUpperCase();
+      - type: code
+        id: code-fleche
+        language: javascript
+        title: "Deux petites fonctions fléchées"
+        code: |
+          const crier = (texte) => texte.toUpperCase();
+          const saluer = (prenom) => `Bonjour ${prenom} !`;
+          console.log(crier("chut"));
+          console.log(saluer("Inès"));
+        lines:
+          - n: 1
+            note: "Le paramètre entre parenthèses, la flèche, puis le résultat, renvoyé automatiquement."
+          - n: 3
+            note: "On l'appelle comme une fonction classique : CHUT"
+      - type: demo
+        title: "Essaie"
+        language: javascript
+        code: |
+          const crier = (texte) => texte.toUpperCase();
+          const saluer = (prenom) => `Bonjour ${prenom} !`;
+          console.log(crier("chut"));
+          console.log(saluer("Inès"));
+      - type: question
+        ref: prog-f-q5
+        review: def-fleche
+      - type: question
+        ref: prog-fl2-q2
+        review: code-fleche
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la fonction fléchée."
+      - type: exercise
+        ref: prog-ex-fleche-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : transforme une fonction classique en fonction fléchée."
+      - type: exercise
+        ref: prog-ex-fleche-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des accolades sans return."
+      - type: exercise
+        ref: prog-ex-fleche-bug
+      - type: quiz
+        items:
+          - ref: prog-fl2-q3
+            review: def-fleche
+          - ref: prog-fl2-q4
+            review: code-fleche
+          - ref: prog-fl2-q5
+            review: def-fleche
+    questions:
+      - code: prog-f-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: algo-fonctions
+        prompt: "Quelle fonction fléchée renvoie un texte en majuscules ?"
+        choices:
+          - label: "`const crier = (t) => t.toUpperCase();`"
+            correct: true
+            why: "Paramètre t, résultat t.toUpperCase() renvoyé automatiquement."
+          - label: "`const crier = t.toUpperCase();`"
+            correct: false
+            why: "Ce n'est pas une fonction."
+          - label: "`const crier = (t) => { t.toUpperCase() };`"
+            correct: false
+            why: "Avec des accolades, il faut écrire `return`."
+        explanation: "Sans accolades, la fonction fléchée renvoie l'expression ; avec accolades, il faut `return`."
+      - code: prog-fl2-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const doubler = (mot) => mot + mot;
+          console.log(doubler("coucou"));
+        language: javascript
+        choices:
+          - label: "coucoucoucou"
+            correct: true
+            why: "Le texte est collé à lui-même."
+          - label: "coucou"
+            correct: false
+            why: "On colle mot deux fois."
+          - label: "undefined"
+            correct: false
+            why: "Sans accolades, le résultat est renvoyé automatiquement."
+        explanation: "La flèche sans accolades renvoie ce qui suit."
+      - code: prog-fl2-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Une fonction fléchée sans accolades renvoie automatiquement son résultat."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Pas besoin de return sur une ligne."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement l'avantage de l'écriture courte."
+        explanation: "Accolades → return obligatoire ; sans accolades → renvoi automatique."
+      - code: prog-fl2-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Comment appelle-t-on `const saluer = (prenom) => ...` ?"
+        choices:
+          - label: "`saluer(\"Awa\")`"
+            correct: true
+            why: "Exactement comme une fonction classique."
+          - label: "`saluer => \"Awa\"`"
+            correct: false
+            why: "La flèche sert à déclarer, pas à appeler."
+          - label: "`const saluer(\"Awa\")`"
+            correct: false
+            why: "const sert à déclarer."
+        explanation: "Déclaration différente, appel identique."
+      - code: prog-fl2-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Quel signe forme la flèche d'une fonction fléchée ?"
+        choices:
+          - label: "`=>`"
+            correct: true
+            why: "Un égal suivi d'un plus grand que."
+          - label: "`->`"
+            correct: false
+            why: "Cette flèche existe en Java, pas en JavaScript."
+          - label: "`>=`"
+            correct: false
+            why: "C'est « plus grand ou égal »."
+        explanation: "En JavaScript : `=>`."
+    exercises:
+      - slug: prog-ex-fleche-guide
+        kind: COMPLETER
+        title: "Compléter la fonction fléchée"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: "Complète pour créer une fonction fléchée `chuchoter` qui met un texte en minuscules."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "La flèche s'écrit avec = puis >."
+          - "L'outil des minuscules : toLowerCase."
+          - "=>, toLowerCase."
+        solution: '["=>", "toLowerCase"]'
+        explanation: "`const chuchoter = (texte) => texte.toLowerCase();`"
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const chuchoter = (texte) [[1]] texte.[[2]]();
+            console.log(chuchoter("SILENCE"));
+          blanks:
+            - ["=>"]
+            - ["toLowerCase"]
+      - slug: prog-ex-fleche-libre
+        kind: CODE_LIBRE
+        title: "De classique à fléchée"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          Réécris cette fonction en **fonction fléchée**, rangée dans la constante `presenter`, puis affiche
+          `presenter("Awa")` :
+
+          ```javascript
+          function presenter(prenom) {
+            return `Je m'appelle ${prenom}`;
+          }
+          ```
+        criteria: "Une constante presenter avec une flèche et un gabarit, puis un appel affiché."
+        hints:
+          - "`const presenter = (prenom) => ...`"
+          - "Après la flèche, le gabarit, sans accolades ni return."
+          - "``const presenter = (prenom) => `Je m'appelle ${prenom}`;``"
+        solution: |
+          const presenter = (prenom) => `Je m'appelle ${prenom}`;
+          console.log(presenter("Awa"));
+        explanation: "Même comportement, écriture plus courte."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ta fonction fléchée presenter
+
+          checks:
+            - pattern: 'const\s+presenter\s*=\s*\(?\s*prenom\s*\)?\s*=>'
+              message: "Déclare const presenter = (prenom) => ..."
+            - pattern: '=>\s*`Je m''appelle \$\{\s*prenom\s*\}`'
+              message: "Après la flèche, renvoie le gabarit `Je m'appelle ${prenom}`."
+            - pattern: 'console\.log\s*\(\s*presenter\s*\(\s*["''`]Awa["''`]\s*\)\s*\)'
+              message: "Affiche presenter(\"Awa\")."
+          output: "Je m'appelle Awa"
+      - slug: prog-ex-fleche-bug
+        kind: CORRIGER_ERREUR
+        title: "Des accolades sans return"
+        difficulty: INTERMEDIAIRE
+        skill: algo-fonctions
+        statement: |
+          Ce programme affiche `undefined` au lieu de `Salut Léo`. Avec des accolades, une fonction fléchée ne
+          renvoie rien toute seule. Corrige-la : enlève les accolades (ou ajoute return).
+        criteria: "La fonction renvoie bien le message."
+        hints:
+          - "Avec accolades, il faut un return."
+          - "Sans accolades, le résultat est renvoyé automatiquement."
+          - "``const saluer = (prenom) => `Salut ${prenom}`;``"
+        solution: |
+          const saluer = (prenom) => `Salut ${prenom}`;
+          console.log(saluer("Léo"));
+        explanation: "Sans accolades, la flèche renvoie directement le gabarit."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const saluer = (prenom) => { `Salut ${prenom}`; };
+            console.log(saluer("Léo"));
+          checks:
+            - pattern: '=>\s*`Salut \$\{\s*prenom\s*\}`|=>\s*\{\s*return\s+`Salut \$\{\s*prenom\s*\}`'
+              message: "Renvoie le message : enlève les accolades, ou écris return."
+          output: "Salut Léo"
+
+  # ===================================================================== LEÇON 5
+  - slug: prog-objets
+    title: "Décrire une chose : les objets"
+    duration: 10
+    objective: "Créer un objet avec des propriétés et lire une propriété avec un point."
+    prerequisites: "Leçon « L'écriture courte : les fonctions fléchées »."
+    skills: [algo-fonctions]
+    xp: 10
+    memo: |
+      - Un **objet** regroupe des informations sur une même chose : `{ titre: "Dune", pages: 600 }`.
+      - Chaque information est une **propriété** : une clé, deux-points, une valeur.
+      - Les propriétés sont séparées par des **virgules**.
+      - On lit une propriété avec un **point** : `livre.titre`.
+      - Une propriété qui n'existe pas vaut `undefined`.
+    commonMistakes: |
+      - Confondre crochets (liste) et accolades (objet).
+      - Oublier la virgule entre deux propriétés.
+      - Mal orthographier une propriété : on obtient `undefined`, sans erreur.
+    blocks:
+      - type: text
+        md: |
+          Un livre a un titre, un auteur, un nombre de pages. Plutôt que trois variables séparées, on les
+          regroupe dans un **objet**.
+      - type: definition
+        id: def-objet
+        term: "Objet"
+        md: |
+          Une **fiche d'identité** : une série de lignes « nom : valeur ». En JavaScript, elle s'écrit entre
+          accolades `{ }`.
+      - type: code
+        id: code-objet
+        language: javascript
+        title: "La fiche d'un livre"
+        code: |
+          const livre = {
+            titre: "Une si longue lettre",
+            autrice: "Mariama Bâ",
+            disponible: true
+          };
+          console.log(livre.titre);
+          console.log(livre.autrice);
+        lines:
+          - n: 1
+            note: "Un objet s'écrit entre accolades."
+          - n: 2
+            note: "Une **propriété** : la clé `titre`, deux-points, la valeur. Une virgule sépare les propriétés."
+          - n: 6
+            note: "On lit une propriété avec un point : `livre.titre`."
+      - type: demo
+        title: "Essaie"
+        md: "Affiche `livre.disponible`, puis `livre.prix` (qui n'existe pas)."
+        language: javascript
+        code: |
+          const livre = {
+            titre: "Une si longue lettre",
+            autrice: "Mariama Bâ",
+            disponible: true
+          };
+          console.log(livre.titre);
+          console.log(livre.autrice);
+      - type: question
+        ref: prog-o-q1
+        review: code-objet
+      - type: question
+        ref: prog-o-q3
+        review: def-objet
+      - type: text
+        md: "**Exercice 1 (guidé)** : la fiche d'un livre."
+      - type: exercise
+        ref: prog-ex-objet-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : la fiche d'un film."
+      - type: exercise
+        ref: prog-ex-objet-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une virgule oubliée."
+      - type: exercise
+        ref: prog-ex-objet-bug
+      - type: jury
+        items:
+          - q: "Quel lien entre un objet JavaScript et le JSON ?"
+            a: "Le JSON reprend la syntaxe des objets JavaScript pour échanger des données en texte : clés entre guillemets, valeurs simples, objets et listes imbriqués."
+      - type: quiz
+        items:
+          - ref: prog-o-q4
+            review: code-objet
+          - ref: prog-o-q5
+            review: def-objet
+          - ref: prog-ob-q5
+            review: code-objet
+    questions:
+      - code: prog-o-q1
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const plat = { nom: "Mafé", epice: true };
+          console.log(plat.nom);
+        language: javascript
+        choices:
+          - label: "Mafé"
+            correct: true
+            why: "On lit la propriété nom."
+          - label: "true"
+            correct: false
+            why: "C'est la propriété epice."
+          - label: "plat.nom"
+            correct: false
+            why: "Sans guillemets, c'est la valeur qui est affichée."
+        explanation: "`objet.propriete` lit une valeur."
+      - code: prog-o-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Quelle écriture crée un objet ?"
+        choices:
+          - label: "`{ nom: \"Awa\", ville: \"Lyon\" }`"
+            correct: true
+            why: "Accolades, clés et valeurs."
+          - label: "`[\"Awa\", \"Lyon\"]`"
+            correct: false
+            why: "C'est une liste."
+          - label: "`(nom = \"Awa\")`"
+            correct: false
+            why: "Ce n'est pas l'écriture d'un objet."
+        explanation: "Objet : accolades `{ }` ; liste : crochets `[ ]`."
+      - code: prog-o-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-fonctions
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const p = { nom: "Kit", couleur: "vert" };
+          console.log(p.coleur);
+        language: javascript
+        choices:
+          - label: "undefined"
+            correct: true
+            why: "La propriété `coleur` n'existe pas (faute de frappe)."
+          - label: "vert"
+            correct: false
+            why: "`coleur` n'est pas `couleur`."
+          - label: "Une erreur"
+            correct: false
+            why: "JavaScript renvoie undefined sans erreur : d'où l'intérêt de TypeScript, plus tard."
+        explanation: "Une propriété inexistante vaut `undefined`."
+      - code: prog-o-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Une propriété d'objet est composée d'une clé et d'une valeur."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Par exemple `nom: \"Mafé\"`."
+          - label: "Faux"
+            correct: false
+            why: "C'est la définition d'une propriété."
+        explanation: "Clé : valeur, séparées par deux-points."
+      - code: prog-ob-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Qu'est-ce qui sépare deux propriétés dans un objet ?"
+        choices:
+          - label: "Une virgule"
+            correct: true
+            why: "`{ titre: \"Dune\", pages: 600 }`"
+          - label: "Un point-virgule"
+            correct: false
+            why: "Le point-virgule termine une instruction, pas une propriété."
+          - label: "Rien"
+            correct: false
+            why: "Sans séparateur, c'est une erreur."
+        explanation: "Comme dans une liste : des virgules."
+    exercises:
+      - slug: prog-ex-objet-guide
+        kind: COMPLETER
+        title: "La fiche d'un livre"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: "Complète l'objet et l'affichage du titre."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Un objet s'ouvre avec une accolade."
+          - "Entre deux propriétés : une virgule."
+          - "{ , , , titre."
+        solution: '["{", ",", "titre"]'
+        explanation: "`{ titre: \"Dune\", pages: 600 }` puis `livre.titre`."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const livre = [[1]] titre: "Dune"[[2]] pages: 600 };
+            console.log(livre.[[3]]);
+          blanks:
+            - ["{"]
+            - [","]
+            - ["titre"]
+      - slug: prog-ex-objet-libre
+        kind: CODE_LIBRE
+        title: "La fiche d'un film"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          1. crée un objet `film` avec `titre` (`"Atlantique"`) et `realisatrice` (`"Mati Diop"`) ;
+          2. affiche avec un gabarit : `Atlantique, de Mati Diop`.
+        criteria: "Un objet film à deux propriétés, et un affichage qui lit les deux."
+        hints:
+          - "`const film = { titre: \"Atlantique\", realisatrice: \"Mati Diop\" };`"
+          - "On lit une propriété avec un point : `film.titre`."
+          - "``console.log(`${film.titre}, de ${film.realisatrice}`);``"
+        solution: |
+          const film = { titre: "Atlantique", realisatrice: "Mati Diop" };
+          console.log(`${film.titre}, de ${film.realisatrice}`);
+        explanation: "Un objet, deux propriétés, lues avec un point."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ton objet film
+
+          checks:
+            - pattern: 'const\s+film\s*=\s*\{[^}]*titre\s*:\s*["''`]Atlantique["''`]'
+              message: "Crée l'objet film avec titre: \"Atlantique\"."
+            - pattern: 'realisatrice\s*:\s*["''`]Mati Diop["''`]'
+              message: "Ajoute realisatrice: \"Mati Diop\"."
+            - pattern: 'film\.titre'
+              message: "Lis le titre avec film.titre."
+            - pattern: 'film\.realisatrice'
+              message: "Lis la réalisatrice avec film.realisatrice."
+          output: "Atlantique, de Mati Diop"
+      - slug: prog-ex-objet-bug
+        kind: CORRIGER_ERREUR
+        title: "Une virgule oubliée"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          Cet objet provoque une erreur de syntaxe : il manque une virgule entre deux propriétés. Corrige-le
+          pour afficher `Kiwi`.
+        criteria: "Les propriétés sont séparées par des virgules."
+        hints:
+          - "Regarde la fin de la ligne nom."
+          - "Chaque propriété est suivie d'une virgule, sauf la dernière."
+          - "`nom: \"Kiwi\",`"
+        solution: |
+          const fruit = {
+            nom: "Kiwi",
+            couleur: "vert"
+          };
+          console.log(fruit.nom);
+        explanation: "Comme dans une liste, les éléments d'un objet sont séparés par des virgules."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const fruit = {
+              nom: "Kiwi"
+              couleur: "vert"
+            };
+            console.log(fruit.nom);
+          checks:
+            - pattern: 'nom\s*:\s*["''`]Kiwi["''`]\s*,'
+              message: "Ajoute une virgule après nom: \"Kiwi\"."
+          output: "Kiwi"
+
+  # ===================================================================== LEÇON 6
+  - slug: prog-objets-modifier
+    title: "Modifier et compléter un objet"
+    duration: 9
+    objective: "Changer la valeur d'une propriété et ajouter une nouvelle propriété à un objet."
+    prerequisites: "Leçon « Décrire une chose : les objets »."
+    skills: [algo-fonctions]
+    xp: 10
+    memo: |
+      - Changer une propriété : `livre.disponible = false;`
+      - Ajouter une propriété : `livre.note = "5 étoiles";` (elle n'existait pas : elle est créée).
+      - Un objet déclaré avec `const` peut quand même être modifié : c'est **la même fiche**, on corrige ses lignes.
+    commonMistakes: |
+      - Écrire `===` au lieu de `=` pour modifier.
+      - Croire qu'un objet const ne peut pas changer : seules ses propriétés changent, la fiche reste la même.
+    blocks:
+      - type: text
+        md: |
+          Une fiche évolue : un livre est emprunté, un utilisateur change de ville. On modifie les propriétés
+          d'un objet avec le signe `=`, comme pour une variable.
+      - type: definition
+        id: def-modifier-objet
+        term: "Modifier une propriété"
+        md: |
+          **Corriger une ligne** d'une fiche au crayon : on gomme l'ancienne valeur, on écrit la nouvelle.
+          Si la ligne n'existait pas, on l'ajoute en bas de la fiche.
+      - type: code
+        id: code-modifier-objet
+        language: javascript
+        title: "Un livre emprunté"
+        code: |
+          const livre = { titre: "Dune", disponible: true };
+          livre.disponible = false;
+          livre.emprunteuse = "Awa";
+          console.log(livre);
+        lines:
+          - n: 2
+            note: "On change une propriété qui existe : disponible passe à false."
+          - n: 3
+            note: "On ajoute une propriété nouvelle : emprunteuse."
+          - n: 4
+            note: "Affiche : { titre: 'Dune', disponible: false, emprunteuse: 'Awa' }"
+      - type: demo
+        title: "Essaie"
+        language: javascript
+        code: |
+          const livre = { titre: "Dune", disponible: true };
+          livre.disponible = false;
+          livre.emprunteuse = "Awa";
+          console.log(livre);
+      - type: question
+        ref: prog-om-q1
+        review: code-modifier-objet
+      - type: question
+        ref: prog-om-q2
+        review: def-modifier-objet
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la modification."
+      - type: exercise
+        ref: prog-ex-modifier-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une utilisatrice qui déménage."
+      - type: exercise
+        ref: prog-ex-modifier-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une comparaison au lieu d'une modification."
+      - type: exercise
+        ref: prog-ex-modifier-bug
+      - type: quiz
+        items:
+          - ref: prog-om-q3
+            review: def-modifier-objet
+          - ref: prog-om-q4
+            review: code-modifier-objet
+          - ref: prog-om-q5
+            review: def-modifier-objet
+    questions:
+      - code: prog-om-q1
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const compte = { pseudo: "awa", actif: true };
+          compte.actif = false;
+          console.log(compte.actif);
+        language: javascript
+        choices:
+          - label: "false"
+            correct: true
+            why: "La propriété a été modifiée."
+          - label: "true"
+            correct: false
+            why: "La deuxième ligne remplace true par false."
+          - label: "Une erreur car compte est une const"
+            correct: false
+            why: "On peut modifier les propriétés d'un objet const."
+        explanation: "`objet.propriete = valeur` modifie la fiche."
+      - code: prog-om-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Comment ajouter la propriété `ville` valant « Dakar » à l'objet `profil` ?"
+        choices:
+          - label: "`profil.ville = \"Dakar\";`"
+            correct: true
+            why: "Si la propriété n'existe pas, elle est créée."
+          - label: "`profil.push(\"Dakar\");`"
+            correct: false
+            why: "push sert aux listes."
+          - label: "`profil = \"Dakar\";`"
+            correct: false
+            why: "Cela remplacerait tout l'objet (interdit avec const)."
+        explanation: "On ajoute une propriété comme on la modifie."
+      - code: prog-om-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: algo-fonctions
+        prompt: "On peut modifier les propriétés d'un objet déclaré avec `const`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "const garde la même fiche ; ses lignes peuvent changer."
+          - label: "Faux"
+            correct: false
+            why: "Seul le remplacement de toute la fiche est interdit."
+        explanation: "Comme pour une liste const qu'on complète avec push."
+      - code: prog-om-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const ticket = { numero: "A12" };
+          ticket.guichet = "3";
+          console.log(`Ticket ${ticket.numero}, guichet ${ticket.guichet}`);
+        language: javascript
+        choices:
+          - label: "Ticket A12, guichet 3"
+            correct: true
+            why: "La propriété guichet a été ajoutée avant l'affichage."
+          - label: "Ticket A12, guichet undefined"
+            correct: false
+            why: "guichet existe depuis la deuxième ligne."
+          - label: "Une erreur"
+            correct: false
+            why: "Ajouter une propriété est permis."
+        explanation: "Une propriété ajoutée se lit comme les autres."
+      - code: prog-om-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Quel signe sert à modifier une propriété ?"
+        choices:
+          - label: "`=`"
+            correct: true
+            why: "Un seul égal : ranger une nouvelle valeur."
+          - label: "`===`"
+            correct: false
+            why: "=== compare, il ne modifie rien."
+          - label: "`:`"
+            correct: false
+            why: "Les deux-points servent à la création de l'objet."
+        explanation: "Création : `{ cle: valeur }` ; modification : `objet.cle = valeur`."
+    exercises:
+      - slug: prog-ex-modifier-guide
+        kind: COMPLETER
+        title: "Compléter la modification"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: "Complète : la commande passe au statut « livrée », et on ajoute le livreur « Karim »."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "On lit ou modifie une propriété avec un point."
+          - "Le signe qui range une valeur."
+          - "statut, =, livreur."
+        solution: '["statut", "=", "livreur"]'
+        explanation: "`commande.statut = \"livrée\";` puis `commande.livreur = \"Karim\";`"
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const commande = { numero: "C42", statut: "en route" };
+            commande.[[1]] [[2]] "livrée";
+            commande.[[3]] = "Karim";
+            console.log(commande);
+          blanks:
+            - ["statut"]
+            - ["="]
+            - ["livreur"]
+      - slug: prog-ex-modifier-libre
+        kind: CODE_LIBRE
+        title: "Une utilisatrice qui déménage"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          Avec `const user = { prenom: "Inès", ville: "Lille" };` :
+          1. change la ville en `"Rennes"` ;
+          2. ajoute une propriété `telephone` qui vaut `"0600000000"` ;
+          3. affiche avec un gabarit : `Inès habite à Rennes`.
+        criteria: "ville modifiée, telephone ajouté, affichage avec gabarit."
+        hints:
+          - "`user.ville = \"Rennes\";`"
+          - "`user.telephone = \"0600000000\";`"
+          - "``console.log(`${user.prenom} habite à ${user.ville}`);``"
+        solution: |
+          const user = { prenom: "Inès", ville: "Lille" };
+          user.ville = "Rennes";
+          user.telephone = "0600000000";
+          console.log(`${user.prenom} habite à ${user.ville}`);
+        explanation: "La même fiche, mise à jour."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const user = { prenom: "Inès", ville: "Lille" };
+
+          checks:
+            - pattern: 'user\.ville\s*=\s*["''`]Rennes["''`]'
+              message: "Change la ville : user.ville = \"Rennes\";"
+            - pattern: 'user\.telephone\s*=\s*["''`]0600000000["''`]'
+              message: "Ajoute le téléphone : user.telephone = \"0600000000\";"
+            - pattern: '`[^`]*\$\{\s*user\.prenom\s*\}[^`]*\$\{\s*user\.ville\s*\}[^`]*`'
+              message: "Affiche avec un gabarit : ${user.prenom} habite à ${user.ville}."
+          output: "Inès habite à Rennes"
+      - slug: prog-ex-modifier-bug
+        kind: CORRIGER_ERREUR
+        title: "Une comparaison au lieu d'une modification"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          Ce programme doit marquer la tâche comme terminée, mais il affiche toujours `false` : la ligne 2
+          compare au lieu de modifier. Corrige-la.
+        criteria: "La propriete terminee est modifiée avec =."
+        hints:
+          - "=== compare, il ne change rien."
+          - "Pour ranger une valeur : un seul égal."
+          - "`tache.terminee = true;`"
+        solution: |
+          const tache = { nom: "Réviser SQL", terminee: false };
+          tache.terminee = true;
+          console.log(tache.terminee);
+        explanation: "`=` modifie ; `===` ne fait que poser une question."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const tache = { nom: "Réviser SQL", terminee: false };
+            tache.terminee === true;
+            console.log(tache.terminee);
+          checks:
+            - pattern: 'tache\.terminee\s*===\s*true'
+              absent: true
+              message: "=== compare : il faut un seul = pour modifier."
+            - pattern: 'tache\.terminee\s*=\s*true'
+              message: "Modifie la propriété : tache.terminee = true;"
+          output: "true"
+
+  # ===================================================================== LEÇON 7
+  - slug: prog-listes-objets
+    title: "Des listes d'objets"
+    duration: 11
+    objective: "Ranger plusieurs objets dans une liste, lire la propriété d'un élément et parcourir la liste."
+    prerequisites: "Leçon « Modifier et compléter un objet »."
+    skills: [algo-fonctions]
+    xp: 15
+    memo: |
+      - Une liste d'objets : `[{ nom: "Awa" }, { nom: "Léo" }]` — c'est la forme des données JSON renvoyées par les API.
+      - On choisit d'abord la case, puis la propriété : `produits[1].nom`.
+      - On parcourt avec `for…of` : `for (const p of produits) { console.log(p.nom); }`
+    commonMistakes: |
+      - Écrire `produits.nom` : la liste n'a pas de propriété nom, ce sont ses éléments qui en ont.
+      - Oublier les virgules entre les objets.
+    blocks:
+      - type: text
+        md: |
+          Un catalogue contient **plusieurs** produits, chacun avec sa fiche. On range les fiches dans une
+          **liste**. C'est exactement ce qu'une application reçoit d'un serveur.
+      - type: definition
+        id: def-liste-objets
+        term: "Liste d'objets"
+        md: |
+          Un **classeur de fiches** : le classeur est la liste, chaque fiche est un objet. Pour lire une
+          information, on choisit d'abord la fiche (la case), puis la ligne (la propriété).
+      - type: code
+        id: code-liste-objets
+        language: javascript
+        title: "Un petit catalogue"
+        code: |
+          const produits = [
+            { nom: "Alarme", enStock: true },
+            { nom: "Coque SOS", enStock: false },
+            { nom: "Sac antivol", enStock: true }
+          ];
+          console.log(produits[1].nom);
+          for (const p of produits) {
+            console.log(p.nom);
+          }
+        lines:
+          - n: 1
+            note: "Une liste (crochets) qui contient trois objets (accolades)."
+          - n: 6
+            note: "La case 1, puis sa propriété nom : Coque SOS."
+          - n: 7
+            note: "À chaque tour, `p` est une fiche : on lit `p.nom`."
+      - type: demo
+        title: "Essaie"
+        language: javascript
+        code: |
+          const produits = [
+            { nom: "Alarme", enStock: true },
+            { nom: "Coque SOS", enStock: false },
+            { nom: "Sac antivol", enStock: true }
+          ];
+          for (const p of produits) {
+            console.log(`${p.nom} : ${p.enStock}`);
+          }
+      - type: question
+        ref: prog-o-q2
+        review: code-liste-objets
+      - type: question
+        ref: prog-lo-q2
+        review: def-liste-objets
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le parcours d'une liste d'objets."
+      - type: exercise
+        ref: prog-ex-liste-objets-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : affiche les produits disponibles."
+      - type: exercise
+        ref: prog-ex-disponibles
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une propriété lue sur la liste."
+      - type: exercise
+        ref: prog-ex-liste-objets-bug
+      - type: quiz
+        items:
+          - ref: prog-lo-q3
+            review: def-liste-objets
+          - ref: prog-lo-q4
+            review: code-liste-objets
+          - ref: prog-lo-q5
+            review: def-liste-objets
+    questions:
+      - code: prog-o-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: algo-fonctions
+        prompt: "Comment lire le nom du deuxième produit de `produits` ?"
+        choices:
+          - label: "`produits[1].nom`"
+            correct: true
+            why: "Indice 1 pour le deuxième, puis la propriété."
+          - label: "`produits.nom[1]`"
+            correct: false
+            why: "La liste n'a pas de propriété nom."
+          - label: "`produits[2].nom`"
+            correct: false
+            why: "L'indice 2 est le troisième."
+        explanation: "On choisit d'abord la case de la liste, puis la propriété de l'objet."
+      - code: prog-lo-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Que contient `[{ nom: \"Awa\" }, { nom: \"Léo\" }]` ?"
+        choices:
+          - label: "Une liste de deux objets"
+            correct: true
+            why: "Crochets autour, accolades pour chaque fiche."
+          - label: "Un objet avec deux listes"
+            correct: false
+            why: "C'est l'inverse : la liste est à l'extérieur."
+          - label: "Deux textes"
+            correct: false
+            why: "Chaque élément est une fiche avec une propriété."
+        explanation: "La forme la plus courante des données reçues d'un serveur."
+      - code: prog-lo-q3
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const eleves = [{ prenom: "Awa" }, { prenom: "Léo" }];
+          for (const e of eleves) {
+            console.log(e.prenom);
+          }
+        language: javascript
+        choices:
+          - label: "Awa puis Léo"
+            correct: true
+            why: "Un tour par fiche, on lit la propriété prenom."
+          - label: "[object Object] deux fois"
+            correct: false
+            why: "On affiche e.prenom, pas l'objet entier."
+          - label: "undefined"
+            correct: false
+            why: "Chaque fiche a bien une propriété prenom."
+        explanation: "Parcourir, puis lire une propriété de chaque fiche."
+      - code: prog-lo-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Dans l'exemple du catalogue, `produits.nom` donne le nom du premier produit."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "La liste n'a pas de propriété nom : on obtient undefined."
+          - label: "Faux"
+            correct: true
+            why: "Il faut d'abord choisir une case : produits[0].nom."
+        explanation: "Case d'abord, propriété ensuite."
+      - code: prog-lo-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-fonctions
+        prompt: "Pourquoi les listes d'objets sont-elles si importantes ?"
+        choices:
+          - label: "C'est la forme des données échangées avec un serveur (JSON)"
+            correct: true
+            why: "Une liste de produits, d'utilisateurs, de commandes…"
+          - label: "Parce qu'elles sont plus rapides que tout"
+            correct: false
+            why: "Ce n'est pas une question de vitesse."
+          - label: "Parce qu'on ne peut rien faire d'autre"
+            correct: false
+            why: "C'est un choix pratique, pas une obligation."
+        explanation: "Tu les retrouveras en Angular comme en Spring Boot."
+    exercises:
+      - slug: prog-ex-liste-objets-guide
+        kind: COMPLETER
+        title: "Parcourir une liste d'objets"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: "Complète pour afficher la ville de chaque personne."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Pour chaque élément de la liste : for…of."
+          - "Chaque élément est une fiche : on lit sa propriété avec un point."
+          - "of, personne, ville."
+        solution: '["of", "personne", "ville"]'
+        explanation: "`for (const personne of personnes) { console.log(personne.ville); }`"
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const personnes = [
+              { prenom: "Awa", ville: "Dakar" },
+              { prenom: "Léo", ville: "Nantes" }
+            ];
+            for (const personne [[1]] personnes) {
+              console.log([[2]].[[3]]);
+            }
+          blanks:
+            - ["of"]
+            - ["personne"]
+            - ["ville"]
+      - slug: prog-ex-disponibles
+        kind: CODE_LIBRE
+        title: "Les produits disponibles"
+        difficulty: INTERMEDIAIRE
+        skill: algo-fonctions
+        statement: |
+          Avec la liste fournie, affiche le **nom** de chaque produit **disponible** (`enStock` vaut `true`),
+          sous la forme `Disponible : Alarme`. Les produits épuisés ne s'affichent pas.
+        criteria: "Parcours de la liste, test de la propriété enStock, affichage du nom avec un gabarit."
+        hints:
+          - "`for (const p of produits) { ... }`"
+          - "Dans la boucle : `if (p.enStock) { ... }` (enStock vaut déjà true ou false)."
+          - "``console.log(`Disponible : ${p.nom}`);``"
+        solution: |
+          const produits = [
+            { nom: "Alarme", enStock: true },
+            { nom: "Coque SOS", enStock: false },
+            { nom: "Sac antivol", enStock: true }
+          ];
+          for (const p of produits) {
+            if (p.enStock) {
+              console.log(`Disponible : ${p.nom}`);
+            }
+          }
+        explanation: "On combine liste, objets, boucle et condition : c'est la base de tous les écrans de catalogue."
+        xp: 20
+        payload:
+          language: javascript
+          starter: |
+            const produits = [
+              { nom: "Alarme", enStock: true },
+              { nom: "Coque SOS", enStock: false },
+              { nom: "Sac antivol", enStock: true }
+            ];
+
+          checks:
+            - pattern: 'for\s*\('
+              message: "Parcours la liste avec une boucle."
+            - pattern: 'if\s*\(\s*(\w+)\.enStock\s*(===?\s*true\s*)?\)'
+              message: "Teste si le produit est disponible : if (p.enStock)."
+            - pattern: 'console\.log\s*\(\s*`[^`]*\$\{\s*\w+\.nom\s*\}[^`]*`'
+              message: "Affiche le nom avec un gabarit : `Disponible : ${p.nom}`."
+          output: |
+            Disponible : Alarme
+            Disponible : Sac antivol
+      - slug: prog-ex-liste-objets-bug
+        kind: CORRIGER_ERREUR
+        title: "Une propriété lue sur la liste"
+        difficulty: FACILE
+        skill: algo-fonctions
+        statement: |
+          Ce programme doit afficher le titre du **premier** livre (`Dune`), mais il affiche `undefined`.
+          Corrige la lecture.
+        criteria: "On lit la case 0 puis sa propriété titre."
+        hints:
+          - "La liste n'a pas de propriété titre."
+          - "Choisis d'abord la case du premier livre."
+          - "`livres[0].titre`"
+        solution: |
+          const livres = [{ titre: "Dune" }, { titre: "Kirikou" }];
+          console.log(livres[0].titre);
+        explanation: "Case d'abord (`[0]`), propriété ensuite (`.titre`)."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const livres = [{ titre: "Dune" }, { titre: "Kirikou" }];
+            console.log(livres.titre);
+          checks:
+            - pattern: 'console\.log\s*\(\s*livres\s*\[\s*0\s*\]\.titre\s*\)'
+              message: "Lis la case 0, puis le titre : livres[0].titre."
+          output: "Dune"
+
+bank:
+  - code: prog-c6-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: algo-fonctions
+    prompt: "Quelle fonction renvoie la ville d'une personne ?"
+    choices:
+      - label: "`const villeDe = (personne) => personne.ville;`"
+        correct: true
+        why: "Paramètre personne, propriété ville renvoyée automatiquement."
+      - label: "`const villeDe = (personne) => { personne.ville };`"
+        correct: false
+        why: "Avec des accolades, il faut return."
+      - label: "`const villeDe = personne.ville;`"
+        correct: false
+        why: "Ce n'est pas une fonction."
+    explanation: "Fonction fléchée + lecture de propriété."
+  - code: prog-c6-b2
+    kind: RESULTAT_CODE
+    difficulty: 2
+    skill: algo-fonctions
+    prompt: "Qu'affiche ce code ?"
+    snippet: |
+      function etiquette(produit) {
+        return `${produit.nom} (${produit.couleur})`;
+      }
+      console.log(etiquette({ nom: "Sac", couleur: "noir" }));
+    language: javascript
+    choices:
+      - label: "Sac (noir)"
+        correct: true
+        why: "La fonction lit deux propriétés de l'objet reçu."
+      - label: "produit.nom (produit.couleur)"
+        correct: false
+        why: "Les trous du gabarit sont remplis."
+      - label: "undefined"
+        correct: false
+        why: "La fonction renvoie bien un texte."
+    explanation: "Une fonction peut recevoir un objet en paramètre."

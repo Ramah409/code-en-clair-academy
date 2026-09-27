@@ -1,0 +1,612 @@
+slug: prog-repeter
+position: 4
+level: DEBUTANT
+title: "Répéter"
+summary: "Répéter des instructions un nombre de fois connu avec for, puis tant qu'une condition est vraie avec while. Une seule notion par leçon."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: prog-boucles
+    title: "Répéter un nombre de fois : la boucle for"
+    duration: 11
+    objective: "Répéter un bloc un nombre de fois connu avec for, et comprendre ses trois parties."
+    prerequisites: "Chapitre « Prendre des décisions »."
+    skills: [algo-bases]
+    xp: 15
+    memo: |
+      - Une **boucle** répète un bloc d'instructions.
+      - `for (let i = 1; i <= 5; i++) { ... }` a trois parties : le **départ** (`let i = 1`), la **condition pour continuer** (`i <= 5`), le **pas** (`i++`).
+      - `i++` fait avancer le compteur d'un cran après chaque tour.
+      - `i` s'utilise dans le bloc, par exemple dans un gabarit : `` `Étape ${i}` ``.
+    commonMistakes: |
+      - Mettre des virgules au lieu de points-virgules dans les parenthèses du for.
+      - Oublier `i++` : le compteur n'avance pas et la boucle ne s'arrête jamais.
+      - Se tromper de condition : `i < 5` s'arrête avant 5, `i <= 5` inclut 5.
+    blocks:
+      - type: text
+        md: |
+          Afficher « Bonjour » 100 fois en écrivant 100 lignes ? Non merci. Une **boucle** répète le travail
+          pour nous.
+      - type: definition
+        id: def-boucle
+        term: "Boucle for"
+        md: |
+          Un **tour de piste** avec un compteur : on part du numéro 1, on fait un tour, on avance le compteur,
+          et on recommence **tant que** le nombre de tours prévu n'est pas atteint.
+      - type: code
+        id: code-for
+        language: javascript
+        title: "Compter de 1 à 5"
+        code: |
+          for (let i = 1; i <= 5; i++) {
+            console.log(`Tour ${i}`);
+          }
+        lines:
+          - n: 1
+            note: "Trois parties séparées par des points-virgules : `let i = 1` (départ), `i <= 5` (on continue tant que c'est vrai), `i++` (après chaque tour, i avance d'un cran)."
+          - n: 2
+            note: "Le bloc s'exécute à chaque tour : Tour 1, Tour 2… jusqu'à Tour 5."
+      - type: demo
+        title: "Modifie la boucle"
+        md: "Essaie d'aller jusqu'à 10, ou de commencer à 3."
+        language: javascript
+        code: |
+          for (let i = 1; i <= 5; i++) {
+            console.log(`Tour ${i}`);
+          }
+      - type: question
+        ref: prog-b-q4
+        review: code-for
+      - type: code
+        id: code-accumuler
+        language: javascript
+        title: "Construire un texte avec une boucle"
+        code: |
+          let cri = "";
+          for (let i = 1; i <= 3; i++) {
+            cri += "Hip ";
+          }
+          cri += "hourra !";
+          console.log(cri);
+        lines:
+          - n: 1
+            note: "Le texte démarre **vide**, avant la boucle."
+          - n: 3
+            note: "`cri += \"Hip \"` ajoute « Hip » au bout du texte, à chaque tour."
+          - n: 5
+            note: "Après la boucle, on ajoute la fin du cri."
+          - n: 6
+            note: "Affiche : Hip Hip Hip hourra !"
+      - type: question
+        ref: prog-b-q3
+        review: code-accumuler
+      - type: text
+        md: "**Exercice 1 (guidé)** : remets la boucle dans l'ordre."
+      - type: exercise
+        ref: prog-ex-boucle-ordre
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : affiche les étapes d'une recette avec une boucle."
+      - type: exercise
+        ref: prog-ex-etapes
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une boucle mal écrite."
+      - type: exercise
+        ref: prog-ex-for-bug
+      - type: quiz
+        items:
+          - ref: prog-b-q1
+            review: code-for
+          - ref: prog-fo-q4
+            review: def-boucle
+          - ref: prog-fo-q5
+            review: code-accumuler
+    questions:
+      - code: prog-b-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Que fait `i++` ?"
+        choices:
+          - label: "Fait avancer le compteur i d'un cran"
+            correct: true
+            why: "Après chaque tour, i passe au numéro suivant."
+          - label: "Remet i au départ"
+            correct: false
+            why: "Il avance, il ne recule pas."
+          - label: "Affiche i"
+            correct: false
+            why: "Rien n'est affiché."
+        explanation: "`i++` : le compteur avance d'un cran."
+      - code: prog-b-q3
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          let rire = "";
+          for (let i = 1; i <= 3; i++) {
+            rire += "ha";
+          }
+          console.log(rire);
+        language: javascript
+        choices:
+          - label: "hahaha"
+            correct: true
+            why: "Trois tours : « ha » est ajouté trois fois."
+          - label: "ha"
+            correct: false
+            why: "On ajoute à chaque tour, on ne garde pas seulement le dernier."
+          - label: "Rien (un texte vide)"
+            correct: false
+            why: "rire s'allonge à chaque tour."
+        explanation: "`rire += \"ha\"` ajoute un morceau à chaque tour : le texte s'allonge."
+      - code: prog-b-q1
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          for (let i = 1; i <= 3; i++) {
+            console.log(`Place ${i}`);
+          }
+        language: javascript
+        choices:
+          - label: "Place 1, Place 2, Place 3 (sur trois lignes)"
+            correct: true
+            why: "i vaut 1, puis 2, puis 3 ; à 4, la condition est fausse."
+          - label: "Place 1 seulement"
+            correct: false
+            why: "La boucle répète le bloc."
+          - label: "Place 3 seulement"
+            correct: false
+            why: "Chaque tour affiche sa ligne."
+        explanation: "Un tour par valeur de i, tant que `i <= 3` est vrai."
+      - code: prog-fo-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'est-ce qui sépare les trois parties d'un for ?"
+        choices:
+          - label: "Des points-virgules : `for (let i = 1; i <= 5; i++)`"
+            correct: true
+            why: "Départ ; condition ; pas."
+          - label: "Des virgules"
+            correct: false
+            why: "Avec des virgules, c'est une erreur."
+          - label: "Des espaces"
+            correct: false
+            why: "Il faut des points-virgules."
+        explanation: "`for (départ; condition; pas)`."
+      - code: prog-fo-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Pour construire un texte dans une boucle, on crée la variable **avant** la boucle."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Sinon, elle repartirait de zéro à chaque tour."
+          - label: "Faux"
+            correct: false
+            why: "Créée dans la boucle, elle serait remise à vide à chaque tour."
+        explanation: "Préparer avant, remplir pendant, afficher après."
+    exercises:
+      - slug: prog-ex-boucle-ordre
+        kind: REMETTRE_ORDRE
+        title: "Remettre une boucle dans l'ordre"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Remets les lignes dans l'ordre pour afficher trois fois « Bravo ! » sur une seule ligne."
+        criteria: "Le message est créé avant la boucle et affiché après."
+        hints:
+          - "Le message démarre vide, avant tout."
+          - "On ajoute « Bravo ! » dans la boucle."
+          - "On affiche le message une fois la boucle terminée."
+        solution: |
+          let message = "";
+          for (let i = 1; i <= 3; i++) {
+            message += "Bravo ! ";
+          }
+          console.log(message);
+        explanation: "Préparer, répéter, puis afficher. Résultat : Bravo ! Bravo ! Bravo !"
+        xp: 10
+        payload:
+          language: javascript
+          lines:
+            - "let message = \"\";"
+            - "for (let i = 1; i <= 3; i++) {"
+            - "  message += \"Bravo ! \";"
+            - "}"
+            - "console.log(message);"
+      - slug: prog-ex-etapes
+        kind: CODE_LIBRE
+        title: "Les étapes d'une recette"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Avec une boucle `for`, affiche les étapes d'une recette, de 1 à 5, sous la forme
+          `Étape 1 : c'est fait`, `Étape 2 : c'est fait`… (utilise un gabarit `${}`).
+        criteria: "Une boucle for de 1 à 5 et un affichage avec gabarit."
+        hints:
+          - "`for (let i = 1; i <= 5; i++) { ... }`"
+          - "Le numéro de l'étape, c'est `i` : on l'insère avec `${i}`."
+          - "``console.log(`Étape ${i} : c'est fait`);``"
+        solution: |
+          for (let i = 1; i <= 5; i++) {
+            console.log(`Étape ${i} : c'est fait`);
+          }
+        explanation: "La boucle fait avancer i de 1 à 5 ; le gabarit construit chaque ligne."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Les étapes de la recette
+
+          checks:
+            - pattern: 'for\s*\(\s*let\s+(\w+)\s*=\s*1\s*;\s*\1\s*<=\s*5\s*;\s*\1\s*(\+\+|\+=\s*1)\s*\)'
+              message: "Écris une boucle de 1 à 5 : for (let i = 1; i <= 5; i++)."
+            - pattern: 'console\.log\s*\(\s*`[^`]*\$\{\s*\w+\s*\}[^`]*`'
+              message: "Affiche chaque étape avec un gabarit qui contient ${i}."
+            - pattern: '`[^`]*[ÉE]tape'
+              message: "Chaque ligne commence par « Étape »."
+          output: |
+            Étape 1 : c'est fait
+            Étape 2 : c'est fait
+            …
+            Étape 5 : c'est fait
+      - slug: prog-ex-for-bug
+        kind: CORRIGER_ERREUR
+        title: "Une boucle mal écrite"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Cette boucle doit afficher `Jour 1` à `Jour 7`, mais elle plante : les trois parties sont séparées
+          par des virgules. Corrige-la.
+        criteria: "Les trois parties du for sont séparées par des points-virgules."
+        hints:
+          - "Lis le message d'erreur : il montre la parenthèse du for."
+          - "Départ ; condition ; pas."
+          - "`for (let i = 1; i <= 7; i++)`"
+        solution: |
+          for (let i = 1; i <= 7; i++) {
+            console.log(`Jour ${i}`);
+          }
+        explanation: "Les trois parties d'un for sont séparées par des points-virgules."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            for (let i = 1, i <= 7, i++) {
+              console.log(`Jour ${i}`);
+            }
+          checks:
+            - pattern: 'for\s*\(\s*let\s+i\s*=\s*1\s*;\s*i\s*<=\s*7\s*;\s*i\+\+\s*\)'
+              message: "Sépare les parties par des points-virgules : for (let i = 1; i <= 7; i++)."
+          output: |
+            Jour 1
+            Jour 2
+            …
+            Jour 7
+
+  # ===================================================================== LEÇON 2
+  - slug: prog-while
+    title: "Répéter tant que : la boucle while"
+    duration: 10
+    objective: "Répéter un bloc tant qu'une condition est vraie avec while, et éviter la boucle infinie."
+    prerequisites: "Leçon « Répéter un nombre de fois : la boucle for »."
+    skills: [algo-bases]
+    xp: 15
+    memo: |
+      - `while (condition) { ... }` répète le bloc **tant que** la condition est vraie.
+      - Il n'y a pas de compteur intégré : c'est **toi** qui fais évoluer quelque chose dans le bloc.
+      - Si rien ne change, la condition reste vraie pour toujours : **boucle infinie**.
+      - `for` : on connaît le nombre de tours. `while` : on répète jusqu'à ce qu'une situation change.
+    commonMistakes: |
+      - Oublier de faire évoluer la condition dans le bloc (`i++`, changer une variable…).
+      - Écrire la condition à l'envers : la boucle ne tourne pas du tout.
+    blocks:
+      - type: text
+        md: |
+          « **Tant que** la bouilloire n'a pas sifflé, j'attends. » On ne sait pas combien de temps ça
+          prendra : on répète jusqu'à ce que la situation change. C'est `while`.
+      - type: definition
+        id: def-while
+        term: "while (tant que)"
+        md: |
+          Un **gardien** qui repose la même question avant chaque tour : « la condition est-elle toujours
+          vraie ? ». Oui : on refait un tour. Non : on sort de la boucle.
+      - type: code
+        id: code-while
+        language: javascript
+        title: "Les places restantes"
+        code: |
+          let places = 3;
+          while (places > 0) {
+            console.log(`Il reste ${places} place(s)`);
+            places--;
+          }
+          console.log("Complet !");
+        lines:
+          - n: 2
+            note: "Tant qu'il reste des places, on refait un tour."
+          - n: 4
+            note: "`places--` enlève une place à chaque tour : la condition finira par devenir fausse."
+          - n: 6
+            note: "Après la boucle : Complet !"
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis commence avec 5 places."
+        language: javascript
+        code: |
+          let places = 3;
+          while (places > 0) {
+            console.log(`Il reste ${places} place(s)`);
+            places--;
+          }
+          console.log("Complet !");
+      - type: question
+        ref: prog-b-q5
+        review: def-while
+      - type: callout
+        variant: warning
+        title: "La boucle infinie"
+        md: |
+          Si la condition reste toujours vraie, la boucle ne s'arrête jamais. Ici, le bouton **Exécuter**
+          arrête ton code au bout de 2 secondes et t'explique ce qui s'est passé.
+      - type: question
+        ref: prog-b-q2
+        review: code-while
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la boucle while."
+      - type: exercise
+        ref: prog-ex-while-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un compte à rebours."
+      - type: exercise
+        ref: prog-ex-while-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une boucle qui ne s'arrête jamais."
+      - type: exercise
+        ref: prog-ex-while-bug
+      - type: jury
+        items:
+          - q: "Quand utilise-t-on for plutôt que while ?"
+            a: "`for` quand on connaît le nombre de tours (compter, parcourir). `while` quand on répète jusqu'à ce qu'une situation change (tant qu'il reste des données, tant que la saisie est invalide)."
+      - type: quiz
+        items:
+          - ref: prog-wh-q3
+            review: def-while
+          - ref: prog-wh-q4
+            review: code-while
+          - ref: prog-wh-q5
+            review: def-while
+    questions:
+      - code: prog-b-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Une boucle `while` répète son bloc tant que sa condition est vraie."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "« while » = « tant que »."
+          - label: "Faux"
+            correct: false
+            why: "C'est exactement sa définition."
+        explanation: "Dès que la condition devient fausse, on sort de la boucle."
+      - code: prog-b-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Pourquoi ce code ne s'arrête-t-il jamais ?"
+        snippet: |
+          let i = 0;
+          while (i < 5) {
+            console.log(i);
+          }
+        language: javascript
+        choices:
+          - label: "i ne change jamais : il manque `i++` dans la boucle"
+            correct: true
+            why: "i reste à 0, la condition reste vraie."
+          - label: "while ne fonctionne pas avec des nombres"
+            correct: false
+            why: "while fonctionne avec n'importe quelle condition."
+          - label: "Il faut écrire `i <= 5`"
+            correct: false
+            why: "Le problème vient de i qui ne bouge pas."
+        explanation: "Une boucle while doit faire évoluer sa condition à chaque tour."
+      - code: prog-wh-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quelle situation convient le mieux à `while` ?"
+        choices:
+          - label: "Redemander le mot de passe tant qu'il est incorrect"
+            correct: true
+            why: "On ne sait pas combien d'essais il faudra."
+          - label: "Afficher les jours de 1 à 7"
+            correct: false
+            why: "Le nombre de tours est connu : for est plus adapté."
+          - label: "Afficher un seul message"
+            correct: false
+            why: "Pas besoin de boucle."
+        explanation: "while = on répète jusqu'à ce qu'une situation change."
+      - code: prog-wh-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          let fini = true;
+          while (fini === false) {
+            console.log("Encore");
+          }
+          console.log("Terminé");
+        language: javascript
+        choices:
+          - label: "Terminé"
+            correct: true
+            why: "La condition est fausse dès le départ : la boucle ne tourne pas du tout."
+          - label: "Encore, puis Terminé"
+            correct: false
+            why: "La condition est testée avant le premier tour."
+          - label: "Encore à l'infini"
+            correct: false
+            why: "La boucle ne démarre même pas."
+        explanation: "while teste la condition **avant** chaque tour, y compris le premier."
+      - code: prog-wh-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Dans une boucle while, c'est à toi de faire évoluer ce qui permettra d'en sortir."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "while n'a pas de compteur intégré."
+          - label: "Faux"
+            correct: false
+            why: "Sans évolution, la boucle ne s'arrête jamais."
+        explanation: "Toujours se demander : « qu'est-ce qui rendra la condition fausse ? »."
+    exercises:
+      - slug: prog-ex-while-guide
+        kind: COMPLETER
+        title: "Compléter la boucle while"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète : tant qu'il reste des gâteaux, on en sert un."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "« tant que » se dit while."
+          - "Enlever un gâteau à chaque tour : deux signes moins."
+          - "while, --"
+        solution: '["while", "--"]'
+        explanation: "`while (gateaux > 0)` puis `gateaux--` pour que la boucle s'arrête."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            let gateaux = 3;
+            [[1]] (gateaux > 0) {
+              console.log("Je sers un gâteau");
+              gateaux[[2]];
+            }
+          blanks:
+            - ["while"]
+            - ["--"]
+      - slug: prog-ex-while-libre
+        kind: CODE_LIBRE
+        title: "Un compte à rebours"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Avec `let secondes = 3;` et une boucle `while`, affiche `3`, `2`, `1` (une ligne chacun), puis
+          `Partez !` après la boucle.
+        criteria: "Une boucle while sur secondes > 0, un secondes-- dans le bloc, puis Partez !"
+        hints:
+          - "`while (secondes > 0) { ... }`"
+          - "Dans le bloc : `console.log(secondes);` puis `secondes--;`"
+          - "Après la boucle : `console.log(\"Partez !\");`"
+        solution: |
+          let secondes = 3;
+          while (secondes > 0) {
+            console.log(secondes);
+            secondes--;
+          }
+          console.log("Partez !");
+        explanation: "À chaque tour, on affiche puis on enlève une seconde, jusqu'à zéro."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            let secondes = 3;
+
+          checks:
+            - pattern: 'while\s*\(\s*secondes\s*>\s*0\s*\)|while\s*\(\s*secondes\s*>=\s*1\s*\)'
+              message: "Répète tant qu'il reste des secondes : while (secondes > 0)."
+            - pattern: 'secondes\s*--|secondes\s*-=\s*1'
+              message: "Fais avancer le compte à rebours : secondes--;"
+            - pattern: 'console\.log\s*\(\s*["''`]Partez !["''`]\s*\)'
+              message: "Après la boucle, affiche \"Partez !\"."
+          output: |
+            3
+            2
+            1
+            Partez !
+      - slug: prog-ex-while-bug
+        kind: CORRIGER_ERREUR
+        title: "Une boucle qui ne s'arrête jamais"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Cette boucle ne s'arrête jamais : le nombre d'essais ne change pas. Ajoute la ligne qui fait
+          avancer `essais`, pour afficher `Essai 1`, `Essai 2`, `Essai 3`.
+        criteria: "essais augmente à chaque tour."
+        hints:
+          - "Qu'est-ce qui devrait rendre la condition fausse ?"
+          - "Il faut faire avancer essais dans le bloc."
+          - "`essais++;` après le console.log."
+        solution: |
+          let essais = 1;
+          while (essais <= 3) {
+            console.log(`Essai ${essais}`);
+            essais++;
+          }
+        explanation: "Sans `essais++`, essais reste à 1 et la condition reste vraie pour toujours."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            let essais = 1;
+            while (essais <= 3) {
+              console.log(`Essai ${essais}`);
+            }
+          checks:
+            - pattern: 'essais\s*\+\+|essais\s*\+=\s*1'
+              message: "Fais avancer essais dans la boucle : essais++;"
+          output: |
+            Essai 1
+            Essai 2
+            Essai 3
+
+bank:
+  - code: prog-c4r-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: algo-bases
+    prompt: "Quelle boucle choisir pour afficher les mois de 1 à 12 ?"
+    choices:
+      - label: "`for`, car on connaît le nombre de tours"
+        correct: true
+        why: "12 tours, connus d'avance."
+      - label: "`while`, car on ne sait pas quand s'arrêter"
+        correct: false
+        why: "Ici, on sait très bien quand s'arrêter."
+      - label: "Aucune boucle"
+        correct: false
+        why: "Écrire 12 lignes à la main serait pénible."
+    explanation: "Nombre de tours connu → for."
+  - code: prog-c4r-b2
+    kind: RESULTAT_CODE
+    difficulty: 2
+    skill: algo-bases
+    prompt: "Qu'affiche ce code ?"
+    snippet: |
+      let mot = "";
+      for (let i = 1; i <= 2; i++) {
+        mot += "do";
+      }
+      console.log(mot);
+    language: javascript
+    choices:
+      - label: "dodo"
+        correct: true
+        why: "Deux tours : « do » est ajouté deux fois."
+      - label: "do"
+        correct: false
+        why: "On ajoute à chaque tour."
+      - label: "do do"
+        correct: false
+        why: "Aucun espace n'est ajouté."
+    explanation: "Chaque tour allonge le texte."

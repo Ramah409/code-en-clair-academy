@@ -1,0 +1,836 @@
+slug: prog-listes
+position: 5
+level: DEBUTANT
+title: "Les listes"
+summary: "Ranger plusieurs valeurs dans une liste, lire une case, connaître sa taille, ajouter un élément, puis parcourir la liste avec for…of. Une seule notion par leçon."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: prog-tableaux
+    title: "Créer une liste et lire une case"
+    duration: 10
+    objective: "Créer un tableau entre crochets et lire un élément grâce à son indice, qui commence à 0."
+    prerequisites: "Chapitre « Répéter »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - Un **tableau** (une liste) range plusieurs valeurs **dans l'ordre** : `const fruits = ["pomme", "kiwi", "mangue"];`
+      - Chaque case a un numéro, l'**indice**, qui commence à **0**.
+      - `fruits[0]` vaut `"pomme"`, `fruits[1]` vaut `"kiwi"`.
+      - Une case qui n'existe pas vaut `undefined` (« rien ici »).
+    commonMistakes: |
+      - Croire que le premier élément est à l'indice 1.
+      - Oublier les crochets `[ ]` ou les virgules entre les éléments.
+    blocks:
+      - type: text
+        md: "Pour ranger **plusieurs** valeurs ensemble — une liste de courses, des prénoms — on utilise un **tableau**."
+      - type: definition
+        id: def-tableau
+        term: "Tableau (liste)"
+        md: |
+          Une **étagère à cases numérotées**. La première case porte le numéro **0**, la suivante 1, etc.
+          On écrit la liste entre crochets, les éléments séparés par des virgules.
+      - type: code
+        id: code-tableau
+        language: javascript
+        title: "Une liste de courses"
+        code: |
+          const courses = ["pain", "lait", "œufs"];
+          console.log(courses[0]);
+          console.log(courses[2]);
+          console.log(courses);
+        lines:
+          - n: 1
+            note: "Trois éléments, aux indices 0, 1 et 2."
+          - n: 2
+            note: "Affiche « pain » : le **premier** élément est à l'indice 0."
+          - n: 3
+            note: "Affiche « œufs » : le troisième élément, à l'indice 2."
+          - n: 4
+            note: "Affiche toute la liste."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis affiche `courses[1]`, et `courses[5]` (une case qui n'existe pas)."
+        language: javascript
+        code: |
+          const courses = ["pain", "lait", "œufs"];
+          console.log(courses[0]);
+          console.log(courses[2]);
+          console.log(courses);
+      - type: question
+        ref: prog-t-q1
+        review: def-tableau
+      - type: question
+        ref: prog-t-q4
+        review: code-tableau
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la liste et la lecture."
+      - type: exercise
+        ref: prog-ex-liste-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une liste de villes."
+      - type: exercise
+        ref: prog-ex-liste-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : le mauvais indice."
+      - type: exercise
+        ref: prog-ex-liste-bug
+      - type: jury
+        items:
+          - q: "Pourquoi les indices commencent-ils à 0 ?"
+            a: "L'indice indique le décalage depuis le début de la liste : le premier élément est à un décalage de 0. C'est la convention de la plupart des langages (JavaScript, Java, TypeScript)."
+      - type: quiz
+        items:
+          - ref: prog-li-q3
+            review: def-tableau
+          - ref: prog-c5-b2
+            review: def-tableau
+          - ref: prog-li-q5
+            review: code-tableau
+    questions:
+      - code: prog-t-q1
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const couleurs = ["rouge", "vert", "bleu"];
+          console.log(couleurs[1]);
+        language: javascript
+        choices:
+          - label: "vert"
+            correct: true
+            why: "Indice 0 : rouge, indice 1 : vert."
+          - label: "rouge"
+            correct: false
+            why: "rouge est à l'indice 0."
+          - label: "bleu"
+            correct: false
+            why: "bleu est à l'indice 2."
+        explanation: "Les indices commencent à 0."
+      - code: prog-t-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Dans `[\"a\", \"b\", \"c\", \"d\"]`, à quel indice se trouve `\"d\"` ?"
+        choices:
+          - label: "3"
+            correct: true
+            why: "Les cases sont numérotées 0, 1, 2, 3 : d est dans la case 3."
+          - label: "4"
+            correct: false
+            why: "On commence à 0 : la case 4 n'existe pas ici."
+          - label: "1"
+            correct: false
+            why: "La case 1 contient b."
+        explanation: "On numérote les cases à partir de 0."
+      - code: prog-li-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quelle écriture crée une liste ?"
+        choices:
+          - label: "`[\"Awa\", \"Léo\"]`"
+            correct: true
+            why: "Crochets et virgules."
+          - label: "`(\"Awa\", \"Léo\")`"
+            correct: false
+            why: "Une liste s'écrit entre crochets."
+          - label: "`\"Awa\" \"Léo\"`"
+            correct: false
+            why: "Il manque les crochets et la virgule."
+        explanation: "`[élément1, élément2, …]`"
+      - code: prog-c5-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Que vaut `[\"Awa\"][5]` ?"
+        choices:
+          - label: "undefined"
+            correct: true
+            why: "La case 5 n'existe pas : la liste n'a qu'un élément."
+          - label: "\"Awa\""
+            correct: false
+            why: "\"Awa\" est dans la case 0."
+          - label: "Une erreur"
+            correct: false
+            why: "JavaScript ne lève pas d'erreur : il renvoie undefined."
+        explanation: "Une case qui n'existe pas vaut `undefined`."
+      - code: prog-li-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Dans `const fruits = [\"pomme\", \"kiwi\"];`, `fruits[0]` vaut `\"pomme\"`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le premier élément est à l'indice 0."
+          - label: "Faux"
+            correct: false
+            why: "C'est bien pomme, dans la case 0."
+        explanation: "Premier élément = indice 0."
+    exercises:
+      - slug: prog-ex-liste-guide
+        kind: COMPLETER
+        title: "Compléter la liste"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète pour créer la liste des jours, puis afficher le premier jour."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Une liste commence par un crochet ouvrant."
+          - "Le premier élément est à l'indice 0."
+          - "[, ], 0."
+        solution: '["[", "]", "0"]'
+        explanation: "`[\"lundi\", \"mardi\", \"mercredi\"]` puis `jours[0]` affiche lundi."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const jours = [[1]]"lundi", "mardi", "mercredi"[[2]];
+            console.log(jours[ [[3]] ]);
+          blanks:
+            - ["["]
+            - ["]"]
+            - ["0"]
+      - slug: prog-ex-liste-libre
+        kind: CODE_LIBRE
+        title: "Une liste de villes"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          1. crée une constante `villes` qui contient `"Dakar"`, `"Lyon"` et `"Lille"` ;
+          2. affiche la **première** ville ;
+          3. affiche la **dernière** ville.
+        criteria: "Une liste de trois villes, affichage de villes[0] et villes[2]."
+        hints:
+          - "`const villes = [\"Dakar\", \"Lyon\", \"Lille\"];`"
+          - "La première est à l'indice 0 : `villes[0]`."
+          - "La troisième est à l'indice 2 : `villes[2]`."
+        solution: |
+          const villes = ["Dakar", "Lyon", "Lille"];
+          console.log(villes[0]);
+          console.log(villes[2]);
+        explanation: "Trois villes, aux cases 0, 1 et 2."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ta liste de villes
+
+          checks:
+            - pattern: 'const\s+villes\s*=\s*\[\s*["''`]Dakar["''`]\s*,\s*["''`]Lyon["''`]\s*,\s*["''`]Lille["''`]\s*\]'
+              message: "Crée la liste : const villes = [\"Dakar\", \"Lyon\", \"Lille\"];"
+            - pattern: 'console\.log\s*\(\s*villes\s*\[\s*0\s*\]\s*\)'
+              message: "Affiche la première ville : villes[0]."
+            - pattern: 'console\.log\s*\(\s*villes\s*\[\s*2\s*\]\s*\)'
+              message: "Affiche la dernière ville : villes[2]."
+          output: |
+            Dakar
+            Lille
+      - slug: prog-ex-liste-bug
+        kind: CORRIGER_ERREUR
+        title: "Le mauvais indice"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme doit afficher le **premier** invité (`Awa`), mais il affiche `Léo`. Corrige l'indice.
+        criteria: "Le premier invité est lu à l'indice 0."
+        hints:
+          - "Awa est dans la première case."
+          - "Les cases commencent à 0."
+          - "`console.log(invites[0]);`"
+        solution: |
+          const invites = ["Awa", "Léo", "Inès"];
+          console.log(invites[0]);
+        explanation: "Le premier élément est à l'indice 0, pas 1."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const invites = ["Awa", "Léo", "Inès"];
+            console.log(invites[1]);
+          checks:
+            - pattern: 'console\.log\s*\(\s*invites\s*\[\s*0\s*\]\s*\)'
+              message: "Le premier invité est à l'indice 0 : invites[0]."
+          output: "Awa"
+
+  # ===================================================================== LEÇON 2
+  - slug: prog-push
+    title: "La taille et l'ajout : length et push"
+    duration: 9
+    objective: "Connaître le nombre d'éléments d'une liste avec length et ajouter un élément à la fin avec push."
+    prerequisites: "Leçon « Créer une liste et lire une case »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - `liste.length` donne le **nombre d'éléments** (comme pour la longueur d'un texte).
+      - `liste.push("thé")` **ajoute** « thé » **à la fin** de la liste.
+      - Une liste déclarée avec `const` peut quand même recevoir des éléments : c'est la **même** étagère, on y range juste un objet de plus.
+    commonMistakes: |
+      - Écrire `liste = "thé"` : on remplace toute la liste au lieu d'ajouter.
+      - Oublier les parenthèses de push.
+    blocks:
+      - type: text
+        md: |
+          Une liste de courses grandit : on y ajoute des articles. Et on a souvent besoin de savoir combien
+          elle en contient.
+      - type: definition
+        id: def-push-length
+        term: "length et push"
+        md: |
+          - `length` : **combien** d'objets sont sur l'étagère ;
+          - `push(…)` : **poser** un nouvel objet sur la case libre, tout au bout de l'étagère.
+      - type: code
+        id: code-push
+        language: javascript
+        title: "La liste grandit"
+        code: |
+          const courses = ["pain", "lait"];
+          console.log(courses.length);
+          courses.push("beurre");
+          console.log(courses.length);
+          console.log(courses);
+        lines:
+          - n: 2
+            note: "Deux éléments : affiche 2."
+          - n: 3
+            note: "`push` ajoute « beurre » à la fin."
+          - n: 4
+            note: "Maintenant trois éléments : affiche 3."
+          - n: 5
+            note: "Affiche la liste : pain, lait, beurre."
+      - type: demo
+        title: "Essaie"
+        md: "Ajoute encore un article avec push, puis affiche la liste."
+        language: javascript
+        code: |
+          const courses = ["pain", "lait"];
+          console.log(courses.length);
+          courses.push("beurre");
+          console.log(courses.length);
+          console.log(courses);
+      - type: question
+        ref: prog-t-q3
+        review: def-push-length
+      - type: question
+        ref: prog-c2-b2
+        review: def-push-length
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète l'ajout."
+      - type: exercise
+        ref: prog-ex-push-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une liste d'invités qui grandit."
+      - type: exercise
+        ref: prog-ex-push-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : la liste a été écrasée."
+      - type: exercise
+        ref: prog-ex-push-bug
+      - type: quiz
+        items:
+          - ref: prog-pu-q3
+            review: code-push
+          - ref: prog-pu-q4
+            review: def-push-length
+          - ref: prog-pu-q5
+            review: code-push
+    questions:
+      - code: prog-t-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Comment ajouter « thé » à la fin de la liste `courses` ?"
+        choices:
+          - label: "`courses.push(\"thé\");`"
+            correct: true
+            why: "push ajoute à la fin."
+          - label: "`courses = \"thé\";`"
+            correct: false
+            why: "Cela remplacerait la liste (et c'est interdit avec const)."
+          - label: "`courses[0] = \"thé\";`"
+            correct: false
+            why: "Cela remplace le premier élément."
+        explanation: "`push` ajoute un élément à la fin de la liste."
+      - code: prog-c2-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Que donne `[\"Awa\", \"Léo\", \"Inès\"].length` ?"
+        choices:
+          - label: "Le nombre d'éléments de la liste"
+            correct: true
+            why: "length compte les éléments : ici, trois prénoms."
+          - label: "Le dernier prénom"
+            correct: false
+            why: "length ne renvoie pas un élément."
+          - label: "La liste en majuscules"
+            correct: false
+            why: "length ne transforme rien."
+        explanation: "`length` donne le nombre d'éléments."
+      - code: prog-pu-q3
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche la dernière ligne ?"
+        snippet: |
+          const notes = ["do", "ré"];
+          notes.push("mi");
+          console.log(notes);
+        language: javascript
+        choices:
+          - label: "[\"do\", \"ré\", \"mi\"]"
+            correct: true
+            why: "mi est ajouté à la fin."
+          - label: "[\"mi\", \"do\", \"ré\"]"
+            correct: false
+            why: "push ajoute à la fin, pas au début."
+          - label: "[\"do\", \"ré\"]"
+            correct: false
+            why: "La liste a bien été modifiée."
+        explanation: "push = ajouter en dernier."
+      - code: prog-pu-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: algo-bases
+        prompt: "On peut utiliser `push` sur une liste déclarée avec `const`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "const interdit de remplacer la liste, pas d'y ajouter des éléments."
+          - label: "Faux"
+            correct: false
+            why: "C'est bien permis : c'est la même liste, qui grandit."
+        explanation: "const garde la même étagère ; on peut toujours y poser des objets."
+      - code: prog-pu-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Après `push`, que devient `length` ?"
+        choices:
+          - label: "Elle augmente d'un élément"
+            correct: true
+            why: "Un élément de plus sur l'étagère."
+          - label: "Elle ne change pas"
+            correct: false
+            why: "La liste a grandi."
+          - label: "Elle revient à zéro"
+            correct: false
+            why: "Rien n'est effacé."
+        explanation: "Chaque push ajoute un élément."
+    exercises:
+      - slug: prog-ex-push-guide
+        kind: COMPLETER
+        title: "Compléter l'ajout"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète : ajoute « orange » à la liste, puis affiche sa taille."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Ajouter à la fin : push."
+          - "La taille : length."
+          - "push, length."
+        solution: '["push", "length"]'
+        explanation: "`fruits.push(\"orange\")` puis `fruits.length`."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const fruits = ["pomme", "kiwi"];
+            fruits.[[1]]("orange");
+            console.log(fruits.[[2]]);
+          blanks:
+            - ["push"]
+            - ["length"]
+      - slug: prog-ex-push-libre
+        kind: CODE_LIBRE
+        title: "Des invités en plus"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          1. crée `const invites = ["Awa"];` ;
+          2. ajoute `"Léo"` puis `"Inès"` avec `push` ;
+          3. affiche la liste, puis sa taille.
+        criteria: "Deux push et deux affichages."
+        hints:
+          - "`invites.push(\"Léo\");`"
+          - "`invites.push(\"Inès\");`"
+          - "`console.log(invites);` puis `console.log(invites.length);`"
+        solution: |
+          const invites = ["Awa"];
+          invites.push("Léo");
+          invites.push("Inès");
+          console.log(invites);
+          console.log(invites.length);
+        explanation: "La liste passe d'un à trois invités."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const invites = ["Awa"];
+
+          checks:
+            - pattern: 'invites\.push\s*\(\s*["''`]Léo["''`]\s*\)'
+              message: "Ajoute Léo : invites.push(\"Léo\");"
+            - pattern: 'invites\.push\s*\(\s*["''`]Inès["''`]\s*\)'
+              message: "Ajoute Inès : invites.push(\"Inès\");"
+            - pattern: 'console\.log\s*\(\s*invites\s*\)'
+              message: "Affiche la liste."
+            - pattern: 'console\.log\s*\(\s*invites\.length\s*\)'
+              message: "Affiche la taille : invites.length."
+      - slug: prog-ex-push-bug
+        kind: CORRIGER_ERREUR
+        title: "Une liste écrasée"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme doit **ajouter** « sel » à la liste. Il plante : il essaie de remplacer toute la
+          liste (une const) par un texte. Corrige-le avec `push`.
+        criteria: "sel est ajouté avec push."
+        hints:
+          - "On veut ajouter, pas remplacer."
+          - "L'outil pour ajouter à la fin : push."
+          - "`epices.push(\"sel\");`"
+        solution: |
+          const epices = ["poivre", "cumin"];
+          epices.push("sel");
+          console.log(epices);
+        explanation: "`push` ajoute sans toucher au reste de la liste."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const epices = ["poivre", "cumin"];
+            epices = "sel";
+            console.log(epices);
+          checks:
+            - pattern: 'epices\s*=\s*["''`]sel'
+              absent: true
+              message: "Ne remplace pas la liste : ajoute avec push."
+            - pattern: 'epices\.push\s*\(\s*["''`]sel["''`]\s*\)'
+              message: "Ajoute le sel : epices.push(\"sel\");"
+
+  # ===================================================================== LEÇON 3
+  - slug: prog-for-of
+    title: "Parcourir une liste : for…of"
+    duration: 11
+    objective: "Passer sur chaque élément d'une liste, un par un, avec for…of."
+    prerequisites: "Leçon « La taille et l'ajout : length et push »."
+    skills: [algo-bases]
+    xp: 15
+    memo: |
+      - `for (const prenom of prenoms) { ... }` prend les éléments **un par un**, du premier au dernier.
+      - À chaque tour, la variable (`prenom`) contient l'élément du moment.
+      - Le nom de la liste est souvent au pluriel (`prenoms`), celui de l'élément au singulier (`prenom`).
+    commonMistakes: |
+      - Écrire `in` au lieu de `of`.
+      - Utiliser le nom de la liste dans le bloc au lieu de l'élément du moment.
+    blocks:
+      - type: text
+        md: |
+          Dire bonjour à chaque invité de la liste, un par un : c'est le travail le plus courant sur une liste.
+          `for…of` le fait pour nous.
+      - type: definition
+        id: def-for-of
+        term: "for…of (pour chaque…)"
+        md: |
+          Comme on **vide un panier** en prenant les articles un à un : « pour chaque article du panier, je le
+          range ». À chaque tour, on a un article dans la main.
+      - type: code
+        id: code-for-of
+        language: javascript
+        title: "Accueillir chaque invité"
+        code: |
+          const invites = ["Awa", "Léo", "Inès"];
+          for (const invite of invites) {
+            console.log(`Bienvenue ${invite} !`);
+          }
+        lines:
+          - n: 2
+            note: "« Pour chaque invite de la liste invites ». Au 1er tour, invite vaut Awa ; au 2e, Léo ; au 3e, Inès."
+          - n: 3
+            note: "Le bloc s'exécute une fois par invité."
+      - type: demo
+        title: "Essaie"
+        md: "Ajoute un prénom à la liste : la boucle s'adapte toute seule."
+        language: javascript
+        code: |
+          const invites = ["Awa", "Léo", "Inès"];
+          for (const invite of invites) {
+            console.log(`Bienvenue ${invite} !`);
+          }
+      - type: question
+        ref: prog-t-q5
+        review: def-for-of
+      - type: question
+        ref: prog-t-q2
+        review: code-for-of
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le parcours."
+      - type: exercise
+        ref: prog-ex-tableau-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : cherche si un prénom est dans la liste."
+      - type: exercise
+        ref: prog-ex-recherche
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : in au lieu de of."
+      - type: exercise
+        ref: prog-ex-forof-bug
+      - type: quiz
+        items:
+          - ref: prog-fl-q3
+            review: def-for-of
+          - ref: prog-fl-q4
+            review: code-for-of
+          - ref: prog-fl-q5
+            review: def-for-of
+    questions:
+      - code: prog-t-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "`for (const x of liste)` passe par chaque élément de la liste, dans l'ordre."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Du premier au dernier."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement son rôle."
+        explanation: "for…of est la façon la plus simple de parcourir une liste."
+      - code: prog-t-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          let mot = "";
+          for (const lettre of ["A", "W", "A"]) {
+            mot += lettre;
+          }
+          console.log(mot);
+        language: javascript
+        choices:
+          - label: "AWA"
+            correct: true
+            why: "Un tour par lettre : A, puis W, puis A sont collés dans l'ordre."
+          - label: "A"
+            correct: false
+            why: "On ajoute à chaque tour, on ne garde pas seulement la dernière lettre."
+          - label: "A,W,A"
+            correct: false
+            why: "`+=` colle les lettres sans virgule."
+        explanation: "for…of fait un tour par élément, dans l'ordre de la liste."
+      - code: prog-fl-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Dans `for (const fruit of fruits)`, que contient `fruit` ?"
+        choices:
+          - label: "L'élément du tour en cours"
+            correct: true
+            why: "Un fruit différent à chaque tour."
+          - label: "Toute la liste"
+            correct: false
+            why: "C'est fruits (au pluriel) qui contient la liste."
+          - label: "Le numéro du tour"
+            correct: false
+            why: "for…of donne l'élément, pas son numéro."
+        explanation: "La variable de la boucle contient l'élément du moment."
+      - code: prog-fl-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Combien de lignes affiche ce code ?"
+        snippet: |
+          for (const ville of ["Paris", "Dakar"]) {
+            console.log(ville);
+          }
+        language: javascript
+        choices:
+          - label: "Deux : Paris puis Dakar"
+            correct: true
+            why: "Un tour par élément."
+          - label: "Une seule"
+            correct: false
+            why: "La boucle fait un tour par ville."
+          - label: "Aucune"
+            correct: false
+            why: "La liste n'est pas vide."
+        explanation: "Autant de tours que d'éléments."
+      - code: prog-fl-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quel mot relie l'élément et la liste dans un parcours ?"
+        choices:
+          - label: "`of`"
+            correct: true
+            why: "`for (const element of liste)`."
+          - label: "`in`"
+            correct: false
+            why: "`in` donne les numéros des cases, pas les éléments : on utilise of."
+          - label: "`with`"
+            correct: false
+            why: "Ce mot n'est pas utilisé ici."
+        explanation: "« pour chaque élément **de** la liste » : of."
+    exercises:
+      - slug: prog-ex-tableau-guide
+        kind: COMPLETER
+        title: "Afficher chaque prénom"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète pour afficher chaque prénom de la liste."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Une liste s'écrit entre crochets."
+          - "« pour chaque … de … » : for (const … of …)."
+          - "[, of, prenom."
+        solution: '["[", "of", "prenom"]'
+        explanation: "`for (const prenom of prenoms)` donne les prénoms un par un."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const prenoms = [[1]]"Awa", "Léo", "Inès"];
+            for (const prenom [[2]] prenoms) {
+              console.log([[3]]);
+            }
+          blanks:
+            - ["["]
+            - ["of"]
+            - ["prenom"]
+      - slug: prog-ex-recherche
+        kind: CODE_LIBRE
+        title: "Inès est-elle invitée ?"
+        difficulty: INTERMEDIAIRE
+        skill: algo-bases
+        statement: |
+          Avec la liste `const invites = ["Awa", "Léo", "Inès", "Karim"];` :
+          1. crée une variable `trouve` qui vaut `false` ;
+          2. parcours la liste : si un invité vaut `"Inès"`, mets `trouve` à `true` ;
+          3. après la boucle, affiche `Inès est invitée` si `trouve` vaut `true`, sinon `Inès n'est pas invitée`.
+
+          N'utilise pas `includes` : le but est de comprendre la méthode.
+        criteria: "Parcours de la liste, comparaison et mise à jour de trouve, puis affichage selon trouve."
+        hints:
+          - "`let trouve = false;`"
+          - "`for (const invite of invites) { if (invite === \"Inès\") { ... } }`"
+          - "Dans le if : `trouve = true;`, puis après la boucle un `if (trouve) { ... } else { ... }`."
+        solution: |
+          const invites = ["Awa", "Léo", "Inès", "Karim"];
+          let trouve = false;
+          for (const invite of invites) {
+            if (invite === "Inès") {
+              trouve = true;
+            }
+          }
+          if (trouve) {
+            console.log("Inès est invitée");
+          } else {
+            console.log("Inès n'est pas invitée");
+          }
+        explanation: |
+          C'est la méthode de **recherche** : on regarde chaque élément un par un et on lève un drapeau
+          (`trouve`) dès qu'on tombe sur celui qu'on cherche. On la retrouve partout (un e-mail déjà
+          inscrit, un produit dans le panier…).
+        xp: 20
+        payload:
+          language: javascript
+          starter: |
+            const invites = ["Awa", "Léo", "Inès", "Karim"];
+
+          checks:
+            - pattern: 'let\s+trouve\s*=\s*false'
+              message: "Démarre avec let trouve = false;"
+            - pattern: 'for\s*\('
+              message: "Parcours la liste avec une boucle for."
+            - pattern: 'if\s*\(\s*\w+\s*===?\s*["''`]Inès["''`]\s*\)|if\s*\(\s*["''`]Inès["''`]\s*===?\s*\w+\s*\)'
+              message: "Compare chaque invité à \"Inès\" : if (invite === \"Inès\")."
+            - pattern: '\btrouve\s*=\s*true'
+              message: "Lève le drapeau quand tu la trouves : trouve = true;"
+            - pattern: '\.includes\s*\('
+              absent: true
+              message: "Écris la méthode toi-même, sans includes."
+            - pattern: 'console\.log\s*\(\s*["''`]Inès est invitée["''`]\s*\)'
+              message: "Affiche \"Inès est invitée\" quand trouve vaut true."
+          output: "Inès est invitée"
+      - slug: prog-ex-forof-bug
+        kind: CORRIGER_ERREUR
+        title: "in au lieu de of"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme doit afficher `J'aime le rouge`, `J'aime le vert`… Il affiche des numéros (0, 1, 2) à
+          la place des couleurs. Corrige le mot qui relie l'élément et la liste.
+        criteria: "Le parcours utilise of."
+        hints:
+          - "in donne les numéros des cases."
+          - "Pour obtenir les éléments eux-mêmes, on utilise un autre mot."
+          - "`for (const couleur of couleurs)`"
+        solution: |
+          const couleurs = ["rouge", "vert", "bleu"];
+          for (const couleur of couleurs) {
+            console.log(`J'aime le ${couleur}`);
+          }
+        explanation: "`of` donne les éléments ; `in` donne leurs numéros."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const couleurs = ["rouge", "vert", "bleu"];
+            for (const couleur in couleurs) {
+              console.log(`J'aime le ${couleur}`);
+            }
+          checks:
+            - pattern: 'for\s*\(\s*const\s+couleur\s+of\s+couleurs\s*\)'
+              message: "Utilise of : for (const couleur of couleurs)."
+            - pattern: '\bin\s+couleurs'
+              absent: true
+              message: "in donne les numéros : remplace-le par of."
+          output: |
+            J'aime le rouge
+            J'aime le vert
+            J'aime le bleu
+
+bank:
+  - code: prog-c5l-b1
+    kind: RESULTAT_CODE
+    difficulty: 2
+    skill: algo-bases
+    prompt: "Qu'affiche ce code ?"
+    snippet: |
+      const liste = ["a"];
+      liste.push("b");
+      console.log(liste[1]);
+    language: javascript
+    choices:
+      - label: "b"
+        correct: true
+        why: "b a été ajouté à la fin, dans la case 1."
+      - label: "a"
+        correct: false
+        why: "a est dans la case 0."
+      - label: "undefined"
+        correct: false
+        why: "La case 1 existe depuis le push."
+    explanation: "push remplit la case suivante."
+  - code: prog-c5l-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: algo-bases
+    prompt: "Quelle boucle affiche chaque élément de `produits` le plus simplement ?"
+    choices:
+      - label: "`for (const produit of produits) { console.log(produit); }`"
+        correct: true
+        why: "for…of donne chaque élément."
+      - label: "`for (const produit in produits) { console.log(produit); }`"
+        correct: false
+        why: "in donne les numéros des cases."
+      - label: "`console.log(produits.length);`"
+        correct: false
+        why: "Affiche seulement le nombre d'éléments."
+    explanation: "Pour parcourir les éléments : for…of."

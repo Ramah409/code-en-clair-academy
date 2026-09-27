@@ -1,33 +1,33 @@
 slug: prog-algorithmique-examen
-position: 5
+position: 9
 level: EXAMEN
 title: "Algorithmique pour le titre CDA"
-summary: "Rechercher et trier dans une liste, estimer le coût d'un algorithme, et résoudre un problème avec une méthode claire."
+summary: "Rechercher dans une liste, trier des mots correctement, puis résoudre un problème avec une méthode claire. Une seule notion par leçon."
 quizQuestionCount: 10
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: prog-recherche-tri
-    title: "Rechercher et trier"
-    duration: 14
-    objective: "Écrire une recherche dans une liste, trier des mots correctement et expliquer pourquoi certaines recherches sont plus rapides que d'autres."
+    title: "Rechercher dans une liste"
+    duration: 12
+    objective: "Écrire une recherche linéaire et expliquer pourquoi certaines recherches sont plus rapides que d'autres."
     prerequisites: "Chapitre « Écrire un code robuste »."
     skills: [algo-tri-recherche]
-    xp: 25
+    xp: 20
     memo: |
       - **Recherche linéaire** : on regarde les éléments un par un jusqu'à trouver. Plus la liste est longue, plus c'est long.
+      - On renvoie la **position** trouvée, ou `-1` (la convention pour « absent »).
       - **Recherche dichotomique** (liste triée) : on ouvre au milieu et on garde la bonne moitié, encore et encore : bien plus rapide sur une grande liste.
-      - Trier des mots : `liste.sort()` met les MAJUSCULES avant les minuscules ; pour un vrai ordre alphabétique : `liste.sort((a, b) => a.localeCompare(b))`.
-      - La **complexité** décrit comment le temps d'un programme grandit quand la liste grandit.
+      - La **complexité** décrit comment le travail grandit quand la liste grandit, sans rien calculer.
     commonMistakes: |
-      - `["awa", "Zoé"].sort()` donne `["Zoé", "awa"]` : les majuscules passent d'abord ; il faut `localeCompare`.
+      - Continuer à chercher après avoir trouvé (oublier `return`).
+      - Écrire `return -1` à l'intérieur de la boucle : on abandonne dès le premier élément.
       - Faire une recherche dichotomique sur une liste non triée.
-      - Continuer à chercher après avoir trouvé (oublier `return` ou `break`).
     blocks:
       - type: text
         md: |
-          Le jury peut te demander d'expliquer un algorithme simple. Deux familles reviennent toujours :
-          **chercher** et **trier**.
+          Le jury peut te demander d'expliquer un algorithme simple. Le plus classique : **chercher** un élément
+          dans une liste.
       - type: definition
         id: def-algorithme
         term: "Algorithme"
@@ -50,61 +50,39 @@ lessons:
           console.log(indexDe(["Awa", "Léo", "Inès"], "Léo"));
         lines:
           - n: 2
-            note: "On parcourt toutes les positions, de 0 à la dernière."
+            note: "On passe par toutes les positions, de la première (0) à la dernière."
           - n: 4
             note: "Trouvé : on renvoie la position et on s'arrête tout de suite."
           - n: 7
-            note: "Arrivée au bout sans trouver : -1, la convention pour « absent »."
+            note: "Arrivée au bout sans trouver : -1, la convention pour « absent ». Ce return est **après** la boucle."
           - n: 9
-            note: "Affiche 1."
+            note: "Affiche 1 : Léo est dans la case 1."
       - type: definition
         id: def-complexite
-        term: "Complexité (notation O)"
+        term: "Complexité"
         md: |
           Une façon de décrire le **travail** d'un programme selon la quantité de données, sans rien calculer :
-          - **linéaire**, noté O(n) : on lit tout, du début à la fin (chercher un nom en lisant tout l'annuaire) ;
+          - **linéaire** : on lit tout, du début à la fin (chercher un nom en lisant tout l'annuaire) ;
           - **dichotomique** : on ouvre l'annuaire au milieu, puis au milieu de la bonne moitié… : très rapide ;
           - **deux boucles imbriquées** : pour chaque élément, on relit toute la liste ; ça devient vite très lent.
       - type: question
         ref: prog-r-q1
         review: def-complexite
-      - type: compare
-        left:
-          title: "Piège : sort sans fonction"
-          good: false
-          code: |
-            ["awa", "Zoé", "Léo"].sort();
-            // ["Léo", "Zoé", "awa"] : majuscules d'abord
-          language: javascript
-        right:
-          title: "Vrai ordre alphabétique"
-          good: true
-          code: |
-            ["awa", "Zoé", "Léo"].sort((a, b) => a.localeCompare(b));
-            // ["awa", "Léo", "Zoé"]
-          language: javascript
-      - type: demo
-        title: "Trier des produits par nom"
-        language: javascript
-        code: |
-          const produits = [
-            { nom: "Sac antivol" },
-            { nom: "Coque SOS" },
-            { nom: "Alarme" }
-          ];
-          produits.sort((a, b) => a.nom.localeCompare(b.nom));
-          console.log(produits.map(p => p.nom));
       - type: question
         ref: prog-r-q2
         review: def-algorithme
       - type: text
-        md: "Exercice guidé : complète la recherche linéaire."
+        md: "**Exercice 1 (guidé)** : complète la recherche linéaire."
       - type: exercise
         ref: prog-ex-recherche-guide
       - type: text
-        md: "En autonomie : compte les occurrences d'un mot dans une liste."
+        md: "**Exercice 2 (en autonomie)** : compter les apparitions d'un mot dans une liste."
       - type: exercise
         ref: prog-ex-compter
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une recherche qui abandonne trop tôt."
+      - type: exercise
+        ref: prog-ex-recherche-bug
       - type: jury
         items:
           - q: "Expliquez la différence entre une recherche linéaire et une recherche dichotomique."
@@ -117,7 +95,7 @@ lessons:
             review: code-recherche
           - ref: prog-r-q4
             review: def-complexite
-          - ref: prog-r-q5
+          - ref: prog-c5-b1
             review: def-complexite
     questions:
       - code: prog-r-q1
@@ -166,7 +144,7 @@ lessons:
           - label: "undefined"
             correct: false
             why: "La fonction renvoie explicitement -1."
-        explanation: "-1 est la convention pour « non trouvé » (comme `indexOf`)."
+        explanation: "-1 est la convention pour « non trouvé »."
       - code: prog-r-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -183,24 +161,22 @@ lessons:
             correct: false
             why: "Au contraire, elle brille sur les grandes listes."
         explanation: "Dichotomie = diviser pour régner, sur des données triées."
-      - code: prog-r-q5
-        kind: RESULTAT_CODE
-        difficulty: 3
+      - code: prog-c5-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
         skill: algo-tri-recherche
-        prompt: "Que donne `[\"banane\", \"Cerise\", \"abricot\"].sort()` ?"
-        snippet: "[\"banane\", \"Cerise\", \"abricot\"].sort()"
-        language: javascript
+        prompt: "Pourquoi la recherche dichotomique est-elle si rapide sur une grande liste triée ?"
         choices:
-          - label: "[\"Cerise\", \"abricot\", \"banane\"]"
+          - label: "Elle élimine la moitié de ce qui reste à chaque étape"
             correct: true
-            why: "Sans fonction de comparaison, les majuscules passent avant les minuscules."
-          - label: "[\"abricot\", \"banane\", \"Cerise\"]"
+            why: "Comme dans un annuaire ouvert au milieu : on ne garde que la bonne moitié."
+          - label: "Elle lit tous les éléments très vite"
             correct: false
-            why: "Il faudrait `(a, b) => a.localeCompare(b)` pour obtenir ce vrai ordre alphabétique."
-          - label: "[\"banane\", \"Cerise\", \"abricot\"]"
+            why: "Au contraire, elle en lit très peu."
+          - label: "Elle commence toujours par la fin"
             correct: false
-            why: "sort modifie bien l'ordre de la liste."
-        explanation: "Sans fonction de comparaison, sort place les majuscules d'abord ; `localeCompare` donne l'ordre du dictionnaire."
+            why: "Elle commence par le milieu."
+        explanation: "À chaque étape, la partie à explorer est coupée en deux : il reste très vite peu d'éléments."
     exercises:
       - slug: prog-ex-recherche-guide
         kind: COMPLETER
@@ -233,13 +209,13 @@ lessons:
             - ["-1"]
       - slug: prog-ex-compter
         kind: CODE_LIBRE
-        title: "Compter les occurrences"
+        title: "Compter les apparitions d'un mot"
         difficulty: INTERMEDIAIRE
         skill: algo-tri-recherche
         statement: |
           Écris une fonction `compter(liste, mot)` qui renvoie **combien de fois** `mot` apparaît dans
-          `liste`, avec une boucle et un compteur. Teste-la :
-          `compter(["java", "sql", "java", "angular"], "java")` doit renvoyer 2.
+          `liste`, avec une boucle et un compteur qui avance de 1 à chaque fois qu'on trouve le mot. Teste-la
+          avec `compter(["java", "sql", "java", "angular"], "java")`.
         criteria: "Fonction avec compteur, boucle, comparaison, retour."
         hints:
           - "`let compteur = 0;` au début de la fonction."
@@ -256,7 +232,7 @@ lessons:
             return compteur;
           }
           console.log(compter(["java", "sql", "java", "angular"], "java"));
-        explanation: "Un parcours complet de la liste : complexité O(n). On aurait aussi pu écrire `liste.filter(e => e === mot).length`."
+        explanation: "Un parcours complet de la liste : complexité linéaire. On aurait aussi pu écrire `liste.filter(e => e === mot).length`."
         xp: 25
         payload:
           language: javascript
@@ -267,35 +243,343 @@ lessons:
             - pattern: 'function\s+compter\s*\(\s*\w+\s*,\s*\w+\s*\)|const\s+compter\s*=\s*\('
               message: "Déclare function compter(liste, mot)."
             - pattern: 'let\s+\w+\s*=\s*0'
-              message: "Initialise un compteur à 0."
+              message: "Démarre un compteur à 0."
             - pattern: 'for\s*\('
               message: "Parcours la liste avec une boucle."
             - pattern: '===\s*\w+|\w+\s*===\s*'
               message: "Compare chaque élément au mot avec ===."
             - pattern: '\w+\s*(\+\+|\+=\s*1)'
-              message: "Augmente le compteur quand tu trouves le mot."
+              message: "Fais avancer le compteur quand tu trouves le mot."
             - pattern: 'return\s+\w+'
               message: "Renvoie le compteur."
           output: "2"
+      - slug: prog-ex-recherche-bug
+        kind: CORRIGER_ERREUR
+        title: "Une recherche qui abandonne trop tôt"
+        difficulty: INTERMEDIAIRE
+        skill: algo-tri-recherche
+        statement: |
+          Cette fonction doit trouver « Inès » (position 2), mais elle renvoie -1 : le `return -1` est placé
+          **dans** la boucle, donc elle abandonne dès le premier prénom. Déplace-le **après** la boucle.
+        criteria: "return -1 est placé après la boucle."
+        hints:
+          - "Dans la boucle, on ne doit renvoyer que lorsqu'on a trouvé."
+          - "-1 veut dire « j'ai tout regardé sans trouver » : c'est après la boucle."
+          - "Mets `return -1;` après l'accolade fermante du for."
+        solution: |
+          function indexDe(liste, cible) {
+            for (let i = 0; i < liste.length; i++) {
+              if (liste[i] === cible) {
+                return i;
+              }
+            }
+            return -1;
+          }
+          console.log(indexDe(["Awa", "Léo", "Inès"], "Inès"));
+        explanation: "On ne conclut « absent » qu'après avoir tout regardé."
+        xp: 20
+        payload:
+          language: javascript
+          starter: |
+            function indexDe(liste, cible) {
+              for (let i = 0; i < liste.length; i++) {
+                if (liste[i] === cible) {
+                  return i;
+                }
+                return -1;
+              }
+            }
+            console.log(indexDe(["Awa", "Léo", "Inès"], "Inès"));
+          checks:
+            - pattern: 'return\s+i\s*;?\s*\}\s*\}\s*return\s+-1'
+              message: "Place return -1 après la boucle, pas dedans."
+          output: "2"
 
   # ===================================================================== LEÇON 2
+  - slug: prog-trier
+    title: "Trier une liste : sort et localeCompare"
+    duration: 10
+    objective: "Trier des mots dans le vrai ordre alphabétique avec sort et localeCompare, y compris une liste d'objets."
+    prerequisites: "Leçon « Rechercher dans une liste »."
+    skills: [algo-tri-recherche]
+    xp: 15
+    memo: |
+      - `liste.sort()` seul met les MAJUSCULES avant les minuscules : `["awa", "Zoé"]` devient `["Zoé", "awa"]`.
+      - Vrai ordre alphabétique : `liste.sort((a, b) => a.localeCompare(b))`.
+      - Liste d'objets : `produits.sort((a, b) => a.nom.localeCompare(b.nom))`.
+      - Attention : `sort` **modifie** la liste d'origine.
+    commonMistakes: |
+      - Utiliser sort() sans localeCompare pour des prénoms : les majuscules passent devant.
+      - Croire que sort crée une nouvelle liste : il modifie celle d'origine.
+    blocks:
+      - type: text
+        md: |
+          Afficher des prénoms dans l'ordre alphabétique, trier un catalogue par nom : trier est une tâche de
+          tous les jours.
+      - type: definition
+        id: def-tri
+        term: "Trier avec localeCompare"
+        md: |
+          Ranger une **pile de copies par nom** : on compare les noms deux à deux, et `localeCompare` dit lequel
+          vient en premier dans le dictionnaire, en respectant les majuscules et les accents.
+      - type: compare
+        left:
+          title: "Piège : sort sans fonction"
+          good: false
+          language: javascript
+          code: |
+            ["awa", "Zoé", "Léo"].sort();
+            // ["Léo", "Zoé", "awa"] : majuscules d'abord
+        right:
+          title: "Vrai ordre alphabétique"
+          good: true
+          language: javascript
+          code: |
+            ["awa", "Zoé", "Léo"].sort((a, b) => a.localeCompare(b));
+            // ["awa", "Léo", "Zoé"]
+      - type: code
+        id: code-tri
+        language: javascript
+        title: "Trier des produits par nom"
+        code: |
+          const produits = [
+            { nom: "Sac antivol" },
+            { nom: "Coque SOS" },
+            { nom: "Alarme" }
+          ];
+          produits.sort((a, b) => a.nom.localeCompare(b.nom));
+          console.log(produits.map(p => p.nom));
+        lines:
+          - n: 6
+            note: "On compare les noms de deux produits `a` et `b` : localeCompare dit lequel passe devant."
+          - n: 7
+            note: "Affiche : Alarme, Coque SOS, Sac antivol."
+      - type: demo
+        title: "Essaie"
+        language: javascript
+        code: |
+          const prenoms = ["awa", "Zoé", "Léo"];
+          prenoms.sort((a, b) => a.localeCompare(b));
+          console.log(prenoms);
+      - type: question
+        ref: prog-r-q5
+        review: def-tri
+      - type: question
+        ref: prog-tr-q2
+        review: code-tri
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le tri."
+      - type: exercise
+        ref: prog-ex-tri-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : trier une liste de villes."
+      - type: exercise
+        ref: prog-ex-tri-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des majuscules qui passent devant."
+      - type: exercise
+        ref: prog-ex-tri-bug
+      - type: quiz
+        items:
+          - ref: prog-tr-q3
+            review: def-tri
+          - ref: prog-tr-q4
+            review: code-tri
+          - ref: prog-tr-q5
+            review: def-tri
+    questions:
+      - code: prog-r-q5
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-tri-recherche
+        prompt: "Que donne `[\"banane\", \"Cerise\", \"abricot\"].sort()` ?"
+        snippet: "[\"banane\", \"Cerise\", \"abricot\"].sort()"
+        language: javascript
+        choices:
+          - label: "[\"Cerise\", \"abricot\", \"banane\"]"
+            correct: true
+            why: "Sans fonction de comparaison, les majuscules passent avant les minuscules."
+          - label: "[\"abricot\", \"banane\", \"Cerise\"]"
+            correct: false
+            why: "Il faudrait `(a, b) => a.localeCompare(b)` pour obtenir ce vrai ordre alphabétique."
+          - label: "[\"banane\", \"Cerise\", \"abricot\"]"
+            correct: false
+            why: "sort modifie bien l'ordre de la liste."
+        explanation: "Sans fonction de comparaison, sort place les majuscules d'abord ; `localeCompare` donne l'ordre du dictionnaire."
+      - code: prog-tr-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-tri-recherche
+        prompt: "Comment trier des produits par nom, dans l'ordre alphabétique ?"
+        choices:
+          - label: "`produits.sort((a, b) => a.nom.localeCompare(b.nom))`"
+            correct: true
+            why: "On compare les noms de deux produits."
+          - label: "`produits.sort()`"
+            correct: false
+            why: "sort seul ne sait pas comparer des objets par nom."
+          - label: "`produits.nom.sort()`"
+            correct: false
+            why: "La liste n'a pas de propriété nom."
+        explanation: "Pour des objets, on dit à sort quelle propriété comparer."
+      - code: prog-tr-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: algo-tri-recherche
+        prompt: "`sort` crée une nouvelle liste et laisse l'originale intacte."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : sort range la liste d'origine elle-même."
+          - label: "Faux"
+            correct: true
+            why: "Exact, contrairement à filter et map."
+        explanation: "sort modifie la liste ; filter et map en créent une nouvelle."
+      - code: prog-tr-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-tri-recherche
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const villes = ["Nice", "Brest", "Lyon"];
+          villes.sort((a, b) => a.localeCompare(b));
+          console.log(villes);
+        language: javascript
+        choices:
+          - label: "[\"Brest\", \"Lyon\", \"Nice\"]"
+            correct: true
+            why: "Ordre alphabétique : B, L, N."
+          - label: "[\"Nice\", \"Brest\", \"Lyon\"]"
+            correct: false
+            why: "sort a rangé la liste."
+          - label: "[\"Nice\", \"Lyon\", \"Brest\"]"
+            correct: false
+            why: "Ce serait l'ordre inverse."
+        explanation: "localeCompare donne l'ordre du dictionnaire."
+      - code: prog-tr-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-tri-recherche
+        prompt: "Pourquoi utiliser `localeCompare` pour trier des prénoms ?"
+        choices:
+          - label: "Pour respecter l'ordre du dictionnaire, avec majuscules et accents"
+            correct: true
+            why: "« awa » et « Zoé » sont rangés comme dans un dictionnaire."
+          - label: "Pour aller plus vite"
+            correct: false
+            why: "Ce n'est pas une question de vitesse."
+          - label: "Parce que sort ne marche pas avec des textes"
+            correct: false
+            why: "Il marche, mais met les majuscules d'abord."
+        explanation: "localeCompare = ordre alphabétique naturel."
+    exercises:
+      - slug: prog-ex-tri-guide
+        kind: COMPLETER
+        title: "Compléter le tri"
+        difficulty: FACILE
+        skill: algo-tri-recherche
+        statement: "Complète pour trier les prénoms dans l'ordre alphabétique."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "La méthode qui trie : sort."
+          - "L'outil qui compare deux textes : localeCompare."
+          - "sort, localeCompare."
+        solution: '["sort", "localeCompare"]'
+        explanation: "`prenoms.sort((a, b) => a.localeCompare(b))`"
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const prenoms = ["léo", "Awa", "inès"];
+            prenoms.[[1]]((a, b) => a.[[2]](b));
+            console.log(prenoms);
+          blanks:
+            - ["sort"]
+            - ["localeCompare"]
+      - slug: prog-ex-tri-libre
+        kind: CODE_LIBRE
+        title: "Trier des villes"
+        difficulty: FACILE
+        skill: algo-tri-recherche
+        statement: |
+          Avec `const villes = ["toulouse", "Bordeaux", "annecy"];`, trie la liste dans l'ordre alphabétique
+          avec `sort` et `localeCompare`, puis affiche-la.
+        criteria: "sort avec localeCompare, puis affichage."
+        hints:
+          - "`villes.sort((a, b) => ...)`"
+          - "`a.localeCompare(b)`"
+          - "`console.log(villes);`"
+        solution: |
+          const villes = ["toulouse", "Bordeaux", "annecy"];
+          villes.sort((a, b) => a.localeCompare(b));
+          console.log(villes);
+        explanation: "Résultat : annecy, Bordeaux, toulouse."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const villes = ["toulouse", "Bordeaux", "annecy"];
+
+          checks:
+            - pattern: 'villes\.sort\s*\(\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)\s*=>\s*\1\.localeCompare\s*\(\s*\2\s*\)\s*\)'
+              message: "Trie avec villes.sort((a, b) => a.localeCompare(b))."
+            - pattern: 'console\.log\s*\(\s*villes\s*\)'
+              message: "Affiche villes."
+      - slug: prog-ex-tri-bug
+        kind: CORRIGER_ERREUR
+        title: "Des majuscules qui passent devant"
+        difficulty: FACILE
+        skill: algo-tri-recherche
+        statement: |
+          Ce tri affiche `Zoé` avant `awa`. Corrige-le pour obtenir le vrai ordre alphabétique :
+          awa, Léo, Zoé.
+        criteria: "sort utilise localeCompare."
+        hints:
+          - "sort seul met les majuscules d'abord."
+          - "Il faut lui donner une fonction de comparaison."
+          - "`prenoms.sort((a, b) => a.localeCompare(b));`"
+        solution: |
+          const prenoms = ["Zoé", "awa", "Léo"];
+          prenoms.sort((a, b) => a.localeCompare(b));
+          for (const p of prenoms) {
+            console.log(p);
+          }
+        explanation: "localeCompare range comme un dictionnaire."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const prenoms = ["Zoé", "awa", "Léo"];
+            prenoms.sort();
+            for (const p of prenoms) {
+              console.log(p);
+            }
+          checks:
+            - pattern: 'prenoms\.sort\s*\(\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)\s*=>\s*\1\.localeCompare\s*\(\s*\2\s*\)\s*\)'
+              message: "Utilise prenoms.sort((a, b) => a.localeCompare(b))."
+          output: |
+            awa
+            Léo
+            Zoé
+
+  # ===================================================================== LEÇON 3
   - slug: prog-methode-resolution
     title: "Résoudre un problème avec méthode"
-    duration: 13
+    duration: 12
     objective: "Découper un problème, écrire du pseudo-code, puis le traduire en code et le tester sur des exemples."
-    prerequisites: "Leçon « Rechercher et trier »."
+    prerequisites: "Leçon « Trier une liste : sort et localeCompare »."
     skills: [algo-bases, oral-cda]
     xp: 25
     memo: |
       Méthode en cinq temps :
       1. **Reformuler** le problème avec ses mots.
-      2. **Exemples** : entrée → sortie attendue, dont les cas limites (liste vide, zéro…).
+      2. **Exemples** : entrée → sortie attendue, dont les cas limites (liste vide, texte vide…).
       3. **Pseudo-code** : les étapes en français.
       4. **Coder** étape par étape.
       5. **Tester** sur les exemples, y compris les cas limites.
     commonMistakes: |
       - Coder avant d'avoir compris le problème.
-      - Oublier les cas limites : liste vide, valeur négative, texte vide.
+      - Oublier les cas limites : liste vide, texte vide.
       - Écrire tout le programme d'un coup sans rien tester.
     blocks:
       - type: text
@@ -314,7 +598,7 @@ lessons:
         items:
           - "**Reformuler** : parmi des mots, je veux celui qui a le plus de lettres."
           - "**Exemples** : `[\"sql\", \"angular\", \"java\"]` → `\"angular\"` ; liste vide → `null`."
-          - "**Pseudo-code** : si la liste est vide, renvoyer null ; plusLong ← premier mot ; pour chaque mot, si sa longueur > longueur de plusLong, plusLong ← mot ; renvoyer plusLong."
+          - "**Pseudo-code** : si la liste est vide, renvoyer null ; plusLong ← premier mot ; pour chaque mot, si sa longueur est plus grande que celle de plusLong, plusLong ← mot ; renvoyer plusLong."
           - "**Coder** en suivant exactement le pseudo-code."
           - "**Tester** les deux exemples, dont la liste vide."
       - type: code
@@ -338,9 +622,9 @@ lessons:
           console.log(plusLong([]));
         lines:
           - n: 2
-            note: "Le **cas limite** est traité d'abord : une liste vide n'a pas de plus long mot."
+            note: "Le **cas limite** est traité d'abord : une liste vide n'a pas de plus long mot (null = « rien »)."
           - n: 5
-            note: "On part du premier mot, comme pour le maximum."
+            note: "On part du premier mot."
           - n: 13
             note: "Test du cas normal : angular."
           - n: 14
@@ -352,19 +636,23 @@ lessons:
         id: def-cas-limite
         term: "Cas limite"
         md: |
-          Une situation **au bord** de ce qui est prévu : liste vide, zéro, valeur négative, texte vide. C'est
-          là que se cachent la plupart des bugs. Un bon test vérifie toujours ces cas.
+          Une situation **au bord** de ce qui est prévu : liste vide, texte vide, une seule valeur. C'est là
+          que se cachent la plupart des bugs. Un bon test vérifie toujours ces cas.
       - type: question
         ref: prog-mr-q2
         review: def-cas-limite
       - type: text
-        md: "Exercice guidé : remets la méthode dans l'ordre."
+        md: "**Exercice 1** : remets la méthode dans l'ordre."
       - type: exercise
         ref: prog-ex-methode-ordre
       - type: text
-        md: "En autonomie : applique la méthode à un nouveau problème."
+        md: "**Exercice 2 (en autonomie)** : applique la méthode à un nouveau problème."
       - type: exercise
         ref: prog-ex-initiale-securisee
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un cas limite oublié."
+      - type: exercise
+        ref: prog-ex-cas-limite-bug
       - type: jury
         items:
           - q: "Comment abordez-vous un problème algorithmique que vous ne connaissez pas ?"
@@ -452,7 +740,7 @@ lessons:
         choices:
           - label: "Vrai"
             correct: true
-            why: "Liste vide, zéro, valeurs extrêmes."
+            why: "Liste vide, texte vide, valeurs extrêmes."
           - label: "Faux"
             correct: false
             why: "C'est un constat très courant."
@@ -531,40 +819,49 @@ lessons:
           output: |
             A
             ?
+      - slug: prog-ex-cas-limite-bug
+        kind: CORRIGER_ERREUR
+        title: "Un cas limite oublié"
+        difficulty: INTERMEDIAIRE
+        skill: algo-bases
+        statement: |
+          Cette fonction renvoie le premier invité en majuscules. Avec une liste **vide**, elle plante
+          (« Cannot read properties of undefined »). Ajoute le cas limite : si la liste est vide, renvoie
+          `"Personne"`.
+        criteria: "La liste vide est traitée avant de lire invites[0]."
+        hints:
+          - "Une liste vide a une longueur de 0."
+          - "Traite ce cas au tout début de la fonction."
+          - "`if (invites.length === 0) { return \"Personne\"; }`"
+        solution: |
+          function premierInvite(invites) {
+            if (invites.length === 0) {
+              return "Personne";
+            }
+            return invites[0].toUpperCase();
+          }
+          console.log(premierInvite(["awa", "léo"]));
+          console.log(premierInvite([]));
+        explanation: "Le cas limite est traité d'abord : la fonction ne plante plus."
+        xp: 20
+        payload:
+          language: javascript
+          starter: |
+            function premierInvite(invites) {
+              return invites[0].toUpperCase();
+            }
+            console.log(premierInvite(["awa", "léo"]));
+            console.log(premierInvite([]));
+          checks:
+            - pattern: 'if\s*\(\s*invites\.length\s*===?\s*0\s*\)|if\s*\(\s*!\s*invites\.length\s*\)'
+              message: "Teste la liste vide : if (invites.length === 0)."
+            - pattern: 'return\s+["''`]Personne["''`]'
+              message: "Pour une liste vide, renvoie \"Personne\"."
+          output: |
+            AWA
+            Personne
 
 bank:
-  - code: prog-c5-b1
-    kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: algo-tri-recherche
-    prompt: "Pourquoi la recherche dichotomique est-elle si rapide sur une grande liste triée ?"
-    choices:
-      - label: "Elle élimine la moitié de ce qui reste à chaque étape"
-        correct: true
-        why: "Comme dans un annuaire ouvert au milieu : on ne garde que la bonne moitié."
-      - label: "Elle lit tous les éléments très vite"
-        correct: false
-        why: "Au contraire, elle en lit très peu."
-      - label: "Elle commence toujours par la fin"
-        correct: false
-        why: "Elle commence par le milieu."
-    explanation: "À chaque étape, la partie à explorer est coupée en deux : il reste très vite peu d'éléments."
-  - code: prog-c5-b2
-    kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: algo-bases
-    prompt: "Que vaut `[\"Awa\"][5]` en JavaScript ?"
-    choices:
-      - label: "undefined"
-        correct: true
-        why: "La case 5 n'existe pas : la liste n'a qu'un élément."
-      - label: "\"Awa\""
-        correct: false
-        why: "\"Awa\" est dans la case 0."
-      - label: "Une erreur"
-        correct: false
-        why: "JavaScript ne lève pas d'erreur : il renvoie undefined."
-    explanation: "D'où l'importance de traiter les cas limites : liste vide, case qui n'existe pas…"
   - code: prog-c5-b3
     kind: CHOIX_UNIQUE
     difficulty: 1
@@ -581,3 +878,19 @@ bank:
         correct: false
         why: "Aucune boucle n'est utilisée."
     explanation: "L'accès par indice est immédiat : c'est ce qu'on appelle un accès direct."
+  - code: prog-c9-b1
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: algo-tri-recherche
+    prompt: "Quel est le cas limite le plus important à tester pour une fonction qui cherche dans une liste ?"
+    choices:
+      - label: "La liste vide"
+        correct: true
+        why: "Il n'y a rien à parcourir : la fonction doit quand même répondre correctement."
+      - label: "Une liste de trois prénoms"
+        correct: false
+        why: "C'est un cas normal."
+      - label: "Une liste triée"
+        correct: false
+        why: "Ce n'est pas un cas limite pour une recherche linéaire."
+    explanation: "Liste vide et élément absent : deux cas à tester systématiquement."

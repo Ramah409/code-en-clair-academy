@@ -1,0 +1,1710 @@
+slug: prog-decider-repeter
+position: 3
+level: DEBUTANT
+title: "Prendre des décisions"
+summary: "Comparer deux valeurs, puis choisir un chemin avec if, else, else if, et combiner des conditions avec &&, || et !. Une seule notion par leçon."
+quizQuestionCount: 12
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: prog-comparaisons
+    title: "Comparer deux valeurs : ===, !==, <, >"
+    duration: 9
+    objective: "Comparer deux valeurs et obtenir true ou false avec ===, !==, <, >, <= et >=."
+    prerequisites: "Chapitre « Jouer avec les textes »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - Une **comparaison** répond toujours `true` (vrai) ou `false` (faux).
+      - `===` : est égal à. `!==` : est différent de.
+      - `<` plus petit, `>` plus grand, `<=` plus petit **ou égal**, `>=` plus grand **ou égal**.
+      - `=` (un seul) **range** une valeur ; `===` (trois) **compare**.
+    commonMistakes: |
+      - Écrire `=` au lieu de `===` pour comparer.
+      - Inverser les signes : on écrit `>=` (le signe égal en second).
+      - Comparer un texte et un nombre : `"18" === 18` vaut `false`.
+    blocks:
+      - type: text
+        md: |
+          Avant de prendre une décision, un programme **pose une question** : « l'âge est-il au moins 18 ? »,
+          « le mot de passe est-il le bon ? ». Ces questions s'écrivent avec des **comparaisons**.
+      - type: definition
+        id: def-comparaison
+        term: "Comparaison"
+        md: |
+          Une **balance** : on pose deux valeurs, et elle répond `true` ou `false`. `===` demande « sont-elles
+          pareilles ? », `>` demande « la première est-elle plus grande ? ».
+      - type: code
+        id: code-comparaison
+        language: javascript
+        title: "Poser des questions"
+        code: |
+          const age = 20;
+          const ville = "Lyon";
+          console.log(age >= 18);
+          console.log(ville === "Paris");
+          console.log(ville !== "Paris");
+        lines:
+          - n: 3
+            note: "20 est-il plus grand ou égal à 18 ? Oui : true."
+          - n: 4
+            note: "Lyon est-il égal à Paris ? Non : false."
+          - n: 5
+            note: "Lyon est-il différent de Paris ? Oui : true."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis change l'âge en 15 et la ville en « Paris »."
+        language: javascript
+        code: |
+          const age = 20;
+          const ville = "Lyon";
+          console.log(age >= 18);
+          console.log(ville === "Paris");
+          console.log(ville !== "Paris");
+      - type: question
+        ref: prog-if-q5
+        review: def-comparaison
+      - type: question
+        ref: prog-cp-q2
+        review: code-comparaison
+      - type: text
+        md: "**Exercice 1 (guidé)** : choisis le bon signe."
+      - type: exercise
+        ref: prog-ex-comparer-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : pose trois questions."
+      - type: exercise
+        ref: prog-ex-comparer-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un seul signe égal."
+      - type: exercise
+        ref: prog-ex-comparer-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre = et === en JavaScript ?"
+            a: "`=` range une valeur dans une variable (affectation). `===` compare deux valeurs, type compris, et renvoie vrai ou faux."
+      - type: quiz
+        items:
+          - ref: prog-cp-q3
+            review: def-comparaison
+          - ref: prog-cp-q4
+            review: code-comparaison
+          - ref: prog-cp-q5
+            review: def-comparaison
+    questions:
+      - code: prog-if-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "`age = 18` compare l'âge à 18."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : `=` range 18 dans age ; pour comparer, il faut `===`."
+          - label: "Faux"
+            correct: true
+            why: "Exact : c'est un rangement, une erreur classique."
+        explanation: "Pour comparer : `===`. Pour ranger : `=`."
+      - code: prog-cp-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const couleur = "bleu";
+          console.log(couleur === "bleu");
+        language: javascript
+        choices:
+          - label: "true"
+            correct: true
+            why: "La couleur vaut bien bleu."
+          - label: "false"
+            correct: false
+            why: "Les deux textes sont identiques."
+          - label: "bleu"
+            correct: false
+            why: "Une comparaison répond true ou false."
+        explanation: "Une comparaison donne toujours un booléen."
+      - code: prog-cp-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quel signe veut dire « est différent de » ?"
+        choices:
+          - label: "`!==`"
+            correct: true
+            why: "Le point d'exclamation veut dire « pas »."
+          - label: "`===`"
+            correct: false
+            why: "=== veut dire « est égal à »."
+          - label: "`<>`"
+            correct: false
+            why: "Ce signe n'existe pas en JavaScript."
+        explanation: "`===` égal, `!==` différent."
+      - code: prog-cp-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const age = 18;
+          console.log(age >= 18);
+        language: javascript
+        choices:
+          - label: "true"
+            correct: true
+            why: "`>=` veut dire plus grand **ou égal** : 18 compte."
+          - label: "false"
+            correct: false
+            why: "Ce serait le cas avec `>` seul."
+          - label: "18"
+            correct: false
+            why: "Une comparaison répond true ou false."
+        explanation: "`>` exclut la valeur repère, `>=` l'inclut."
+      - code: prog-cp-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: algo-bases
+        prompt: "`\"18\" === 18` vaut `true`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "L'un est un texte, l'autre un nombre : ils ne sont pas identiques."
+          - label: "Faux"
+            correct: true
+            why: "Exact : `===` compare aussi la sorte de valeur."
+        explanation: "`===` exige la même valeur **et** la même sorte."
+    exercises:
+      - slug: prog-ex-comparer-guide
+        kind: COMPLETER
+        title: "Le bon signe"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète chaque comparaison pour qu'elle affiche true."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Égal : trois signes égal."
+          - "Différent : point d'exclamation puis deux signes égal."
+          - "===, !==, >="
+        solution: '["===", "!==", ">="]'
+        explanation: "Lyon est égal à Lyon, Lyon est différent de Paris, 20 est plus grand ou égal à 18."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const ville = "Lyon";
+            const age = 20;
+            console.log(ville [[1]] "Lyon");   // true
+            console.log(ville [[2]] "Paris");  // true
+            console.log(age [[3]] 18);         // true
+          blanks:
+            - ["==="]
+            - ["!=="]
+            - [">=", ">"]
+      - slug: prog-ex-comparer-libre
+        kind: CODE_LIBRE
+        title: "Trois questions"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Avec `const pays = "Mali";` et `const age = 16;`, affiche :
+          1. si le pays est égal à `"Mali"` ;
+          2. si le pays est différent de `"France"` ;
+          3. si l'âge est plus grand ou égal à `18`.
+        criteria: "Trois console.log avec ===, !== et >=."
+        hints:
+          - "`console.log(pays === \"Mali\");`"
+          - "`console.log(pays !== \"France\");`"
+          - "`console.log(age >= 18);`"
+        solution: |
+          const pays = "Mali";
+          const age = 16;
+          console.log(pays === "Mali");
+          console.log(pays !== "France");
+          console.log(age >= 18);
+        explanation: "Chaque comparaison répond true ou false : ici true, true, puis false."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const pays = "Mali";
+            const age = 16;
+
+          checks:
+            - pattern: 'console\.log\s*\(\s*pays\s*===\s*["''`]Mali["''`]\s*\)'
+              message: "Affiche pays === \"Mali\"."
+            - pattern: 'console\.log\s*\(\s*pays\s*!==\s*["''`]France["''`]\s*\)'
+              message: "Affiche pays !== \"France\"."
+            - pattern: 'console\.log\s*\(\s*age\s*>=\s*18\s*\)'
+              message: "Affiche age >= 18."
+          output: |
+            true
+            true
+            false
+      - slug: prog-ex-comparer-bug
+        kind: CORRIGER_ERREUR
+        title: "Ranger au lieu de comparer"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme doit afficher si le code saisi est le bon (`false` ici), mais il affiche `1234` et
+          change la valeur de la saisie. Corrige le signe.
+        criteria: "La comparaison utilise ===."
+        hints:
+          - "Un seul `=` range une valeur."
+          - "Pour comparer, il en faut trois."
+          - "`console.log(saisie === \"1234\");`"
+        solution: |
+          let saisie = "0000";
+          console.log(saisie === "1234");
+        explanation: "`===` compare sans rien changer : 0000 n'est pas 1234, donc false."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            let saisie = "0000";
+            console.log(saisie = "1234");
+          checks:
+            - pattern: 'console\.log\s*\(\s*saisie\s*===\s*["''`]1234["''`]\s*\)'
+              message: "Compare avec === : saisie === \"1234\"."
+            - pattern: 'saisie\s*=\s*["''`]1234'
+              absent: true
+              message: "Un seul = range la valeur : il faut ===."
+          output: "false"
+
+  # ===================================================================== LEÇON 2
+  - slug: prog-conditions
+    title: "Si… : l'instruction if"
+    duration: 9
+    objective: "Exécuter un bloc d'instructions seulement si une condition est vraie, avec if."
+    prerequisites: "Leçon « Comparer deux valeurs »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - `if (condition) { ... }` : le bloc entre accolades ne s'exécute **que si** la condition est vraie.
+      - La condition est entre **parenthèses**, le bloc entre **accolades**.
+      - Si la condition est fausse, on saute le bloc et on continue après.
+    commonMistakes: |
+      - Oublier les parenthèses autour de la condition.
+      - Oublier l'accolade fermante `}`.
+      - Mettre un point-virgule juste après la parenthèse : `if (x) ;` rend le if inutile.
+    blocks:
+      - type: text
+        md: |
+          Dans la vie, on décide sans cesse : « **s'il** pleut, je prends un parapluie ». Un programme fait
+          pareil avec `if`.
+      - type: definition
+        id: def-condition
+        term: "if (si)"
+        md: |
+          Une **porte** avec un gardien : si la réponse à la question est `true`, la porte s'ouvre et on
+          exécute le bloc ; sinon, on passe son chemin.
+      - type: code
+        id: code-if
+        language: javascript
+        title: "Un parapluie s'il pleut"
+        code: |
+          const meteo = "pluie";
+          if (meteo === "pluie") {
+            console.log("Prends ton parapluie");
+          }
+          console.log("Bonne journée");
+        lines:
+          - n: 2
+            note: "`if` = « si ». La question est entre parenthèses."
+          - n: 3
+            note: "Ce bloc, entre accolades, ne s'exécute que si la météo vaut « pluie »."
+          - n: 5
+            note: "Après le bloc : cette ligne s'exécute dans tous les cas."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis change la météo en « soleil » : seul « Bonne journée » s'affiche."
+        language: javascript
+        code: |
+          const meteo = "pluie";
+          if (meteo === "pluie") {
+            console.log("Prends ton parapluie");
+          }
+          console.log("Bonne journée");
+      - type: question
+        ref: prog-si-q1
+        review: def-condition
+      - type: question
+        ref: prog-si-q2
+        review: code-if
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le if."
+      - type: exercise
+        ref: prog-ex-si-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un message seulement pour les adultes."
+      - type: exercise
+        ref: prog-ex-si-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un if mal écrit."
+      - type: exercise
+        ref: prog-ex-si-bug
+      - type: quiz
+        items:
+          - ref: prog-si-q3
+            review: code-if
+          - ref: prog-si-q4
+            review: def-condition
+          - ref: prog-si-q5
+            review: code-if
+    questions:
+      - code: prog-si-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quand le bloc d'un `if` s'exécute-t-il ?"
+        choices:
+          - label: "Seulement si la condition vaut true"
+            correct: true
+            why: "La porte ne s'ouvre que sur un oui."
+          - label: "Toujours"
+            correct: false
+            why: "Sinon, le if ne servirait à rien."
+          - label: "Seulement si la condition vaut false"
+            correct: false
+            why: "C'est l'inverse."
+        explanation: "if = « si c'est vrai, alors… »."
+      - code: prog-si-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const age = 15;
+          if (age >= 18) {
+            console.log("Majeur");
+          }
+          console.log("Fin");
+        language: javascript
+        choices:
+          - label: "Fin"
+            correct: true
+            why: "15 n'est pas >= 18 : le bloc est sauté."
+          - label: "Majeur puis Fin"
+            correct: false
+            why: "La condition est fausse."
+          - label: "Rien"
+            correct: false
+            why: "La dernière ligne est hors du if : elle s'exécute toujours."
+        explanation: "Ce qui est après l'accolade fermante s'exécute dans tous les cas."
+      - code: prog-si-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quelle écriture est correcte ?"
+        choices:
+          - label: "`if (ville === \"Lyon\") { console.log(\"Salut\"); }`"
+            correct: true
+            why: "Condition entre parenthèses, bloc entre accolades."
+          - label: "`if ville === \"Lyon\" { console.log(\"Salut\"); }`"
+            correct: false
+            why: "Il manque les parenthèses autour de la condition."
+          - label: "`if (ville = \"Lyon\") { console.log(\"Salut\"); }`"
+            correct: false
+            why: "Un seul = range au lieu de comparer."
+        explanation: "`if (condition) { bloc }`."
+      - code: prog-si-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Si la condition d'un if est fausse, le programme s'arrête."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : il saute le bloc et continue après."
+          - label: "Faux"
+            correct: true
+            why: "Exact : on passe simplement son chemin."
+        explanation: "Une condition fausse fait sauter le bloc, rien de plus."
+      - code: prog-si-q5
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const inscrite = true;
+          if (inscrite === true) {
+            console.log("Bienvenue");
+          }
+        language: javascript
+        choices:
+          - label: "Bienvenue"
+            correct: true
+            why: "La condition est vraie."
+          - label: "Rien"
+            correct: false
+            why: "inscrite vaut true : le bloc s'exécute."
+          - label: "true"
+            correct: false
+            why: "On affiche le texte du bloc, pas la condition."
+        explanation: "Astuce : `if (inscrite)` suffit, car inscrite vaut déjà true ou false."
+    exercises:
+      - slug: prog-ex-si-guide
+        kind: COMPLETER
+        title: "Compléter le if"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète pour afficher « Accès autorisé » seulement si le code vaut « 1234 »."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "« si » se dit if."
+          - "Pour comparer : trois signes égal."
+          - "if, ===, {"
+        solution: '["if", "===", "{"]'
+        explanation: "`if (code === \"1234\") { ... }`"
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const code = "1234";
+            [[1]] (code [[2]] "1234") [[3]]
+              console.log("Accès autorisé");
+            }
+          blanks:
+            - ["if"]
+            - ["==="]
+            - ["{"]
+      - slug: prog-ex-si-libre
+        kind: CODE_LIBRE
+        title: "Seulement pour les adultes"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Crée `const age = 20;`. Si l'âge est plus grand ou égal à 18, affiche `Tu peux voter`.
+          Après le if, affiche `Merci` dans tous les cas.
+        criteria: "Un if avec age >= 18, un message dans le bloc, un message après."
+        hints:
+          - "`if (age >= 18) { ... }`"
+          - "Dans le bloc : `console.log(\"Tu peux voter\");`"
+          - "Après l'accolade fermante : `console.log(\"Merci\");`"
+        solution: |
+          const age = 20;
+          if (age >= 18) {
+            console.log("Tu peux voter");
+          }
+          console.log("Merci");
+        explanation: "Le premier message dépend de l'âge, le second s'affiche toujours."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const age = 20;
+
+          checks:
+            - pattern: 'if\s*\(\s*age\s*>=\s*18\s*\)\s*\{'
+              message: "Écris la condition : if (age >= 18) {"
+            - pattern: 'console\.log\s*\(\s*["''`]Tu peux voter["''`]\s*\)'
+              message: "Dans le bloc, affiche \"Tu peux voter\"."
+            - pattern: '\}\s*console\.log\s*\(\s*["''`]Merci["''`]\s*\)'
+              message: "Après le bloc, affiche \"Merci\"."
+          output: |
+            Tu peux voter
+            Merci
+      - slug: prog-ex-si-bug
+        kind: CORRIGER_ERREUR
+        title: "Un if mal écrit"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme doit afficher `Bon appétit` si le repas est prêt. Il manque les parenthèses autour de
+          la condition et l'accolade fermante. Corrige-le.
+        criteria: "Condition entre parenthèses, bloc fermé."
+        hints:
+          - "La condition d'un if est toujours entre parenthèses."
+          - "Chaque accolade ouvrante a sa fermante."
+          - "`if (pret === true) { ... }`"
+        solution: |
+          const pret = true;
+          if (pret === true) {
+            console.log("Bon appétit");
+          }
+        explanation: "`if (condition) { bloc }` : parenthèses et accolades vont par paires."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const pret = true;
+            if pret === true {
+              console.log("Bon appétit");
+          checks:
+            - pattern: 'if\s*\(\s*pret(\s*===\s*true)?\s*\)\s*\{'
+              message: "Mets la condition entre parenthèses : if (pret === true) {"
+            - pattern: 'console\.log\s*\(\s*["''`]Bon appétit["''`]\s*\)\s*;?\s*\}'
+              message: "Ferme le bloc avec } après le console.log."
+          output: "Bon appétit"
+
+  # ===================================================================== LEÇON 3
+  - slug: prog-else
+    title: "Sinon… : l'instruction else"
+    duration: 9
+    objective: "Choisir entre deux chemins avec if … else."
+    prerequisites: "Leçon « Si… : l'instruction if »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - `if (condition) { A } else { B }` : si c'est vrai on fait A, **sinon** on fait B.
+      - Un seul des deux blocs s'exécute, jamais les deux.
+      - `else` n'a pas de condition : il attrape tous les autres cas.
+    commonMistakes: |
+      - Écrire une condition après else : `else (age < 18)` provoque une erreur.
+      - Mettre le else à l'intérieur du bloc du if.
+    blocks:
+      - type: text
+        md: |
+          « **S'il** pleut, je prends un parapluie, **sinon** des lunettes de soleil. » Avec `else`, le
+          programme a un plan B.
+      - type: definition
+        id: def-else
+        term: "else (sinon)"
+        md: |
+          Un **carrefour** à deux routes : la condition choisit la route de gauche (if) ou celle de droite
+          (else). On ne peut pas prendre les deux.
+      - type: code
+        id: code-else
+        language: javascript
+        title: "Majeur ou mineur ?"
+        code: |
+          const age = 16;
+          if (age >= 18) {
+            console.log("Accès autorisé");
+          } else {
+            console.log("Accès réservé aux adultes");
+          }
+        lines:
+          - n: 2
+            note: "La question : l'âge est-il au moins 18 ?"
+          - n: 3
+            note: "Route 1 : seulement si c'est vrai."
+          - n: 4
+            note: "`else` = « sinon » : route 2, quand c'est faux. Ici, 16 n'est pas au moins 18 : on arrive ici."
+      - type: demo
+        title: "Change l'âge et exécute"
+        language: javascript
+        code: |
+          const age = 16;
+          if (age >= 18) {
+            console.log("Accès autorisé");
+          } else {
+            console.log("Accès réservé aux adultes");
+          }
+      - type: question
+        ref: prog-if-q1
+        review: def-else
+      - type: question
+        ref: prog-el-q2
+        review: code-else
+      - type: text
+        md: "**Exercice 1 (guidé)** : une réduction pour les étudiants."
+      - type: exercise
+        ref: prog-ex-if-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un conseil selon la météo."
+      - type: exercise
+        ref: prog-ex-meteo
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un else avec une condition."
+      - type: exercise
+        ref: prog-ex-else-bug
+      - type: quiz
+        items:
+          - ref: prog-el-q3
+            review: def-else
+          - ref: prog-el-q4
+            review: code-else
+          - ref: prog-el-q5
+            review: def-else
+    questions:
+      - code: prog-if-q1
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const meteo = "soleil";
+          if (meteo === "pluie") {
+            console.log("Parapluie");
+          } else {
+            console.log("Lunettes de soleil");
+          }
+        language: javascript
+        choices:
+          - label: "Lunettes de soleil"
+            correct: true
+            why: "La météo n'est pas « pluie » : on prend la route du else."
+          - label: "Parapluie"
+            correct: false
+            why: "Le bloc du if ne s'exécute que si la condition est vraie."
+          - label: "Parapluie puis Lunettes de soleil"
+            correct: false
+            why: "Un seul des deux blocs s'exécute."
+        explanation: "if / else : un seul chemin est suivi."
+      - code: prog-el-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Combien de blocs s'exécutent dans un if / else ?"
+        choices:
+          - label: "Un seul : celui du if ou celui du else"
+            correct: true
+            why: "C'est un carrefour : une seule route."
+          - label: "Les deux"
+            correct: false
+            why: "Jamais les deux."
+          - label: "Aucun"
+            correct: false
+            why: "Il y en a toujours un : soit le if, soit le else."
+        explanation: "if / else garantit qu'exactement un des deux blocs s'exécute."
+      - code: prog-el-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "On écrit une condition entre parenthèses après `else`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : else attrape tous les autres cas, sans condition."
+          - label: "Faux"
+            correct: true
+            why: "Exact : `else { ... }` tout court."
+        explanation: "`else` n'a jamais de condition."
+      - code: prog-el-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const motDePasse = "soleil";
+          if (motDePasse === "soleil") {
+            console.log("Connexion réussie");
+          } else {
+            console.log("Mot de passe incorrect");
+          }
+        language: javascript
+        choices:
+          - label: "Connexion réussie"
+            correct: true
+            why: "Le mot de passe est le bon."
+          - label: "Mot de passe incorrect"
+            correct: false
+            why: "La condition est vraie : on prend la route du if."
+          - label: "Les deux messages"
+            correct: false
+            why: "Un seul bloc s'exécute."
+        explanation: "C'est le principe de toute page de connexion."
+      - code: prog-el-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Où se place `else` ?"
+        choices:
+          - label: "Juste après l'accolade fermante du if : `} else {`"
+            correct: true
+            why: "Il suit directement le bloc du if."
+          - label: "À l'intérieur du bloc du if"
+            correct: false
+            why: "Il doit être après le bloc, pas dedans."
+          - label: "Avant le if"
+            correct: false
+            why: "Le sinon vient après le si."
+        explanation: "`if (...) { ... } else { ... }`."
+    exercises:
+      - slug: prog-ex-if-guide
+        kind: COMPLETER
+        title: "Une réduction pour les étudiants"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Si `etudiant` vaut `true`, affiche « Tarif réduit », sinon « Plein tarif ». Complète."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "« si » se dit if ; « sinon » se dit else."
+          - "Pour comparer à true : trois signes égal."
+          - "if, ===, else."
+        solution: '["if", "===", "else"]'
+        explanation: "`if (etudiant === true)` (on peut aussi écrire `if (etudiant)`), puis `else` pour les autres."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const etudiant = true;
+            [[1]] (etudiant [[2]] true) {
+              console.log("Tarif réduit");
+            } [[3]] {
+              console.log("Plein tarif");
+            }
+          blanks:
+            - ["if"]
+            - ["==="]
+            - ["else"]
+      - slug: prog-ex-meteo
+        kind: CODE_LIBRE
+        title: "Un conseil selon la météo"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Crée une constante `meteo` qui vaut `"pluie"`. Si `meteo` est égale à `"pluie"`, affiche
+          `Prends ton parapluie`, sinon affiche `Bonne balade`. Change ensuite la valeur (par exemple
+          `"soleil"`) pour vérifier les deux cas.
+        criteria: "Un if / else qui compare meteo à \"pluie\" avec ===."
+        hints:
+          - "Pour comparer deux textes : trois signes égal `===`."
+          - "`if (meteo === \"pluie\") { ... } else { ... }`"
+          - "Dans chaque bloc : `console.log(\"Prends ton parapluie\");` ou `console.log(\"Bonne balade\");`"
+        solution: |
+          const meteo = "pluie";
+          if (meteo === "pluie") {
+            console.log("Prends ton parapluie");
+          } else {
+            console.log("Bonne balade");
+          }
+        explanation: "La condition compare deux textes : un seul des deux messages s'affiche."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const meteo = "pluie";
+
+          checks:
+            - pattern: 'if\s*\(\s*meteo\s*===?\s*["''`]pluie["''`]\s*\)|if\s*\(\s*["''`]pluie["''`]\s*===?\s*meteo\s*\)'
+              message: "Compare la météo : if (meteo === \"pluie\")."
+            - pattern: '\belse\b'
+              message: "Ajoute un else pour l'autre cas."
+            - pattern: 'console\.log\s*\(\s*["''`]Prends ton parapluie["''`]\s*\)'
+              message: "Affiche \"Prends ton parapluie\" quand il pleut."
+            - pattern: 'console\.log\s*\(\s*["''`]Bonne balade["''`]\s*\)'
+              message: "Affiche \"Bonne balade\" dans l'autre cas."
+          output: "Prends ton parapluie"
+      - slug: prog-ex-else-bug
+        kind: CORRIGER_ERREUR
+        title: "Un else avec une condition"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme plante (« Unexpected token »). Il doit afficher `Boutique ouverte` si `ouvert` vaut
+          `true`, sinon `Boutique fermée`. Corrige le else.
+        criteria: "Le else n'a pas de condition."
+        hints:
+          - "else attrape tous les autres cas."
+          - "Il ne prend jamais de parenthèses."
+          - "`} else {`"
+        solution: |
+          const ouvert = false;
+          if (ouvert === true) {
+            console.log("Boutique ouverte");
+          } else {
+            console.log("Boutique fermée");
+          }
+        explanation: "`else` n'a pas besoin de condition : c'est « dans tous les autres cas »."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const ouvert = false;
+            if (ouvert === true) {
+              console.log("Boutique ouverte");
+            } else (ouvert === false) {
+              console.log("Boutique fermée");
+            }
+          checks:
+            - pattern: 'else\s*\('
+              absent: true
+              message: "Pas de condition après else."
+            - pattern: '\}\s*else\s*\{'
+              message: "Écris simplement } else {"
+          output: "Boutique fermée"
+
+  # ===================================================================== LEÇON 4
+  - slug: prog-else-if
+    title: "Plusieurs cas : else if"
+    duration: 10
+    objective: "Tester plusieurs cas à la suite avec else if, dans le bon ordre."
+    prerequisites: "Leçon « Sinon… : l'instruction else »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - `else if (condition)` ajoute un cas entre le if et le else.
+      - Les conditions sont testées **dans l'ordre** ; la **première** vraie gagne, les suivantes sont ignorées.
+      - On commence par le cas **le plus précis** (le plus exigeant).
+      - Le `else` final attrape tout ce qui reste.
+    commonMistakes: |
+      - Mettre un cas large en premier : il « avale » les suivants.
+      - Écrire `elseif` en un seul mot.
+    blocks:
+      - type: text
+        md: |
+          Parfois, il y a plus de deux routes : « le matin, dis bonjour ; l'après-midi, bon après-midi ; le
+          soir, bonsoir ». On ajoute des cas avec `else if`.
+      - type: definition
+        id: def-else-if
+        term: "else if (sinon, si…)"
+        md: |
+          Une **file de guichets** : on présente la question au premier guichet ; s'il répond non, on passe au
+          suivant ; dès qu'un guichet répond oui, on s'arrête là.
+      - type: code
+        id: code-else-if
+        language: javascript
+        title: "Une salutation selon l'heure"
+        code: |
+          const heure = 15;
+          if (heure < 12) {
+            console.log("Bonjour");
+          } else if (heure < 18) {
+            console.log("Bon après-midi");
+          } else {
+            console.log("Bonsoir");
+          }
+        lines:
+          - n: 2
+            note: "Premier guichet : avant midi ? 15 non."
+          - n: 4
+            note: "`else if` : testé seulement si le premier a dit non. Avant 18 h ? Oui : « Bon après-midi »."
+          - n: 6
+            note: "Le `else` final attrape tous les autres cas (le soir)."
+      - type: demo
+        title: "Change l'heure"
+        md: "Essaie 9, puis 15, puis 20."
+        language: javascript
+        code: |
+          const heure = 15;
+          if (heure < 12) {
+            console.log("Bonjour");
+          } else if (heure < 18) {
+            console.log("Bon après-midi");
+          } else {
+            console.log("Bonsoir");
+          }
+      - type: question
+        ref: prog-if-q3
+        review: code-else-if
+      - type: question
+        ref: prog-ei-q2
+        review: def-else-if
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les trois cas."
+      - type: exercise
+        ref: prog-ex-elseif-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un conseil selon la saison."
+      - type: exercise
+        ref: prog-ex-elseif-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : les cas sont dans le mauvais ordre."
+      - type: exercise
+        ref: prog-ex-elseif-bug
+      - type: quiz
+        items:
+          - ref: prog-ei-q3
+            review: def-else-if
+          - ref: prog-ei-q4
+            review: code-else-if
+          - ref: prog-ei-q5
+            review: def-else-if
+    questions:
+      - code: prog-if-q3
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Avec `heure = 21`, qu'affiche le programme ?"
+        snippet: |
+          const heure = 21;
+          if (heure < 12) {
+            console.log("Bonjour");
+          } else if (heure < 18) {
+            console.log("Bon après-midi");
+          } else {
+            console.log("Bonsoir");
+          }
+        language: javascript
+        choices:
+          - label: "Bonsoir"
+            correct: true
+            why: "21 n'est ni avant 12 ni avant 18 : le else final s'en occupe."
+          - label: "Bon après-midi"
+            correct: false
+            why: "21 n'est pas avant 18."
+          - label: "Rien"
+            correct: false
+            why: "Le else final attrape tous les autres cas."
+        explanation: "Les conditions sont testées dans l'ordre ; le `else` final sert de filet."
+      - code: prog-ei-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quand plusieurs conditions sont vraies, quel bloc s'exécute ?"
+        choices:
+          - label: "Le premier dont la condition est vraie"
+            correct: true
+            why: "Dès qu'un guichet dit oui, on s'arrête."
+          - label: "Tous ceux dont la condition est vraie"
+            correct: false
+            why: "Un seul bloc s'exécute."
+          - label: "Le dernier"
+            correct: false
+            why: "C'est le premier vrai qui gagne."
+        explanation: "L'ordre des cas est donc très important."
+      - code: prog-ei-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "`else if` s'écrit en deux mots."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "`else if`, avec un espace."
+          - label: "Faux"
+            correct: false
+            why: "`elseif` en un mot n'existe pas en JavaScript."
+        explanation: "`} else if (condition) {`"
+      - code: prog-ei-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const heure = 8;
+          if (heure < 18) {
+            console.log("Journée");
+          } else if (heure < 12) {
+            console.log("Matin");
+          }
+        language: javascript
+        choices:
+          - label: "Journée"
+            correct: true
+            why: "8 est avant 18 : le premier cas gagne, le second n'est jamais testé."
+          - label: "Matin"
+            correct: false
+            why: "Le premier cas, trop large, a déjà répondu oui."
+          - label: "Journée puis Matin"
+            correct: false
+            why: "Un seul bloc s'exécute."
+        explanation: "Le cas le plus large placé en premier avale les suivants : on commence par le plus précis."
+      - code: prog-ei-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "À quoi sert le `else` à la fin d'une série de `else if` ?"
+        choices:
+          - label: "À attraper tous les cas qui restent"
+            correct: true
+            why: "C'est le filet de sécurité."
+          - label: "À répéter le premier cas"
+            correct: false
+            why: "Il ne répète rien."
+          - label: "À rien, il est interdit"
+            correct: false
+            why: "Il est facultatif, mais très utile."
+        explanation: "Sans else final, aucun message ne s'affiche si aucun cas n'est vrai."
+    exercises:
+      - slug: prog-ex-elseif-guide
+        kind: COMPLETER
+        title: "Compléter les trois cas"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète pour afficher un message selon le feu : vert, orange ou autre."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le premier cas commence par if."
+          - "Le deuxième cas : else if."
+          - "if, else if, else."
+        solution: '["if", "else if", "else"]'
+        explanation: "if pour le premier cas, else if pour le deuxième, else pour tout le reste."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const feu = "orange";
+            [[1]] (feu === "vert") {
+              console.log("Passe");
+            } [[2]] (feu === "orange") {
+              console.log("Ralentis");
+            } [[3]] {
+              console.log("Arrête-toi");
+            }
+          blanks:
+            - ["if"]
+            - ["else if"]
+            - ["else"]
+      - slug: prog-ex-elseif-libre
+        kind: CODE_LIBRE
+        title: "Un conseil selon la saison"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Crée `const saison = "hiver";`. Affiche :
+          - `Prends un manteau` si c'est l'hiver ;
+          - `Prends un maillot` si c'est l'été ;
+          - `Prends une veste` dans tous les autres cas.
+        criteria: "if, else if et else avec les trois messages."
+        hints:
+          - "`if (saison === \"hiver\") { ... }`"
+          - "`else if (saison === \"été\") { ... }`"
+          - "`else { console.log(\"Prends une veste\"); }`"
+        solution: |
+          const saison = "hiver";
+          if (saison === "hiver") {
+            console.log("Prends un manteau");
+          } else if (saison === "été") {
+            console.log("Prends un maillot");
+          } else {
+            console.log("Prends une veste");
+          }
+        explanation: "Trois routes : deux cas précis, puis le else pour le reste."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const saison = "hiver";
+
+          checks:
+            - pattern: 'if\s*\(\s*saison\s*===\s*["''`]hiver["''`]\s*\)'
+              message: "Premier cas : if (saison === \"hiver\")."
+            - pattern: 'else\s+if\s*\(\s*saison\s*===\s*["''`]été["''`]\s*\)'
+              message: "Deuxième cas : else if (saison === \"été\")."
+            - pattern: '\}\s*else\s*\{'
+              message: "Termine par un else pour les autres saisons."
+            - pattern: 'console\.log\s*\(\s*["''`]Prends une veste["''`]\s*\)'
+              message: "Dans le else, affiche \"Prends une veste\"."
+          output: "Prends un manteau"
+      - slug: prog-ex-elseif-bug
+        kind: CORRIGER_ERREUR
+        title: "Des cas dans le mauvais ordre"
+        difficulty: INTERMEDIAIRE
+        skill: algo-bases
+        statement: |
+          À 9 h, ce programme devrait afficher `Bonjour`, mais il affiche `Bon après-midi` : le cas le plus
+          large est placé en premier. Remets les deux cas dans le bon ordre (le plus précis d'abord).
+        criteria: "heure < 12 est testé avant heure < 18."
+        hints:
+          - "9 est avant 18 : le premier cas répond oui tout de suite."
+          - "Il faut tester « avant midi » en premier."
+          - "`if (heure < 12) { Bonjour } else if (heure < 18) { Bon après-midi }`"
+        solution: |
+          const heure = 9;
+          if (heure < 12) {
+            console.log("Bonjour");
+          } else if (heure < 18) {
+            console.log("Bon après-midi");
+          } else {
+            console.log("Bonsoir");
+          }
+        explanation: "Le cas le plus précis (avant midi) doit passer avant le plus large (avant 18 h)."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const heure = 9;
+            if (heure < 18) {
+              console.log("Bon après-midi");
+            } else if (heure < 12) {
+              console.log("Bonjour");
+            } else {
+              console.log("Bonsoir");
+            }
+          checks:
+            - pattern: '^\s*if\s*\(\s*heure\s*<\s*12\s*\)'
+              message: "Commence par le cas le plus précis : if (heure < 12)."
+            - pattern: 'else\s+if\s*\(\s*heure\s*<\s*18\s*\)'
+              message: "Puis : else if (heure < 18)."
+            - pattern: 'heure\s*<\s*12\s*\)\s*\{\s*console\.log\s*\(\s*["''`]Bonjour'
+              message: "Avant midi, affiche \"Bonjour\"."
+          output: "Bonjour"
+
+  # ===================================================================== LEÇON 5
+  - slug: prog-et
+    title: "Deux conditions à la fois : &&"
+    duration: 9
+    objective: "Exiger que deux conditions soient vraies en même temps avec && (ET)."
+    prerequisites: "Leçon « Plusieurs cas : else if »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - `a && b` est vrai seulement si `a` **et** `b` sont vrais.
+      - Il suffit qu'une seule soit fausse pour que tout soit faux.
+      - Chaque côté du `&&` est une comparaison **complète** : `age >= 12 && age <= 17`.
+    commonMistakes: |
+      - Écrire `age >= 12 && <= 17` : il manque `age` à droite.
+      - Utiliser && pour « Paris et Lyon » : une ville ne peut pas valoir les deux à la fois (ce sera || à la leçon suivante).
+    blocks:
+      - type: text
+        md: |
+          « Pour entrer, il faut **ton billet et ta pièce d'identité**. » Une seule chose ne suffit pas : il
+          faut les deux. En JavaScript, c'est `&&`.
+      - type: definition
+        id: def-et
+        term: "&& (ET)"
+        md: |
+          Une **porte à deux serrures** : il faut les deux clés. `billet && identite` est vrai seulement si
+          les deux sont vrais.
+      - type: code
+        id: code-et
+        language: javascript
+        title: "Billet et pièce d'identité"
+        code: |
+          const aUnBillet = true;
+          const aSaPiece = false;
+          if (aUnBillet && aSaPiece) {
+            console.log("Bon voyage !");
+          } else {
+            console.log("Il manque quelque chose");
+          }
+        lines:
+          - n: 3
+            note: "`&&` : les deux doivent être vrais. Ici, la pièce manque : c'est faux."
+          - n: 6
+            note: "On arrive donc dans le else."
+      - type: demo
+        title: "Essaie"
+        md: "Mets `aSaPiece` à true : le voyage est autorisé."
+        language: javascript
+        code: |
+          const aUnBillet = true;
+          const aSaPiece = false;
+          if (aUnBillet && aSaPiece) {
+            console.log("Bon voyage !");
+          } else {
+            console.log("Il manque quelque chose");
+          }
+      - type: question
+        ref: prog-et-q1
+        review: def-et
+      - type: question
+        ref: prog-if-q2
+        review: code-et
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la double condition."
+      - type: exercise
+        ref: prog-ex-et-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : l'accès à un atelier."
+      - type: exercise
+        ref: prog-ex-et-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une condition coupée en deux."
+      - type: exercise
+        ref: prog-ex-et-bug
+      - type: quiz
+        items:
+          - ref: prog-c2-b1
+            review: def-et
+          - ref: prog-et-q4
+            review: def-et
+          - ref: prog-et-q5
+            review: code-et
+    questions:
+      - code: prog-et-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quand `a && b` est-il vrai ?"
+        choices:
+          - label: "Quand a et b sont vrais tous les deux"
+            correct: true
+            why: "Les deux clés sont nécessaires."
+          - label: "Quand au moins l'un des deux est vrai"
+            correct: false
+            why: "Ce sera un autre signe, vu à la leçon suivante."
+          - label: "Quand les deux sont faux"
+            correct: false
+            why: "C'est l'inverse."
+        explanation: "&& = ET : tout doit être vrai."
+      - code: prog-if-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Quelle condition est vraie quand l'âge va de 12 à 17 (inclus) ?"
+        choices:
+          - label: "`age >= 12 && age <= 17`"
+            correct: true
+            why: "Les deux comparaisons doivent être vraies : ET."
+          - label: "`age >= 12 && <= 17`"
+            correct: false
+            why: "Il manque age à droite du &&."
+          - label: "`age === 12 && age === 17`"
+            correct: false
+            why: "Un âge ne peut pas valoir 12 et 17 en même temps."
+        explanation: "Un intervalle se teste avec deux comparaisons complètes reliées par `&&`."
+      - code: prog-c2-b1
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const ville = "Lyon";
+          const inscrite = false;
+          if (ville === "Lyon" && inscrite) {
+            console.log("A");
+          } else {
+            console.log("B");
+          }
+        language: javascript
+        choices:
+          - label: "B"
+            correct: true
+            why: "inscrite est faux : avec &&, tout est faux."
+          - label: "A"
+            correct: false
+            why: "Il faudrait que les deux conditions soient vraies."
+          - label: "A puis B"
+            correct: false
+            why: "Un seul bloc s'exécute."
+        explanation: "`&&` exige que les deux conditions soient vraies."
+      - code: prog-et-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "`true && false` vaut `false`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Une seule serrure fermée suffit à bloquer la porte."
+          - label: "Faux"
+            correct: false
+            why: "Avec &&, les deux doivent être vrais."
+        explanation: "&& n'est vrai que si tout est vrai."
+      - code: prog-et-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Dans l'exemple du voyage, que faut-il pour afficher « Bon voyage ! » ?"
+        choices:
+          - label: "aUnBillet et aSaPiece valent true"
+            correct: true
+            why: "Les deux conditions sont exigées."
+          - label: "aUnBillet vaut true, peu importe la pièce"
+            correct: false
+            why: "La pièce est aussi exigée."
+          - label: "aSaPiece vaut false"
+            correct: false
+            why: "Sans pièce, on arrive dans le else."
+        explanation: "Les deux clés sont nécessaires."
+    exercises:
+      - slug: prog-ex-et-guide
+        kind: COMPLETER
+        title: "Compléter la double condition"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète : la connexion réussit si l'e-mail **et** le mot de passe sont bons."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "ET s'écrit avec deux &."
+          - "Chaque côté est une comparaison complète avec ===."
+          - "&&, ===."
+        solution: '["&&", "==="]'
+        explanation: "`email === \"awa@exemple.fr\" && motDePasse === \"soleil\"`"
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const email = "awa@exemple.fr";
+            const motDePasse = "soleil";
+            if (email === "awa@exemple.fr" [[1]] motDePasse [[2]] "soleil") {
+              console.log("Connexion réussie");
+            }
+          blanks:
+            - ["&&"]
+            - ["==="]
+      - slug: prog-ex-et-libre
+        kind: CODE_LIBRE
+        title: "L'accès à un atelier"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Avec `const inscrite = true;` et `const aPaye = true;`, affiche `Accès à l'atelier` si la personne
+          est inscrite **et** a payé, sinon `Accès refusé`.
+        criteria: "Un if avec inscrite && aPaye, et un else."
+        hints:
+          - "`if (inscrite && aPaye) { ... }`"
+          - "Ajoute un else pour le refus."
+          - "`console.log(\"Accès à l'atelier\");` dans le if."
+        solution: |
+          const inscrite = true;
+          const aPaye = true;
+          if (inscrite && aPaye) {
+            console.log("Accès à l'atelier");
+          } else {
+            console.log("Accès refusé");
+          }
+        explanation: "Les deux conditions sont vraies : l'accès est accordé."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const inscrite = true;
+            const aPaye = true;
+
+          checks:
+            - pattern: 'if\s*\(\s*inscrite(\s*===\s*true)?\s*&&\s*aPaye(\s*===\s*true)?\s*\)|if\s*\(\s*aPaye(\s*===\s*true)?\s*&&\s*inscrite(\s*===\s*true)?\s*\)'
+              message: "Exige les deux : if (inscrite && aPaye)."
+            - pattern: '\belse\b'
+              message: "Ajoute un else pour le refus."
+            - pattern: 'console\.log\s*\(\s*"Accès à l''atelier"\s*\)'
+              message: "Affiche \"Accès à l'atelier\" (entre guillemets doubles, à cause de l'apostrophe)."
+          output: "Accès à l'atelier"
+      - slug: prog-ex-et-bug
+        kind: CORRIGER_ERREUR
+        title: "Une condition coupée en deux"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme plante : la condition `heure >= 9 && <= 17` est incomplète. Corrige-la pour afficher
+          `Ouvert` entre 9 h et 17 h.
+        criteria: "Chaque côté du && est une comparaison complète."
+        hints:
+          - "À droite du &&, il manque quelque chose avant <=."
+          - "Chaque comparaison a sa variable, son signe et sa valeur."
+          - "`heure >= 9 && heure <= 17`"
+        solution: |
+          const heure = 14;
+          if (heure >= 9 && heure <= 17) {
+            console.log("Ouvert");
+          } else {
+            console.log("Fermé");
+          }
+        explanation: "On répète la variable des deux côtés du &&."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const heure = 14;
+            if (heure >= 9 && <= 17) {
+              console.log("Ouvert");
+            } else {
+              console.log("Fermé");
+            }
+          checks:
+            - pattern: 'heure\s*>=\s*9\s*&&\s*heure\s*<=\s*17'
+              message: "Complète : heure >= 9 && heure <= 17."
+          output: "Ouvert"
+
+  # ===================================================================== LEÇON 6
+  - slug: prog-ou-non
+    title: "L'une ou l'autre : || et le contraire : !"
+    duration: 10
+    objective: "Accepter une condition parmi plusieurs avec || (OU) et inverser une condition avec ! (NON)."
+    prerequisites: "Leçon « Deux conditions à la fois : && »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - `a || b` est vrai si **au moins un** des deux est vrai.
+      - `!a` inverse : `!true` vaut `false`, `!false` vaut `true`.
+      - Chaque côté du `||` est une comparaison complète : `ville === "Paris" || ville === "Lyon"`.
+    commonMistakes: |
+      - Écrire `ville === "Paris" || "Lyon"` : il faut répéter `ville ===`.
+      - Confondre && (toutes) et || (au moins une).
+    blocks:
+      - type: text
+        md: |
+          « Je paie **par carte ou en espèces**. » Un seul moyen suffit. En JavaScript, c'est `||`. Et pour dire
+          « **pas** », on utilise `!`.
+      - type: definition
+        id: def-ou
+        term: "|| (OU)"
+        md: |
+          Une **porte qui s'ouvre avec l'une ou l'autre clé** : une seule suffit. Le signe `|` s'obtient avec
+          AltGr + 6 sur un clavier français.
+      - type: code
+        id: code-ou
+        language: javascript
+        title: "Carte ou espèces"
+        code: |
+          const carte = false;
+          const especes = true;
+          if (carte || especes) {
+            console.log("Paiement accepté");
+          }
+        lines:
+          - n: 3
+            note: "`||` : une seule condition vraie suffit. Les espèces sont là : c'est vrai."
+      - type: question
+        ref: prog-ou-q1
+        review: def-ou
+      - type: definition
+        id: def-non
+        term: "! (NON)"
+        md: |
+          Un **interrupteur** qu'on bascule : `!` transforme vrai en faux, et faux en vrai. `!connecte` se lit
+          « pas connecté ».
+      - type: code
+        id: code-non
+        language: javascript
+        title: "Pas encore connectée"
+        code: |
+          const connecte = false;
+          if (!connecte) {
+            console.log("Merci de te connecter");
+          }
+        lines:
+          - n: 2
+            note: "`!connecte` : connecte vaut false, donc « pas connecté » vaut true. Le message s'affiche."
+      - type: demo
+        title: "Essaie"
+        md: "Change `connecte` en true : le message disparaît."
+        language: javascript
+        code: |
+          const connecte = false;
+          if (!connecte) {
+            console.log("Merci de te connecter");
+          }
+      - type: question
+        ref: prog-if-q4
+        review: def-non
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète avec || et !."
+      - type: exercise
+        ref: prog-ex-ou-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : le week-end."
+      - type: exercise
+        ref: prog-ex-ou-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un OU incomplet."
+      - type: exercise
+        ref: prog-ex-ou-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre && et || ?"
+            a: "`&&` (ET) est vrai seulement si toutes les conditions sont vraies ; `||` (OU) est vrai dès qu'au moins une condition est vraie."
+      - type: quiz
+        items:
+          - ref: prog-ou-q3
+            review: def-ou
+          - ref: prog-ou-q4
+            review: code-ou
+          - ref: prog-ou-q5
+            review: def-non
+    questions:
+      - code: prog-ou-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quand `a || b` est-il vrai ?"
+        choices:
+          - label: "Quand au moins l'un des deux est vrai"
+            correct: true
+            why: "Une seule clé suffit."
+          - label: "Seulement quand les deux sont vrais"
+            correct: false
+            why: "Ça, c'est &&."
+          - label: "Jamais"
+            correct: false
+            why: "Il suffit d'un seul vrai."
+        explanation: "|| = OU : au moins un."
+      - code: prog-if-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Que vaut `!true` ?"
+        choices:
+          - label: "`false`"
+            correct: true
+            why: "`!` inverse."
+          - label: "`true`"
+            correct: false
+            why: "`!` change vrai en faux."
+          - label: "Une erreur"
+            correct: false
+            why: "C'est une opération valide."
+        explanation: "`!` (NON) inverse une valeur vraie ou fausse."
+      - code: prog-ou-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Quelle condition est vraie si la ville est Paris **ou** Lyon ?"
+        choices:
+          - label: "`ville === \"Paris\" || ville === \"Lyon\"`"
+            correct: true
+            why: "Deux comparaisons complètes reliées par ||."
+          - label: "`ville === \"Paris\" || \"Lyon\"`"
+            correct: false
+            why: "Il faut répéter ville === à droite."
+          - label: "`ville === \"Paris\" && ville === \"Lyon\"`"
+            correct: false
+            why: "Une ville ne peut pas être les deux à la fois : toujours faux."
+        explanation: "« Paris ou Lyon » se traduit par `||`, avec deux comparaisons complètes."
+      - code: prog-ou-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const jour = "dimanche";
+          if (jour === "samedi" || jour === "dimanche") {
+            console.log("Week-end");
+          } else {
+            console.log("Semaine");
+          }
+        language: javascript
+        choices:
+          - label: "Week-end"
+            correct: true
+            why: "La deuxième comparaison est vraie : cela suffit."
+          - label: "Semaine"
+            correct: false
+            why: "Avec ||, une seule condition vraie suffit."
+          - label: "Rien"
+            correct: false
+            why: "Le if s'exécute."
+        explanation: "|| : un seul vrai suffit."
+      - code: prog-ou-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "`!false` vaut `true`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "! bascule faux en vrai."
+          - label: "Faux"
+            correct: false
+            why: "! inverse toujours."
+        explanation: "`!` est l'interrupteur qui bascule."
+    exercises:
+      - slug: prog-ex-ou-guide
+        kind: COMPLETER
+        title: "Compléter avec || et !"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète : on accepte le chat **ou** le chien, et on affiche un message si l'animal n'est **pas** vacciné."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "OU s'écrit avec deux barres verticales."
+          - "NON s'écrit avec un point d'exclamation."
+          - "||, !"
+        solution: '["||", "!"]'
+        explanation: "`animal === \"chat\" || animal === \"chien\"` puis `!vaccine`."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const animal = "chien";
+            const vaccine = false;
+            if (animal === "chat" [[1]] animal === "chien") {
+              console.log("Animal accepté");
+            }
+            if ([[2]]vaccine) {
+              console.log("Pense au vaccin");
+            }
+          blanks:
+            - ["||"]
+            - ["!"]
+      - slug: prog-ex-ou-libre
+        kind: CODE_LIBRE
+        title: "C'est le week-end ?"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Avec `const jour = "samedi";`, affiche `Repos` si le jour est `"samedi"` **ou** `"dimanche"`,
+          sinon `Au travail`.
+        criteria: "Un if avec deux comparaisons reliées par ||, et un else."
+        hints:
+          - "`jour === \"samedi\" || jour === \"dimanche\"`"
+          - "Dans le if : `console.log(\"Repos\");`"
+          - "Dans le else : `console.log(\"Au travail\");`"
+        solution: |
+          const jour = "samedi";
+          if (jour === "samedi" || jour === "dimanche") {
+            console.log("Repos");
+          } else {
+            console.log("Au travail");
+          }
+        explanation: "Un seul des deux jours suffit pour être le week-end."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const jour = "samedi";
+
+          checks:
+            - pattern: 'jour\s*===\s*["''`]samedi["''`]\s*\|\|\s*jour\s*===\s*["''`]dimanche["''`]|jour\s*===\s*["''`]dimanche["''`]\s*\|\|\s*jour\s*===\s*["''`]samedi["''`]'
+              message: "Relie deux comparaisons complètes avec || : jour === \"samedi\" || jour === \"dimanche\"."
+            - pattern: 'console\.log\s*\(\s*["''`]Repos["''`]\s*\)'
+              message: "Affiche \"Repos\" le week-end."
+            - pattern: 'console\.log\s*\(\s*["''`]Au travail["''`]\s*\)'
+              message: "Affiche \"Au travail\" dans le else."
+          output: "Repos"
+      - slug: prog-ex-ou-bug
+        kind: CORRIGER_ERREUR
+        title: "Un OU incomplet"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme affiche `Livraison possible` pour **toutes** les villes, même Brest : la partie droite
+          du `||` n'est pas une vraie comparaison. Corrige-la pour n'accepter que Paris et Lyon.
+        criteria: "Deux comparaisons complètes reliées par ||."
+        hints:
+          - "À droite du ||, \"Lyon\" tout seul compte toujours comme vrai."
+          - "Il faut répéter ville === devant \"Lyon\"."
+          - "`ville === \"Paris\" || ville === \"Lyon\"`"
+        solution: |
+          const ville = "Brest";
+          if (ville === "Paris" || ville === "Lyon") {
+            console.log("Livraison possible");
+          } else {
+            console.log("Pas de livraison");
+          }
+        explanation: "Chaque côté du || doit être une comparaison complète."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            const ville = "Brest";
+            if (ville === "Paris" || "Lyon") {
+              console.log("Livraison possible");
+            } else {
+              console.log("Pas de livraison");
+            }
+          checks:
+            - pattern: '\|\|\s*["''`]Lyon'
+              absent: true
+              message: "\"Lyon\" seul n'est pas une comparaison : écris ville === \"Lyon\"."
+            - pattern: 'ville\s*===\s*["''`]Paris["''`]\s*\|\|\s*ville\s*===\s*["''`]Lyon["''`]'
+              message: "Écris : ville === \"Paris\" || ville === \"Lyon\"."
+          output: "Pas de livraison"
+
+bank:
+  - code: prog-c3d-b1
+    kind: RESULTAT_CODE
+    difficulty: 2
+    skill: algo-bases
+    prompt: "Qu'affiche ce code ?"
+    snippet: |
+      const membre = false;
+      const invite = true;
+      if (membre || invite) {
+        console.log("Entrée");
+      } else {
+        console.log("Refus");
+      }
+    language: javascript
+    choices:
+      - label: "Entrée"
+        correct: true
+        why: "invite est vrai : avec ||, cela suffit."
+      - label: "Refus"
+        correct: false
+        why: "Il suffit d'une condition vraie."
+      - label: "Entrée puis Refus"
+        correct: false
+        why: "Un seul bloc s'exécute."
+    explanation: "`||` : au moins une condition vraie."
+  - code: prog-c3d-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: algo-bases
+    prompt: "Quel signe faut-il pour tester qu'un texte n'est **pas** vide : `saisie ___ \"\"` ?"
+    choices:
+      - label: "`!==`"
+        correct: true
+        why: "« est différent de » le texte vide."
+      - label: "`===`"
+        correct: false
+        why: "Ce serait tester que la saisie EST vide."
+      - label: "`=`"
+        correct: false
+        why: "Un seul = range une valeur."
+    explanation: "`saisie !== \"\"` : la saisie n'est pas vide."

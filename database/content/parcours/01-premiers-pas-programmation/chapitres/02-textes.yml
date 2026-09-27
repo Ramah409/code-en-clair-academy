@@ -1,0 +1,1114 @@
+slug: prog-textes
+position: 2
+level: DEBUTANT
+title: "Jouer avec les textes"
+summary: "Coller des textes, écrire un texte à trous avec les gabarits, transformer un texte et lui poser des questions. Une seule notion par leçon."
+quizQuestionCount: 10
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: prog-calculs-textes
+    title: "Coller des textes : le signe +"
+    duration: 9
+    objective: "Assembler plusieurs textes avec +, et ajouter un morceau à la fin d'un texte avec +=."
+    prerequisites: "Chapitre « Parler à un ordinateur »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - Avec des textes, `+` **colle** : `"Bon" + "jour"` donne `"Bonjour"`.
+      - On peut coller une variable : `"Bonjour " + prenom`.
+      - Les espaces ne s'ajoutent **pas** tout seuls : on les écrit dans les guillemets.
+      - `message += " !";` ajoute un morceau **à la fin** du texte rangé dans `message`.
+    commonMistakes: |
+      - Oublier l'espace : `"Bonjour" + "Awa"` donne `"BonjourAwa"`.
+      - Mettre la variable entre guillemets : `"Bonjour " + "prenom"` affiche le mot prenom.
+      - Oublier un `+` entre deux morceaux : erreur.
+    blocks:
+      - type: text
+        md: |
+          Un programme passe son temps à fabriquer des **messages** : « Bonjour Awa », « Ta commande est
+          prête ». La première façon de les fabriquer : **coller** des morceaux de texte.
+      - type: definition
+        id: def-concatenation
+        term: "Concaténation (coller des textes)"
+        md: |
+          Coller des textes **bout à bout**, comme on accroche des **wagons** l'un derrière l'autre. En
+          JavaScript, on colle avec le signe `+`. Attention : les espaces ne s'ajoutent pas tout seuls.
+      - type: code
+        id: code-coller
+        language: javascript
+        title: "Fabriquer un message"
+        code: |
+          const prenom = "Awa";
+          const ville = "Lyon";
+          const message = "Bonjour " + prenom + " de " + ville;
+          console.log(message);
+        lines:
+          - n: 3
+            note: "On colle quatre morceaux. Les espaces sont écrits **dans** les guillemets : « Bonjour␣ » et « ␣de␣ »."
+          - n: 4
+            note: "Affiche : Bonjour Awa de Lyon"
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis enlève l'espace après « Bonjour » pour voir ce qui change."
+        language: javascript
+        code: |
+          const prenom = "Awa";
+          const ville = "Lyon";
+          const message = "Bonjour " + prenom + " de " + ville;
+          console.log(message);
+      - type: question
+        ref: prog-c-q1
+        review: def-concatenation
+      - type: definition
+        id: def-plus-egal
+        term: "Ajouter à la fin : +="
+        md: |
+          `texte += "…"` veut dire « **ajoute** ce morceau au bout de ce qui est déjà dans la boîte », comme
+          on ajoute une ligne en bas d'une liste de courses. La variable doit être un `let`, car elle change.
+      - type: code
+        id: code-plus-egal
+        language: javascript
+        title: "Allonger un texte"
+        code: |
+          let phrase = "J'aime";
+          phrase += " le chocolat";
+          phrase += " et le thé";
+          console.log(phrase);
+        lines:
+          - n: 1
+            note: "La phrase commence par « J'aime ». C'est un `let` : elle va changer."
+          - n: 2
+            note: "On ajoute « le chocolat » au bout."
+          - n: 4
+            note: "Affiche : J'aime le chocolat et le thé"
+      - type: question
+        ref: prog-tx-q2
+        review: def-plus-egal
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le collage."
+      - type: exercise
+        ref: prog-ex-coller-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : fabrique un nom complet."
+      - type: exercise
+        ref: prog-ex-coller-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : les morceaux sont mal collés."
+      - type: exercise
+        ref: prog-ex-coller-bug
+      - type: jury
+        items:
+          - q: "Qu'est-ce qu'une concaténation ?"
+            a: "Le fait de coller des textes bout à bout, par exemple avec le signe + en JavaScript."
+      - type: quiz
+        items:
+          - ref: prog-v-q4
+            review: def-concatenation
+          - ref: prog-tx-q4
+            review: code-coller
+          - ref: prog-tx-q5
+            review: code-plus-egal
+    questions:
+      - code: prog-c-q1
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const debut = "Bon";
+          const fin = "jour";
+          console.log(debut + fin);
+        language: javascript
+        choices:
+          - label: "Bonjour"
+            correct: true
+            why: "Le `+` colle les deux textes."
+          - label: "Bon jour"
+            correct: false
+            why: "Aucun espace n'est ajouté automatiquement."
+          - label: "debut + fin"
+            correct: false
+            why: "Sans guillemets, ce sont les contenus des variables qui sont utilisés."
+        explanation: "Avec des textes, `+` colle bout à bout, sans ajouter d'espace."
+      - code: prog-tx-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          let cri = "Hip";
+          cri += " hourra";
+          console.log(cri);
+        language: javascript
+        choices:
+          - label: "Hip hourra"
+            correct: true
+            why: "`+=` ajoute « hourra » au bout de « Hip »."
+          - label: "hourra"
+            correct: false
+            why: "`+=` ajoute, il ne remplace pas."
+          - label: "Hip"
+            correct: false
+            why: "La variable a été allongée avant l'affichage."
+        explanation: "`+=` ajoute un morceau à la fin du texte déjà rangé."
+      - code: prog-v-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const numero = "3";
+          console.log(numero + "2");
+        language: javascript
+        choices:
+          - label: "32"
+            correct: true
+            why: "Ce sont deux textes : `+` les colle."
+          - label: "5"
+            correct: false
+            why: "Les guillemets en font des textes : rien n'est additionné."
+          - label: "Une erreur"
+            correct: false
+            why: "Coller deux textes est tout à fait permis."
+        explanation: "Avec des textes, `+` colle toujours, même si les textes contiennent des chiffres."
+      - code: prog-tx-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "`prenom` vaut « Léo ». Quel code affiche `Salut Léo` ?"
+        choices:
+          - label: "`console.log(\"Salut \" + prenom);`"
+            correct: true
+            why: "Le texte avec l'espace, puis le contenu de la variable."
+          - label: "`console.log(\"Salut\" + prenom);`"
+            correct: false
+            why: "Il manque l'espace : SalutLéo."
+          - label: "`console.log(\"Salut \" + \"prenom\");`"
+            correct: false
+            why: "Avec des guillemets, on colle le mot prenom."
+        explanation: "L'espace s'écrit dans les guillemets, la variable sans guillemets."
+      - code: prog-tx-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Pour utiliser `+=` sur une variable, elle doit être déclarée avec `let`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "`+=` change la valeur : impossible avec une const."
+          - label: "Faux"
+            correct: false
+            why: "Une const ne peut pas changer, même pour s'allonger."
+        explanation: "Un texte qu'on allonge change : c'est un `let`."
+    exercises:
+      - slug: prog-ex-coller-guide
+        kind: COMPLETER
+        title: "Compléter le collage"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète pour afficher `Bonjour Inès` : colle le texte et la variable."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Le signe qui colle deux textes."
+          - "La variable s'écrit sans guillemets."
+          - "+, prenom."
+        solution: '["+", "prenom"]'
+        explanation: "`\"Bonjour \" + prenom` donne « Bonjour Inès »."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const prenom = "Inès";
+            console.log("Bonjour " [[1]] [[2]]);
+          blanks:
+            - ["+"]
+            - ["prenom"]
+      - slug: prog-ex-coller-libre
+        kind: CODE_LIBRE
+        title: "Un nom complet"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          1. crée `prenom` qui vaut `"Awa"` et `nom` qui vaut `"Diallo"` ;
+          2. crée `complet` en collant le prénom, un espace, puis le nom ;
+          3. affiche `complet` (résultat : `Awa Diallo`).
+        criteria: "Deux variables, une troisième obtenue avec + et un espace, un affichage."
+        hints:
+          - "`const prenom = \"Awa\";` et `const nom = \"Diallo\";`"
+          - "L'espace est un petit texte : `\" \"`."
+          - "`const complet = prenom + \" \" + nom;`"
+        solution: |
+          const prenom = "Awa";
+          const nom = "Diallo";
+          const complet = prenom + " " + nom;
+          console.log(complet);
+        explanation: "Trois morceaux collés : le prénom, un espace, le nom."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ton code ici
+
+          checks:
+            - pattern: '(const|let)\s+prenom\s*=\s*["''`]Awa["''`]'
+              message: "Crée prenom = \"Awa\"."
+            - pattern: '(const|let)\s+nom\s*=\s*["''`]Diallo["''`]'
+              message: "Crée nom = \"Diallo\"."
+            - pattern: '(const|let)\s+complet\s*=\s*prenom\s*\+\s*["''`] ["''`]\s*\+\s*nom'
+              message: "Colle les morceaux : prenom + \" \" + nom."
+            - pattern: 'console\.log\s*\(\s*complet\s*\)'
+              message: "Affiche complet."
+          output: "Awa Diallo"
+      - slug: prog-ex-coller-bug
+        kind: CORRIGER_ERREUR
+        title: "Un collage raté"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme doit afficher `Je vis à Nantes`. Il y a deux problèmes : il manque un espace, et la
+          variable est écrite entre guillemets. Corrige.
+        criteria: "Le programme affiche « Je vis à Nantes »."
+        hints:
+          - "Exécute : que voit-on à la place de Nantes ?"
+          - "Une variable s'écrit sans guillemets, et l'espace se met dans le texte."
+          - "`console.log(\"Je vis à \" + ville);`"
+        solution: |
+          const ville = "Nantes";
+          console.log("Je vis à " + ville);
+        explanation: "L'espace va dans le texte « Je vis à␣ », et `ville` sans guillemets donne Nantes."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const ville = "Nantes";
+            console.log("Je vis à" + "ville");
+          checks:
+            - pattern: '["''`]ville["''`]'
+              absent: true
+              message: "ville est une variable : pas de guillemets autour."
+            - pattern: 'console\.log\s*\(\s*["''`]Je vis à ["''`]\s*\+\s*ville\s*\)'
+              message: "Ajoute l'espace à la fin du texte : \"Je vis à \" + ville."
+          output: "Je vis à Nantes"
+
+  # ===================================================================== LEÇON 2
+  - slug: prog-gabarits
+    title: "Un texte à trous : les gabarits ${}"
+    duration: 9
+    objective: "Écrire un texte avec des accents graves et y insérer des variables avec ${}."
+    prerequisites: "Leçon « Coller des textes : le signe + »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - Un **gabarit** s'écrit entre **accents graves** `` ` `` (AltGr + 7 sur un clavier français).
+      - `${prenom}` dans un gabarit est remplacé par le **contenu** de la variable.
+      - `` `Bonjour ${prenom} !` `` fait la même chose que `"Bonjour " + prenom + " !"`, en plus lisible.
+    commonMistakes: |
+      - Utiliser des guillemets normaux : `"Bonjour ${prenom}"` s'affiche tel quel.
+      - Oublier le `$` ou les accolades : `{prenom}` n'est pas remplacé.
+    blocks:
+      - type: text
+        md: |
+          Coller avec `+` marche, mais c'est vite illisible avec beaucoup de morceaux. Les **gabarits**
+          permettent d'écrire le texte d'un seul bloc, avec des **trous** remplis automatiquement.
+      - type: definition
+        id: def-gabarit
+        term: "Gabarit de texte"
+        md: |
+          Un **texte à trous**, comme un formulaire : « Bonjour ____ ! ». Chaque trou `${...}` est rempli
+          avec le contenu d'une variable. Le gabarit s'écrit entre accents graves `` ` ``.
+      - type: compare
+        left:
+          title: "Coller avec +"
+          language: javascript
+          code: |
+            const prenom = "Awa";
+            console.log("Bonjour " + prenom + " !");
+        right:
+          title: "Gabarit (plus lisible)"
+          language: javascript
+          code: |
+            const prenom = "Awa";
+            console.log(`Bonjour ${prenom} !`);
+      - type: code
+        id: code-gabarit
+        language: javascript
+        title: "Un message avec deux trous"
+        code: |
+          const prenom = "Awa";
+          const ville = "Lyon";
+          console.log(`${prenom} habite à ${ville}.`);
+        lines:
+          - n: 3
+            note: "Accents graves autour du texte. `${prenom}` devient Awa, `${ville}` devient Lyon : « Awa habite à Lyon. »"
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis remplace les accents graves par des guillemets normaux : les trous ne sont plus remplis."
+        language: javascript
+        code: |
+          const prenom = "Awa";
+          const ville = "Lyon";
+          console.log(`${prenom} habite à ${ville}.`);
+      - type: question
+        ref: prog-c-q2
+        review: def-gabarit
+      - type: question
+        ref: prog-c-q5
+        review: code-gabarit
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le gabarit."
+      - type: exercise
+        ref: prog-ex-gabarit-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une phrase avec deux trous."
+      - type: exercise
+        ref: prog-ex-gabarit-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : les trous ne se remplissent pas."
+      - type: exercise
+        ref: prog-ex-gabarit-bug
+      - type: jury
+        items:
+          - q: "Qu'est-ce qu'un template literal (gabarit) en JavaScript ?"
+            a: "Un texte écrit entre accents graves dans lequel on insère des valeurs avec ${}. Il remplace avantageusement la concaténation avec +."
+      - type: quiz
+        items:
+          - ref: prog-gb-q3
+            review: def-gabarit
+          - ref: prog-gb-q4
+            review: code-gabarit
+          - ref: prog-gb-q5
+            review: def-gabarit
+    questions:
+      - code: prog-c-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quel code affiche `Salut Léo` si `prenom` vaut `\"Léo\"` ?"
+        choices:
+          - label: "``console.log(`Salut ${prenom}`);``"
+            correct: true
+            why: "Accents graves et `${}` : le gabarit remplit le trou."
+          - label: "`console.log(\"Salut ${prenom}\");`"
+            correct: false
+            why: "Avec des guillemets normaux, `${prenom}` s'affiche tel quel."
+          - label: "`console.log(Salut prenom);`"
+            correct: false
+            why: "Il manque les guillemets autour du texte."
+        explanation: "Un gabarit s'écrit entre accents graves `` ` ``."
+      - code: prog-c-q5
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const animal = "chat";
+          console.log(`Mon ${animal} dort.`);
+        language: javascript
+        choices:
+          - label: "Mon chat dort."
+            correct: true
+            why: "`${animal}` est remplacé par le contenu de la variable."
+          - label: "Mon ${animal} dort."
+            correct: false
+            why: "Ce serait le cas avec des guillemets normaux."
+          - label: "Mon animal dort."
+            correct: false
+            why: "C'est le contenu de la variable qui est inséré, pas son nom."
+        explanation: "Dans un gabarit, ce qui est entre `${ }` est remplacé par son contenu."
+      - code: prog-gb-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Avec quel caractère commence et finit un gabarit ?"
+        choices:
+          - label: "L'accent grave `"
+            correct: true
+            why: "AltGr + 7 sur un clavier français."
+          - label: "Le guillemet \""
+            correct: false
+            why: "Avec des guillemets, les trous ne sont pas remplis."
+          - label: "L'apostrophe '"
+            correct: false
+            why: "Même problème qu'avec les guillemets."
+        explanation: "Seuls les accents graves permettent les trous `${}`."
+      - code: prog-gb-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const jour = "lundi";
+          const heure = "9h";
+          console.log(`Rendez-vous ${jour} à ${heure}`);
+        language: javascript
+        choices:
+          - label: "Rendez-vous lundi à 9h"
+            correct: true
+            why: "Les deux trous sont remplis avec les contenus."
+          - label: "Rendez-vous ${jour} à ${heure}"
+            correct: false
+            why: "Avec des accents graves, les trous sont bien remplis."
+          - label: "Rendez-vous jour à heure"
+            correct: false
+            why: "Ce sont les contenus qui sont insérés, pas les noms."
+        explanation: "Un gabarit peut contenir autant de trous que nécessaire."
+      - code: prog-gb-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "`` `Bonjour ${prenom}` `` et `\"Bonjour \" + prenom` donnent le même texte."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Deux écritures, même résultat. Le gabarit est souvent plus lisible."
+          - label: "Faux"
+            correct: false
+            why: "Les deux fabriquent « Bonjour » suivi du prénom."
+        explanation: "On choisit l'écriture la plus lisible, souvent le gabarit."
+    exercises:
+      - slug: prog-ex-gabarit-guide
+        kind: COMPLETER
+        title: "Compléter le gabarit"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète pour afficher `Bienvenue Awa !` avec un gabarit."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Un gabarit commence et finit par un accent grave `."
+          - "Le trou s'écrit `${...}` avec le nom de la variable dedans."
+          - "`, prenom, `"
+        solution: '["`", "prenom", "`"]'
+        explanation: "`` `Bienvenue ${prenom} !` `` affiche Bienvenue Awa !"
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const prenom = "Awa";
+            console.log([[1]]Bienvenue ${[[2]]} ![[3]]);
+          blanks:
+            - ["`"]
+            - ["prenom"]
+            - ["`"]
+      - slug: prog-ex-gabarit-libre
+        kind: CODE_LIBRE
+        title: "Une phrase avec deux trous"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          1. crée `plat` qui vaut `"couscous"` et `jour` qui vaut `"dimanche"` ;
+          2. affiche avec **un gabarit** : `Le couscous, c'est le dimanche`.
+        criteria: "Deux variables et un gabarit qui contient ${plat} et ${jour}."
+        hints:
+          - "`const plat = \"couscous\";` et `const jour = \"dimanche\";`"
+          - "Le texte entier est entre accents graves, avec deux trous."
+          - "``console.log(`Le ${plat}, c'est le ${jour}`);``"
+        solution: |
+          const plat = "couscous";
+          const jour = "dimanche";
+          console.log(`Le ${plat}, c'est le ${jour}`);
+        explanation: "Un seul texte, deux trous remplis automatiquement."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ton code ici
+
+          checks:
+            - pattern: '(const|let)\s+plat\s*=\s*["''`]couscous["''`]'
+              message: "Crée plat = \"couscous\"."
+            - pattern: '(const|let)\s+jour\s*=\s*["''`]dimanche["''`]'
+              message: "Crée jour = \"dimanche\"."
+            - pattern: 'console\.log\s*\(\s*`[^`]*\$\{\s*plat\s*\}[^`]*\$\{\s*jour\s*\}[^`]*`\s*\)'
+              message: "Affiche un gabarit qui contient ${plat} puis ${jour}."
+          output: "Le couscous, c'est le dimanche"
+      - slug: prog-ex-gabarit-bug
+        kind: CORRIGER_ERREUR
+        title: "Des trous qui restent vides"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme affiche `Merci ${prenom} !` au lieu de `Merci Léo !`. Corrige-le.
+        criteria: "Le texte est un gabarit entre accents graves."
+        hints:
+          - "Les trous ne se remplissent que dans un gabarit."
+          - "Un gabarit n'utilise pas les guillemets normaux."
+          - "``console.log(`Merci ${prenom} !`);``"
+        solution: |
+          const prenom = "Léo";
+          console.log(`Merci ${prenom} !`);
+        explanation: "Avec des accents graves, `${prenom}` est remplacé par Léo."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const prenom = "Léo";
+            console.log("Merci ${prenom} !");
+          checks:
+            - pattern: '\("[^"\n]*\$\{'
+              absent: true
+              message: "Un texte entre guillemets normaux ne remplit pas les trous."
+            - pattern: 'console\.log\s*\(\s*`Merci \$\{\s*prenom\s*\} !`\s*\)'
+              message: "Écris le texte entre accents graves : `Merci ${prenom} !`."
+          output: "Merci Léo !"
+
+  # ===================================================================== LEÇON 3
+  - slug: prog-majuscules
+    title: "Transformer un texte : majuscules, minuscules, espaces"
+    duration: 9
+    objective: "Utiliser les outils des textes toUpperCase, toLowerCase et trim."
+    prerequisites: "Leçon « Un texte à trous : les gabarits ${} »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - Chaque texte a une **boîte à outils**, qu'on ouvre avec un **point** : `prenom.toUpperCase()`.
+      - `toUpperCase()` : tout en MAJUSCULES. `toLowerCase()` : tout en minuscules.
+      - `trim()` enlève les espaces en trop **au début et à la fin**.
+      - Les parenthèses `()` sont obligatoires : c'est elles qui font marcher l'outil.
+      - L'outil **renvoie** un nouveau texte : le texte d'origine ne change pas.
+    commonMistakes: |
+      - Oublier les parenthèses : `prenom.toUpperCase` ne transforme rien.
+      - Mal écrire la majuscule du milieu : c'est `toUpperCase`, avec un U et un C majuscules.
+    blocks:
+      - type: text
+        md: |
+          Une utilisatrice tape son e-mail en majuscules, ou laisse un espace à la fin. Le programme doit
+          **nettoyer** et **transformer** les textes. JavaScript fournit des outils tout prêts.
+      - type: definition
+        id: def-outils-texte
+        term: "Les outils des textes"
+        md: |
+          Chaque texte a une **boîte à outils** attachée, comme un couteau suisse. On choisit l'outil avec un
+          point, et on l'active avec des parenthèses : `texte.toUpperCase()`.
+      - type: code
+        id: code-outils-texte
+        language: javascript
+        title: "Trois outils"
+        code: |
+          const saisie = "  Awa  ";
+          console.log(saisie.trim());
+          console.log(saisie.toUpperCase());
+          console.log("BONJOUR".toLowerCase());
+        lines:
+          - n: 2
+            note: "`trim()` enlève les espaces autour : « Awa »."
+          - n: 3
+            note: "`toUpperCase()` : « AWA » (les espaces sont toujours là)."
+          - n: 4
+            note: "`toLowerCase()` : « bonjour »."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis enchaîne deux outils : `saisie.trim().toUpperCase()`."
+        language: javascript
+        code: |
+          const saisie = "  Awa  ";
+          console.log(saisie.trim());
+          console.log(saisie.toUpperCase());
+          console.log("BONJOUR".toLowerCase());
+      - type: question
+        ref: prog-c-q4
+        review: def-outils-texte
+      - type: question
+        ref: prog-mj-q2
+        review: code-outils-texte
+      - type: text
+        md: "**Exercice 1 (guidé)** : un message de bienvenue en majuscules."
+      - type: exercise
+        ref: prog-ex-bienvenue-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une carte de visite."
+      - type: exercise
+        ref: prog-ex-carte-visite
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : l'outil ne fait rien."
+      - type: exercise
+        ref: prog-ex-outils-bug
+      - type: jury
+        items:
+          - q: "Pourquoi nettoyer une saisie avec trim ou toLowerCase ?"
+            a: "Pour comparer ou enregistrer des données propres : un e-mail tapé « AWA@Exemple.fr  » doit être reconnu comme « awa@exemple.fr »."
+      - type: quiz
+        items:
+          - ref: prog-mj-q3
+            review: def-outils-texte
+          - ref: prog-mj-q4
+            review: code-outils-texte
+          - ref: prog-mj-q5
+            review: def-outils-texte
+    questions:
+      - code: prog-c-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "`prenom` vaut `\"awa\"`. Quel code affiche `AWA` ?"
+        choices:
+          - label: "`console.log(prenom.toUpperCase());`"
+            correct: true
+            why: "`toUpperCase()` met tout le texte en majuscules."
+          - label: "`console.log(prenom.toLowerCase());`"
+            correct: false
+            why: "`toLowerCase()` met en minuscules."
+          - label: "`console.log(prenom.toUpperCase);`"
+            correct: false
+            why: "Sans les parenthèses, l'outil n'est pas utilisé."
+        explanation: "Les outils des textes s'utilisent avec un point et des parenthèses : `texte.outil()`."
+      - code: prog-mj-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const email = "  awa@exemple.fr ";
+          console.log(email.trim());
+        language: javascript
+        choices:
+          - label: "awa@exemple.fr (sans espaces autour)"
+            correct: true
+            why: "`trim()` enlève les espaces au début et à la fin."
+          - label: "AWA@EXEMPLE.FR"
+            correct: false
+            why: "trim ne change pas les lettres."
+          - label: "awaexemplefr"
+            correct: false
+            why: "trim n'enlève que les espaces autour, pas les caractères du milieu."
+        explanation: "`trim()` = nettoyer les bords."
+      - code: prog-mj-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quel outil met un texte tout en minuscules ?"
+        choices:
+          - label: "`toLowerCase()`"
+            correct: true
+            why: "lower = en bas, les petites lettres."
+          - label: "`toUpperCase()`"
+            correct: false
+            why: "upper = les grandes lettres."
+          - label: "`trim()`"
+            correct: false
+            why: "trim enlève les espaces autour."
+        explanation: "UpperCase = MAJUSCULES, LowerCase = minuscules."
+      - code: prog-mj-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const mot = "Lyon";
+          const cri = mot.toUpperCase();
+          console.log(mot);
+        language: javascript
+        choices:
+          - label: "Lyon"
+            correct: true
+            why: "L'outil renvoie un nouveau texte (rangé dans cri) ; mot ne change pas."
+          - label: "LYON"
+            correct: false
+            why: "C'est cri qui contient LYON, pas mot."
+          - label: "Une erreur"
+            correct: false
+            why: "Tout est correct."
+        explanation: "Les outils des textes ne modifient pas le texte d'origine : ils en fabriquent un nouveau."
+      - code: prog-mj-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "On peut enchaîner deux outils : `saisie.trim().toLowerCase()`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "trim nettoie, puis toLowerCase met en minuscules le résultat."
+          - label: "Faux"
+            correct: false
+            why: "C'est possible et très courant."
+        explanation: "Chaque outil agit sur le résultat du précédent, de gauche à droite."
+    exercises:
+      - slug: prog-ex-bienvenue-guide
+        kind: COMPLETER
+        title: "Un message de bienvenue"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète : mets le prénom en majuscules, puis affiche un message avec un gabarit."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "L'outil qui met en majuscules s'appelle toUpperCase."
+          - "Un gabarit commence et finit par un accent grave `."
+          - "toUpperCase , ` , `"
+        solution: '["toUpperCase", "`", "`"]'
+        explanation: "`prenom.toUpperCase()` donne AWA, puis le gabarit affiche : Bienvenue AWA !"
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const prenom = "awa";
+            const nom = prenom.[[1]]();
+            console.log([[2]]Bienvenue ${nom} ![[3]]);
+          blanks:
+            - ["toUpperCase"]
+            - ["`"]
+            - ["`"]
+      - slug: prog-ex-carte-visite
+        kind: CODE_LIBRE
+        title: "Une carte de visite"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          1. crée `prenom` qui vaut `"Awa"` et `metier` qui vaut `"développeuse"` ;
+          2. crée `carte` avec un **gabarit** qui donne : `Awa, développeuse` (utilise `${prenom}` et `${metier}`) ;
+          3. affiche la carte **en majuscules** avec `toUpperCase()`.
+        criteria: "Deux variables, un gabarit avec ${prenom} et ${metier}, affichage en majuscules."
+        hints:
+          - "`const prenom = \"Awa\";` et `const metier = \"développeuse\";`"
+          - "``const carte = `${prenom}, ${metier}`;``"
+          - "`console.log(carte.toUpperCase());`"
+        solution: |
+          const prenom = "Awa";
+          const metier = "développeuse";
+          const carte = `${prenom}, ${metier}`;
+          console.log(carte.toUpperCase());
+        explanation: "Le gabarit assemble le texte une seule fois, puis `toUpperCase()` le transforme. Résultat : AWA, DÉVELOPPEUSE."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ton code ici
+
+          output: "AWA, DÉVELOPPEUSE"
+          checks:
+            - pattern: '(const|let)\s+prenom\s*=\s*["''`]Awa["''`]'
+              message: "Déclare prenom = \"Awa\"."
+            - pattern: '(const|let)\s+metier\s*=\s*["''`]développeuse["''`]'
+              message: "Déclare metier = \"développeuse\"."
+            - pattern: '(const|let)\s+carte\s*=\s*`[^`]*\$\{\s*prenom\s*\}[^`]*\$\{\s*metier\s*\}[^`]*`'
+              message: "Crée carte avec un gabarit qui contient ${prenom} puis ${metier}."
+            - pattern: '\.toUpperCase\s*\(\s*\)'
+              message: "Mets la carte en majuscules avec toUpperCase()."
+            - pattern: 'console\.log\s*\('
+              message: "Affiche le résultat avec console.log."
+      - slug: prog-ex-outils-bug
+        kind: CORRIGER_ERREUR
+        title: "Un outil mal utilisé"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme doit afficher l'e-mail nettoyé et en minuscules : `awa@exemple.fr`. Il y a deux
+          fautes : un outil sans parenthèses, et une majuscule mal placée dans le nom d'un outil.
+        criteria: "trim() et toLowerCase() sont correctement écrits."
+        hints:
+          - "Un outil ne marche qu'avec ses parenthèses."
+          - "Le nom exact est toLowerCase, avec un L et un C majuscules."
+          - "`console.log(saisie.trim().toLowerCase());`"
+        solution: |
+          const saisie = "  AWA@Exemple.fr ";
+          console.log(saisie.trim().toLowerCase());
+        explanation: "`trim()` enlève les espaces, puis `toLowerCase()` met tout en minuscules."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const saisie = "  AWA@Exemple.fr ";
+            console.log(saisie.trim.tolowercase());
+          checks:
+            - pattern: '\.trim\s*\(\s*\)'
+              message: "trim a besoin de ses parenthèses : trim()."
+            - pattern: '\.toLowerCase\s*\(\s*\)'
+              message: "Écris exactement toLowerCase(), avec L et C majuscules."
+            - pattern: 'tolowercase'
+              absent: true
+              message: "Le nom de l'outil est toLowerCase."
+          output: "awa@exemple.fr"
+
+  # ===================================================================== LEÇON 4
+  - slug: prog-questions-texte
+    title: "Interroger un texte : length et includes"
+    duration: 9
+    objective: "Connaître la longueur d'un texte avec length et savoir s'il contient un mot avec includes."
+    prerequisites: "Leçon « Transformer un texte : majuscules, minuscules, espaces »."
+    skills: [algo-bases]
+    xp: 10
+    memo: |
+      - `texte.length` donne le **nombre de caractères** (espaces compris). **Sans parenthèses** : c'est une information, pas un outil.
+      - `texte.includes("mot")` répond `true` si le texte contient ce mot, sinon `false`.
+      - `includes` respecte les majuscules : `"Lyon".includes("lyon")` vaut `false`.
+    commonMistakes: |
+      - Écrire `texte.length()` avec des parenthèses : erreur.
+      - Oublier que `includes` fait la différence entre majuscules et minuscules.
+    blocks:
+      - type: text
+        md: |
+          Un mot de passe est-il assez long ? Un message contient-il un mot interdit ? Le programme **pose des
+          questions** aux textes.
+      - type: definition
+        id: def-length-includes
+        term: "length et includes"
+        md: |
+          - `length` : la **taille** du texte, comme le compteur de caractères d'un SMS ;
+          - `includes("…")` : « **contient-il** ce morceau ? », comme la recherche Ctrl+F. Réponse : `true` ou `false`.
+      - type: code
+        id: code-length-includes
+        language: javascript
+        title: "Deux questions à un texte"
+        code: |
+          const phrase = "J'adore le chocolat";
+          console.log(phrase.length);
+          console.log(phrase.includes("chocolat"));
+          console.log(phrase.includes("vanille"));
+        lines:
+          - n: 2
+            note: "`length` sans parenthèses : le nombre de caractères de la phrase."
+          - n: 3
+            note: "La phrase contient « chocolat » : affiche true."
+          - n: 4
+            note: "Elle ne contient pas « vanille » : affiche false."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis cherche `\"Chocolat\"` avec une majuscule : includes répond false."
+        language: javascript
+        code: |
+          const phrase = "J'adore le chocolat";
+          console.log(phrase.length);
+          console.log(phrase.includes("chocolat"));
+          console.log(phrase.includes("vanille"));
+      - type: question
+        ref: prog-c-q3
+        review: def-length-includes
+      - type: question
+        ref: prog-qt-q2
+        review: code-length-includes
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les deux questions."
+      - type: exercise
+        ref: prog-ex-questions-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un message contient-il « urgent » ?"
+      - type: exercise
+        ref: prog-ex-mot-cle
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : length est mal écrit."
+      - type: exercise
+        ref: prog-ex-length-bug
+      - type: jury
+        items:
+          - q: "À quoi sert includes sur un texte ?"
+            a: "À savoir si un texte contient un morceau donné. Il renvoie true ou false, en tenant compte des majuscules."
+      - type: quiz
+        items:
+          - ref: prog-qt-q3
+            review: def-length-includes
+          - ref: prog-qt-q4
+            review: def-length-includes
+          - ref: prog-qt-q5
+            review: code-length-includes
+    questions:
+      - code: prog-c-q3
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const phrase = "J'adore le chocolat";
+          console.log(phrase.includes("chocolat"));
+        language: javascript
+        choices:
+          - label: "true"
+            correct: true
+            why: "La phrase contient bien le mot « chocolat »."
+          - label: "false"
+            correct: false
+            why: "Ce serait le cas si le mot n'était pas dans la phrase."
+          - label: "chocolat"
+            correct: false
+            why: "`includes` répond par vrai ou faux, il ne renvoie pas le mot."
+        explanation: "`includes` répond à la question « ce texte contient-il ce mot ? » par `true` ou `false`."
+      - code: prog-qt-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Que donne `mot.length` ?"
+        choices:
+          - label: "Le nombre de caractères du texte"
+            correct: true
+            why: "Comme le compteur de caractères d'un SMS."
+          - label: "Le texte en majuscules"
+            correct: false
+            why: "Ce serait toUpperCase()."
+          - label: "true ou false"
+            correct: false
+            why: "C'est includes qui répond vrai ou faux."
+        explanation: "`length` = la taille."
+      - code: prog-qt-q3
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: algo-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const ville = "Marseille";
+          console.log(ville.includes("marseille"));
+        language: javascript
+        choices:
+          - label: "false"
+            correct: true
+            why: "includes respecte les majuscules : m n'est pas M."
+          - label: "true"
+            correct: false
+            why: "La casse compte : « marseille » n'est pas « Marseille »."
+          - label: "Marseille"
+            correct: false
+            why: "includes répond vrai ou faux."
+        explanation: "Astuce : `ville.toLowerCase().includes(\"marseille\")` ignore les majuscules."
+      - code: prog-qt-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: algo-bases
+        prompt: "Quelle écriture est correcte ?"
+        choices:
+          - label: "`motDePasse.length`"
+            correct: true
+            why: "length s'écrit sans parenthèses."
+          - label: "`motDePasse.length()`"
+            correct: false
+            why: "length n'est pas un outil : pas de parenthèses."
+          - label: "`length(motDePasse)`"
+            correct: false
+            why: "On écrit le texte, un point, puis length."
+        explanation: "`length` est une information du texte, sans parenthèses. `includes(...)` est un outil, avec parenthèses."
+      - code: prog-qt-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: algo-bases
+        prompt: "`includes` renvoie un booléen."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "true ou false."
+          - label: "Faux"
+            correct: false
+            why: "C'est bien un booléen."
+        explanation: "La réponse d'includes est toujours `true` ou `false`."
+    exercises:
+      - slug: prog-ex-questions-guide
+        kind: COMPLETER
+        title: "Compléter les deux questions"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: "Complète : affiche la longueur du pseudo, puis dis s'il contient « 2025 »."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "La taille d'un texte : length."
+          - "« contient-il ? » se dit includes."
+          - "length, includes."
+        solution: '["length", "includes"]'
+        explanation: "`pseudo.length` donne la taille ; `pseudo.includes(\"2025\")` répond true."
+        xp: 10
+        payload:
+          language: javascript
+          template: |
+            const pseudo = "awa2025";
+            console.log(pseudo.[[1]]);
+            console.log(pseudo.[[2]]("2025"));
+          blanks:
+            - ["length"]
+            - ["includes"]
+      - slug: prog-ex-mot-cle
+        kind: CODE_LIBRE
+        title: "Un message urgent ?"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          1. crée `message` qui vaut `"Réunion urgente demain"` ;
+          2. affiche si le message contient `"urgent"` (avec `includes`) ;
+          3. affiche aussi la longueur du message.
+        criteria: "Une variable message, un includes(\"urgent\") et un length affichés."
+        hints:
+          - "`const message = \"Réunion urgente demain\";`"
+          - "`console.log(message.includes(\"urgent\"));`"
+          - "`console.log(message.length);`"
+        solution: |
+          const message = "Réunion urgente demain";
+          console.log(message.includes("urgent"));
+          console.log(message.length);
+        explanation: "« urgente » contient « urgent » : includes répond true."
+        xp: 15
+        payload:
+          language: javascript
+          starter: |
+            // Ton code ici
+
+          checks:
+            - pattern: '(const|let)\s+message\s*=\s*["''`]Réunion urgente demain["''`]'
+              message: "Crée message = \"Réunion urgente demain\"."
+            - pattern: 'console\.log\s*\(\s*message\.includes\s*\(\s*["''`]urgent["''`]\s*\)\s*\)'
+              message: "Affiche message.includes(\"urgent\")."
+            - pattern: 'console\.log\s*\(\s*message\.length\s*\)'
+              message: "Affiche message.length."
+          output: |
+            true
+            22
+      - slug: prog-ex-length-bug
+        kind: CORRIGER_ERREUR
+        title: "Une longueur qui plante"
+        difficulty: FACILE
+        skill: algo-bases
+        statement: |
+          Ce programme plante avec « motDePasse.length is not a function ». Corrige-le pour qu'il affiche
+          la longueur du mot de passe.
+        criteria: "length s'écrit sans parenthèses."
+        hints:
+          - "Le message dit que length n'est pas un outil (une fonction)."
+          - "length est une information : pas de parenthèses."
+          - "`console.log(motDePasse.length);`"
+        solution: |
+          const motDePasse = "soleil";
+          console.log(motDePasse.length);
+        explanation: "`length` s'écrit sans parenthèses."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            const motDePasse = "soleil";
+            console.log(motDePasse.length());
+          checks:
+            - pattern: '\.length\s*\('
+              absent: true
+              message: "length s'écrit sans parenthèses."
+            - pattern: 'console\.log\s*\(\s*motDePasse\.length\s*\)'
+              message: "Affiche motDePasse.length."
+          output: "6"
+
+bank:
+  - code: prog-c2t-b1
+    kind: RESULTAT_CODE
+    difficulty: 1
+    skill: algo-bases
+    prompt: "Qu'affiche ce code ?"
+    snippet: |
+      const prenom = "inès";
+      console.log(`Salut ${prenom.toUpperCase()} !`);
+    language: javascript
+    choices:
+      - label: "Salut INÈS !"
+        correct: true
+        why: "Le trou contient le prénom transformé en majuscules."
+      - label: "Salut inès !"
+        correct: false
+        why: "toUpperCase() est appliqué dans le trou."
+      - label: "Salut ${prenom.toUpperCase()} !"
+        correct: false
+        why: "Avec des accents graves, le trou est rempli."
+    explanation: "Dans un trou `${}`, on peut utiliser un outil des textes."
+  - code: prog-c2t-b2
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: algo-bases
+    prompt: "Quel code ajoute « ! » au bout de la variable `titre` (déclarée avec let) ?"
+    choices:
+      - label: "`titre += \"!\";`"
+        correct: true
+        why: "+= ajoute à la fin."
+      - label: "`titre = \"!\";`"
+        correct: false
+        why: "Cela remplace tout le titre par « ! »."
+      - label: "`\"!\" += titre;`"
+        correct: false
+        why: "On ajoute toujours à une variable, pas à un texte."
+    explanation: "`+=` allonge le texte déjà rangé."
