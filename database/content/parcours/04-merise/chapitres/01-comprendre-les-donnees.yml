@@ -2,39 +2,38 @@ slug: merise-donnees
 position: 1
 level: DEBUTANT
 title: "Comprendre les données d'un projet"
-summary: "Transformer un besoin en règles de gestion et en dictionnaire de données, puis identifier les entités, leurs attributs et leurs identifiants."
-quizQuestionCount: 10
+summary: "Écrire les règles de gestion, dresser le dictionnaire de données, repérer les entités et leurs attributs, puis choisir un identifiant. Une seule notion par leçon."
+quizQuestionCount: 12
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: merise-regles-dictionnaire
-    title: "Règles de gestion et dictionnaire de données"
-    duration: 12
-    objective: "Écrire des règles de gestion à partir d'un besoin et dresser le dictionnaire des données."
+    title: "Les règles de gestion"
+    duration: 9
+    objective: "Écrire des règles de gestion à partir d'un besoin, et repérer les mots-clés qui les rendent précises."
     prerequisites: "Aucun (le parcours SQL est un plus)."
     skills: [dictionnaire-regles]
-    xp: 15
+    xp: 10
     memo: |
-      - Une **règle de gestion** (RG) est une phrase qui décrit une contrainte du métier : « une commande est passée par un seul client ».
-      - Le **dictionnaire de données** liste chaque information : nom, description, type, taille, obligatoire ou non.
-      - On ne garde que les données **élémentaires** (pas calculées) : pas de « total » si on a quantité et prix.
-      - On repère les **mots-clés** : « un seul », « au moins un », « plusieurs », « peut ».
+      - Une **règle de gestion** (RG) est une **phrase courte** qui décrit une règle du métier : « un cours est encadré par un seul coach ».
+      - Elle parle du **métier** et des **données**, jamais de la technique (« on utilisera PostgreSQL » n'est pas une RG).
+      - Les **mots-clés** à repérer : « un seul », « au moins un », « plusieurs », « peut ».
+      - On numérote les règles : RG1, RG2…
     commonMistakes: |
-      - Mettre dans le dictionnaire des données calculées (âge, total, nombre de commandes).
-      - Garder deux noms pour la même information (« mail » et « email »).
-      - Oublier des règles implicites (« un e-mail identifie un compte »).
+      - Écrire un souhait de présentation (« le site doit être joli ») ou un choix technique.
+      - Oublier les règles évidentes pour le client (« un e-mail identifie un compte »).
     blocks:
       - type: text
         md: |
           Une gérante de club de sport te dit : « Je veux savoir qui est inscrit, à quels cours, et qui
-          encadre chaque cours. » Avant de dessiner quoi que ce soit, on **écoute** et on **reformule**.
+          encadre chaque cours. » Avant de dessiner quoi que ce soit, on **écoute** et on **reformule** en
+          règles précises.
       - type: definition
         id: def-rg
         term: "Règle de gestion"
         md: |
-          Une **phrase courte** qui décrit une règle du métier, vraie pour toutes les situations. C'est
-          comme le **règlement** du club : « un cours est encadré par un seul coach », « un membre peut
-          s'inscrire à plusieurs cours ».
+          Une **phrase du règlement** du club, vraie dans toutes les situations : « un cours est encadré par un
+          seul coach », « un membre peut s'inscrire à plusieurs cours ».
       - type: steps
         id: etapes-rg
         title: "Les règles de gestion du club"
@@ -42,55 +41,36 @@ lessons:
           - "RG1 : un membre a un nom, un prénom, un e-mail unique et une date d'inscription."
           - "RG2 : un cours a un intitulé, un jour et une heure."
           - "RG3 : un cours est encadré par **un seul** coach ; un coach encadre **zéro ou plusieurs** cours."
-          - "RG4 : un membre peut s'inscrire à **plusieurs** cours ; un cours accueille **plusieurs** membres."
+          - "RG4 : un membre **peut** s'inscrire à **plusieurs** cours ; un cours accueille **plusieurs** membres."
       - type: question
         ref: mer-rg-q1
         review: def-rg
-      - type: definition
-        id: def-dictionnaire
-        term: "Dictionnaire de données"
-        md: |
-          Un **tableau** qui recense toutes les informations à stocker, une par ligne, comme l'**inventaire**
-          d'un magasin : pour chacune, un nom clair, une description, un type (texte, nombre, date), une
-          taille et le fait qu'elle soit obligatoire.
-      - type: text
-        md: |
-          | Nom | Description | Type | Obligatoire |
-          |-----|-------------|------|-------------|
-          | nom_membre | Nom de famille du membre | Texte (80) | oui |
-          | email_membre | Adresse e-mail, unique | Texte (254) | oui |
-          | date_inscription | Date d'adhésion au club | Date | oui |
-          | intitule_cours | Nom du cours (Yoga, Boxe…) | Texte (60) | oui |
-          | jour_cours | Jour de la semaine | Texte (10) | oui |
-          | nom_coach | Nom du coach | Texte (80) | oui |
-      - type: callout
-        variant: warning
-        title: "Ne stocke pas ce qui se calcule"
-        md: |
-          « Nombre de membres par cours » ou « âge du membre » se **calculent** (avec un `COUNT` ou à partir
-          de la date de naissance). Les stocker créerait des incohérences dès qu'une donnée change.
       - type: question
-        ref: mer-rg-q2
-        review: def-dictionnaire
+        ref: mer-rg-q4
+        review: etapes-rg
       - type: text
-        md: "Exercice guidé : complète les règles de gestion avec les bons mots."
+        md: "**Exercice 1 (guidé)** : complète les règles de la bibliothèque."
       - type: exercise
         ref: mer-ex-rg-guide
       - type: text
-        md: "En autonomie : trie les informations à garder et celles à calculer."
+        md: "**Exercice 2 (en autonomie)** : écris deux règles de gestion."
       - type: exercise
-        ref: mer-ex-dictionnaire
+        ref: mer-ex-rg-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une « règle » qui n'en est pas une."
+      - type: exercise
+        ref: mer-ex-rg-bug
       - type: jury
         items:
           - q: "Comment passez-vous d'un besoin client à un modèle de données ?"
             a: "Je reformule le besoin, j'écris les règles de gestion, je dresse le dictionnaire des données élémentaires, puis je construis le MCD avec les entités, associations et cardinalités."
       - type: quiz
         items:
-          - ref: mer-rg-q3
-            review: def-dictionnaire
-          - ref: mer-rg-q4
+          - ref: mer-rg2-q3
+            review: def-rg
+          - ref: mer-rg2-q4
             review: etapes-rg
-          - ref: mer-rg-q5
+          - ref: mer-rg2-q5
             review: def-rg
     questions:
       - code: mer-rg-q1
@@ -101,7 +81,7 @@ lessons:
         choices:
           - label: "Un cours est encadré par un seul coach"
             correct: true
-            why: "Elle décrit une contrainte du métier."
+            why: "Elle décrit une règle du métier."
           - label: "Le site doit être joli"
             correct: false
             why: "C'est un souhait de présentation, pas une règle sur les données."
@@ -109,6 +89,225 @@ lessons:
             correct: false
             why: "C'est un choix technique."
         explanation: "Une règle de gestion parle du métier et des données, pas de la technique."
+      - code: mer-rg-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: dictionnaire-regles
+        prompt: "Dans RG4, quel mot indique qu'un membre peut suivre beaucoup de cours ?"
+        choices:
+          - label: "« plusieurs »"
+            correct: true
+            why: "C'est le mot qui dit « beaucoup »."
+          - label: "« membre »"
+            correct: false
+            why: "C'est la personne concernée."
+          - label: "« inscrire »"
+            correct: false
+            why: "C'est l'action."
+        explanation: "« un seul », « plusieurs », « peut », « au moins un » : les mots qui rendent une règle précise."
+      - code: mer-rg2-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: dictionnaire-regles
+        prompt: "« Le site sera hébergé chez Render » est une règle de gestion."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "C'est un choix technique, pas une règle du métier."
+          - label: "Faux"
+            correct: true
+            why: "Exact : une RG décrit le métier et ses données."
+        explanation: "Technique ≠ métier."
+      - code: mer-rg2-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: dictionnaire-regles
+        prompt: "Dans « un membre **peut** s'inscrire à plusieurs cours », que veut dire « peut » ?"
+        choices:
+          - label: "Ce n'est pas obligatoire : un membre peut n'être inscrit à aucun cours"
+            correct: true
+            why: "« peut » = facultatif."
+          - label: "Le membre doit s'inscrire"
+            correct: false
+            why: "Ce serait « doit » ou « au moins un »."
+          - label: "Rien de particulier"
+            correct: false
+            why: "Ce petit mot compte beaucoup pour la suite."
+        explanation: "« peut » = facultatif ; « doit » / « au moins un » = obligatoire."
+      - code: mer-rg2-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: dictionnaire-regles
+        prompt: "À quoi servent les règles de gestion ?"
+        choices:
+          - label: "À écrire précisément le fonctionnement du métier avant de concevoir la base"
+            correct: true
+            why: "Elles serviront à justifier chaque choix du modèle."
+          - label: "À écrire le code Java"
+            correct: false
+            why: "Elles viennent bien avant le code."
+          - label: "À décorer le dossier de projet"
+            correct: false
+            why: "Elles sont la base de toute la conception."
+        explanation: "Sans règles claires, le modèle est construit sur du sable."
+    exercises:
+      - slug: mer-ex-rg-guide
+        kind: COMPLETER
+        title: "Compléter des règles de gestion"
+        difficulty: FACILE
+        skill: dictionnaire-regles
+        statement: "Complète les règles de la bibliothèque avec « un seul », « plusieurs » ou « zéro »."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Un exemplaire peut-il être emprunté par deux personnes en même temps ?"
+          - "Une personne peut emprunter beaucoup de livres."
+          - "un seul, plusieurs, zéro."
+        solution: '["un seul", "plusieurs", "zéro"]'
+        explanation: "Ces petits mots rendent chaque règle précise."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            RG1 : à un instant donné, un exemplaire est emprunté par [[1]] lecteur au maximum.
+            RG2 : un lecteur peut emprunter [[2]] exemplaires.
+            RG3 : un lecteur nouvellement inscrit a [[3]] emprunt en cours.
+          blanks:
+            - ["un seul"]
+            - ["plusieurs"]
+            - ["zéro", "zero", "aucun"]
+      - slug: mer-ex-rg-libre
+        kind: CODE_LIBRE
+        title: "Deux règles pour une école de musique"
+        difficulty: FACILE
+        skill: dictionnaire-regles
+        statement: |
+          Une école de musique t'explique : « Chaque élève joue d'un seul instrument. Un professeur peut donner
+          plusieurs cours. »
+
+          Écris ces deux informations sous forme de règles de gestion, une par ligne, en commençant par `RG1 :`
+          et `RG2 :`.
+        criteria: "RG1 contient « un seul », RG2 contient « plusieurs »."
+        hints:
+          - "Une ligne par règle : RG1 : …, puis RG2 : …"
+          - "RG1 parle de l'élève et de son instrument ; garde le mot « un seul »."
+          - "RG1 : un élève joue d'un seul instrument. RG2 : un professeur peut donner plusieurs cours."
+        solution: |
+          RG1 : un élève joue d'un seul instrument.
+          RG2 : un professeur peut donner plusieurs cours.
+        explanation: "Deux phrases courtes, précises, avec leurs mots-clés."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            RG1 :
+            RG2 :
+          checks:
+            - pattern: '(?im)^\s*RG1\s*:.*[ée]l[èe]ve.*un\s+seul'
+              message: "RG1 parle de l'élève et contient « un seul »."
+            - pattern: '(?im)^\s*RG2\s*:.*professeur.*plusieurs'
+              message: "RG2 parle du professeur et contient « plusieurs »."
+      - slug: mer-ex-rg-bug
+        kind: CORRIGER_ERREUR
+        title: "Une règle qui n'en est pas une"
+        difficulty: FACILE
+        skill: dictionnaire-regles
+        statement: |
+          Dans cette liste, **une** ligne n'est pas une règle de gestion : c'est un choix technique.
+          Supprime-la et garde les deux vraies règles.
+        criteria: "La ligne technique est supprimée, les deux règles restent."
+        hints:
+          - "Une règle de gestion parle du métier."
+          - "Laquelle parle d'un outil informatique ?"
+          - "Supprime la ligne qui parle de PostgreSQL."
+        solution: |
+          RG1 : un client peut passer plusieurs commandes.
+          RG2 : une commande est passée par un seul client.
+        explanation: "Le choix de PostgreSQL est une décision technique, prise plus tard."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            RG1 : un client peut passer plusieurs commandes.
+            RG2 : une commande est passée par un seul client.
+            RG3 : les données seront stockées dans PostgreSQL.
+          checks:
+            - pattern: '(?i)postgres'
+              absent: true
+              message: "Supprime la ligne technique (PostgreSQL)."
+            - pattern: '(?i)RG1\s*:.*plusieurs\s+commandes'
+              message: "Garde RG1."
+            - pattern: '(?i)RG2\s*:.*un\s+seul\s+client'
+              message: "Garde RG2."
+
+  # ===================================================================== LEÇON 2
+  - slug: merise-dictionnaire
+    title: "Le dictionnaire de données"
+    duration: 9
+    objective: "Dresser le dictionnaire des données élémentaires : nom, description, type, obligatoire."
+    prerequisites: "Leçon « Les règles de gestion »."
+    skills: [dictionnaire-regles]
+    xp: 10
+    memo: |
+      - Le **dictionnaire de données** liste chaque information à stocker : **nom**, description, **type** (texte, nombre, date), taille, obligatoire ou non.
+      - On ne garde que les données **élémentaires** : pas ce qui se déduit (âge, nombre d'inscrits…).
+      - Un seul nom par information : pas de synonymes (« mail » et « courriel »).
+    commonMistakes: |
+      - Stocker une donnée qui se déduit d'une autre : elle deviendrait fausse dès qu'une donnée change.
+      - Garder deux noms pour la même information.
+    blocks:
+      - type: text
+        md: |
+          Une fois les règles écrites, on fait l'**inventaire** de toutes les informations à garder.
+      - type: definition
+        id: def-dictionnaire
+        term: "Dictionnaire de données"
+        md: |
+          L'**inventaire d'un magasin** : une ligne par information, avec son nom, ce qu'elle veut dire, sa sorte
+          (texte, nombre, date) et si elle est obligatoire.
+      - type: text
+        md: |
+          | Nom | Description | Type | Obligatoire |
+          |-----|-------------|------|-------------|
+          | nom_membre | Nom de famille du membre | Texte (80) | oui |
+          | email_membre | Adresse e-mail, unique | Texte (254) | oui |
+          | date_inscription | Date d'adhésion au club | Date | oui |
+          | intitule_cours | Nom du cours (Yoga, Boxe…) | Texte (60) | oui |
+          | nom_coach | Nom du coach | Texte (80) | oui |
+      - type: callout
+        variant: warning
+        title: "Ne stocke pas ce qui se déduit"
+        md: |
+          « Nombre de membres d'un cours » ou « âge du membre » se **déduisent** d'autres données (on compte les
+          inscriptions ; on part de la date de naissance). Les stocker créerait des erreurs dès qu'une donnée
+          change.
+      - type: question
+        ref: mer-rg-q2
+        review: def-dictionnaire
+      - type: question
+        ref: mer-rg-q3
+        review: def-dictionnaire
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète deux lignes du dictionnaire."
+      - type: exercise
+        ref: mer-ex-dico-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : écris une ligne de dictionnaire."
+      - type: exercise
+        ref: mer-ex-dico-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des données qui se déduisent."
+      - type: exercise
+        ref: mer-ex-dico-bug
+      - type: quiz
+        items:
+          - ref: mer-rg-q5
+            review: def-dictionnaire
+          - ref: mer-c1-b2
+            review: def-dictionnaire
+          - ref: mer-dc-q5
+            review: def-dictionnaire
+    questions:
       - code: mer-rg-q2
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -117,14 +316,14 @@ lessons:
         choices:
           - label: "Le nombre d'inscrits d'un cours"
             correct: true
-            why: "Il se calcule en comptant les inscriptions."
+            why: "Il se déduit en comptant les inscriptions."
           - label: "L'e-mail du membre"
             correct: false
             why: "C'est une donnée élémentaire."
           - label: "Le jour du cours"
             correct: false
             why: "C'est une donnée élémentaire."
-        explanation: "On ne garde que les données élémentaires, non calculables."
+        explanation: "On ne garde que les données élémentaires."
       - code: mer-rg-q3
         kind: VRAI_FAUX
         difficulty: 1
@@ -138,22 +337,6 @@ lessons:
             correct: false
             why: "C'est justement son rôle."
         explanation: "Nom, description, type, taille, obligatoire."
-      - code: mer-rg-q4
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: dictionnaire-regles
-        prompt: "Dans RG4, quel mot indique qu'un membre peut suivre beaucoup de cours ?"
-        choices:
-          - label: "« plusieurs »"
-            correct: true
-            why: "Il donnera une cardinalité maximale n."
-          - label: "« membre »"
-            correct: false
-            why: "C'est l'entité concernée."
-          - label: "« inscrire »"
-            correct: false
-            why: "C'est l'action, qui deviendra l'association."
-        explanation: "« un seul » → 1, « plusieurs » → n, « peut » → minimum 0, « au moins un » → minimum 1."
       - code: mer-rg-q5
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -170,79 +353,139 @@ lessons:
             correct: false
             why: "L'e-mail est nécessaire."
         explanation: "Chaque information a un seul nom : pas de synonymes."
+      - code: mer-c1-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: dictionnaire-regles
+        prompt: "La date de naissance est stockée. Que faire de l'âge ?"
+        choices:
+          - label: "Le déduire quand on en a besoin"
+            correct: true
+            why: "Il change chaque année : le stocker créerait des erreurs."
+          - label: "Le stocker aussi, par sécurité"
+            correct: false
+            why: "Il serait vite faux."
+          - label: "Supprimer la date de naissance"
+            correct: false
+            why: "C'est la donnée élémentaire à garder."
+        explanation: "Donnée qui se déduit = pas dans le dictionnaire."
+      - code: mer-dc-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: dictionnaire-regles
+        prompt: "Quel type convient à une date d'inscription ?"
+        choices:
+          - label: "Date"
+            correct: true
+            why: "Une date se range dans un type date."
+          - label: "Texte"
+            correct: false
+            why: "On ne pourrait pas trier ni comparer correctement les dates."
+          - label: "Oui/Non"
+            correct: false
+            why: "C'est pour une information vraie ou fausse."
+        explanation: "Chaque information a le type qui correspond à sa nature."
     exercises:
-      - slug: mer-ex-rg-guide
+      - slug: mer-ex-dico-guide
         kind: COMPLETER
-        title: "Compléter des règles de gestion"
+        title: "Compléter le dictionnaire"
         difficulty: FACILE
         skill: dictionnaire-regles
-        statement: "Complète les règles de la bibliothèque avec « un seul », « plusieurs » ou « zéro »."
+        statement: "Complète le type et le caractère obligatoire de deux informations du club."
         criteria: "Les trois trous sont corrects."
         hints:
-          - "Un livre (exemplaire) peut-il être emprunté par deux personnes en même temps ?"
-          - "Une personne peut emprunter beaucoup de livres."
-          - "un seul, plusieurs, zéro."
-        solution: '["un seul", "plusieurs", "zéro"]'
-        explanation: "Ces mots deviendront les cardinalités du MCD."
+          - "Une date d'inscription est de type Date."
+          - "Un téléphone peut ne pas être donné : non obligatoire."
+          - "Date, oui, non."
+        solution: '["Date", "oui", "non"]'
+        explanation: "Chaque ligne décrit une information précise."
         xp: 10
         payload:
           language: text
           caseSensitive: false
           template: |
-            RG1 : à un instant donné, un exemplaire est emprunté par [[1]] lecteur au maximum.
-            RG2 : un lecteur peut emprunter [[2]] exemplaires.
-            RG3 : un lecteur nouvellement inscrit a [[3]] emprunt en cours.
+            date_inscription | Date d'adhésion au club | [[1]] | obligatoire : [[2]]
+            telephone        | Téléphone du membre     | Texte (15) | obligatoire : [[3]]
           blanks:
-            - ["un seul"]
-            - ["plusieurs"]
-            - ["zéro", "zero", "aucun"]
-      - slug: mer-ex-dictionnaire
-        kind: REMETTRE_ORDRE
-        title: "Du besoin au modèle"
+            - ["Date"]
+            - ["oui"]
+            - ["non"]
+      - slug: mer-ex-dico-libre
+        kind: CODE_LIBRE
+        title: "Une ligne de dictionnaire"
         difficulty: FACILE
         skill: dictionnaire-regles
-        statement: "Remets les étapes de conception dans l'ordre."
-        criteria: "Du besoin exprimé jusqu'au script SQL."
+        statement: |
+          Écris la ligne du dictionnaire pour l'**intitulé d'un cours**, au format :
+          `nom | description | type | obligatoire`.
+          Le nom est `intitule_cours`, le type un texte de 60 caractères, et l'information est obligatoire.
+        criteria: "Une ligne avec intitule_cours, une description, Texte (60) et oui."
         hints:
-          - "On commence toujours par écouter le client."
-          - "Le dictionnaire précède le dessin."
-          - "Besoin, règles, dictionnaire, MCD, MLD, MPD."
+          - "Commence par intitule_cours."
+          - "Sépare les colonnes par des barres verticales |."
+          - "intitule_cours | Nom du cours | Texte (60) | oui"
         solution: |
-          1. Recueillir le besoin
-          2. Écrire les règles de gestion
-          3. Dresser le dictionnaire de données
-          4. Construire le MCD
-          5. Traduire en MLD
-          6. Écrire le MPD (script SQL)
-        explanation: "Chaque étape s'appuie sur la précédente : du français vers le SQL."
+          intitule_cours | Nom du cours (Yoga, Boxe…) | Texte (60) | oui
+        explanation: "Nom, description, type, obligatoire : la ligne est complète."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            intitule_cours |
+          checks:
+            - pattern: '(?i)intitule_cours\s*\|[^|]+\|\s*texte\s*\(\s*60\s*\)\s*\|\s*oui'
+              message: "Écris : intitule_cours | description | Texte (60) | oui"
+      - slug: mer-ex-dico-bug
+        kind: CORRIGER_ERREUR
+        title: "Des données qui se déduisent"
+        difficulty: FACILE
+        skill: dictionnaire-regles
+        statement: |
+          Ce dictionnaire contient **deux** informations qui se déduisent d'autres données. Supprime ces deux
+          lignes.
+        criteria: "age et nb_cours_suivis sont supprimés ; les données élémentaires restent."
+        hints:
+          - "L'âge se déduit de la date de naissance."
+          - "Le nombre de cours se déduit en comptant les inscriptions."
+          - "Supprime les lignes age et nb_cours_suivis."
+        solution: |
+          nom_membre | Nom du membre | Texte (80) | oui
+          date_naissance | Date de naissance | Date | oui
+        explanation: "On ne garde que les données élémentaires."
         xp: 10
         payload:
           language: text
-          lines:
-            - "Recueillir le besoin"
-            - "Écrire les règles de gestion"
-            - "Dresser le dictionnaire de données"
-            - "Construire le MCD"
-            - "Traduire en MLD"
-            - "Écrire le MPD (script SQL)"
+          starter: |
+            nom_membre | Nom du membre | Texte (80) | oui
+            date_naissance | Date de naissance | Date | oui
+            age | Âge du membre | Nombre | oui
+            nb_cours_suivis | Nombre de cours suivis | Nombre | oui
+          checks:
+            - pattern: '(?im)^\s*age\s*\|'
+              absent: true
+              message: "L'âge se déduit de la date de naissance : supprime-le."
+            - pattern: '(?i)nb_cours_suivis'
+              absent: true
+              message: "Le nombre de cours se déduit : supprime-le."
+            - pattern: '(?i)date_naissance'
+              message: "Garde la date de naissance."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 3
   - slug: merise-entites
-    title: "Entités, attributs et identifiants"
-    duration: 12
-    objective: "Repérer les entités d'un domaine, leur donner des attributs et choisir un identifiant."
-    prerequisites: "Leçon « Règles de gestion et dictionnaire de données »."
+    title: "Les entités et leurs attributs"
+    duration: 10
+    objective: "Repérer les entités d'un domaine (les « choses » à suivre) et leur attribuer leurs informations."
+    prerequisites: "Leçon « Le dictionnaire de données »."
     skills: [merise-mcd]
-    xp: 20
+    xp: 15
     memo: |
-      - Une **entité** représente un objet du domaine dont on garde des informations (MEMBRE, COURS, COACH).
-      - Ses **attributs** sont ses informations élémentaires (nom, email…).
-      - L'**identifiant** (souligné) distingue chaque occurrence : souvent un numéro `id_membre`.
+      - Une **entité** est un type de « chose » dont on garde des informations : MEMBRE, COURS, COACH.
+      - Ses **attributs** sont ses informations élémentaires (nom, email…), pris dans le dictionnaire.
+      - Astuce : les **noms** d'une règle donnent souvent des entités ; les **verbes**, des liens (vus au chapitre suivant).
       - Chaque attribut appartient à **une seule** entité.
-      - Test : si on peut dire « un X a un nom, un…, un… », X est probablement une entité.
+      - On écrit : `MEMBRE (nom, prenom, email)` ; dans un MCD, l'entité est un **rectangle**.
     commonMistakes: |
-      - Faire d'une action une entité (INSCRIRE) : une action devient une association.
-      - Choisir un identifiant qui peut changer (l'e-mail, le nom).
+      - Faire d'une action une entité (INSCRIRE) : une action deviendra un lien.
       - Répéter un attribut dans deux entités (le nom du coach dans COURS).
     blocks:
       - type: text
@@ -253,29 +496,22 @@ lessons:
         id: def-entite
         term: "Entité"
         md: |
-          Un **type d'objet** du monde réel qu'on veut suivre. On la dessine comme un **rectangle** avec son
-          nom en majuscules. Chaque membre réel du club est une **occurrence** de l'entité MEMBRE, comme
-          chaque fiche d'un classeur.
-      - type: definition
-        id: def-identifiant
-        term: "Identifiant"
-        md: |
-          L'attribut qui permet de **distinguer** chaque occurrence sans ambiguïté, comme le **numéro de
-          sécurité sociale** pour une personne. Il est **souligné** dans le MCD. On préfère un numéro
-          qui ne change jamais (`id_membre`) plutôt que l'e-mail ou le nom.
+          Un **tiroir d'un classeur** : le tiroir MEMBRE contient une fiche par membre. Chaque fiche a les
+          mêmes rubriques (les **attributs**) : nom, prénom, e-mail. Dans un MCD, on dessine l'entité comme un
+          **rectangle**, avec son nom en MAJUSCULES.
       - type: code
         id: code-entites
         language: text
         title: "Les entités du club (notation texte)"
         code: |
-          MEMBRE (id_membre, nom, prenom, email, date_inscription)
-          COURS  (id_cours, intitule, jour, heure)
-          COACH  (id_coach, nom, specialite)
+          MEMBRE (nom, prenom, email, date_inscription)
+          COURS  (intitule, jour, heure)
+          COACH  (nom, specialite)
         lines:
           - n: 1
-            note: "Nom de l'entité, puis ses attributs. Le premier, `id_membre`, est l'identifiant (souligné dans le dessin)."
+            note: "Nom de l'entité en majuscules, puis ses attributs entre parenthèses."
           - n: 2
-            note: "Le nom du coach n'est **pas** dans COURS : il appartient à COACH. Le lien se fera par une association."
+            note: "Le nom du coach n'est **pas** dans COURS : il appartient à COACH."
       - type: question
         ref: mer-en-q1
         review: def-entite
@@ -284,41 +520,39 @@ lessons:
           title: "Erreur fréquente"
           good: false
           md: |
-            COURS (id_cours, intitule, **nom_coach**, **nb_inscrits**)
+            COURS (intitule, **nom_coach**, **nb_inscrits**)
             - `nom_coach` répète une information de COACH.
-            - `nb_inscrits` se calcule.
+            - `nb_inscrits` se déduit.
         right:
           title: "Correct"
           good: true
           md: |
-            COURS (id_cours, intitule, jour, heure)
-            - Le coach sera relié par une association.
-            - Le nombre d'inscrits se calculera en SQL.
+            COURS (intitule, jour, heure)
+            - Le coach sera relié au cours par un lien.
+            - Le nombre d'inscrits se déduira en comptant.
       - type: question
-        ref: mer-en-q2
-        review: def-identifiant
+        ref: mer-en-q3
+        review: code-entites
       - type: text
-        md: "Exercice guidé : complète les entités d'une bibliothèque."
+        md: "**Exercice 1 (guidé)** : repère les entités."
       - type: exercise
-        ref: mer-ex-entites-guide
+        ref: mer-ex-entites-reperer
       - type: text
-        md: |
-          En autonomie : dans l'éditeur, crée les deux entités **LIVRE** (id_livre, titre, isbn, annee) et
-          **AUTEUR** (id_auteur, nom, prenom), avec leur identifiant coché. (Pas d'association pour l'instant.)
+        md: "**Exercice 2 (en autonomie)** : écris deux entités."
       - type: exercise
-        ref: mer-ex-entites-mcd
-      - type: jury
-        items:
-          - q: "Comment choisissez-vous l'identifiant d'une entité ?"
-            a: "Il doit être unique, toujours renseigné et stable. Je choisis en général un numéro technique (id) plutôt qu'une donnée métier qui peut changer, comme l'e-mail."
+        ref: mer-ex-entites-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un attribut au mauvais endroit."
+      - type: exercise
+        ref: mer-ex-entites-bug
       - type: quiz
         items:
-          - ref: mer-en-q3
-            review: code-entites
           - ref: mer-en-q4
             review: def-entite
-          - ref: mer-en-q5
-            review: def-identifiant
+          - ref: mer-et-q4
+            review: def-entite
+          - ref: mer-et-q5
+            review: code-entites
     questions:
       - code: mer-en-q1
         kind: CHOIX_MULTIPLE
@@ -337,8 +571,230 @@ lessons:
             why: "On garde ses coordonnées."
           - label: "SOIGNER"
             correct: false
-            why: "C'est une action : elle deviendra une association."
-        explanation: "Les noms désignent souvent des entités ; les verbes, des associations."
+            why: "C'est une action : elle deviendra un lien."
+        explanation: "Les noms désignent souvent des entités ; les verbes, des liens."
+      - code: mer-en-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "L'attribut nom_coach doit apparaître à la fois dans COACH et dans COURS."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : un attribut appartient à une seule entité ; le lien se fera autrement."
+          - label: "Faux"
+            correct: true
+            why: "Exact : pas de répétition."
+        explanation: "Chaque information n'est stockée qu'une fois."
+      - code: mer-en-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mcd
+        prompt: "Comment représente-t-on une entité dans un MCD Merise ?"
+        choices:
+          - label: "Un rectangle avec son nom et ses attributs"
+            correct: true
+            why: "C'est la notation Merise."
+          - label: "Une ellipse"
+            correct: false
+            why: "L'ellipse servira pour les liens (chapitre suivant)."
+          - label: "Une flèche"
+            correct: false
+            why: "Merise n'utilise pas de flèches pour les entités."
+        explanation: "Entité = rectangle."
+      - code: mer-et-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mcd
+        prompt: "Qu'est-ce qu'un attribut ?"
+        choices:
+          - label: "Une information élémentaire d'une entité (nom, e-mail…)"
+            correct: true
+            why: "Une rubrique de la fiche."
+          - label: "Une entité entière"
+            correct: false
+            why: "L'entité regroupe plusieurs attributs."
+          - label: "Une règle de gestion"
+            correct: false
+            why: "Une règle est une phrase du métier."
+        explanation: "Entité = tiroir ; attribut = rubrique de chaque fiche."
+      - code: mer-et-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mcd
+        prompt: "Dans quelle entité ranger la « spécialité » d'un coach (yoga, boxe…) ?"
+        choices:
+          - label: "COACH"
+            correct: true
+            why: "Elle décrit le coach."
+          - label: "COURS"
+            correct: false
+            why: "Elle ne dépend pas du cours, mais du coach."
+          - label: "MEMBRE"
+            correct: false
+            why: "Aucun rapport avec les membres."
+        explanation: "Un attribut va dans l'entité qu'il décrit."
+    exercises:
+      - slug: mer-ex-entites-reperer
+        kind: COMPLETER
+        title: "Repérer les entités"
+        difficulty: FACILE
+        skill: merise-mcd
+        statement: "« Un lecteur emprunte des livres écrits par des auteurs. » Complète avec les trois entités, en majuscules, dans l'ordre de la phrase."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Les noms de la phrase sont des entités."
+          - "Les verbes (emprunter, écrire) n'en sont pas."
+          - "LECTEUR, LIVRE, AUTEUR."
+        solution: '["LECTEUR", "LIVRE", "AUTEUR"]'
+        explanation: "Trois noms, trois entités ; les verbes deviendront des liens."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Entité 1 : [[1]]
+            Entité 2 : [[2]]
+            Entité 3 : [[3]]
+          blanks:
+            - ["LECTEUR", "LECTRICE"]
+            - ["LIVRE"]
+            - ["AUTEUR", "AUTRICE"]
+      - slug: mer-ex-entites-libre
+        kind: CODE_LIBRE
+        title: "Deux entités d'une bibliothèque"
+        difficulty: FACILE
+        skill: merise-mcd
+        statement: |
+          Écris, en notation texte, les deux entités d'une bibliothèque :
+          - `LIVRE` avec les attributs `titre`, `isbn` et `annee` ;
+          - `AUTEUR` avec les attributs `nom` et `prenom`.
+
+          Une entité par ligne, au format `ENTITE (attribut1, attribut2)`.
+        criteria: "LIVRE (titre, isbn, annee) et AUTEUR (nom, prenom)."
+        hints:
+          - "Le nom de l'entité en majuscules, puis les attributs entre parenthèses."
+          - "Sépare les attributs par des virgules."
+          - "LIVRE (titre, isbn, annee)"
+        solution: |
+          LIVRE (titre, isbn, annee)
+          AUTEUR (nom, prenom)
+        explanation: "Chaque entité avec ses propres informations."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            LIVRE (
+            AUTEUR (
+          checks:
+            - pattern: '(?m)^\s*LIVRE\s*\(\s*titre\s*,\s*isbn\s*,\s*annee\s*\)'
+              message: "Écris LIVRE (titre, isbn, annee)"
+            - pattern: '(?m)^\s*AUTEUR\s*\(\s*nom\s*,\s*prenom\s*\)'
+              message: "Écris AUTEUR (nom, prenom)"
+      - slug: mer-ex-entites-bug
+        kind: CORRIGER_ERREUR
+        title: "Un attribut au mauvais endroit"
+        difficulty: FACILE
+        skill: merise-mcd
+        statement: |
+          L'entité `COURS` contient `nom_coach`, qui décrit le coach et non le cours. Retire-le de COURS et
+          ajoute-le à `COACH` sous le nom `nom`.
+        criteria: "COURS ne contient plus nom_coach ; COACH contient nom."
+        hints:
+          - "Un attribut appartient à l'entité qu'il décrit."
+          - "Le nom du coach décrit le coach."
+          - "COURS (intitule, jour) et COACH (nom, specialite)"
+        solution: |
+          COURS (intitule, jour)
+          COACH (nom, specialite)
+        explanation: "Chaque information à sa place : le lien entre cours et coach se fera au chapitre suivant."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            COURS (intitule, jour, nom_coach)
+            COACH (specialite)
+          checks:
+            - pattern: 'nom_coach'
+              absent: true
+              message: "Retire nom_coach de COURS."
+            - pattern: '(?m)^\s*COACH\s*\([^)]*\bnom\b'
+              message: "Ajoute nom dans COACH."
+            - pattern: '(?m)^\s*COURS\s*\(\s*intitule\s*,\s*jour\s*\)'
+              message: "COURS garde intitule et jour."
+
+  # ===================================================================== LEÇON 4
+  - slug: merise-identifiant
+    title: "L'identifiant : reconnaître chaque occurrence"
+    duration: 10
+    objective: "Choisir l'identifiant d'une entité (unique, stable, toujours rempli) et le dessiner dans l'éditeur de MCD."
+    prerequisites: "Leçon « Les entités et leurs attributs »."
+    skills: [merise-mcd]
+    xp: 15
+    memo: |
+      - L'**identifiant** est l'attribut qui distingue **chaque** occurrence d'une entité : `id_membre`.
+      - Il doit être **unique**, **toujours rempli** et **stable** (il ne change jamais).
+      - On préfère un numéro technique (`id_membre`) plutôt que l'e-mail ou le nom.
+      - Dans un MCD, il est **souligné** ; on l'écrit en premier : `MEMBRE (id_membre, nom, email)`.
+    commonMistakes: |
+      - Choisir le nom (deux membres peuvent s'appeler pareil).
+      - Choisir l'e-mail (unique, mais il peut changer).
+    blocks:
+      - type: text
+        md: |
+          Deux membres s'appellent Awa Diallo. Comment les distinguer sans risque ? Il faut un **identifiant**.
+      - type: definition
+        id: def-identifiant
+        term: "Identifiant"
+        md: |
+          Le **numéro de dossard** d'une coureuse : unique, attribué une fois pour toutes, jamais vide. Deux
+          personnes peuvent avoir le même nom, jamais le même dossard. Dans un MCD, il est **souligné**.
+      - type: code
+        id: code-identifiants
+        language: text
+        title: "Les entités du club avec leur identifiant"
+        code: |
+          MEMBRE (id_membre, nom, prenom, email, date_inscription)
+          COURS  (id_cours, intitule, jour, heure)
+          COACH  (id_coach, nom, specialite)
+        lines:
+          - n: 1
+            note: "`id_membre` : l'identifiant, écrit en premier (souligné dans le dessin)."
+          - n: 3
+            note: "Chaque entité a le sien."
+      - type: question
+        ref: mer-en-q2
+        review: def-identifiant
+      - type: question
+        ref: mer-en-q5
+        review: code-identifiants
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les identifiants."
+      - type: exercise
+        ref: mer-ex-entites-guide
+      - type: text
+        md: |
+          **Exercice 2 (en autonomie)** : dans l'éditeur, crée les deux entités **LIVRE** (id_livre, titre,
+          isbn, annee) et **AUTEUR** (id_auteur, nom, prenom), avec leur identifiant coché.
+      - type: exercise
+        ref: mer-ex-entites-mcd
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un identifiant qui peut changer."
+      - type: exercise
+        ref: mer-ex-identifiant-bug
+      - type: jury
+        items:
+          - q: "Comment choisissez-vous l'identifiant d'une entité ?"
+            a: "Il doit être unique, toujours renseigné et stable. Je choisis en général un numéro technique (id) plutôt qu'une donnée métier qui peut changer, comme l'e-mail."
+      - type: quiz
+        items:
+          - ref: mer-c1-b1
+            review: def-identifiant
+          - ref: mer-id-q4
+            review: def-identifiant
+          - ref: mer-id-q5
+            review: code-identifiants
+    questions:
       - code: mer-en-q2
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -353,37 +809,8 @@ lessons:
             why: "Deux membres peuvent avoir le même nom."
           - label: "Son e-mail"
             correct: false
-            why: "Unique, mais il peut changer : mieux vaut un attribut unique qu'un identifiant."
+            why: "Unique, mais il peut changer."
         explanation: "L'identifiant doit être unique et ne jamais changer."
-      - code: mer-en-q3
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: merise-mcd
-        prompt: "L'attribut nom_coach doit apparaître à la fois dans COACH et dans COURS."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "Non : un attribut appartient à une seule entité ; le lien se fait par une association."
-          - label: "Faux"
-            correct: true
-            why: "Exact : pas de redondance."
-        explanation: "Chaque information n'est stockée qu'une fois."
-      - code: mer-en-q4
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: merise-mcd
-        prompt: "Comment représente-t-on une entité dans un MCD Merise ?"
-        choices:
-          - label: "Un rectangle avec son nom et ses attributs, l'identifiant souligné"
-            correct: true
-            why: "C'est la notation Merise."
-          - label: "Une ellipse"
-            correct: false
-            why: "L'ellipse est réservée aux associations."
-          - label: "Une flèche"
-            correct: false
-            why: "Merise n'utilise pas de flèches pour les entités."
-        explanation: "Rectangle = entité ; ellipse = association."
       - code: mer-en-q5
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -399,31 +826,75 @@ lessons:
           - label: "toujours nommé « code »"
             correct: false
             why: "Le nom est libre ; souvent id_xxx."
-        explanation: "Identifiant souligné (et clé primaire soulignée dans le MLD)."
+        explanation: "Identifiant souligné."
+      - code: mer-c1-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mcd
+        prompt: "Que signifie MCD ?"
+        choices:
+          - label: "Modèle Conceptuel de Données"
+            correct: true
+            why: "Le plan des données, sans technique."
+          - label: "Méthode de Codage Dynamique"
+            correct: false
+            why: "Ça n'existe pas."
+          - label: "Modèle de Création de Documents"
+            correct: false
+            why: "Ça n'existe pas."
+        explanation: "Le MCD rassemble entités, identifiants et, bientôt, les liens entre elles."
+      - code: mer-id-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: merise-mcd
+        prompt: "Un identifiant peut rester vide pour certaines occurrences."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Il doit toujours être rempli, sinon on ne peut pas reconnaître l'occurrence."
+          - label: "Faux"
+            correct: true
+            why: "Exact : toujours rempli."
+        explanation: "Unique, toujours rempli, stable."
+      - code: mer-id-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mcd
+        prompt: "Quel est l'identifiant de `COACH (id_coach, nom, specialite)` ?"
+        choices:
+          - label: "id_coach"
+            correct: true
+            why: "Écrit en premier, souligné dans le dessin."
+          - label: "nom"
+            correct: false
+            why: "Deux coachs peuvent avoir le même nom."
+          - label: "specialite"
+            correct: false
+            why: "Plusieurs coachs partagent une spécialité."
+        explanation: "Par convention, l'identifiant est écrit en premier."
     exercises:
       - slug: mer-ex-entites-guide
         kind: COMPLETER
-        title: "Compléter des entités"
+        title: "Compléter les identifiants"
         difficulty: FACILE
         skill: merise-mcd
-        statement: "Complète l'identifiant et l'attribut manquants."
-        criteria: "Les trois trous sont corrects."
+        statement: "Complète l'identifiant de chaque entité."
+        criteria: "Les deux trous sont corrects."
         hints:
           - "L'identifiant d'un livre : id_…"
-          - "Un numéro international identifie un livre publié : 13 chiffres."
-          - "id_livre, isbn, id_auteur."
-        solution: '["id_livre", "isbn", "id_auteur"]'
-        explanation: "Chaque entité a son identifiant ; l'ISBN est un attribut (unique, mais pas identifiant technique)."
+          - "Même principe pour l'auteur."
+          - "id_livre, id_auteur."
+        solution: '["id_livre", "id_auteur"]'
+        explanation: "Chaque entité a son identifiant, écrit en premier."
         xp: 10
         payload:
           language: text
           caseSensitive: false
           template: |
-            LIVRE ([[1]], titre, [[2]], annee)
-            AUTEUR ([[3]], nom, prenom)
+            LIVRE ([[1]], titre, isbn, annee)
+            AUTEUR ([[2]], nom, prenom)
           blanks:
             - ["id_livre"]
-            - ["isbn"]
             - ["id_auteur"]
       - slug: mer-ex-entites-mcd
         kind: MCD
@@ -435,7 +906,7 @@ lessons:
           - **LIVRE** : id_livre (identifiant), titre, isbn, annee ;
           - **AUTEUR** : id_auteur (identifiant), nom, prenom.
 
-          Aucune association pour cet exercice.
+          Aucun lien entre elles pour cet exercice.
         criteria: "Deux entités avec leurs attributs et un identifiant chacune."
         hints:
           - "Clique sur « Entité » pour en ajouter une, puis renomme-la."
@@ -475,37 +946,63 @@ lessons:
                   - { name: nom }
                   - { name: prenom }
             associations: []
+      - slug: mer-ex-identifiant-bug
+        kind: CORRIGER_ERREUR
+        title: "Un identifiant qui peut changer"
+        difficulty: FACILE
+        skill: merise-mcd
+        statement: |
+          Dans cette entité, l'identifiant (écrit en premier) est l'e-mail, qui peut changer. Ajoute un
+          identifiant technique `id_client` en première position, et garde l'e-mail comme simple attribut.
+        criteria: "id_client en premier, email toujours présent."
+        hints:
+          - "Un identifiant doit être stable."
+          - "Un numéro technique ne change jamais."
+          - "CLIENT (id_client, email, nom)"
+        solution: |
+          CLIENT (id_client, email, nom)
+        explanation: "L'e-mail reste unique (on le vérifiera en base), mais l'identifiant est un numéro stable."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            CLIENT (email, nom)
+          checks:
+            - pattern: 'CLIENT\s*\(\s*id_client\s*,'
+              message: "Place id_client en premier."
+            - pattern: '\bemail\b'
+              message: "Garde l'e-mail comme attribut."
 
 bank:
-  - code: mer-c1-b1
+  - code: mer-c1-b3
     kind: CHOIX_UNIQUE
     difficulty: 1
     skill: merise-mcd
-    prompt: "Que signifie MCD ?"
+    prompt: "« Une coiffeuse coiffe des clientes dans un salon. » Laquelle de ces propositions n'est PAS une entité ?"
     choices:
-      - label: "Modèle Conceptuel de Données"
+      - label: "COIFFER"
         correct: true
-        why: "Le plan des données, sans technique."
-      - label: "Méthode de Codage Dynamique"
+        why: "C'est un verbe : ce sera un lien."
+      - label: "COIFFEUSE"
         correct: false
-        why: "Ça n'existe pas."
-      - label: "Modèle de Création de Documents"
+        why: "On garde des informations sur chaque coiffeuse."
+      - label: "SALON"
         correct: false
-        why: "Ça n'existe pas."
-    explanation: "MCD → MLD (logique) → MPD (physique)."
-  - code: mer-c1-b2
+        why: "Un salon a une adresse, un nom…"
+    explanation: "Noms → entités ; verbes → liens."
+  - code: mer-c1-b4
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: dictionnaire-regles
-    prompt: "La date de naissance est stockée. Que faire de l'âge ?"
+    prompt: "Dans quel ordre travaille-t-on ?"
     choices:
-      - label: "Le calculer quand on en a besoin"
+      - label: "Règles de gestion, dictionnaire, entités"
         correct: true
-        why: "Il change chaque année : le stocker créerait des erreurs."
-      - label: "Le stocker aussi, par sécurité"
+        why: "Du besoin exprimé vers le modèle."
+      - label: "Entités, dictionnaire, règles"
         correct: false
-        why: "Il serait vite faux."
-      - label: "Supprimer la date de naissance"
+        why: "Les entités viennent des règles et du dictionnaire."
+      - label: "Peu importe"
         correct: false
-        why: "C'est la donnée élémentaire à garder."
-    explanation: "Donnée calculable = pas dans le dictionnaire."
+        why: "Chaque étape s'appuie sur la précédente."
+    explanation: "On part toujours des règles du métier."

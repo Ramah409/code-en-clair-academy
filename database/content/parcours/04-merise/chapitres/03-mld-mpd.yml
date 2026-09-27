@@ -2,38 +2,259 @@ slug: merise-mld-mpd
 position: 3
 level: AVANCE
 title: "Du MCD au MLD et au MPD"
-summary: "Appliquer les règles de passage du MCD au modèle logique (tables, clés), puis écrire le script SQL du modèle physique."
-quizQuestionCount: 10
+summary: "Traduire le MCD en tables, une règle à la fois : l'entité devient une table, la clé étrangère pour les liens x,1 — x,n, la table d'association pour les liens x,n — x,n ; puis écrire le script SQL. Une seule notion par leçon."
+quizQuestionCount: 12
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: merise-passage-mld
-    title: "Les règles de passage au MLD"
-    duration: 14
-    objective: "Transformer un MCD en tables : entités, associations x,1 — x,n et associations x,n — x,n."
+    title: "Règle 1 : l'entité devient une table"
+    duration: 9
+    objective: "Transformer chaque entité en table, et son identifiant en clé primaire."
     prerequisites: "Chapitre « Associations et cardinalités »."
     skills: [merise-mld-mpd]
-    xp: 25
+    xp: 10
     memo: |
-      - Règle 1 : chaque **entité** devient une **table** ; son identifiant devient la **clé primaire** (soulignée).
-      - Règle 2 : association **x,1 — x,n** : la clé primaire du côté « n » part en **clé étrangère** (#) dans la table du côté « 1 », avec les éventuels attributs de l'association.
-      - Règle 3 : association **x,n — x,n** : nouvelle **table** dont la clé primaire est composée des deux clés étrangères, plus les attributs de l'association.
-      - Notation MLD : `commande (id_commande, date_commande, #id_client)`.
+      - Le **MLD** (modèle logique) traduit le MCD en **tables**.
+      - Règle 1 : chaque **entité** devient une **table** ; ses attributs deviennent des **colonnes**.
+      - L'identifiant devient la **clé primaire** (soulignée).
+      - Notation : `membre (id_membre, nom, email)`, en minuscules, clé primaire en premier.
     commonMistakes: |
-      - Mettre la clé étrangère du mauvais côté (dans CLIENT au lieu de COMMANDE).
-      - Oublier la table d'une association n-n.
-      - Oublier que les colonnes de la clé primaire d'une table d'association sont aussi des clés étrangères.
+      - Oublier la clé primaire.
+      - Changer le nom des informations en passant au MLD.
     blocks:
       - type: text
         md: |
-          Le MCD est un dessin ; une base de données a besoin de **tables**. Trois règles suffisent pour
-          traduire presque tous les cas.
+          Le MCD est un dessin ; une base de données a besoin de **tables**. Trois règles suffisent pour traduire
+          presque tous les cas. On commence par la plus simple.
       - type: definition
         id: def-mld
         term: "MLD (Modèle Logique de Données)"
         md: |
-          La traduction du MCD en **tables** avec leurs **clés primaires** (soulignées) et **clés étrangères**
-          (précédées de `#`). C'est le passage du plan d'architecte aux plans de construction.
+          Le passage du **plan d'architecte** (MCD) aux **plans de construction** : chaque pièce dessinée devient
+          une pièce avec des mesures précises. Chaque entité devient une table.
+      - type: code
+        id: code-regle1
+        language: text
+        title: "Règle 1 : entité → table"
+        code: |
+          MCD : MEMBRE (id_membre, nom, email)
+          MLD : membre (id_membre, nom, email)
+        lines:
+          - n: 1
+            note: "L'entité MEMBRE et son identifiant souligné."
+          - n: 2
+            note: "La table membre : l'identifiant devient la **clé primaire** (soulignée), les attributs deviennent des colonnes."
+      - type: question
+        ref: mer-mld-q5
+        review: code-regle1
+      - type: question
+        ref: mer-r1-q2
+        review: def-mld
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la traduction."
+      - type: exercise
+        ref: mer-ex-regle1-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : dans l'éditeur de tables, traduis deux entités."
+      - type: exercise
+        ref: mer-ex-mld-entites
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une table sans clé primaire."
+      - type: exercise
+        ref: mer-ex-regle1-bug
+      - type: quiz
+        items:
+          - ref: mer-r1-q3
+            review: code-regle1
+          - ref: mer-r1-q4
+            review: def-mld
+          - ref: mer-r1-q5
+            review: code-regle1
+    questions:
+      - code: mer-mld-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mld-mpd
+        prompt: "Que devient l'identifiant d'une entité dans le MLD ?"
+        choices:
+          - label: "La clé primaire de sa table"
+            correct: true
+            why: "Règle 1."
+          - label: "Une simple colonne"
+            correct: false
+            why: "Il garde son rôle : reconnaître chaque ligne."
+          - label: "Il disparaît"
+            correct: false
+            why: "Il est indispensable."
+        explanation: "Entité → table ; identifiant → clé primaire."
+      - code: mer-r1-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mld-mpd
+        prompt: "Que devient chaque entité du MCD ?"
+        choices:
+          - label: "Une table"
+            correct: true
+            why: "Règle 1."
+          - label: "Une colonne"
+            correct: false
+            why: "Ce sont les attributs qui deviennent des colonnes."
+          - label: "Rien"
+            correct: false
+            why: "Chaque entité donne sa table."
+        explanation: "Une entité = une table."
+      - code: mer-r1-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mld-mpd
+        prompt: "Que deviennent les attributs d'une entité ?"
+        choices:
+          - label: "Les colonnes de la table"
+            correct: true
+            why: "Chaque information devient une colonne."
+          - label: "Des tables"
+            correct: false
+            why: "Les tables viennent des entités."
+          - label: "Des clés étrangères"
+            correct: false
+            why: "Les clés étrangères viendront des associations."
+        explanation: "Attribut → colonne."
+      - code: mer-r1-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: merise-mld-mpd
+        prompt: "Dans un MLD, la clé primaire est soulignée."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Comme l'identifiant dans le MCD."
+          - label: "Faux"
+            correct: false
+            why: "C'est la convention d'écriture."
+        explanation: "Clé primaire soulignée."
+      - code: mer-r1-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mld-mpd
+        prompt: "Quelle est la traduction de `COACH (id_coach, nom, specialite)` ?"
+        choices:
+          - label: "`coach (id_coach, nom, specialite)` avec id_coach en clé primaire"
+            correct: true
+            why: "Même contenu, en table."
+          - label: "`coach (nom, specialite)`"
+            correct: false
+            why: "La clé primaire a disparu."
+          - label: "Trois tables"
+            correct: false
+            why: "Une entité donne une seule table."
+        explanation: "Règle 1, tout simplement."
+    exercises:
+      - slug: mer-ex-regle1-guide
+        kind: COMPLETER
+        title: "Compléter la traduction"
+        difficulty: FACILE
+        skill: merise-mld-mpd
+        statement: "Traduis l'entité LIVRE (id_livre, titre, isbn) en table."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Le nom de la table, en minuscules."
+          - "La clé primaire vient de l'identifiant."
+          - "livre, id_livre."
+        solution: '["livre", "id_livre"]'
+        explanation: "`livre (id_livre, titre, isbn)`"
+        xp: 10
+        payload:
+          language: text
+          template: |
+            [[1]] ([[2]], titre, isbn)
+          blanks:
+            - ["livre"]
+            - ["id_livre"]
+      - slug: mer-ex-mld-entites
+        kind: MCD_VERS_MLD
+        title: "Deux entités, deux tables"
+        difficulty: FACILE
+        skill: merise-mld-mpd
+        statement: |
+          Traduis le MCD affiché : une table par entité, avec sa clé primaire et ses colonnes. (Pas de lien
+          entre elles pour l'instant.)
+        criteria: "Deux tables, chacune avec sa clé primaire et ses colonnes."
+        hints:
+          - "Deux tables : livre et auteur."
+          - "Coche la clé primaire : id_livre, id_auteur."
+          - "Ajoute les colonnes : titre, isbn ; nom, prenom."
+        solution: |
+          livre (id_livre, titre, isbn)
+          auteur (id_auteur, nom, prenom)
+        explanation: "Règle 1 appliquée deux fois."
+        xp: 20
+        payload:
+          mcd:
+            entities:
+              - { id: e1, name: LIVRE, x: 40, y: 40, attributes: [{ name: id_livre, identifier: true }, { name: titre }, { name: isbn }] }
+              - { id: e2, name: AUTEUR, x: 420, y: 40, attributes: [{ name: id_auteur, identifier: true }, { name: nom }, { name: prenom }] }
+            associations: []
+          expected:
+            tables:
+              - { name: livre, aliases: [livres], pkCount: 1, fks: [], columns: [titre, isbn] }
+              - { name: auteur, aliases: [auteurs, autrice], pkCount: 1, fks: [], columns: [nom, prenom] }
+          solutionModel:
+            tables:
+              - { id: t1, name: livre, columns: [{ name: id_livre, pk: true, fk: "" }, { name: titre, pk: false, fk: "" }, { name: isbn, pk: false, fk: "" }] }
+              - { id: t2, name: auteur, columns: [{ name: id_auteur, pk: true, fk: "" }, { name: nom, pk: false, fk: "" }, { name: prenom, pk: false, fk: "" }] }
+      - slug: mer-ex-regle1-bug
+        kind: CORRIGER_ERREUR
+        title: "Une table sans clé primaire"
+        difficulty: FACILE
+        skill: merise-mld-mpd
+        statement: |
+          La table `film` a perdu son identifiant. Ajoute `id_film` en première position (c'est la clé
+          primaire).
+        criteria: "film (id_film, titre, annee)."
+        hints:
+          - "Chaque table a une clé primaire."
+          - "Elle vient de l'identifiant de l'entité."
+          - "film (id_film, titre, annee)"
+        solution: |
+          film (id_film, titre, annee)
+        explanation: "Sans clé primaire, impossible de reconnaître chaque ligne."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            film (titre, annee)
+          checks:
+            - pattern: '(?i)film\s*\(\s*id_film\s*,\s*titre\s*,\s*annee\s*\)'
+              message: "Écris film (id_film, titre, annee)"
+
+  # ===================================================================== LEÇON 2
+  - slug: merise-mld-cle-etrangere
+    title: "Règle 2 : la clé étrangère (liens x,1 — x,n)"
+    duration: 11
+    objective: "Traduire une association x,1 — x,n en plaçant une clé étrangère du bon côté."
+    prerequisites: "Leçon « Règle 1 : l'entité devient une table »."
+    skills: [merise-mld-mpd]
+    xp: 15
+    memo: |
+      - Règle 2 : pour une association **x,1 — x,n**, la clé primaire du côté « n » part en **clé étrangère** dans la table du côté « **1** ».
+      - Une clé étrangère s'écrit avec un `#` : `commande (id_commande, date_commande, #id_client)`.
+      - Astuce : la clé étrangère va toujours du côté où le **maximum vaut 1**.
+      - L'association elle-même ne devient pas une table.
+    commonMistakes: |
+      - Mettre la clé étrangère du mauvais côté (dans client au lieu de commande).
+      - Créer une table pour une association x,1 — x,n.
+    blocks:
+      - type: text
+        md: |
+          Une commande est passée par **un seul** client. Pour garder ce lien, on écrit dans chaque commande le
+          numéro de son client : c'est une **clé étrangère**.
+      - type: definition
+        id: def-cle-etrangere
+        term: "Clé étrangère"
+        md: |
+          Une colonne qui contient la clé primaire **d'une autre table**, comme l'**étiquette d'un colis** qui
+          indique le numéro de son destinataire. On la note avec un `#`.
       - type: code
         id: code-regle2
         language: text
@@ -46,48 +267,36 @@ lessons:
           - n: 1
             note: "Côté COMMANDE, le maximum vaut 1 : chaque commande a un seul client."
           - n: 3
-            note: "La clé étrangère `#id_client` va donc dans `commande`, du côté où le maximum vaut 1."
-      - type: code
-        id: code-regle3
-        language: text
-        title: "Règle 3 : x,n — x,n → table d'association"
-        code: |
-          MCD : MEMBRE 0,n —— S'INSCRIRE (date_inscription) —— 0,n COURS
-          MLD : membre (id_membre, nom, email)
-                cours (id_cours, intitule)
-                inscription (#id_membre, #id_cours, date_inscription)
-        lines:
-          - n: 1
-            note: "Les deux maximums valent n : aucune des deux tables ne peut contenir une seule clé étrangère."
-          - n: 4
-            note: "Nouvelle table : clé primaire composée (id_membre, id_cours), chacune clé étrangère, plus l'attribut porté."
+            note: "La clé étrangère `#id_client` va dans `commande`, du côté où le maximum vaut 1."
       - type: question
         ref: mer-mld-q1
         review: code-regle2
       - type: question
-        ref: mer-mld-q2
-        review: code-regle3
+        ref: mer-mld-q3
+        review: def-cle-etrangere
       - type: text
-        md: "Exercice guidé : place la clé étrangère."
+        md: "**Exercice 1 (guidé)** : place la clé étrangère."
       - type: exercise
         ref: mer-ex-mld-guide
       - type: text
-        md: "En autonomie : traduis le MCD du club de sport en MLD dans l'éditeur de tables."
+        md: "**Exercice 2 (en autonomie)** : traduis « un client passe des commandes » dans l'éditeur."
       - type: exercise
-        ref: mer-ex-mld-club
+        ref: mer-ex-mld-client-commande
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une clé étrangère du mauvais côté."
+      - type: exercise
+        ref: mer-ex-fk-bug
       - type: jury
         items:
           - q: "Que devient une association 0,n — 1,1 dans le MLD ?"
             a: "La clé primaire de l'entité du côté 0,n migre comme clé étrangère dans la table du côté 1,1."
-          - q: "Et une association plusieurs-à-plusieurs ?"
-            a: "Elle devient une table dont la clé primaire est composée des deux clés étrangères, avec les attributs portés par l'association."
       - type: quiz
         items:
-          - ref: mer-mld-q3
-            review: def-mld
-          - ref: mer-mld-q4
-            review: code-regle3
-          - ref: mer-mld-q5
+          - ref: mer-fk-q3
+            review: def-cle-etrangere
+          - ref: mer-fk-q4
+            review: code-regle2
+          - ref: mer-c3-b1
             review: code-regle2
     questions:
       - code: mer-mld-q1
@@ -104,24 +313,8 @@ lessons:
             why: "Un service a plusieurs salariés : une seule colonne ne suffit pas."
           - label: "Dans une nouvelle table appartenir"
             correct: false
-            why: "La règle 3 ne s'applique que si les deux maximums valent n."
+            why: "Pas de nouvelle table pour un lien x,1 — x,n."
         explanation: "x,1 — x,n : clé étrangère côté x,1."
-      - code: mer-mld-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: merise-mld-mpd
-        prompt: "Quelle est la clé primaire de la table `inscription (#id_membre, #id_cours, date_inscription)` ?"
-        choices:
-          - label: "Le couple (id_membre, id_cours)"
-            correct: true
-            why: "Clé primaire composée des deux clés étrangères."
-          - label: "date_inscription"
-            correct: false
-            why: "Deux inscriptions peuvent avoir la même date."
-          - label: "id_membre seul"
-            correct: false
-            why: "Un membre a plusieurs inscriptions."
-        explanation: "Chaque couple membre + cours n'apparaît qu'une fois."
       - code: mer-mld-q3
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -138,35 +331,51 @@ lessons:
             correct: false
             why: "Rien à voir."
         explanation: "Clé primaire soulignée, clé étrangère précédée de #."
-      - code: mer-mld-q4
+      - code: mer-fk-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mld-mpd
+        prompt: "Qu'est-ce qu'une clé étrangère ?"
+        choices:
+          - label: "Une colonne qui contient la clé primaire d'une autre table"
+            correct: true
+            why: "L'étiquette du colis."
+          - label: "La clé primaire de la table"
+            correct: false
+            why: "Elle vient d'une autre table."
+          - label: "Une colonne en langue étrangère"
+            correct: false
+            why: "« étrangère » = qui vient d'ailleurs."
+        explanation: "Elle relie deux tables."
+      - code: mer-fk-q4
         kind: VRAI_FAUX
         difficulty: 2
         skill: merise-mld-mpd
-        prompt: "Une association 0,n — 0,n entre deux entités donne trois tables au total."
+        prompt: "Une association x,1 — x,n devient une nouvelle table dans le MLD."
         choices:
           - label: "Vrai"
-            correct: true
-            why: "Deux tables pour les entités, une pour l'association."
+            correct: false
+            why: "Non : elle devient une clé étrangère."
           - label: "Faux"
-            correct: false
-            why: "La table d'association s'ajoute aux deux autres."
-        explanation: "Règle 3 : une table supplémentaire."
-      - code: mer-mld-q5
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: merise-mld-mpd
-        prompt: "Que devient l'identifiant d'une entité dans le MLD ?"
-        choices:
-          - label: "La clé primaire de sa table"
             correct: true
-            why: "Règle 1."
-          - label: "Une clé étrangère"
+            why: "Exact : pas de nouvelle table, une clé étrangère suffit."
+        explanation: "Règle 2 : clé étrangère, pas de table."
+      - code: mer-c3-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: merise-mld-mpd
+        prompt: "Association 0,1 — 1,1 (une personne a au plus un badge ; un badge appartient à une personne). Où placer la clé étrangère ?"
+        choices:
+          - label: "Dans badge (#id_personne)"
+            correct: true
+            why: "Côté 1,1 : chaque badge a une seule personne."
+          - label: "Dans une table d'association"
             correct: false
-            why: "Il ne devient clé étrangère que dans les autres tables qui le référencent."
-          - label: "Il disparaît"
+            why: "Inutile : aucun maximum ne vaut n."
+          - label: "Nulle part"
             correct: false
-            why: "Il est indispensable."
-        explanation: "Entité → table ; identifiant → clé primaire."
+            why: "Le lien doit être gardé."
+        explanation: "Côté obligatoire (1,1), on garde la clé de l'autre table."
     exercises:
       - slug: mer-ex-mld-guide
         kind: COMPLETER
@@ -190,6 +399,240 @@ lessons:
           blanks:
             - ["cours"]
             - ["#id_coach"]
+      - slug: mer-ex-mld-client-commande
+        kind: MCD_VERS_MLD
+        title: "MLD : un client passe des commandes"
+        difficulty: INTERMEDIAIRE
+        skill: merise-mld-mpd
+        statement: |
+          Traduis le MCD affiché en MLD : deux tables, et la clé étrangère du bon côté.
+        criteria: "Deux tables ; commande contient une clé étrangère vers client."
+        hints:
+          - "Deux tables : client et commande."
+          - "Côté 1,1 : commande."
+          - "Ajoute la colonne id_client dans commande, marquée clé étrangère vers client."
+        solution: |
+          client (id_client, nom, email)
+          commande (id_commande, date_commande, #id_client)
+        explanation: "La clé étrangère va du côté où le maximum vaut 1."
+        xp: 20
+        payload:
+          mcd:
+            entities:
+              - { id: e1, name: CLIENT, x: 40, y: 60, attributes: [{ name: id_client, identifier: true }, { name: nom }, { name: email }] }
+              - { id: e2, name: COMMANDE, x: 520, y: 60, attributes: [{ name: id_commande, identifier: true }, { name: date_commande }] }
+            associations:
+              - { id: a1, name: PASSER, x: 300, y: 80, attributes: [], links: [{ entity: e1, card: "0,n" }, { entity: e2, card: "1,1" }] }
+          expected:
+            tables:
+              - { name: client, aliases: [clients, cliente], pkCount: 1, fks: [], columns: [nom, email] }
+              - { name: commande, aliases: [commandes], pkCount: 1, fks: [client], columns: [{ name: date_commande, aliases: [date] }] }
+          solutionModel:
+            tables:
+              - { id: t1, name: client, columns: [{ name: id_client, pk: true, fk: "" }, { name: nom, pk: false, fk: "" }, { name: email, pk: false, fk: "" }] }
+              - { id: t2, name: commande, columns: [{ name: id_commande, pk: true, fk: "" }, { name: date_commande, pk: false, fk: "" }, { name: id_client, pk: false, fk: client }] }
+      - slug: mer-ex-fk-bug
+        kind: CORRIGER_ERREUR
+        title: "Une clé étrangère du mauvais côté"
+        difficulty: FACILE
+        skill: merise-mld-mpd
+        statement: |
+          MCD : `SERVICE 1,n —— APPARTENIR —— 1,1 SALARIE`. La clé étrangère a été mise dans `service`.
+          Déplace-la : `salarie` doit contenir `#id_service`, et `service` ne doit plus contenir `#id_salarie`.
+        criteria: "salarie contient #id_service ; service ne contient plus #id_salarie."
+        hints:
+          - "Côté 1,1 : SALARIE."
+          - "Un salarié a un seul service : on écrit le numéro du service dans chaque salarié."
+          - "salarie (id_salarie, nom, #id_service)"
+        solution: |
+          service (id_service, nom)
+          salarie (id_salarie, nom, #id_service)
+        explanation: "La clé étrangère va toujours du côté où le maximum vaut 1."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            service (id_service, nom, #id_salarie)
+            salarie (id_salarie, nom)
+          checks:
+            - pattern: '#\s*id_salarie'
+              absent: true
+              message: "Retire #id_salarie de service."
+            - pattern: '(?i)salarie\s*\([^)]*#\s*id_service'
+              message: "Ajoute #id_service dans salarie."
+
+  # ===================================================================== LEÇON 3
+  - slug: merise-mld-table-association
+    title: "Règle 3 : la table d'association (liens x,n — x,n)"
+    duration: 11
+    objective: "Traduire une association x,n — x,n en une nouvelle table à clé primaire composée."
+    prerequisites: "Leçon « Règle 2 : la clé étrangère »."
+    skills: [merise-mld-mpd]
+    xp: 15
+    memo: |
+      - Règle 3 : association **x,n — x,n** → **nouvelle table**.
+      - Sa clé primaire est **composée** des deux clés étrangères : `inscription (#id_membre, #id_cours, date_inscription)`.
+      - Les attributs portés par l'association deviennent des colonnes de cette table.
+      - Au total : deux tables pour les entités + une pour l'association.
+    commonMistakes: |
+      - Oublier la table d'une association n-n.
+      - Oublier que les colonnes de la clé primaire sont aussi des clés étrangères.
+    blocks:
+      - type: text
+        md: |
+          Un membre s'inscrit à **plusieurs** cours, un cours accueille **plusieurs** membres. Une seule colonne
+          ne suffit pas à garder ce lien : il faut une **table** entière.
+      - type: definition
+        id: def-table-association
+        term: "Table d'association"
+        md: |
+          Un **registre d'inscriptions** : chaque ligne dit « tel membre est inscrit à tel cours, depuis telle
+          date ». Le couple (membre, cours) forme la clé : on ne s'inscrit pas deux fois au même cours.
+      - type: code
+        id: code-regle3
+        language: text
+        title: "Règle 3 : x,n — x,n → table d'association"
+        code: |
+          MCD : MEMBRE 0,n —— S'INSCRIRE (date_inscription) —— 0,n COURS
+          MLD : membre (id_membre, nom, email)
+                cours (id_cours, intitule)
+                inscription (#id_membre, #id_cours, date_inscription)
+        lines:
+          - n: 1
+            note: "Les deux maximums valent n : aucune des deux tables ne peut contenir une seule clé étrangère."
+          - n: 4
+            note: "Nouvelle table : clé primaire composée (id_membre, id_cours), chacune clé étrangère, plus l'attribut porté."
+      - type: question
+        ref: mer-mld-q2
+        review: code-regle3
+      - type: question
+        ref: mer-mld-q4
+        review: def-table-association
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la table d'association."
+      - type: exercise
+        ref: mer-ex-regle3-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : traduis le MCD complet du club de sport."
+      - type: exercise
+        ref: mer-ex-mld-club
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une table d'association oubliée."
+      - type: exercise
+        ref: mer-ex-regle3-bug
+      - type: jury
+        items:
+          - q: "Que devient une association plusieurs-à-plusieurs dans le MLD ?"
+            a: "Elle devient une table dont la clé primaire est composée des deux clés étrangères, avec les attributs portés par l'association."
+      - type: quiz
+        items:
+          - ref: mer-c3-b2
+            review: code-regle3
+          - ref: mer-r3-q4
+            review: def-table-association
+          - ref: mer-r3-q5
+            review: code-regle3
+    questions:
+      - code: mer-mld-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mld-mpd
+        prompt: "Quelle est la clé primaire de la table `inscription (#id_membre, #id_cours, date_inscription)` ?"
+        choices:
+          - label: "Le couple (id_membre, id_cours)"
+            correct: true
+            why: "Clé primaire composée des deux clés étrangères."
+          - label: "date_inscription"
+            correct: false
+            why: "Deux inscriptions peuvent avoir la même date."
+          - label: "id_membre seul"
+            correct: false
+            why: "Un membre a plusieurs inscriptions."
+        explanation: "Chaque couple membre + cours n'apparaît qu'une fois."
+      - code: mer-mld-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: merise-mld-mpd
+        prompt: "Une association 0,n — 0,n entre deux entités donne trois tables au total."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Deux tables pour les entités, une pour l'association."
+          - label: "Faux"
+            correct: false
+            why: "La table d'association s'ajoute aux deux autres."
+        explanation: "Règle 3 : une table supplémentaire."
+      - code: mer-c3-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mld-mpd
+        prompt: "Combien de tables pour : CLIENT 0,n PASSER 1,1 COMMANDE, et COMMANDE 1,n CONTENIR 0,n PRODUIT ?"
+        choices:
+          - label: "4 (client, commande, produit, contenir)"
+            correct: true
+            why: "Trois entités + une table pour l'association n-n."
+          - label: "3"
+            correct: false
+            why: "Il manque la table de l'association CONTENIR."
+          - label: "5"
+            correct: false
+            why: "PASSER ne crée pas de table (règle 2)."
+        explanation: "Règle 2 pour PASSER (clé étrangère), règle 3 pour CONTENIR (table)."
+      - code: mer-r3-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: merise-mld-mpd
+        prompt: "Que deviennent les attributs portés par une association n-n ?"
+        choices:
+          - label: "Des colonnes de la table d'association"
+            correct: true
+            why: "Ils décrivent le lien, donc la ligne du registre."
+          - label: "Des colonnes de l'une des deux entités"
+            correct: false
+            why: "Ils dépendent du couple."
+          - label: "Ils disparaissent"
+            correct: false
+            why: "Ils sont gardés."
+        explanation: "Attribut porté → colonne de la table d'association."
+      - code: mer-r3-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: merise-mld-mpd
+        prompt: "Pourquoi une seule clé étrangère ne suffit-elle pas pour un lien n-n ?"
+        choices:
+          - label: "Parce que chaque membre a plusieurs cours ET chaque cours plusieurs membres"
+            correct: true
+            why: "Une case ne peut contenir qu'une seule valeur."
+          - label: "Parce que c'est interdit"
+            correct: false
+            why: "C'est une impossibilité pratique."
+          - label: "Elle suffirait"
+            correct: false
+            why: "Elle ne pourrait garder qu'un seul cours par membre."
+        explanation: "D'où la table d'association."
+    exercises:
+      - slug: mer-ex-regle3-guide
+        kind: COMPLETER
+        title: "Compléter la table d'association"
+        difficulty: FACILE
+        skill: merise-mld-mpd
+        statement: "COMMANDE 1,n —— CONTENIR (quantite) —— 0,n PRODUIT. Complète la table d'association."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La table porte le nom de l'association : contenir."
+          - "Les deux clés étrangères forment la clé primaire."
+          - "#id_commande, #id_produit, quantite."
+        solution: '["#id_commande", "#id_produit", "quantite"]'
+        explanation: "`contenir (#id_commande, #id_produit, quantite)`"
+        xp: 10
+        payload:
+          language: text
+          template: |
+            contenir ([[1]], [[2]], [[3]])
+          blanks:
+            - ["#id_commande"]
+            - ["#id_produit"]
+            - ["quantite"]
       - slug: mer-ex-mld-club
         kind: MCD_VERS_MLD
         title: "MLD du club de sport"
@@ -241,37 +684,67 @@ lessons:
               - { id: t2, name: coach, columns: [{ name: id_coach, pk: true, fk: "" }, { name: nom, pk: false, fk: "" }] }
               - { id: t3, name: cours, columns: [{ name: id_cours, pk: true, fk: "" }, { name: intitule, pk: false, fk: "" }, { name: id_coach, pk: false, fk: coach }] }
               - { id: t4, name: inscription, columns: [{ name: id_membre, pk: true, fk: membre }, { name: id_cours, pk: true, fk: cours }, { name: date_inscription, pk: false, fk: "" }] }
+      - slug: mer-ex-regle3-bug
+        kind: CORRIGER_ERREUR
+        title: "Une table d'association oubliée"
+        difficulty: INTERMEDIAIRE
+        skill: merise-mld-mpd
+        statement: |
+          MCD : `AUTEUR 1,n —— ECRIRE —— 1,n LIVRE`. Le MLD proposé a mis `#id_livre` dans `auteur`, ce qui ne
+          permet qu'un seul livre par auteur. Retire cette colonne et ajoute la table
+          `ecrire (#id_auteur, #id_livre)`.
+        criteria: "auteur sans #id_livre ; table ecrire (#id_auteur, #id_livre)."
+        hints:
+          - "Les deux maximums valent n : règle 3."
+          - "Il faut une nouvelle table, nommée d'après l'association."
+          - "ecrire (#id_auteur, #id_livre)"
+        solution: |
+          auteur (id_auteur, nom)
+          livre (id_livre, titre)
+          ecrire (#id_auteur, #id_livre)
+        explanation: "Lien n-n → table d'association à clé composée."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            auteur (id_auteur, nom, #id_livre)
+            livre (id_livre, titre)
+          checks:
+            - pattern: '(?i)auteur\s*\([^)]*#\s*id_livre'
+              absent: true
+              message: "Retire #id_livre de auteur."
+            - pattern: '(?i)ecrire\s*\(\s*#\s*id_auteur\s*,\s*#\s*id_livre\s*\)|ecrire\s*\(\s*#\s*id_livre\s*,\s*#\s*id_auteur\s*\)'
+              message: "Ajoute la table ecrire (#id_auteur, #id_livre)."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 4
   - slug: merise-mpd-sql
     title: "Le MPD : écrire le script SQL"
-    duration: 14
+    duration: 12
     objective: "Traduire un MLD en CREATE TABLE avec types, clés primaires, clés étrangères et contraintes."
-    prerequisites: "Leçon « Les règles de passage au MLD »."
+    prerequisites: "Leçon « Règle 3 : la table d'association »."
     skills: [merise-mld-mpd, sql-ddl]
-    xp: 25
+    xp: 20
     memo: |
-      - Le **MPD** est le script SQL propre au SGBD (ici PostgreSQL).
+      - Le **MPD** (modèle physique) est le script SQL propre au SGBD (ici PostgreSQL).
       - Ordre de création : d'abord les tables **référencées**, puis celles qui les référencent.
       - Clé primaire simple : `BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY`.
       - Clé étrangère : `BIGINT NOT NULL REFERENCES coach (id_coach)`.
       - Clé primaire composée : `PRIMARY KEY (id_membre, id_cours)`.
-      - On ajoute les contraintes métier : `NOT NULL`, `UNIQUE`, `CHECK`, `DEFAULT`.
+      - Les règles métier deviennent des contraintes : `NOT NULL`, `UNIQUE`, `CHECK`, `DEFAULT`.
     commonMistakes: |
       - Créer une table avant celle qu'elle référence : erreur « relation does not exist ».
       - Mettre `GENERATED AS IDENTITY` sur une clé étrangère.
-      - Oublier les contraintes métier (e-mail unique, date par défaut).
     blocks:
       - type: text
         md: |
-          Dernière étape : écrire le **script** que PostgreSQL exécutera. Tu as déjà vu `CREATE TABLE` dans le
+          Dernière étape : écrire le **script** que PostgreSQL exécutera. Tu as vu `CREATE TABLE` dans le
           parcours SQL ; ici, on le déduit méthodiquement du MLD.
       - type: definition
         id: def-mpd
         term: "MPD (Modèle Physique de Données)"
         md: |
-          La version **concrète** du MLD pour un SGBD précis : types exacts (`VARCHAR(80)`, `DATE`),
-          contraintes, index. C'est le **chantier** après les plans.
+          Le **chantier** après les plans : les types exacts (`VARCHAR(80)`, `DATE`), les contraintes, le script
+          réel pour un SGBD précis.
       - type: code
         id: code-mpd
         language: sql
@@ -319,19 +792,23 @@ lessons:
         ref: mer-mpd-q2
         review: code-pk-composee
       - type: text
-        md: "Exercice guidé : complète le script."
+        md: "**Exercice 1 (guidé)** : complète le script."
       - type: exercise
         ref: mer-ex-mpd-guide
       - type: text
         md: |
-          En autonomie : écris le script PostgreSQL de ce MLD (il est exécuté pour de vrai dans le
-          laboratoire, puis annulé) :
+          **Exercice 2 (en autonomie)** : écris le script PostgreSQL de ce MLD (il est exécuté pour de vrai dans
+          le laboratoire, puis annulé) :
 
           - club_membre (<u>id_membre</u>, nom, email) — e-mail **unique** ;
           - club_cours (<u>id_cours</u>, intitule) ;
           - club_inscription (<u>#id_membre, #id_cours</u>, date_inscription).
       - type: exercise
         ref: mer-ex-mpd
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des tables créées dans le mauvais ordre."
+      - type: exercise
+        ref: mer-ex-mpd-ordre-bug
       - type: jury
         items:
           - q: "Quelle différence entre MLD et MPD ?"
@@ -505,37 +982,81 @@ lessons:
             WHERE c.relnamespace = 'lab'::regnamespace
               AND c.relname IN ('club_membre', 'club_cours', 'club_inscription')
             ORDER BY 1, 2, 3, 4
+      - slug: mer-ex-mpd-ordre-bug
+        kind: CORRIGER_ERREUR
+        title: "Des tables créées dans le mauvais ordre"
+        difficulty: FACILE
+        skill: sql-ddl
+        statement: |
+          PostgreSQL refuse ce script : « relation "club_coach" does not exist ». La table `club_cours`
+          référence `club_coach`, qui n'est créée qu'après. Remets les deux CREATE TABLE dans le bon ordre.
+        criteria: "club_coach est créée avant club_cours."
+        hints:
+          - "Une table doit exister avant d'être référencée."
+          - "Qui référence qui ?"
+          - "Déplace le bloc club_coach en premier."
+        solution: |
+          CREATE TABLE club_coach (
+            id_coach BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            nom      VARCHAR(80) NOT NULL
+          );
+
+          CREATE TABLE club_cours (
+            id_cours BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            intitule VARCHAR(60) NOT NULL,
+            id_coach BIGINT NOT NULL REFERENCES club_coach (id_coach)
+          );
+        explanation: "Tables référencées d'abord."
+        xp: 10
+        payload:
+          language: sql
+          starter: |
+            CREATE TABLE club_cours (
+              id_cours BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+              intitule VARCHAR(60) NOT NULL,
+              id_coach BIGINT NOT NULL REFERENCES club_coach (id_coach)
+            );
+
+            CREATE TABLE club_coach (
+              id_coach BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+              nom      VARCHAR(80) NOT NULL
+            );
+          checks:
+            - pattern: '(?i)CREATE\s+TABLE\s+club_coach[\s\S]*CREATE\s+TABLE\s+club_cours'
+              message: "Crée club_coach avant club_cours."
+            - pattern: '(?i)REFERENCES\s+club_coach\s*\(\s*id_coach\s*\)'
+              message: "Garde la clé étrangère de club_cours vers club_coach."
 
 bank:
-  - code: mer-c3-b1
-    kind: CHOIX_UNIQUE
-    difficulty: 3
-    skill: merise-mld-mpd
-    prompt: "Association 0,1 — 1,1 (une personne a au plus un badge ; un badge appartient à une personne). Où placer la clé étrangère ?"
-    choices:
-      - label: "Dans badge (#id_personne), avec une contrainte UNIQUE"
-        correct: true
-        why: "Côté 1,1 ; UNIQUE garantit qu'une personne n'a qu'un badge."
-      - label: "Dans une table d'association"
-        correct: false
-        why: "Inutile : aucun maximum ne vaut n."
-      - label: "Nulle part"
-        correct: false
-        why: "Le lien doit être représenté."
-    explanation: "Relation un-à-un : clé étrangère côté obligatoire, rendue unique."
-  - code: mer-c3-b2
+  - code: mer-c3-b3
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: merise-mld-mpd
-    prompt: "Combien de tables pour : CLIENT 0,n PASSER 1,1 COMMANDE, et COMMANDE 1,n CONTENIR 0,n PRODUIT ?"
+    prompt: "Quelle règle de passage s'applique à SERVICE 0,n —— EMPLOYER —— 1,1 EMPLOYE ?"
     choices:
-      - label: "4 (client, commande, produit, contenir)"
+      - label: "Règle 2 : une clé étrangère #id_service dans employe"
         correct: true
-        why: "Trois entités + une table pour l'association n-n."
-      - label: "3"
+        why: "Côté 1,1 : chaque employé a un seul service, on garde son numéro."
+      - label: "Règle 3 : une table employer"
         correct: false
-        why: "Il manque la table de l'association CONTENIR."
-      - label: "5"
+        why: "Un seul maximum vaut n."
+      - label: "Aucune"
         correct: false
-        why: "PASSER ne crée pas de table (x,1 — x,n)."
-    explanation: "Règle 2 pour PASSER (clé étrangère), règle 3 pour CONTENIR (table)."
+        why: "Le lien doit être gardé."
+    explanation: "Règle 2 : clé étrangère du côté où le maximum vaut 1."
+  - code: mer-c3-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: merise-mld-mpd
+    prompt: "Dans quel ordre traduit-on ?"
+    choices:
+      - label: "MCD → MLD → MPD"
+        correct: true
+        why: "Du dessin aux tables, puis au script."
+      - label: "MPD → MLD → MCD"
+        correct: false
+        why: "C'est l'inverse."
+      - label: "MLD → MCD → MPD"
+        correct: false
+        why: "Le MCD vient en premier."
+    explanation: "Conceptuel → logique → physique."

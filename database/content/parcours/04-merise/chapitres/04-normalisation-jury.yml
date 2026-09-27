@@ -2,40 +2,38 @@ slug: merise-normalisation-jury
 position: 4
 level: EXAMEN
 title: "Normalisation et questions du jury"
-summary: "Vérifier un modèle avec les trois premières formes normales, corriger une table mal conçue et répondre aux questions de modélisation du jury."
-quizQuestionCount: 10
+summary: "Vérifier une table avec la 1FN, puis la 2FN, puis la 3FN, et présenter son modèle au jury. Une seule notion par leçon."
+quizQuestionCount: 12
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: merise-formes-normales
-    title: "Les formes normales : 1FN, 2FN, 3FN"
-    duration: 14
-    objective: "Reconnaître une table qui viole la 1FN, la 2FN ou la 3FN, et la corriger en la découpant."
+    title: "La 1re forme normale : une valeur par case"
+    duration: 9
+    objective: "Reconnaître une table qui range plusieurs valeurs dans une case (violation de la 1FN) et la corriger."
     prerequisites: "Chapitre « Du MCD au MLD et au MPD »."
     skills: [normalisation]
-    xp: 25
+    xp: 15
     memo: |
-      - **But** : chaque information à un seul endroit, pour éviter les incohérences (anomalies de mise à jour).
-      - **1FN** : chaque case contient **une seule valeur** (pas de liste « Java, SQL ») et il y a une clé primaire.
-      - **2FN** : 1FN + chaque colonne dépend de **toute** la clé (pas d'une partie seulement d'une clé composée).
-      - **3FN** : 2FN + aucune colonne ne dépend d'une **autre colonne non clé** (pas de dépendance transitive).
-      - Correction : on **découpe** la table et on relie par des clés étrangères.
+      - **But de la normalisation** : chaque information à **un seul endroit**, pour éviter les incohérences.
+      - **1FN** : chaque case contient **une seule valeur** (pas de liste « Java, SQL »), et la table a une clé primaire.
+      - Correction : on sort la liste dans une **table à part**, reliée par une clé étrangère.
     commonMistakes: |
       - Ranger plusieurs valeurs dans une colonne séparées par des virgules.
-      - Garder le nom du produit dans la table des lignes de commande (il dépend de id_produit seul).
-      - Garder la ville et le code postal d'un client quand la ville se déduit… (selon les règles, à discuter).
+      - Créer des colonnes numérotées (telephone1, telephone2, telephone3).
     blocks:
       - type: text
         md: |
           Un MCD bien construit donne presque toujours des tables **normalisées**. La normalisation sert à
-          **vérifier** une table existante, ou une table proposée dans un sujet d'examen.
+          **vérifier** une table existante, ou une table proposée dans un sujet d'examen. Première règle : une
+          seule valeur par case.
       - type: definition
         id: def-normalisation
-        term: "Normalisation"
+        term: "Normalisation (1FN)"
         md: |
-          Une série de **règles de rangement** qui évitent de stocker deux fois la même information. Comme un
-          carnet d'adresses : si l'adresse d'un ami est recopiée dans dix pages, un déménagement oblige à
-          corriger dix pages… et on en oublie toujours une.
+          Un **carnet d'adresses** bien tenu : si l'adresse d'une amie est recopiée dans dix pages, un
+          déménagement oblige à corriger dix pages… et on en oublie toujours une. La 1FN est la première règle de
+          rangement : **une case = une valeur**.
       - type: code
         id: code-1fn
         language: text
@@ -46,54 +44,32 @@ lessons:
         lines:
           - n: 2
             note: "La case `cours_suivis` contient une **liste** : impossible de chercher proprement « qui suit SQL ? ». Correction : une table `inscription (#id_etudiant, #id_cours)`."
-      - type: code
-        id: code-2fn
-        language: text
-        title: "Violation de la 2FN"
-        code: |
-          ligne_commande (#id_commande, #id_produit, quantite, nom_produit)
-        lines:
-          - n: 1
-            note: "La clé est (id_commande, id_produit). `nom_produit` dépend **seulement** de `id_produit` : une partie de la clé. Il doit rester dans la table `produit`."
-      - type: code
-        id: code-3fn
-        language: text
-        title: "Violation de la 3FN"
-        code: |
-          salarie (id_salarie, nom, id_service, nom_service)
-        lines:
-          - n: 1
-            note: "`nom_service` dépend de `id_service`, qui n'est pas la clé : dépendance **transitive**. On crée `service (id_service, nom_service)` et on garde seulement `#id_service` dans `salarie`."
       - type: question
         ref: mer-fn-q1
         review: code-1fn
       - type: question
-        ref: mer-fn-q2
-        review: code-3fn
+        ref: mer-fn-q4
+        review: def-normalisation
       - type: text
-        md: "Exercice guidé : associe chaque table à la forme normale qu'elle viole."
+        md: "**Exercice 1 (guidé)** : repère la case qui contient une liste."
       - type: exercise
-        ref: mer-ex-fn-guide
+        ref: mer-ex-1fn-guide
       - type: text
-        md: "En autonomie : normalise une table de commandes mal conçue dans l'éditeur de tables."
+        md: "**Exercice 2 (en autonomie)** : sors la liste de téléphones dans sa propre table."
       - type: exercise
-        ref: mer-ex-normaliser
-      - type: jury
-        items:
-          - q: "Qu'est-ce que la normalisation et pourquoi l'appliquer ?"
-            a: "Un ensemble de règles (1FN, 2FN, 3FN…) qui évitent la redondance : chaque information est stockée une seule fois, ce qui évite les incohérences lors des mises à jour."
-          - q: "Énoncez la 3e forme normale."
-            a: "La table est en 2FN et aucune colonne non clé ne dépend d'une autre colonne non clé : tout dépend de la clé, de toute la clé, et de rien d'autre que la clé."
-          - q: "Peut-on volontairement dénormaliser ?"
-            a: "Oui, pour des raisons de performance (tableaux de bord, historiques), en le justifiant et en maîtrisant la mise à jour des données dupliquées."
+        ref: mer-ex-1fn-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des colonnes numérotées."
+      - type: exercise
+        ref: mer-ex-1fn-bug
       - type: quiz
         items:
-          - ref: mer-fn-q3
-            review: code-2fn
-          - ref: mer-fn-q4
+          - ref: mer-c4-b1
             review: def-normalisation
-          - ref: mer-fn-q5
-            review: code-3fn
+          - ref: mer-1f-q4
+            review: code-1fn
+          - ref: mer-1f-q5
+            review: def-normalisation
     questions:
       - code: mer-fn-q1
         kind: CHOIX_UNIQUE
@@ -106,11 +82,451 @@ lessons:
             why: "Plusieurs valeurs dans une case."
           - label: "La 2FN"
             correct: false
-            why: "La 2FN concerne les clés composées."
+            why: "Ce sera une autre règle, vue à la leçon suivante."
           - label: "Aucune"
             correct: false
-            why: "Une case doit contenir une valeur atomique."
+            why: "Une case doit contenir une seule valeur."
         explanation: "1FN : une valeur par case. Correction : une table des téléphones."
+      - code: mer-fn-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: normalisation
+        prompt: "La normalisation vise à éviter de stocker plusieurs fois la même information."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Une information à un seul endroit."
+          - label: "Faux"
+            correct: false
+            why: "C'est exactement son but."
+        explanation: "Moins de répétitions, moins d'incohérences."
+      - code: mer-c4-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: normalisation
+        prompt: "Quel problème apparaît quand l'adresse d'un fournisseur est recopiée dans chaque produit ?"
+        choices:
+          - label: "Changer l'adresse oblige à modifier plusieurs lignes, et on risque d'en oublier"
+            correct: true
+            why: "C'est une anomalie de mise à jour."
+          - label: "Aucun"
+            correct: false
+            why: "La répétition crée des incohérences."
+          - label: "Une erreur de syntaxe SQL"
+            correct: false
+            why: "Le SQL reste valide ; c'est la conception qui pose problème."
+        explanation: "La normalisation supprime ces anomalies."
+      - code: mer-1f-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: normalisation
+        prompt: "Comment corrige-t-on une colonne qui contient une liste ?"
+        choices:
+          - label: "On crée une table à part, avec une ligne par valeur"
+            correct: true
+            why: "Chaque valeur a sa propre case."
+          - label: "On sépare les valeurs par des points-virgules"
+            correct: false
+            why: "C'est toujours une liste dans une case."
+          - label: "On supprime la colonne"
+            correct: false
+            why: "On perdrait l'information."
+        explanation: "Une ligne par valeur, dans une table reliée."
+      - code: mer-1f-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: normalisation
+        prompt: "Des colonnes telephone1, telephone2, telephone3 respectent la 1FN sans problème."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "C'est une liste déguisée : et s'il y a un quatrième numéro ?"
+          - label: "Faux"
+            correct: true
+            why: "Exact : on crée plutôt une table des téléphones."
+        explanation: "Colonnes numérotées = liste cachée."
+    exercises:
+      - slug: mer-ex-1fn-guide
+        kind: COMPLETER
+        title: "Repérer la liste"
+        difficulty: FACILE
+        skill: normalisation
+        statement: "Dans `client (id_client, nom, emails)`, où `emails` vaut « a@x.fr; b@y.fr », complète."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Quelle colonne contient plusieurs valeurs ?"
+          - "Quelle forme normale demande une valeur par case ?"
+          - "emails, 1FN."
+        solution: '["emails", "1FN"]'
+        explanation: "La colonne emails contient une liste : violation de la 1FN."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            La colonne qui contient plusieurs valeurs : [[1]]
+            La forme normale violée : [[2]]
+          blanks:
+            - ["emails"]
+            - ["1FN", "1NF"]
+      - slug: mer-ex-1fn-libre
+        kind: CODE_LIBRE
+        title: "Sortir la liste de téléphones"
+        difficulty: INTERMEDIAIRE
+        skill: normalisation
+        statement: |
+          La table `membre (id_membre, nom, telephones)` range plusieurs numéros dans `telephones`.
+          Écris les deux tables corrigées, une par ligne :
+          - `membre` sans la colonne telephones ;
+          - `telephone (id_telephone, numero, #id_membre)`.
+        criteria: "membre (id_membre, nom) et telephone (id_telephone, numero, #id_membre)."
+        hints:
+          - "membre garde id_membre et nom."
+          - "Chaque numéro devient une ligne de la table telephone."
+          - "telephone (id_telephone, numero, #id_membre)"
+        solution: |
+          membre (id_membre, nom)
+          telephone (id_telephone, numero, #id_membre)
+        explanation: "Une ligne par numéro : on peut en avoir autant qu'on veut."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            membre (
+            telephone (
+          checks:
+            - pattern: '(?im)^\s*membre\s*\(\s*id_membre\s*,\s*nom\s*\)'
+              message: "Écris membre (id_membre, nom)"
+            - pattern: '(?i)telephone\s*\(\s*id_telephone\s*,\s*numero\s*,\s*#\s*id_membre\s*\)'
+              message: "Écris telephone (id_telephone, numero, #id_membre)"
+      - slug: mer-ex-1fn-bug
+        kind: CORRIGER_ERREUR
+        title: "Des colonnes numérotées"
+        difficulty: FACILE
+        skill: normalisation
+        statement: |
+          La table `recette` a trois colonnes `ingredient1`, `ingredient2`, `ingredient3` : c'est une liste
+          déguisée. Garde `recette (id_recette, nom)` et ajoute la table
+          `ingredient (id_ingredient, nom, #id_recette)`.
+        criteria: "Plus de colonnes numérotées ; une table ingredient reliée à recette."
+        hints:
+          - "Une ligne par ingrédient."
+          - "Chaque ingrédient sait à quelle recette il appartient."
+          - "ingredient (id_ingredient, nom, #id_recette)"
+        solution: |
+          recette (id_recette, nom)
+          ingredient (id_ingredient, nom, #id_recette)
+        explanation: "Une recette peut maintenant avoir autant d'ingrédients qu'elle veut."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            recette (id_recette, nom, ingredient1, ingredient2, ingredient3)
+          checks:
+            - pattern: '(?i)ingredient\d'
+              absent: true
+              message: "Supprime les colonnes numérotées."
+            - pattern: '(?i)recette\s*\(\s*id_recette\s*,\s*nom\s*\)'
+              message: "Garde recette (id_recette, nom)."
+            - pattern: '(?i)ingredient\s*\(\s*id_ingredient\s*,\s*nom\s*,\s*#\s*id_recette\s*\)'
+              message: "Ajoute ingredient (id_ingredient, nom, #id_recette)."
+
+  # ===================================================================== LEÇON 2
+  - slug: merise-2fn
+    title: "La 2e forme normale : dépendre de toute la clé"
+    duration: 10
+    objective: "Repérer, dans une table à clé composée, une colonne qui ne dépend que d'une partie de la clé, et la déplacer."
+    prerequisites: "Leçon « La 1re forme normale »."
+    skills: [normalisation]
+    xp: 15
+    memo: |
+      - La 2FN ne concerne que les tables à **clé primaire composée** (deux colonnes ou plus).
+      - **2FN** : 1FN + chaque colonne dépend de **toute** la clé, pas d'une partie seulement.
+      - Question à se poser : « cette colonne change-t-elle si je change seulement **une** partie de la clé ? »
+      - Correction : déplacer la colonne dans la table de la partie dont elle dépend.
+    commonMistakes: |
+      - Garder le nom du produit dans la table des lignes de commande (il ne dépend que de id_produit).
+    blocks:
+      - type: text
+        md: |
+          Deuxième règle, pour les tables d'association : chaque information doit décrire **le couple entier**,
+          pas seulement l'un des deux.
+      - type: definition
+        id: def-2fn
+        term: "2FN"
+        md: |
+          Dans le **registre des notes** (étudiant + matière), la note dépend des deux. Mais le **nom de la
+          matière** ne dépend que de la matière : il n'a rien à faire dans le registre, il va dans la table des
+          matières.
+      - type: code
+        id: code-2fn
+        language: text
+        title: "Violation de la 2FN"
+        code: |
+          ligne_commande (#id_commande, #id_produit, quantite, nom_produit)
+        lines:
+          - n: 1
+            note: "La clé est (id_commande, id_produit). `nom_produit` dépend **seulement** de `id_produit` : une partie de la clé. Il doit rester dans la table `produit`."
+      - type: question
+        ref: mer-fn-q3
+        review: code-2fn
+      - type: question
+        ref: mer-2f-q2
+        review: def-2fn
+      - type: text
+        md: "**Exercice 1 (guidé)** : quelle colonne ne dépend que d'une partie de la clé ?"
+      - type: exercise
+        ref: mer-ex-2fn-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : corrige la table des notes."
+      - type: exercise
+        ref: mer-ex-2fn-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un nom rangé dans la table d'association."
+      - type: exercise
+        ref: mer-ex-2fn-bug
+      - type: quiz
+        items:
+          - ref: mer-2f-q3
+            review: def-2fn
+          - ref: mer-2f-q4
+            review: code-2fn
+          - ref: mer-2f-q5
+            review: def-2fn
+    questions:
+      - code: mer-fn-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: normalisation
+        prompt: "Dans `ligne_commande (#id_commande, #id_produit, quantite, nom_produit)`, que faire de `nom_produit` ?"
+        choices:
+          - label: "Le laisser dans produit : il dépend seulement de id_produit (violation 2FN)"
+            correct: true
+            why: "Il dépend d'une partie de la clé."
+          - label: "Le garder : tout va bien"
+            correct: false
+            why: "Il dépend d'une partie de la clé seulement."
+          - label: "Le mettre dans commande"
+            correct: false
+            why: "Il concerne le produit, pas la commande."
+        explanation: "Une colonne de la table d'association doit décrire le couple entier."
+      - code: mer-2f-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: normalisation
+        prompt: "Quelles tables peuvent violer la 2FN ?"
+        choices:
+          - label: "Celles dont la clé primaire est composée"
+            correct: true
+            why: "Sans clé composée, pas de « partie de clé »."
+          - label: "Toutes"
+            correct: false
+            why: "Une clé simple ne peut pas être coupée en parties."
+          - label: "Aucune"
+            correct: false
+            why: "Les tables d'association y sont exposées."
+        explanation: "2FN = affaire de clé composée."
+      - code: mer-2f-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: normalisation
+        prompt: "Dans `note (#id_etudiant, #id_matiere, valeur)`, la colonne valeur respecte la 2FN."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "La note dépend de l'étudiant ET de la matière."
+          - label: "Faux"
+            correct: false
+            why: "Elle dépend bien de toute la clé."
+        explanation: "Une information du couple a sa place ici."
+      - code: mer-2f-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: normalisation
+        prompt: "Où déplacer `nom_produit` pour corriger l'exemple ?"
+        choices:
+          - label: "Dans la table produit"
+            correct: true
+            why: "Il ne dépend que du produit."
+          - label: "Dans la table commande"
+            correct: false
+            why: "Il ne décrit pas la commande."
+          - label: "Nulle part, on le supprime"
+            correct: false
+            why: "On garde l'information, au bon endroit."
+        explanation: "Chaque information dans la table dont elle dépend."
+      - code: mer-2f-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: normalisation
+        prompt: "Quelle question aide à repérer une violation de la 2FN ?"
+        choices:
+          - label: "Cette colonne dépend-elle de toute la clé, ou d'une partie seulement ?"
+            correct: true
+            why: "C'est la définition de la 2FN."
+          - label: "Cette colonne est-elle un nombre ?"
+            correct: false
+            why: "Le type n'est pas le critère."
+          - label: "Cette colonne est-elle obligatoire ?"
+            correct: false
+            why: "Ce n'est pas le critère."
+        explanation: "Toute la clé, pas une partie."
+    exercises:
+      - slug: mer-ex-2fn-guide
+        kind: COMPLETER
+        title: "La colonne qui dépend d'une partie de la clé"
+        difficulty: FACILE
+        skill: normalisation
+        statement: "Dans `inscription (#id_membre, #id_cours, date_inscription, intitule_cours)`, complète."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Laquelle ne dépend que du cours ?"
+          - "La date dépend du membre ET du cours."
+          - "intitule_cours, cours."
+        solution: '["intitule_cours", "cours"]'
+        explanation: "L'intitulé décrit le cours : il va dans la table cours."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            La colonne qui ne dépend que d'une partie de la clé : [[1]]
+            Elle doit aller dans la table : [[2]]
+          blanks:
+            - ["intitule_cours"]
+            - ["cours"]
+      - slug: mer-ex-2fn-libre
+        kind: CODE_LIBRE
+        title: "Corriger la table des notes"
+        difficulty: INTERMEDIAIRE
+        skill: normalisation
+        statement: |
+          `note (#id_etudiant, #id_matiere, valeur, nom_matiere)` viole la 2FN.
+          Écris les deux tables corrigées, une par ligne :
+          - `note (#id_etudiant, #id_matiere, valeur)` ;
+          - `matiere (id_matiere, nom_matiere)`.
+        criteria: "note sans nom_matiere ; matiere (id_matiere, nom_matiere)."
+        hints:
+          - "nom_matiere ne dépend que de id_matiere."
+          - "Il rejoint la table matiere."
+          - "matiere (id_matiere, nom_matiere)"
+        solution: |
+          note (#id_etudiant, #id_matiere, valeur)
+          matiere (id_matiere, nom_matiere)
+        explanation: "Le nom de la matière n'est plus répété pour chaque note."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            note (
+            matiere (
+          checks:
+            - pattern: '(?i)note\s*\(\s*#\s*id_etudiant\s*,\s*#\s*id_matiere\s*,\s*valeur\s*\)'
+              message: "Écris note (#id_etudiant, #id_matiere, valeur)"
+            - pattern: '(?i)matiere\s*\(\s*id_matiere\s*,\s*nom_matiere\s*\)'
+              message: "Écris matiere (id_matiere, nom_matiere)"
+      - slug: mer-ex-2fn-bug
+        kind: CORRIGER_ERREUR
+        title: "Un nom rangé dans la table d'association"
+        difficulty: FACILE
+        skill: normalisation
+        statement: |
+          Dans `contenir (#id_commande, #id_produit, quantite, nom_produit)`, `nom_produit` ne dépend que du
+          produit. Retire-le de `contenir` et garde-le dans `produit (id_produit, nom_produit)`.
+        criteria: "contenir sans nom_produit ; produit (id_produit, nom_produit)."
+        hints:
+          - "nom_produit décrit le produit seul."
+          - "Il a déjà sa place dans produit."
+          - "contenir (#id_commande, #id_produit, quantite)"
+        solution: |
+          produit (id_produit, nom_produit)
+          contenir (#id_commande, #id_produit, quantite)
+        explanation: "Chaque information dans la table dont elle dépend."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            produit (id_produit, nom_produit)
+            contenir (#id_commande, #id_produit, quantite, nom_produit)
+          checks:
+            - pattern: '(?i)contenir\s*\([^)]*nom_produit'
+              absent: true
+              message: "Retire nom_produit de contenir."
+            - pattern: '(?i)contenir\s*\(\s*#\s*id_commande\s*,\s*#\s*id_produit\s*,\s*quantite\s*\)'
+              message: "contenir garde #id_commande, #id_produit et quantite."
+            - pattern: '(?i)produit\s*\(\s*id_produit\s*,\s*nom_produit\s*\)'
+              message: "Garde produit (id_produit, nom_produit)."
+
+  # ===================================================================== LEÇON 3
+  - slug: merise-3fn
+    title: "La 3e forme normale : ne dépendre que de la clé"
+    duration: 11
+    objective: "Repérer une colonne qui dépend d'une autre colonne non clé (dépendance transitive) et la sortir dans sa propre table."
+    prerequisites: "Leçon « La 2e forme normale »."
+    skills: [normalisation]
+    xp: 20
+    memo: |
+      - **3FN** : 2FN + aucune colonne ne dépend d'une **autre colonne non clé**.
+      - Exemple : dans `salarie (id_salarie, nom, id_service, nom_service)`, `nom_service` dépend de `id_service`, pas du salarié.
+      - Correction : créer `service (id_service, nom_service)` et garder seulement `#id_service` dans `salarie`.
+      - Résumé : « tout dépend de la clé, de toute la clé, et de rien d'autre que la clé ».
+    commonMistakes: |
+      - Recopier les informations d'une autre entité (nom du service, ville de l'éditeur) dans chaque ligne.
+    blocks:
+      - type: text
+        md: |
+          Dernière règle : une colonne ne doit pas dépendre d'une **autre colonne** qui n'est pas la clé.
+      - type: definition
+        id: def-3fn
+        term: "3FN"
+        md: |
+          Une **chaîne** : le salarié désigne son service, et le service a un nom. Si on range le nom du service
+          dans chaque salarié, on passe par un intermédiaire. Mieux vaut ranger le nom **chez le service**, une
+          seule fois.
+      - type: code
+        id: code-3fn
+        language: text
+        title: "Violation de la 3FN"
+        code: |
+          salarie (id_salarie, nom, id_service, nom_service)
+        lines:
+          - n: 1
+            note: "`nom_service` dépend de `id_service`, qui n'est pas la clé : dépendance **transitive**. On crée `service (id_service, nom_service)` et on garde seulement `#id_service` dans `salarie`."
+      - type: question
+        ref: mer-fn-q2
+        review: code-3fn
+      - type: question
+        ref: mer-fn-q5
+        review: def-3fn
+      - type: text
+        md: "**Exercice 1 (guidé)** : quelle forme normale est violée ?"
+      - type: exercise
+        ref: mer-ex-fn-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : normalise une table de commandes mal conçue dans l'éditeur de tables."
+      - type: exercise
+        ref: mer-ex-normaliser
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : la ville de l'éditeur répétée."
+      - type: exercise
+        ref: mer-ex-3fn-bug
+      - type: jury
+        items:
+          - q: "Qu'est-ce que la normalisation et pourquoi l'appliquer ?"
+            a: "Un ensemble de règles (1FN, 2FN, 3FN…) qui évitent la redondance : chaque information est stockée une seule fois, ce qui évite les incohérences lors des mises à jour."
+          - q: "Énoncez la 3e forme normale."
+            a: "La table est en 2FN et aucune colonne non clé ne dépend d'une autre colonne non clé : tout dépend de la clé, de toute la clé, et de rien d'autre que la clé."
+          - q: "Peut-on volontairement dénormaliser ?"
+            a: "Oui, pour des raisons de performance (tableaux de bord, historiques), en le justifiant et en maîtrisant la mise à jour des données dupliquées."
+      - type: quiz
+        items:
+          - ref: mer-3f-q3
+            review: def-3fn
+          - ref: mer-3f-q4
+            review: code-3fn
+          - ref: mer-3f-q5
+            review: def-3fn
+    questions:
       - code: mer-fn-q2
         kind: CHOIX_UNIQUE
         difficulty: 3
@@ -127,35 +543,6 @@ lessons:
             correct: false
             why: "La ville de l'éditeur serait répétée pour chacun de ses livres."
         explanation: "3FN : une colonne non clé ne dépend pas d'une autre colonne non clé."
-      - code: mer-fn-q3
-        kind: CHOIX_UNIQUE
-        difficulty: 3
-        skill: normalisation
-        prompt: "Dans `ligne_commande (#id_commande, #id_produit, quantite, prix_unitaire_catalogue)`, que faire de `prix_unitaire_catalogue` ?"
-        choices:
-          - label: "Le laisser dans produit : il dépend seulement de id_produit (violation 2FN)"
-            correct: true
-            why: "Il dépend d'une partie de la clé."
-          - label: "Le garder : tout va bien"
-            correct: false
-            why: "Il dépend d'une partie de la clé seulement."
-          - label: "Le mettre dans commande"
-            correct: false
-            why: "Il concerne le produit, pas la commande."
-        explanation: "Attention : un **prix au moment de la commande** (qui ne doit pas changer avec le catalogue) peut, lui, légitimement être stocké dans la ligne. C'est une vraie règle métier à justifier."
-      - code: mer-fn-q4
-        kind: VRAI_FAUX
-        difficulty: 1
-        skill: normalisation
-        prompt: "La normalisation vise à éviter la redondance des données."
-        choices:
-          - label: "Vrai"
-            correct: true
-            why: "Une information à un seul endroit."
-          - label: "Faux"
-            correct: false
-            why: "C'est exactement son but."
-        explanation: "Moins de redondance, moins d'incohérences."
       - code: mer-fn-q5
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -170,8 +557,53 @@ lessons:
             why: "La clé est indispensable."
           - label: "En fusionnant toutes les tables"
             correct: false
-            why: "Cela aggraverait la redondance."
+            why: "Cela aggraverait les répétitions."
         explanation: "Découper et relier."
+      - code: mer-3f-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: normalisation
+        prompt: "Quelle phrase résume les trois formes normales ?"
+        choices:
+          - label: "Tout dépend de la clé, de toute la clé, et de rien d'autre que la clé"
+            correct: true
+            why: "1FN, 2FN et 3FN en une phrase."
+          - label: "Toutes les colonnes sont obligatoires"
+            correct: false
+            why: "Aucun rapport."
+          - label: "Chaque table a au moins trois colonnes"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Une phrase facile à retenir pour l'oral."
+      - code: mer-3f-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: normalisation
+        prompt: "Dans `salarie (id_salarie, nom, #id_service)` + `service (id_service, nom_service)`, la 3FN est respectée."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le nom du service est rangé une seule fois, chez le service."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement la version corrigée."
+        explanation: "Chaque information à sa place."
+      - code: mer-3f-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: normalisation
+        prompt: "Que signifie « dépendance transitive » ?"
+        choices:
+          - label: "Une colonne dépend d'une autre colonne qui n'est pas la clé"
+            correct: true
+            why: "On passe par un intermédiaire."
+          - label: "Une colonne dépend de toute la clé"
+            correct: false
+            why: "Ça, c'est ce qu'on veut."
+          - label: "Une case contient une liste"
+            correct: false
+            why: "Ça, c'est la 1FN."
+        explanation: "Transitive = par un intermédiaire."
     exercises:
       - slug: mer-ex-fn-guide
         kind: COMPLETER
@@ -206,7 +638,7 @@ lessons:
         statement: |
           Une application stocke tout dans une seule table :
 
-          `commande_tout (id_commande, date_commande, id_client, nom_client, email_client, id_produit, nom_produit, prix, quantite)`
+          `commande_tout (id_commande, date_commande, id_client, nom_client, email_client, id_produit, nom_produit, quantite)`
 
           Le MCD correct est affiché. Construis les tables normalisées (3FN) : client, produit, commande et la
           table des lignes (contenir).
@@ -217,7 +649,7 @@ lessons:
           - "contenir (#id_commande, #id_produit, quantite) : clé primaire composée."
         solution: |
           client (id_client, nom_client, email_client)
-          produit (id_produit, nom_produit, prix)
+          produit (id_produit, nom_produit)
           commande (id_commande, date_commande, #id_client)
           contenir (#id_commande, #id_produit, quantite)
         explanation: "Chaque information est à un seul endroit : changer l'e-mail d'un client ne touche qu'une ligne, quel que soit son nombre de commandes."
@@ -227,45 +659,73 @@ lessons:
             entities:
               - { id: e1, name: CLIENT, x: 40, y: 40, attributes: [{ name: id_client, identifier: true }, { name: nom_client }, { name: email_client }] }
               - { id: e2, name: COMMANDE, x: 480, y: 40, attributes: [{ name: id_commande, identifier: true }, { name: date_commande }] }
-              - { id: e3, name: PRODUIT, x: 480, y: 300, attributes: [{ name: id_produit, identifier: true }, { name: nom_produit }, { name: prix }] }
+              - { id: e3, name: PRODUIT, x: 480, y: 300, attributes: [{ name: id_produit, identifier: true }, { name: nom_produit }] }
             associations:
               - { id: a1, name: PASSER, x: 260, y: 50, attributes: [], links: [{ entity: e1, card: "0,n" }, { entity: e2, card: "1,1" }] }
               - { id: a2, name: CONTENIR, x: 520, y: 180, attributes: [{ name: quantite }], links: [{ entity: e2, card: "1,n" }, { entity: e3, card: "0,n" }] }
           expected:
             tables:
               - { name: client, aliases: [clients], pkCount: 1, fks: [], columns: [{ name: nom_client, aliases: [nom] }, { name: email_client, aliases: [email] }] }
-              - { name: produit, aliases: [produits], pkCount: 1, fks: [], columns: [{ name: nom_produit, aliases: [nom] }, prix] }
+              - { name: produit, aliases: [produits], pkCount: 1, fks: [], columns: [{ name: nom_produit, aliases: [nom] }] }
               - { name: commande, aliases: [commandes], pkCount: 1, fks: [client], columns: [{ name: date_commande, aliases: [date] }] }
               - { name: contenir, aliases: [ligne_commande, lignes_commande], pkCount: 2, pkFks: [commande, produit], fks: [commande, produit], columns: [quantite] }
           solutionModel:
             tables:
               - { id: t1, name: client, columns: [{ name: id_client, pk: true, fk: "" }, { name: nom_client, pk: false, fk: "" }, { name: email_client, pk: false, fk: "" }] }
-              - { id: t2, name: produit, columns: [{ name: id_produit, pk: true, fk: "" }, { name: nom_produit, pk: false, fk: "" }, { name: prix, pk: false, fk: "" }] }
+              - { id: t2, name: produit, columns: [{ name: id_produit, pk: true, fk: "" }, { name: nom_produit, pk: false, fk: "" }] }
               - { id: t3, name: commande, columns: [{ name: id_commande, pk: true, fk: "" }, { name: date_commande, pk: false, fk: "" }, { name: id_client, pk: false, fk: client }] }
               - { id: t4, name: contenir, columns: [{ name: id_commande, pk: true, fk: commande }, { name: id_produit, pk: true, fk: produit }, { name: quantite, pk: false, fk: "" }] }
+      - slug: mer-ex-3fn-bug
+        kind: CORRIGER_ERREUR
+        title: "La ville de l'éditeur répétée"
+        difficulty: INTERMEDIAIRE
+        skill: normalisation
+        statement: |
+          `livre (id_livre, titre, #id_editeur, ville_editeur)` répète la ville de l'éditeur pour chaque livre.
+          Retire `ville_editeur` de `livre` et ajoute la table `editeur (id_editeur, nom, ville)`.
+        criteria: "livre sans ville_editeur ; editeur (id_editeur, nom, ville)."
+        hints:
+          - "La ville dépend de l'éditeur, pas du livre."
+          - "Elle va chez l'éditeur, une seule fois."
+          - "editeur (id_editeur, nom, ville)"
+        solution: |
+          livre (id_livre, titre, #id_editeur)
+          editeur (id_editeur, nom, ville)
+        explanation: "La ville n'est plus répétée pour chaque livre."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            livre (id_livre, titre, #id_editeur, ville_editeur)
+          checks:
+            - pattern: '(?i)ville_editeur'
+              absent: true
+              message: "Retire ville_editeur de livre."
+            - pattern: '(?i)livre\s*\(\s*id_livre\s*,\s*titre\s*,\s*#\s*id_editeur\s*\)'
+              message: "livre garde id_livre, titre et #id_editeur."
+            - pattern: '(?i)editeur\s*\(\s*id_editeur\s*,\s*nom\s*,\s*ville\s*\)'
+              message: "Ajoute editeur (id_editeur, nom, ville)."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 4
   - slug: merise-questions-jury
     title: "La modélisation devant le jury"
-    duration: 13
+    duration: 11
     objective: "Présenter et justifier un MCD, et répondre aux questions de modélisation classiques."
-    prerequisites: "Leçon « Les formes normales »."
+    prerequisites: "Leçon « La 3e forme normale »."
     skills: [merise-mcd, oral-cda]
-    xp: 25
+    xp: 20
     memo: |
-      - Présenter un MCD : entités principales → associations → cardinalités lues à voix haute → cas particuliers.
+      - Présenter un MCD : entités principales → associations → cardinalités lues à voix haute → cas particuliers → passage au MLD.
       - Justifier chaque cardinalité par une **règle de gestion**.
       - Merise ≠ UML : le MCD décrit les **données** ; le diagramme de classes UML décrit aussi le **comportement** (méthodes).
-      - Savoir dire pourquoi un attribut est sur une association, pourquoi une table d'association existe, et comment le MLD a été obtenu.
     commonMistakes: |
-      - Présenter un MCD en notation « pattes de corbeau » en l'appelant Merise.
-      - Oublier les identifiants.
+      - Présenter un modèle en notation « pattes de corbeau » en l'appelant Merise.
       - Ne pas savoir lire à voix haute ses propres cardinalités.
     blocks:
       - type: text
         md: |
           Au titre CDA, tu présentes le modèle de données de ton projet. Le jury vérifie que tu sais le
-          **lire**, le **justifier** et l'**expliquer** simplement.
+          **lire**, le **justifier** et l'**expliquer** simplement. Tu connais déjà toutes les notions.
       - type: steps
         id: etapes-presentation
         title: "Présenter son MCD en une minute"
@@ -279,10 +739,9 @@ lessons:
         id: def-merise-uml
         term: "Merise ou UML ?"
         md: |
-          **Merise** (MCD/MLD) décrit les **données** et leurs liens : c'est la méthode de référence en France
-          pour la base de données. **UML** (diagramme de classes) décrit les **objets du code**, avec leurs
-          méthodes. Les deux se ressemblent ; au jury, on utilise Merise pour la base et UML pour la conception
-          applicative.
+          **Merise** (MCD/MLD) décrit les **données** et leurs liens : c'est la méthode de référence en France pour
+          la base de données. **UML** (diagramme de classes) décrit les **objets du code**, avec leurs méthodes.
+          Au jury, on utilise Merise pour la base et UML pour la conception de l'application.
       - type: question
         ref: mer-jq-q1
         review: def-merise-uml
@@ -299,16 +758,20 @@ lessons:
           - q: "Comment avez-vous choisi vos identifiants ?"
             a: "Des identifiants techniques (id numériques générés), stables et sans signification métier ; les données métier uniques (e-mail) ont une contrainte UNIQUE."
           - q: "Votre modèle est-il normalisé ?"
-            a: "Oui, en 3FN : chaque information est stockée une seule fois, les données calculées (totaux) ne sont pas stockées, et chaque colonne dépend uniquement de la clé de sa table."
+            a: "Oui, en 3FN : chaque information est stockée une seule fois, rien de ce qui se déduit n'est stocké, et chaque colonne dépend uniquement de la clé de sa table."
       - type: question
         ref: mer-jq-q2
         review: etapes-presentation
       - type: text
-        md: "Exercice guidé : remets la présentation dans l'ordre."
+        md: "**Exercice 1** : remets la démarche complète dans l'ordre, du besoin au script."
+      - type: exercise
+        ref: mer-ex-dictionnaire
+      - type: text
+        md: "**Exercice 2** : remets la présentation de ton MCD dans l'ordre."
       - type: exercise
         ref: mer-ex-presentation-ordre
       - type: text
-        md: "En autonomie : lis des cardinalités à voix haute (réponses écrites)."
+        md: "**Exercice 3 (en autonomie)** : lis des cardinalités à voix haute (réponses écrites)."
       - type: exercise
         ref: mer-ex-lecture-cardinalites
       - type: quiz
@@ -376,18 +839,18 @@ lessons:
         choices:
           - label: "Vrai"
             correct: false
-            why: "Non : il se calcule à partir des lignes."
+            why: "Non : il se déduit des lignes de commande."
           - label: "Faux"
             correct: true
-            why: "Exact : pas d'attribut calculé."
-        explanation: "On ne stocke pas ce qui se calcule, sauf choix justifié de dénormalisation."
+            why: "Exact : on ne stocke pas ce qui se déduit."
+        explanation: "Rien de ce qui se déduit n'est stocké, sauf choix justifié."
       - code: mer-jq-q5
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: merise-mcd
         prompt: "Le jury montre un modèle avec des « pattes de corbeau ». Que répondre ?"
         choices:
-          - label: "C'est une notation ERD ; en Merise, on écrit les cardinalités min,max sur chaque patte"
+          - label: "C'est une autre notation ; en Merise, on écrit les cardinalités min,max sur chaque patte"
             correct: true
             why: "Savoir distinguer les notations."
           - label: "C'est la notation Merise officielle"
@@ -398,6 +861,35 @@ lessons:
             why: "C'est un diagramme."
         explanation: "Notation Merise : rectangles, ellipses, cardinalités 0,1 / 1,1 / 0,n / 1,n."
     exercises:
+      - slug: mer-ex-dictionnaire
+        kind: REMETTRE_ORDRE
+        title: "Du besoin au modèle"
+        difficulty: FACILE
+        skill: dictionnaire-regles
+        statement: "Remets les étapes de conception dans l'ordre."
+        criteria: "Du besoin exprimé jusqu'au script SQL."
+        hints:
+          - "On commence toujours par écouter le client."
+          - "Le dictionnaire précède le dessin."
+          - "Besoin, règles, dictionnaire, MCD, MLD, MPD."
+        solution: |
+          1. Recueillir le besoin
+          2. Écrire les règles de gestion
+          3. Dresser le dictionnaire de données
+          4. Construire le MCD
+          5. Traduire en MLD
+          6. Écrire le MPD (script SQL)
+        explanation: "Chaque étape s'appuie sur la précédente : du français vers le SQL."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Recueillir le besoin"
+            - "Écrire les règles de gestion"
+            - "Dresser le dictionnaire de données"
+            - "Construire le MCD"
+            - "Traduire en MLD"
+            - "Écrire le MPD (script SQL)"
       - slug: mer-ex-presentation-ordre
         kind: REMETTRE_ORDRE
         title: "Présenter son MCD"
@@ -458,22 +950,6 @@ lessons:
               message: "La deuxième phrase parle des auteurs d'un livre."
 
 bank:
-  - code: mer-c4-b1
-    kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: normalisation
-    prompt: "Quelle anomalie apparaît quand l'adresse d'un fournisseur est recopiée dans chaque produit ?"
-    choices:
-      - label: "Une anomalie de mise à jour : changer l'adresse oblige à modifier plusieurs lignes"
-        correct: true
-        why: "Et on risque d'en oublier."
-      - label: "Aucune"
-        correct: false
-        why: "La redondance crée des incohérences."
-      - label: "Une erreur de syntaxe SQL"
-        correct: false
-        why: "Le SQL reste valide ; c'est la conception qui pose problème."
-    explanation: "La normalisation supprime ces anomalies."
   - code: mer-c4-b2
     kind: CHOIX_UNIQUE
     difficulty: 2
@@ -490,3 +966,19 @@ bank:
         correct: false
         why: "Docker gère des conteneurs."
     explanation: "Looping et JMerise génèrent aussi le MLD et le script SQL."
+  - code: mer-c4-b3
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: normalisation
+    prompt: "Une table respecte la 3FN. Que peut-on en dire ?"
+    choices:
+      - label: "Elle respecte aussi la 1FN et la 2FN"
+        correct: true
+        why: "Chaque forme normale inclut les précédentes."
+      - label: "Elle viole forcément la 2FN"
+        correct: false
+        why: "La 3FN suppose la 2FN."
+      - label: "Rien de particulier"
+        correct: false
+        why: "Les formes normales s'empilent."
+    explanation: "1FN ⊂ 2FN ⊂ 3FN : chaque étage suppose le précédent."
