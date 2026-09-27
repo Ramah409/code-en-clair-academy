@@ -1,5 +1,5 @@
 slug: creer-une-base
-position: 7
+position: 8
 level: AVANCE
 title: "Créer une base : tables, contraintes, index et vues"
 summary: "Passer du modèle au code : choisir les types, créer des tables avec leurs clés et contraintes, accélérer les recherches avec des index et simplifier l'accès avec des vues."

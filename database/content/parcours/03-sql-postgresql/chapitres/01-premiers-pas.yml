@@ -2,60 +2,52 @@ slug: premiers-pas
 position: 1
 level: DEBUTANT
 title: "Premiers pas avec SQL"
-summary: "Comprendre ce qu'est une base relationnelle et écrire tes premières requêtes : SELECT, FROM, WHERE, ORDER BY et LIMIT."
-quizQuestionCount: 15
+summary: "Comprendre ce qu'est une table, écrire ta première requête, choisir tes colonnes, les renommer et transformer du texte. Une seule notion par leçon."
+quizQuestionCount: 12
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: sql-bases-relationnelles
-    title: "Qu'est-ce qu'une base de données relationnelle ?"
+    title: "Tables, lignes et colonnes"
     duration: 8
-    objective: "Savoir décrire une table, une ligne, une colonne et une clé primaire, et exécuter ta première requête."
+    objective: "Savoir dire ce qu'est une table, une ligne, une colonne et une clé primaire."
     prerequisites: "Aucun : c'est le point de départ."
     skills: [sql-select]
     xp: 10
     memo: |
-      - Une **base de données relationnelle** range les données dans des **tables**.
-      - Une table = des **colonnes** (les informations) et des **lignes** (les enregistrements).
-      - La **clé primaire** identifie chaque ligne de façon unique (souvent la colonne `id`).
-      - Le **SGBD** (ici PostgreSQL) stocke les données ; le **SQL** est le langage pour lui parler.
-      - `SELECT * FROM table;` affiche toutes les colonnes et toutes les lignes d'une table.
+      - Une **base de données** range les informations dans des **tables**, une table par sujet.
+      - Une table a des **colonnes** (les informations) et des **lignes** (les éléments).
+      - La **clé primaire** est une colonne dont la valeur est **unique** et **jamais vide** : elle désigne chaque ligne (souvent la colonne `id`).
     commonMistakes: |
-      - Confondre la **base** (l'ensemble) et une **table** (un seul tableau de données).
-      - Penser que l'ordre des lignes est garanti : sans `ORDER BY`, il ne l'est jamais.
-      - Oublier le `FROM` : `SELECT *` seul ne sait pas quelle table lire.
+      - Confondre la **base** (l'ensemble) et une **table** (un seul tableau).
+      - Confondre ligne et colonne : une ligne = un élément, une colonne = une information.
     blocks:
       - type: text
         md: |
-          Quand tu t'inscris sur un site, ton nom, ton e-mail et ton mot de passe (haché !) sont enregistrés
-          quelque part. Ce « quelque part » est presque toujours une **base de données relationnelle**.
+          Quand tu t'inscris sur un site, ton prénom et ton e-mail sont enregistrés quelque part. Ce
+          « quelque part », c'est une **base de données**.
 
-          L'idée est simple : on range les informations dans des **tableaux**, un par sujet. Un tableau pour
-          les clients, un pour les produits, un pour les commandes… Ces tableaux s'appellent des **tables**.
+          Aujourd'hui, on n'écrit pas encore de code : on apprend juste à **lire** une base.
       - type: definition
+        id: def-table
         term: "Table"
         md: |
-          Ensemble de données sur un même sujet, organisé en **colonnes** et en **lignes**.
-          Exemple : la table `clients` de notre boutique.
+          Un **tableau** sur un seul sujet, comme une feuille de tableur. Une table pour les clients, une
+          pour les produits, une pour les commandes…
       - type: definition
         id: def-colonne-ou-attribut
-        term: "Colonne (ou attribut)"
+        term: "Colonne"
         md: |
-          Une information décrite pour chaque ligne, avec un **type** précis : `prenom` (texte),
-          `date_inscription` (date), `prix` (nombre décimal)…
+          Une **information** qu'on note pour chaque élément : le prénom, la ville, le prix… C'est l'en-tête
+          d'une colonne dans un tableau.
       - type: definition
-        term: "Ligne (ou enregistrement)"
+        id: def-ligne
+        term: "Ligne"
         md: |
-          Un élément concret de la table : **une** cliente, **un** produit, **une** commande.
-      - type: definition
-        id: def-cle-primaire
-        term: "Clé primaire"
-        md: |
-          Colonne (ou groupe de colonnes) dont la valeur est **unique** et **jamais vide** pour chaque ligne.
-          Elle permet de désigner une ligne sans ambiguïté. Dans nos tables, c'est la colonne `id`.
+          Un **élément** concret : **une** cliente, **un** produit. C'est une rangée du tableau.
       - type: text
         md: |
-          Voici un extrait de la table `clients` :
+          Voici un morceau de la table `clients` :
 
           | id | prenom | nom | ville |
           |----|--------|-----|-------|
@@ -63,60 +55,36 @@ lessons:
           | 2 | Lucas | Martin | Lyon |
           | 3 | Inès | Benali | Marseille |
 
-          Chaque **ligne** est une cliente, chaque **colonne** une information, et `id` est la **clé primaire** :
-          deux clientes peuvent s'appeler Awa, mais jamais avoir le même `id`.
+          Chaque **ligne** est une cliente. Chaque **colonne** est une information.
       - type: question
         ref: sql-l1-q1
+        review: def-ligne
       - type: definition
-        id: def-sgbd-et-sql
-        term: "SGBD et SQL"
+        id: def-cle-primaire
+        term: "Clé primaire"
         md: |
-          Le **SGBD** (Système de Gestion de Base de Données) est le logiciel qui stocke les données et les
-          protège : PostgreSQL, MySQL, Oracle… Le **SQL** (Structured Query Language) est le langage standard
-          pour lui poser des questions (les **requêtes**) et lui demander des modifications.
-      - type: code
-        language: sql
-        title: "Ta première requête"
-        code: |
-          SELECT *
-          FROM categories;
-        lines:
-          - n: 1
-            note: "`SELECT` annonce ce que l'on veut afficher ; `*` signifie « toutes les colonnes »."
-          - n: 2
-            note: "`FROM` indique la table à lire, ici `categories`. Le `;` termine l'instruction."
-      - type: demo
-        title: "Démonstration : exécute la requête"
-        md: "Clique sur **Exécuter** : la requête est envoyée à PostgreSQL et le résultat s'affiche. Tu peux la modifier librement."
-        language: sql
-        code: |
-          SELECT *
-          FROM categories;
-      - type: callout
-        variant: tip
-        md: |
-          Les mots-clés SQL (`SELECT`, `FROM`…) ne sont pas sensibles à la casse : `select` fonctionne aussi.
-          Par convention, on les écrit en **MAJUSCULES** et les noms de tables en minuscules : c'est plus lisible.
+          Le **numéro de dossier** de chaque ligne. Deux clientes peuvent s'appeler Awa, mais elles n'auront
+          jamais le même numéro. Ce numéro est **unique** et **jamais vide**. Dans nos tables, c'est la
+          colonne `id`.
       - type: question
         ref: sql-l1-q2
-      - type: question
-        ref: sql-l1-q3
+        review: def-cle-primaire
       - type: text
-        md: |
-          À ton tour : la table `services` décrit les services de l'entreprise (Direction, Développement…).
-          Écris la requête qui affiche **tout son contenu**.
+        md: "Exercice guidé : complète le vocabulaire."
       - type: exercise
-        ref: sql-ex-select-services
-      - type: question
-        ref: sql-l1-q4
+        ref: sql-ex-vocabulaire-guide
+      - type: text
+        md: "En autonomie : décris une table avec tes mots."
+      - type: exercise
+        ref: sql-ex-decrire-table
       - type: quiz
         items:
           - ref: sqlq-bases-1
             review: def-colonne-ou-attribut
-          - ref: sqlq-bases-2
-            review: def-sgbd-et-sql
           - ref: sqlq-bases-3
             review: def-cle-primaire
+          - ref: sql-p1-q5
+            review: def-table
     questions:
       - code: sql-l1-q1
         kind: CHOIX_UNIQUE
@@ -126,27 +94,209 @@ lessons:
         choices:
           - label: "Une cliente précise, avec toutes ses informations"
             correct: true
-            why: "Exact : chaque ligne (enregistrement) correspond à un élément concret, ici une cliente."
+            why: "Exact : chaque ligne correspond à un élément concret, ici une cliente."
           - label: "Une information commune à toutes les clientes, comme la ville"
             correct: false
-            why: "Ça, c'est une colonne : une information décrite pour chaque ligne."
+            why: "Ça, c'est une colonne."
           - label: "L'ensemble de toutes les tables de la boutique"
             correct: false
-            why: "L'ensemble des tables forme la base de données, pas une ligne."
-        explanation: "Une table se lit comme un tableau : les colonnes sont les informations, les lignes sont les éléments (ici les clientes)."
+            why: "L'ensemble des tables, c'est la base de données."
+        explanation: "Les colonnes sont les informations, les lignes sont les éléments (ici les clientes)."
       - code: sql-l1-q2
         kind: VRAI_FAUX
         difficulty: 1
         skill: sql-select
-        prompt: "Deux lignes d'une même table peuvent avoir la même valeur de clé primaire."
+        prompt: "Deux lignes d'une même table peuvent avoir la même clé primaire."
         choices:
           - label: "Vrai"
             correct: false
-            why: "Non : c'est justement le rôle de la clé primaire d'être unique."
+            why: "Non : la clé primaire est unique, comme un numéro de dossier."
           - label: "Faux"
             correct: true
-            why: "Correct : PostgreSQL refuse toute insertion qui créerait un doublon de clé primaire."
-        explanation: "La clé primaire est **unique** et **non nulle** : elle identifie chaque ligne sans ambiguïté."
+            why: "Correct : chaque ligne a son propre numéro."
+        explanation: "La clé primaire est **unique** et **jamais vide**."
+      - code: sqlq-bases-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Dans la table `produits`, la colonne `prix` représente…
+        choices:
+          - label: une information notée pour chaque produit
+            correct: true
+            why: 'Oui : chaque produit a un prix.'
+          - label: un produit précis
+            correct: false
+            why: Un produit précis, c'est une ligne.
+          - label: l'ensemble des tables
+            correct: false
+            why: L'ensemble des tables, c'est la base de données.
+        explanation: Colonne = une information ; ligne = un élément ; table = le tableau entier.
+      - code: sqlq-bases-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: La clé primaire d'une ligne peut rester vide.
+        choices:
+          - label: Vrai
+            correct: false
+            why: 'Non : une clé primaire est toujours remplie.'
+          - label: Faux
+            correct: true
+            why: 'Exact : unique et jamais vide.'
+        explanation: Clé primaire = unique + obligatoire.
+      - code: sql-p1-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "La boutique a une table pour les clients, une pour les produits et une pour les commandes. L'ensemble de ces tables forme…"
+        choices:
+          - label: "la base de données"
+            correct: true
+            why: "Oui : la base rassemble toutes les tables."
+          - label: "une ligne"
+            correct: false
+            why: "Une ligne est un seul élément d'une table."
+          - label: "une colonne"
+            correct: false
+            why: "Une colonne est une seule information d'une table."
+        explanation: "Base de données = l'armoire ; tables = les classeurs ; lignes = les fiches."
+    exercises:
+      - slug: sql-ex-vocabulaire-guide
+        kind: COMPLETER
+        title: "Le bon mot"
+        difficulty: FACILE
+        skill: sql-select
+        statement: "Complète avec : table, ligne, colonne, clé primaire."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Le tableau entier sur un sujet : une table."
+          - "Une cliente : une ligne. Le prénom : une colonne."
+          - "table, ligne, colonne, clé primaire."
+        solution: '["table", "ligne", "colonne", "clé primaire"]'
+        explanation: "Table = le tableau ; ligne = un élément ; colonne = une information ; clé primaire = le numéro unique."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Le tableau qui rassemble tous les produits est une [[1]].
+            Le produit « Souris sans fil » est une [[2]] de ce tableau.
+            Le prix est une [[3]] : on le note pour chaque produit.
+            L'id, unique et jamais vide, est la [[4]].
+          blanks:
+            - ["table"]
+            - ["ligne"]
+            - ["colonne"]
+            - ["clé primaire", "cle primaire"]
+      - slug: sql-ex-decrire-table
+        kind: CODE_LIBRE
+        title: "Décrire la table des livres"
+        difficulty: FACILE
+        skill: sql-select
+        statement: |
+          Une médiathèque range ses livres dans une table. Décris-la en trois lignes :
+          - `Table :` son nom ;
+          - `Colonnes :` au moins trois informations notées pour chaque livre ;
+          - `Clé primaire :` la colonne qui donne un numéro unique à chaque livre.
+        criteria: "Les trois lignes sont remplies, avec au moins trois colonnes."
+        hints:
+          - "Table : livres."
+          - "Colonnes : par exemple titre, auteur, annee."
+          - "Clé primaire : id."
+        solution: |
+          Table : livres
+          Colonnes : id, titre, auteur, annee
+          Clé primaire : id
+        explanation: "Chaque livre sera une ligne ; le titre, l'auteur et l'année sont des colonnes ; l'id est la clé primaire."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Table :
+            Colonnes :
+            Clé primaire :
+          checks:
+            - pattern: '(?im)^\s*Table\s*:\s*\S+'
+              message: "Donne le nom de la table après « Table : »."
+            - pattern: '(?im)^\s*Colonnes\s*:\s*\S+\s*,\s*\S+\s*,\s*\S+'
+              message: "Donne au moins trois colonnes, séparées par des virgules."
+            - pattern: '(?im)^\s*Cl[ée]\s+primaire\s*:\s*\S+'
+              message: "Indique la clé primaire après « Clé primaire : »."
+
+  # ===================================================================== LEÇON 2
+  - slug: sql-select-etoile
+    title: "Ta première requête : SELECT * FROM"
+    duration: 8
+    objective: "Afficher tout le contenu d'une table avec SELECT * FROM."
+    prerequisites: "Leçon « Tables, lignes et colonnes »."
+    skills: [sql-select]
+    xp: 10
+    memo: |
+      - Le **SQL** est la langue qu'on utilise pour parler à la base.
+      - `SELECT *` : « montre-moi toutes les colonnes ».
+      - `FROM table` : « dans cette table ».
+      - `;` termine la requête.
+    commonMistakes: |
+      - Oublier `FROM` : la base ne sait pas quelle table lire.
+      - Mal écrire le nom de la table (`client` au lieu de `clients`).
+    blocks:
+      - type: text
+        md: |
+          Pour lire une table, on pose une **question** à la base. Cette question s'appelle une **requête**,
+          et elle s'écrit en **SQL**.
+      - type: definition
+        id: def-sgbd-et-sql
+        term: "SGBD et SQL"
+        md: |
+          Le **SGBD** (ici PostgreSQL) est le **bibliothécaire** : il range les données et va les chercher.
+          Le **SQL** est la **langue** qu'il comprend. On lui écrit une requête, il répond avec un tableau.
+      - type: code
+        id: code-select-etoile
+        language: sql
+        title: "Ta première requête"
+        code: |
+          SELECT *
+          FROM categories;
+        lines:
+          - n: 1
+            note: "`SELECT` = « montre-moi ». L'étoile `*` = « toutes les colonnes »."
+          - n: 2
+            note: "`FROM` = « dans la table ». Ici, la table `categories`. Le `;` termine la requête."
+      - type: demo
+        title: "Essaie"
+        md: "Clique sur **Exécuter** : PostgreSQL répond avec le contenu de la table. Remplace ensuite `categories` par `services`."
+        language: sql
+        code: |
+          SELECT *
+          FROM categories;
+      - type: callout
+        variant: tip
+        md: |
+          Les mots `SELECT` et `FROM` peuvent s'écrire en minuscules : `select` fonctionne aussi. Par habitude,
+          on les écrit en **MAJUSCULES**, pour mieux les voir.
+      - type: question
+        ref: sql-l1-q3
+        review: code-select-etoile
+      - type: question
+        ref: sql-l1-q4
+        review: def-sgbd-et-sql
+      - type: text
+        md: "Exercice guidé : complète la requête."
+      - type: exercise
+        ref: sql-ex-select-etoile-guide
+      - type: text
+        md: "En autonomie : affiche tout le contenu de la table `services`."
+      - type: exercise
+        ref: sql-ex-select-services
+      - type: quiz
+        items:
+          - ref: sqlq-bases-2
+            review: def-sgbd-et-sql
+          - ref: sql-p2-q4
+            review: code-select-etoile
+          - ref: sql-p2-q5
+            review: code-select-etoile
+    questions:
       - code: sql-l1-q3
         kind: COMPLETER_CODE
         difficulty: 1
@@ -157,69 +307,92 @@ lessons:
           FROM produits;
         language: sql
         answers: ["*"]
-        explanation: "L'étoile `*` signifie « toutes les colonnes ». Plus tard, tu apprendras à choisir des colonnes précises, ce qui est préférable en production."
+        explanation: "L'étoile `*` signifie « toutes les colonnes »."
       - code: sql-l1-q4
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: sql-select
         prompt: "Quel est le rôle du **SGBD** PostgreSQL ?"
         choices:
-          - label: "Stocker les données, les protéger et exécuter les requêtes SQL"
+          - label: "Ranger les données, les protéger et répondre aux requêtes SQL"
             correct: true
-            why: "Oui : le SGBD est le logiciel serveur qui gère réellement les données."
+            why: "Oui : c'est le bibliothécaire de la base."
           - label: "Afficher les pages web de l'application"
             correct: false
-            why: "C'est le rôle du navigateur et du frontend (Angular), pas de la base."
-          - label: "Traduire le Java en SQL automatiquement"
+            why: "C'est le rôle du navigateur et du frontend."
+          - label: "Écrire les requêtes à notre place"
             correct: false
-            why: "Des outils comme JPA génèrent du SQL, mais le SGBD, lui, se contente de l'exécuter."
-        explanation: "SQL est le langage ; PostgreSQL est le SGBD qui comprend ce langage et gère les données."
-      - code: sqlq-bases-1
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: sql-select
-        prompt: Dans la table `produits`, la colonne `prix` représente…
-        choices:
-          - label: une information décrite pour chaque produit
-            correct: true
-            why: 'Oui : chaque ligne (produit) a une valeur de prix.'
-          - label: un produit précis
-            correct: false
-            why: Un produit précis, c'est une ligne.
-          - label: l'ensemble des tables
-            correct: false
-            why: L'ensemble des tables, c'est la base de données.
-        explanation: Colonne = une information ; ligne = un élément ; table = le tableau entier.
+            why: "C'est nous qui écrivons les requêtes ; le SGBD y répond."
+        explanation: "SQL est la langue ; PostgreSQL est le SGBD qui la comprend."
       - code: sqlq-bases-2
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: sql-select
         prompt: SQL, c'est…
         choices:
-          - label: le langage pour interroger et modifier une base de données
+          - label: la langue pour poser des questions à une base de données
             correct: true
             why: 'Oui : on écrit des requêtes en SQL.'
-          - label: le logiciel qui stocke les données
+          - label: le logiciel qui range les données
             correct: false
             why: Ça, c'est le SGBD (PostgreSQL).
           - label: une table particulière
             correct: false
-            why: SQL est un langage, pas une table.
-        explanation: Le SGBD (PostgreSQL) garde les données ; SQL est la langue qu'on utilise pour lui parler.
-      - code: sqlq-bases-3
+            why: SQL est une langue, pas une table.
+        explanation: Le SGBD garde les données ; SQL est la langue qu'on utilise pour lui parler.
+      - code: sql-p2-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Dans `SELECT * FROM clients;`, à quoi sert `FROM clients` ?"
+        choices:
+          - label: "À dire dans quelle table chercher"
+            correct: true
+            why: "FROM = « dans la table »."
+          - label: "À choisir les colonnes"
+            correct: false
+            why: "Les colonnes se choisissent après SELECT."
+          - label: "À terminer la requête"
+            correct: false
+            why: "C'est le rôle du point-virgule."
+        explanation: "SELECT dit **quoi** montrer, FROM dit **où** chercher."
+      - code: sql-p2-q5
         kind: VRAI_FAUX
         difficulty: 1
         skill: sql-select
-        prompt: La clé primaire d'une ligne peut rester vide.
+        prompt: "`select * from produits;` (en minuscules) fonctionne."
         choices:
-          - label: Vrai
-            correct: false
-            why: 'Non : une clé primaire est toujours renseignée.'
-          - label: Faux
+          - label: "Vrai"
             correct: true
-            why: 'Exact : unique et jamais vide.'
-        explanation: Clé primaire = unique + obligatoire. Elle désigne chaque ligne sans ambiguïté.
+            why: "Les mots-clés SQL ne font pas la différence entre majuscules et minuscules."
+          - label: "Faux"
+            correct: false
+            why: "Les majuscules sont seulement une habitude pour mieux lire."
+        explanation: "On écrit `SELECT` et `FROM` en majuscules par habitude, pas par obligation."
     exercises:
+      - slug: sql-ex-select-etoile-guide
+        kind: COMPLETER
+        title: "Compléter ta première requête"
+        difficulty: FACILE
+        skill: sql-select
+        statement: "Complète la requête qui affiche tout le contenu de la table `clients`."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "« Montre-moi » se dit SELECT."
+          - "« Dans la table » se dit FROM."
+          - "SELECT, *, FROM."
+        solution: '["SELECT", "*", "FROM"]'
+        explanation: "`SELECT * FROM clients;` : toutes les colonnes de la table clients."
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            [[1]] [[2]]
+            [[3]] clients;
+          blanks:
+            - ["SELECT"]
+            - ["*"]
+            - ["FROM"]
       - slug: sql-ex-select-services
         kind: SQL
         title: "Afficher tous les services"
@@ -229,120 +402,85 @@ lessons:
           Affiche **toutes les colonnes** et **toutes les lignes** de la table `services`.
         criteria: "Le résultat contient les 4 services avec leurs colonnes id, nom et ville."
         hints:
-          - "La structure est la même que pour la table `categories` vue juste avant."
-          - "Tu as besoin de deux mots-clés : `SELECT` pour les colonnes, `FROM` pour la table."
-          - "`SELECT * FROM ...;` en remplaçant les points par le nom de la table."
+          - "C'est la même requête que pour `categories`, avec une autre table."
+          - "Deux mots-clés : `SELECT` pour les colonnes, `FROM` pour la table."
+          - "`SELECT * FROM services;`"
         solution: |
           SELECT *
           FROM services;
-        explanation: |
-          `SELECT *` demande toutes les colonnes, `FROM services` désigne la table. PostgreSQL renvoie les
-          4 lignes de la table. En production, on évite `*` (on liste les colonnes utiles) mais c'est parfait
-          pour découvrir le contenu d'une table.
+        explanation: "`SELECT *` demande toutes les colonnes, `FROM services` désigne la table."
         xp: 10
         payload:
           mode: READ
           starter: "-- Écris ta requête ici\n"
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 3
   - slug: sql-select-colonnes
     title: "Choisir ses colonnes avec SELECT"
-    duration: 10
-    objective: "Sélectionner uniquement les colonnes utiles, les renommer avec AS et fabriquer de nouvelles colonnes de texte."
-    prerequisites: "Leçon précédente : SELECT * FROM table."
+    duration: 8
+    objective: "Afficher seulement les colonnes utiles, dans l'ordre voulu."
+    prerequisites: "Leçon « Ta première requête : SELECT * FROM »."
     skills: [sql-select]
     xp: 10
     memo: |
-      - `SELECT col1, col2 FROM table;` : colonnes séparées par des **virgules**, pas de virgule avant `FROM`.
-      - `AS` donne un **alias** (un nom d'affichage) à une colonne : `nom AS produit`.
-      - On peut **transformer** : `UPPER(nom)` (majuscules), `LOWER(email)` (minuscules), `prenom || ' ' || nom` (coller).
-      - Une transformation dans un `SELECT` ne modifie **jamais** les données stockées.
+      - `SELECT prenom, ville FROM clients;` : seulement ces deux colonnes.
+      - Les colonnes sont séparées par des **virgules**.
+      - **Pas** de virgule après la dernière colonne, juste avant `FROM`.
+      - L'ordre écrit est l'ordre affiché.
     commonMistakes: |
-      - Mettre une virgule après la dernière colonne : `SELECT nom, prix, FROM produits` → erreur de syntaxe.
-      - Entourer un alias d'apostrophes : `AS 'client'` est incorrect ; utilise `AS client` ou `AS "Nom du client"`.
-      - Croire que `UPPER(nom)` met à jour la table : c'est seulement l'affichage.
+      - Mettre une virgule avant `FROM` : `SELECT nom, prix, FROM produits` → erreur.
+      - Oublier une virgule : `SELECT prenom nom` n'affiche qu'une colonne.
     blocks:
       - type: text
         md: |
-          `SELECT *` est pratique pour explorer, mais une application ne demande jamais « tout » : elle demande
-          **les colonnes dont elle a besoin**. C'est plus rapide, plus lisible et plus sûr (on n'expose pas
-          de données inutiles).
+          `SELECT *` affiche **tout**. Souvent, on n'a besoin que de **quelques colonnes**.
+      - type: definition
+        id: def-select-colonnes
+        term: "Choisir ses colonnes"
+        md: |
+          Comme au restaurant : on ne commande pas toute la carte, seulement les plats qu'on veut. Après
+          `SELECT`, on écrit **les noms des colonnes** voulues, séparés par des virgules.
       - type: code
+        id: code-select-colonnes
         language: sql
-        title: "Choisir des colonnes"
+        title: "Le nom et le prix des produits"
         code: |
           SELECT nom, prix
           FROM produits;
         lines:
           - n: 1
-            note: "On liste les colonnes voulues, séparées par des virgules. L'ordre choisi est l'ordre d'affichage."
+            note: "Deux colonnes : `nom`, puis `prix`. Une virgule entre les deux, pas après."
           - n: 2
-            note: "La table lue reste `produits` : seules les colonnes affichées changent."
+            note: "La table lue."
       - type: demo
-        title: "Démonstration"
-        md: "Exécute, puis essaie d'ajouter la colonne `stock` à la liste."
+        title: "Essaie"
+        md: "Exécute, puis ajoute la colonne `stock` à la fin de la liste (n'oublie pas la virgule)."
         language: sql
         code: |
           SELECT nom, prix
           FROM produits;
       - type: question
         ref: sql-l2-q1
-      - type: definition
-        id: def-alias-as
-        term: "Alias (AS)"
-        md: |
-          Nom temporaire donné à une colonne (ou à une table) **dans le résultat**. Il rend le résultat plus
-          parlant et sera indispensable avec les transformations et les jointures.
-      - type: code
-        language: sql
-        title: "Transformer et renommer"
-        code: |
-          SELECT nom,
-                 nom AS produit,
-                 UPPER(nom) AS etiquette
-          FROM produits;
-        lines:
-          - n: 1
-            note: "Première colonne : le nom du produit, sans modification."
-          - n: 2
-            note: "`AS produit` renomme la colonne `nom` dans le résultat (la table n'est pas modifiée)."
-          - n: 3
-            note: "`UPPER` met le nom en majuscules, comme sur une étiquette de rayon. Pas de virgule après la dernière colonne."
-          - n: 4
-            note: "La table interrogée."
-      - type: demo
-        title: "Démonstration : lis le message d'erreur"
-        md: |
-          Exécute cette requête telle quelle : PostgreSQL signale que la colonne n'existe pas. Lis le message,
-          puis corrige la requête en retirant la dernière colonne (et la virgule qui la précède).
-        language: sql
-        code: |
-          SELECT nom,
-                 nom AS produit,
-                 UPPER(nom) AS etiquette,
-                 prenom_inexistant
-          FROM produits;
-      - type: callout
-        variant: info
-        md: |
-          Pour coller deux textes, PostgreSQL utilise l'opérateur `||` :
-          `prenom || ' ' || nom` produit « Awa Diallo ». Les textes fixes s'écrivent entre **apostrophes simples**.
+        review: def-select-colonnes
       - type: question
-        ref: sql-l2-q2
-      - type: question
-        ref: sql-l2-q3
+        ref: sqlq-select-3
+        review: code-select-colonnes
+      - type: text
+        md: "Exercice guidé : complète la requête."
+      - type: exercise
+        ref: sql-ex-colonnes-guide
+      - type: text
+        md: "En autonomie : prépare la fiche contact des clients."
       - type: exercise
         ref: sql-ex-clients-contact
-      - type: question
-        ref: sql-l2-q4
-      - type: exercise
-        ref: sql-ex-nom-complet
       - type: quiz
         items:
           - ref: sqlq-select-1
-          - ref: sqlq-select-2
-            review: def-alias-as
-          - ref: sqlq-select-3
+            review: code-select-colonnes
+          - ref: sql-p3-q4
+            review: code-select-colonnes
+          - ref: sql-p3-q5
+            review: def-select-colonnes
     questions:
       - code: sql-l2-q1
         kind: CHOIX_UNIQUE
@@ -352,97 +490,17 @@ lessons:
         choices:
           - label: "`SELECT prenom, ville FROM clients;`"
             correct: true
-            why: "Les colonnes sont listées après SELECT, séparées par une virgule, puis la table après FROM."
+            why: "Les colonnes après SELECT, séparées par une virgule, puis la table après FROM."
           - label: "`SELECT prenom ville FROM clients;`"
             correct: false
-            why: "Sans virgule, PostgreSQL comprend « prenom renommé en ville » : une seule colonne s'affiche."
-          - label: "`SELECT * FROM clients WHERE prenom, ville;`"
+            why: "Sans virgule, une seule colonne s'affiche."
+          - label: "`SELECT * FROM clients;`"
             correct: false
-            why: "WHERE sert à filtrer des lignes, pas à choisir des colonnes, et cette syntaxe est invalide."
+            why: "L'étoile affiche toutes les colonnes, pas seulement ces deux-là."
           - label: "`FROM clients SELECT prenom, ville;`"
             correct: false
-            why: "L'ordre des clauses est imposé : SELECT d'abord, FROM ensuite."
-        explanation: "Syntaxe : `SELECT colonne1, colonne2 FROM table;`. L'oubli de la virgule est une erreur silencieuse fréquente : la seconde colonne devient un alias !"
-      - code: sql-l2-q2
-        kind: VRAI_FAUX
-        difficulty: 1
-        skill: sql-select
-        prompt: "La requête `SELECT UPPER(nom) FROM produits;` met les noms des produits en majuscules dans la table."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "Non : SELECT ne fait que lire. Pour modifier les données, il faudra UPDATE."
-          - label: "Faux"
-            correct: true
-            why: "Exact : la transformation n'existe que dans le résultat affiché."
-        explanation: "Un SELECT est une **lecture** : il ne modifie jamais les données. Les modifications passent par INSERT, UPDATE ou DELETE."
-      - code: sql-l2-q3
-        kind: RESULTAT_CODE
-        difficulty: 2
-        skill: sql-select
-        prompt: "Que renvoie cette requête pour le client n°1 (Awa Diallo) ?"
-        snippet: |
-          SELECT prenom || ' ' || UPPER(nom) AS client
-          FROM clients
-          WHERE id = 1;
-        language: sql
-        choices:
-          - label: "Awa DIALLO"
-            correct: true
-            why: "Le prénom est gardé tel quel, un espace est ajouté, et UPPER met le nom en majuscules."
-          - label: "AWA DIALLO"
-            correct: false
-            why: "UPPER ne s'applique qu'à `nom`, pas à `prenom`."
-          - label: "Awa || ' ' || DIALLO"
-            correct: false
-            why: "`||` est un opérateur de concaténation : il est exécuté, pas affiché."
-          - label: "AwaDIALLO"
-            correct: false
-            why: "La chaîne `' '` ajoute bien un espace entre les deux."
-        explanation: "`||` colle des textes, `' '` est un espace littéral et `UPPER()` passe un texte en majuscules. La colonne résultat s'appelle `client` grâce à l'alias."
-      - code: sql-l2-q4
-        kind: COMPLETER_CODE
-        difficulty: 1
-        skill: sql-select
-        prompt: "Complète pour que la nouvelle colonne s'appelle `etiquette`."
-        snippet: |
-          SELECT nom, UPPER(nom) ____ etiquette
-          FROM produits;
-        language: sql
-        answers: ["AS"]
-        explanation: "`AS` introduit l'alias. Il est techniquement facultatif en PostgreSQL, mais l'écrire rend la requête beaucoup plus lisible."
-      - code: sqlq-select-1
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: sql-select
-        prompt: Que signifie `*` dans `SELECT * FROM clients;` ?
-        choices:
-          - label: Toutes les colonnes
-            correct: true
-            why: "Oui : l'étoile remplace la liste de toutes les colonnes."
-          - label: Toutes les tables
-            correct: false
-            why: La table est indiquée après FROM.
-          - label: Une multiplication
-            correct: false
-            why: Juste après SELECT, `*` veut dire « toutes les colonnes ».
-        explanation: "En production, on préfère lister les colonnes utiles : c'est plus clair et plus léger."
-      - code: sqlq-select-2
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: sql-select
-        prompt: À quoi sert `AS` dans `SELECT UPPER(nom) AS etiquette FROM produits;` ?
-        choices:
-          - label: À donner un nom lisible à la nouvelle colonne
-            correct: true
-            why: "Oui : c'est un alias."
-          - label: À enregistrer la colonne dans la table
-            correct: false
-            why: SELECT ne modifie jamais la table.
-          - label: À trier le résultat
-            correct: false
-            why: Le tri se fait avec ORDER BY.
-        explanation: Un alias renomme une colonne (ou une table) dans le résultat seulement.
+            why: "SELECT s'écrit d'abord, FROM ensuite."
+        explanation: "`SELECT colonne1, colonne2 FROM table;`"
       - code: sqlq-select-3
         kind: VRAI_FAUX
         difficulty: 1
@@ -455,8 +513,76 @@ lessons:
           - label: Faux
             correct: false
             why: 'Si : une virgule entre chaque colonne, pas après la dernière.'
-        explanation: 'Oublier une virgule transforme le deuxième nom en alias du premier : erreur discrète et fréquente.'
+        explanation: "Une virgule entre chaque colonne, aucune avant FROM."
+      - code: sqlq-select-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Que signifie `*` dans `SELECT * FROM clients;` ?
+        choices:
+          - label: Toutes les colonnes
+            correct: true
+            why: "Oui : l'étoile remplace la liste de toutes les colonnes."
+          - label: Toutes les tables
+            correct: false
+            why: La table est indiquée après FROM.
+          - label: Aucune colonne
+            correct: false
+            why: "Au contraire : l'étoile les affiche toutes."
+        explanation: "Pour découvrir une table, `*` est pratique. Dans une application, on liste les colonnes utiles."
+      - code: sql-p3-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Qu'est-ce qui ne va pas dans `SELECT nom, prix, FROM produits;` ?"
+        choices:
+          - label: "Il y a une virgule en trop avant FROM"
+            correct: true
+            why: "La dernière colonne n'est pas suivie d'une virgule."
+          - label: "Il manque une étoile"
+            correct: false
+            why: "On a choisi des colonnes : pas besoin d'étoile."
+          - label: "FROM devrait être avant SELECT"
+            correct: false
+            why: "SELECT s'écrit toujours en premier."
+        explanation: "La virgule sépare deux colonnes : jamais de virgule juste avant FROM."
+      - code: sql-p3-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: "`SELECT ville, prenom FROM clients;` affiche la ville avant le prénom."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "L'ordre écrit après SELECT est l'ordre affiché."
+          - label: "Faux"
+            correct: false
+            why: "C'est toi qui choisis l'ordre des colonnes."
+        explanation: "Les colonnes s'affichent dans l'ordre où tu les écris."
     exercises:
+      - slug: sql-ex-colonnes-guide
+        kind: COMPLETER
+        title: "Trois colonnes"
+        difficulty: FACILE
+        skill: sql-select
+        statement: "Complète pour afficher le prénom, le nom et la ville des clients."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Entre deux colonnes : une virgule."
+          - "Avant le nom de la table : FROM."
+          - ", , , , FROM."
+        solution: '[",", ",", "FROM"]'
+        explanation: "`SELECT prenom, nom, ville FROM clients;`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            SELECT prenom[[1]] nom[[2]] ville
+            [[3]] clients;
+          blanks:
+            - [","]
+            - [","]
+            - ["FROM"]
       - slug: sql-ex-clients-contact
         kind: SQL
         title: "Fiche contact des clients"
@@ -468,22 +594,397 @@ lessons:
         criteria: "3 colonnes (prenom, nom, email) et 25 lignes."
         hints:
           - "Liste les trois colonnes après SELECT."
-          - "Les colonnes sont séparées par des virgules, sans virgule avant FROM."
-          - "`SELECT prenom, nom, email FROM ...;`"
+          - "Des virgules entre les colonnes, pas de virgule avant FROM."
+          - "`SELECT prenom, nom, email FROM clients;`"
         solution: |
           SELECT prenom, nom, email
           FROM clients;
-        explanation: |
-          On liste exactement les colonnes demandées, dans l'ordre demandé. Choisir ses colonnes est une bonne
-          pratique : l'application ne reçoit que ce dont elle a besoin (ici, pas la date d'inscription).
+        explanation: "On liste exactement les colonnes demandées, dans l'ordre demandé."
         xp: 10
         payload:
           mode: READ
           starter: "SELECT \nFROM clients;\n"
+
+  # ===================================================================== LEÇON 4
+  - slug: sql-alias-as
+    title: "Renommer une colonne avec AS"
+    duration: 8
+    objective: "Donner un nom plus clair à une colonne du résultat avec AS."
+    prerequisites: "Leçon « Choisir ses colonnes avec SELECT »."
+    skills: [sql-select]
+    xp: 10
+    memo: |
+      - `nom AS produit` : la colonne `nom` s'affiche sous le titre `produit`.
+      - Le nouveau nom s'appelle un **alias**.
+      - L'alias change seulement l'**affichage** : la table n'est jamais modifiée.
+      - Un alias avec des espaces s'écrit entre **guillemets doubles** : `AS "Nom du client"`.
+    commonMistakes: |
+      - Mettre l'alias entre apostrophes : `AS 'client'` → erreur.
+      - Croire que AS renomme la colonne dans la table : c'est seulement pour le résultat.
+    blocks:
+      - type: text
+        md: |
+          Les noms de colonnes ne sont pas toujours parlants. Avec `AS`, on donne au résultat un titre plus
+          clair, comme on colle une nouvelle étiquette sur un bocal.
+      - type: definition
+        id: def-alias-as
+        term: "Alias (AS)"
+        md: |
+          Un **surnom** donné à une colonne, **seulement dans le résultat**. La colonne garde son vrai nom dans
+          la table : c'est juste l'étiquette affichée qui change.
+      - type: code
+        id: code-alias
+        language: sql
+        title: "Des titres plus clairs"
+        code: |
+          SELECT nom AS produit,
+                 prix AS prix_en_euros
+          FROM produits;
+        lines:
+          - n: 1
+            note: "La colonne `nom` s'affiche sous le titre `produit`."
+          - n: 2
+            note: "La colonne `prix` s'affiche sous le titre `prix_en_euros`."
+          - n: 3
+            note: "La table n'est pas modifiée : seul le résultat change."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis écris `AS \"Nom du produit\"` (avec des guillemets doubles, car il y a des espaces)."
+        language: sql
+        code: |
+          SELECT nom AS produit,
+                 prix AS prix_en_euros
+          FROM produits;
+      - type: question
+        ref: sql-l2-q4
+        review: code-alias
+      - type: question
+        ref: sqlq-select-2
+        review: def-alias-as
+      - type: text
+        md: "Exercice guidé : complète les alias."
+      - type: exercise
+        ref: sql-ex-alias-guide
+      - type: text
+        md: "En autonomie : renomme deux colonnes des clients."
+      - type: exercise
+        ref: sql-ex-alias-clients
+      - type: quiz
+        items:
+          - ref: sql-p4-q3
+            review: def-alias-as
+          - ref: sql-p4-q4
+            review: code-alias
+          - ref: sql-p4-q5
+            review: def-alias-as
+    questions:
+      - code: sql-l2-q4
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Complète pour que la colonne `nom` s'affiche sous le titre `produit`."
+        snippet: |
+          SELECT nom ____ produit
+          FROM produits;
+        language: sql
+        answers: ["AS"]
+        explanation: "`AS` introduit l'alias : le nouveau titre de la colonne dans le résultat."
+      - code: sqlq-select-2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: À quoi sert `AS` dans `SELECT prenom AS client FROM clients;` ?
+        choices:
+          - label: À afficher la colonne prenom sous le titre client
+            correct: true
+            why: "Oui : c'est un alias."
+          - label: À renommer la colonne dans la table
+            correct: false
+            why: "La table n'est jamais modifiée par un SELECT."
+          - label: À créer une nouvelle table client
+            correct: false
+            why: "AS change seulement le titre affiché."
+        explanation: Un alias renomme une colonne dans le résultat seulement.
+      - code: sql-p4-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: "Après `SELECT nom AS produit FROM produits;`, la table `produits` a une colonne `produit`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : l'alias n'existe que dans le résultat affiché."
+          - label: "Faux"
+            correct: true
+            why: "Exact : la colonne s'appelle toujours `nom` dans la table."
+        explanation: "SELECT ne fait que lire : il ne modifie jamais la table."
+      - code: sql-p4-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: "Comment écrire un alias qui contient des espaces ?"
+        choices:
+          - label: "`AS \"Nom du produit\"`"
+            correct: true
+            why: "Les guillemets doubles entourent un nom avec des espaces."
+          - label: "`AS 'Nom du produit'`"
+            correct: false
+            why: "Les apostrophes sont réservées aux textes, pas aux noms de colonnes."
+          - label: "`AS Nom du produit`"
+            correct: false
+            why: "Sans guillemets, les espaces coupent le nom : erreur."
+        explanation: "Pour éviter les soucis, on préfère des alias sans espaces : `nom_du_produit`."
+      - code: sql-p4-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Comment s'appelle le nouveau nom donné avec AS ?"
+        choices:
+          - label: "Un alias"
+            correct: true
+            why: "Un alias est un surnom pour le résultat."
+          - label: "Une clé primaire"
+            correct: false
+            why: "La clé primaire est le numéro unique d'une ligne."
+          - label: "Une table"
+            correct: false
+            why: "AS ne crée pas de table."
+        explanation: "Alias = surnom affiché dans le résultat."
+    exercises:
+      - slug: sql-ex-alias-guide
+        kind: COMPLETER
+        title: "Compléter les alias"
+        difficulty: FACILE
+        skill: sql-select
+        statement: "Complète pour afficher `prenom` sous le titre `client` et `ville` sous le titre `habite_a`."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot-clé de l'alias : AS."
+          - "Le nouveau titre vient juste après AS."
+          - "AS, AS, habite_a."
+        solution: '["AS", "AS", "habite_a"]'
+        explanation: "`SELECT prenom AS client, ville AS habite_a FROM clients;`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            SELECT prenom [[1]] client,
+                   ville [[2]] [[3]]
+            FROM clients;
+          blanks:
+            - ["AS"]
+            - ["AS"]
+            - ["habite_a"]
+      - slug: sql-ex-alias-clients
+        kind: SQL
+        title: "Des titres clairs pour les clients"
+        difficulty: FACILE
+        skill: sql-select
+        statement: |
+          Affiche le **prénom** des clients sous le titre `client` et leur **email** sous le titre `contact`.
+        criteria: "2 colonnes nommées client et contact, 25 lignes."
+        hints:
+          - "Deux colonnes : prenom et email."
+          - "Après chaque colonne : AS puis le nouveau titre."
+          - "`SELECT prenom AS client, email AS contact FROM clients;`"
+        solution: |
+          SELECT prenom AS client, email AS contact
+          FROM clients;
+        explanation: "Les données sont les mêmes ; seuls les titres des colonnes changent dans le résultat."
+        xp: 10
+        payload:
+          mode: READ
+          starter: "SELECT \nFROM clients;\n"
+
+  # ===================================================================== LEÇON 5
+  - slug: sql-transformer-texte
+    title: "Transformer du texte : UPPER, LOWER et ||"
+    duration: 10
+    objective: "Mettre un texte en majuscules ou en minuscules, et coller plusieurs textes ensemble."
+    prerequisites: "Leçon « Renommer une colonne avec AS »."
+    skills: [sql-select]
+    xp: 10
+    memo: |
+      - `UPPER(nom)` : le nom en MAJUSCULES.
+      - `LOWER(email)` : l'e-mail en minuscules.
+      - `prenom || ' ' || nom` : colle le prénom, un espace et le nom.
+      - Un texte fixe s'écrit entre **apostrophes** : `' '`, `'Bonjour '`.
+      - On ajoute souvent un alias : `UPPER(nom) AS etiquette`.
+    commonMistakes: |
+      - Oublier l'espace : `prenom || nom` donne « AwaDiallo ».
+      - Écrire un texte fixe entre guillemets doubles : `" "` → erreur.
+      - Croire que UPPER modifie la table : c'est seulement l'affichage.
+    blocks:
+      - type: text
+        md: |
+          On peut aussi **transformer** une colonne avant de l'afficher : la mettre en majuscules, ou coller
+          deux colonnes pour faire une phrase.
+      - type: definition
+        id: def-fonction-texte
+        term: "Fonction de texte"
+        md: |
+          Une **machine** : on lui donne un texte, elle rend un texte transformé. `UPPER` rend le texte en
+          majuscules, `LOWER` en minuscules. Le `||` sert de **colle** entre deux textes.
+      - type: code
+        id: code-texte
+        language: sql
+        title: "Une étiquette et un nom complet"
+        code: |
+          SELECT UPPER(nom) AS nom_majuscules,
+                 prenom || ' ' || nom AS client,
+                 LOWER(email) AS email_minuscules
+          FROM clients;
+        lines:
+          - n: 1
+            note: "`UPPER(nom)` : le nom en majuscules, affiché sous le titre `nom_majuscules`."
+          - n: 2
+            note: "On colle le prénom, un espace `' '` et le nom : « Awa Diallo »."
+          - n: 3
+            note: "`LOWER(email)` : l'e-mail tout en minuscules."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis remplace `' '` par `' - '` pour voir la différence."
+        language: sql
+        code: |
+          SELECT UPPER(nom) AS nom_majuscules,
+                 prenom || ' ' || nom AS client,
+                 LOWER(email) AS email_minuscules
+          FROM clients;
+      - type: question
+        ref: sql-l2-q3
+        review: code-texte
+      - type: question
+        ref: sql-l2-q2
+        review: def-fonction-texte
+      - type: text
+        md: "Exercice guidé : complète le nom complet."
+      - type: exercise
+        ref: sql-ex-texte-guide
+      - type: text
+        md: "En autonomie : prépare une étiquette de rayon."
+      - type: exercise
+        ref: sql-ex-nom-complet
+      - type: quiz
+        items:
+          - ref: sql-c1-b8
+            review: def-fonction-texte
+          - ref: sql-p5-q4
+            review: code-texte
+          - ref: sql-p5-q5
+            review: def-fonction-texte
+    questions:
+      - code: sql-l2-q3
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-select
+        prompt: "Pour la cliente Awa Diallo, que contient la colonne `client` ?"
+        snippet: |
+          SELECT prenom || ' ' || UPPER(nom) AS client
+          FROM clients;
+        language: sql
+        choices:
+          - label: "Awa DIALLO"
+            correct: true
+            why: "Le prénom reste tel quel, un espace est ajouté, UPPER met le nom en majuscules."
+          - label: "AWA DIALLO"
+            correct: false
+            why: "UPPER ne s'applique qu'à `nom`, pas au prénom."
+          - label: "AwaDIALLO"
+            correct: false
+            why: "Le morceau `' '` ajoute bien un espace."
+        explanation: "`||` colle des textes, `' '` est un espace, `UPPER()` met en majuscules."
+      - code: sql-l2-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: "La requête `SELECT UPPER(nom) FROM produits;` met les noms des produits en majuscules dans la table."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : SELECT ne fait que lire."
+          - label: "Faux"
+            correct: true
+            why: "Exact : la transformation n'existe que dans le résultat affiché."
+        explanation: "Un SELECT ne modifie jamais les données. Tu verras plus tard comment les modifier."
+      - code: sql-c1-b8
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-select
+        prompt: "Que renvoie cette requête ?"
+        snippet: |
+          SELECT 'Code' || ' en ' || 'Clair' AS titre;
+        language: sql
+        choices:
+          - label: "Code en Clair"
+            correct: true
+            why: "`||` colle les trois morceaux, espaces compris."
+          - label: "CodeenClair"
+            correct: false
+            why: "Les espaces sont écrits dans le morceau ' en ' : ils sont gardés."
+          - label: "Une erreur, car il n'y a pas de FROM"
+            correct: false
+            why: "PostgreSQL accepte un SELECT sans FROM pour tester une expression."
+        explanation: "`||` colle des textes. PostgreSQL accepte `SELECT` sans `FROM`, pratique pour essayer."
+      - code: sql-p5-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Quelle fonction affiche un texte en minuscules ?"
+        choices:
+          - label: "`LOWER`"
+            correct: true
+            why: "LOWER = en bas, les minuscules."
+          - label: "`UPPER`"
+            correct: false
+            why: "UPPER met en majuscules."
+          - label: "`||`"
+            correct: false
+            why: "`||` colle des textes."
+        explanation: "UPPER = majuscules, LOWER = minuscules."
+      - code: sql-p5-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: "Comment écrire un espace dans une requête qui colle des textes ?"
+        choices:
+          - label: "`' '` (un espace entre apostrophes)"
+            correct: true
+            why: "Un texte fixe s'écrit entre apostrophes."
+          - label: "`\" \"` (entre guillemets doubles)"
+            correct: false
+            why: "Les guillemets doubles servent aux noms de colonnes."
+          - label: "Rien, l'espace s'ajoute tout seul"
+            correct: false
+            why: "`||` colle sans rien ajouter."
+        explanation: "`prenom || ' ' || nom` : l'espace est un petit texte entre apostrophes."
+    exercises:
+      - slug: sql-ex-texte-guide
+        kind: COMPLETER
+        title: "Le nom complet"
+        difficulty: FACILE
+        skill: sql-select
+        statement: "Complète pour afficher le prénom et le nom collés avec un espace, sous le titre `client`."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La colle entre deux textes : ||."
+          - "L'espace : un espace entre apostrophes."
+          - "||, ' ', AS."
+        solution: '["||", "'' ''", "AS"]'
+        explanation: "`SELECT prenom || ' ' || nom AS client FROM clients;`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            SELECT prenom [[1]] [[2]] || nom [[3]] client
+            FROM clients;
+          blanks:
+            - ["||"]
+            - ["' '"]
+            - ["AS"]
       - slug: sql-ex-nom-complet
         kind: SQL
         title: "Une étiquette de rayon"
-        difficulty: INTERMEDIAIRE
+        difficulty: FACILE
         skill: sql-select
         statement: |
           Pour une étiquette de rayon, affiche pour chaque produit :
@@ -499,546 +1000,11 @@ lessons:
           FROM produits;
         explanation: |
           `UPPER(nom)` transforme le nom pour chaque ligne et `AS etiquette` nomme la colonne. Rien n'est
-          modifié dans la table : la transformation n'existe que dans le résultat.
+          modifié dans la table.
         xp: 15
         payload:
           mode: READ
           starter: "SELECT nom, \nFROM produits;\n"
-
-  # ===================================================================== LEÇON 3
-  - slug: sql-where
-    title: "Filtrer les lignes avec WHERE"
-    duration: 10
-    objective: "Ne garder que les lignes qui respectent une condition, sur des nombres, des textes et des dates."
-    prerequisites: "Savoir écrire SELECT colonnes FROM table."
-    skills: [sql-select]
-    xp: 10
-    memo: |
-      - `WHERE condition` garde uniquement les lignes pour lesquelles la condition est **vraie**.
-      - Opérateurs : `=`, `<>` (différent), `<`, `<=`, `>`, `>=`.
-      - Textes et dates entre **apostrophes simples** : `ville = 'Paris'`, `date_commande >= '2025-01-01'`.
-      - La comparaison de textes est **sensible à la casse** : `'paris'` ≠ `'Paris'`.
-      - Ordre des clauses : `SELECT … FROM … WHERE …`.
-    commonMistakes: |
-      - Utiliser des guillemets doubles pour un texte : `"Paris"` désigne une **colonne** en PostgreSQL.
-      - Écrire `!=` : il fonctionne en PostgreSQL, mais `<>` est la forme standard à privilégier.
-      - Placer WHERE avant FROM.
-    blocks:
-      - type: text
-        md: |
-          Afficher 25 clients, c'est lisible. Afficher 2 millions de commandes, non. Dans la vraie vie, on ne
-          veut presque jamais **toutes** les lignes : on veut **celles qui nous intéressent**. C'est le rôle de `WHERE`.
-      - type: code
-        language: sql
-        title: "Les clients parisiens"
-        code: |
-          SELECT prenom, nom, ville
-          FROM clients
-          WHERE ville = 'Paris';
-        lines:
-          - n: 1
-            note: "Les colonnes affichées."
-          - n: 2
-            note: "La table lue."
-          - n: 3
-            note: "Condition : on ne garde que les lignes dont la ville vaut exactement 'Paris' (apostrophes simples pour un texte)."
-      - type: demo
-        title: "Démonstration"
-        md: "Exécute, puis remplace `'Paris'` par `'paris'` : aucune ligne ! La comparaison respecte les majuscules."
-        language: sql
-        code: |
-          SELECT prenom, nom, ville
-          FROM clients
-          WHERE ville = 'Paris';
-      - type: definition
-        id: def-condition-predicat
-        term: "Condition (prédicat)"
-        md: |
-          Expression qui vaut **vrai** ou **faux** pour chaque ligne, par exemple `prix > 50`. PostgreSQL
-          l'évalue ligne par ligne et ne conserve que les lignes où elle est vraie.
-      - type: text
-        md: |
-          | Opérateur | Signification | Exemple |
-          |-----------|---------------|---------|
-          | `=` | égal | `statut = 'LIVREE'` |
-          | `<>` | différent | `statut <> 'ANNULEE'` |
-          | `>` / `>=` | supérieur (ou égal) | `prix >= 100` |
-          | `<` / `<=` | inférieur (ou égal) | `stock < 10` |
-      - type: question
-        ref: sql-l3-q1
-      - type: code
-        language: sql
-        title: "Filtrer sur une date"
-        code: |
-          SELECT id, client_id, date_commande
-          FROM commandes
-          WHERE date_commande >= '2025-01-01';
-        lines:
-          - n: 1
-            note: "On affiche l'identifiant de la commande, la cliente et la date."
-          - n: 3
-            note: "Les dates s'écrivent entre apostrophes au format ISO 'AAAA-MM-JJ'. `>=` garde les commandes passées depuis le 1er janvier 2025 inclus."
-      - type: demo
-        title: "Démonstration : les commandes de 2025"
-        language: sql
-        code: |
-          SELECT id, client_id, date_commande
-          FROM commandes
-          WHERE date_commande >= '2025-01-01';
-      - type: question
-        ref: sql-l3-q2
-      - type: question
-        ref: sql-l3-q3
-      - type: exercise
-        ref: sql-ex-rupture-stock
-      - type: question
-        ref: sql-l3-q4
-      - type: exercise
-        ref: sql-ex-commandes-annulees
-      - type: quiz
-        items:
-          - ref: sqlq-where-1
-            review: def-condition-predicat
-          - ref: sqlq-where-2
-          - ref: sqlq-where-3
-    questions:
-      - code: sql-l3-q1
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: sql-select
-        prompt: "Quelle condition garde les produits dont le prix est **strictement supérieur** à 50 € ?"
-        choices:
-          - label: "`WHERE prix > 50`"
-            correct: true
-            why: "`>` signifie strictement supérieur : un produit à exactement 50 € est exclu."
-          - label: "`WHERE prix >= 50`"
-            correct: false
-            why: "`>=` inclut aussi les produits à 50 € pile."
-          - label: "`WHERE prix = > 50`"
-            correct: false
-            why: "Syntaxe invalide : l'opérateur s'écrit en un seul bloc."
-          - label: "`WHERE 'prix' > 50`"
-            correct: false
-            why: "Entre apostrophes, 'prix' est un texte, pas la colonne prix."
-        explanation: "Attention à la nuance strict / large : `>` exclut la borne, `>=` l'inclut."
-      - code: sql-l3-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: sql-select
-        prompt: "En PostgreSQL, comment écrit-on correctement la ville de Lyon dans une condition ?"
-        choices:
-          - label: "`ville = 'Lyon'`"
-            correct: true
-            why: "Les valeurs texte s'écrivent entre apostrophes simples."
-          - label: "`ville = \"Lyon\"`"
-            correct: false
-            why: "Les guillemets doubles désignent un identifiant (une colonne nommée Lyon), d'où une erreur."
-          - label: "`ville = Lyon`"
-            correct: false
-            why: "Sans apostrophes, PostgreSQL cherche une colonne nommée lyon."
-        explanation: "Apostrophes simples pour les **valeurs** texte et date ; guillemets doubles pour les **identifiants** (noms de colonnes ou de tables particuliers)."
-      - code: sql-l3-q3
-        kind: RESULTAT_CODE
-        difficulty: 2
-        skill: sql-select
-        prompt: "Que renvoie cette requête sur la table `categories` ?"
-        snippet: |
-          SELECT nom
-          FROM categories
-          WHERE id <> 3;
-        language: sql
-        choices:
-          - label: "Toutes les catégories sauf celle d'id 3"
-            correct: true
-            why: "`<>` signifie « différent de » : seule la catégorie d'id 3 est exclue."
-          - label: "Seulement la catégorie d'id 3"
-            correct: false
-            why: "Ce serait le cas avec `id = 3`."
-          - label: "Toutes les catégories"
-            correct: false
-            why: "La condition exclut la catégorie d'id 3."
-          - label: "Aucune catégorie"
-            correct: false
-            why: "La condition est vraie pour toutes les autres catégories."
-        explanation: "`<>` est l'opérateur « différent de » du SQL standard (PostgreSQL accepte aussi `!=`)."
-      - code: sql-l3-q4
-        kind: VRAI_FAUX
-        difficulty: 1
-        skill: sql-select
-        prompt: "La clause WHERE s'écrit après la clause FROM."
-        choices:
-          - label: "Vrai"
-            correct: true
-            why: "Oui : SELECT … FROM … WHERE …"
-          - label: "Faux"
-            correct: false
-            why: "L'ordre des clauses est imposé : WHERE vient après FROM."
-        explanation: "Retiens l'ordre d'écriture : **SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY → LIMIT**. Tu découvriras les autres clauses au fil du parcours."
-      - code: sqlq-where-1
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: sql-select
-        prompt: Quelle requête affiche les produits dont le stock vaut exactement 0 ?
-        choices:
-          - label: '`SELECT * FROM produits WHERE stock = 0;`'
-            correct: true
-            why: 'Oui : `=` compare en SQL.'
-          - label: '`SELECT * FROM produits WHERE stock == 0;`'
-            correct: false
-            why: "`==` n'existe pas en SQL."
-          - label: '`SELECT * FROM produits IF stock = 0;`'
-            correct: false
-            why: Le filtre s'écrit avec WHERE.
-        explanation: En SQL, l'égalité s'écrit avec un seul `=`, et la différence avec `<>`.
-      - code: sqlq-where-2
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: sql-select
-        prompt: Comment écrire « différent de Paris » ?
-        choices:
-          - label: "`ville <> 'Paris'`"
-            correct: true
-            why: Oui (on peut aussi écrire `!=`).
-          - label: "`ville NOT 'Paris'`"
-            correct: false
-            why: NOT s'utilise devant une condition complète.
-          - label: "`ville =/ 'Paris'`"
-            correct: false
-            why: Cet opérateur n'existe pas.
-        explanation: '`<>` (norme SQL) ou `!=` (accepté par PostgreSQL).'
-      - code: sqlq-where-3
-        kind: VRAI_FAUX
-        difficulty: 1
-        skill: sql-select
-        prompt: Un WHERE modifie les données de la table.
-        choices:
-          - label: Vrai
-            correct: false
-            why: 'Non : il filtre seulement ce qui est affiché.'
-          - label: Faux
-            correct: true
-            why: 'Exact : SELECT ... WHERE ne fait que lire.'
-        explanation: WHERE filtre les lignes lues (ou modifiées, dans un UPDATE/DELETE) sans rien changer par lui-même.
-    exercises:
-      - slug: sql-ex-rupture-stock
-        kind: SQL
-        title: "Produits en rupture de stock"
-        difficulty: FACILE
-        skill: sql-select
-        statement: |
-          Le responsable logistique veut savoir quels produits sont **en rupture** : affiche le **nom** et le
-          **stock** des produits dont le stock vaut **0**.
-        criteria: "2 colonnes (nom, stock) et uniquement les produits dont le stock est nul."
-        hints:
-          - "Il faut filtrer les lignes : pense à la clause WHERE."
-          - "La colonne à tester est `stock`, la valeur est un nombre : pas d'apostrophes."
-          - "`SELECT nom, stock FROM produits WHERE stock = 0;`"
-        solution: |
-          SELECT nom, stock
-          FROM produits
-          WHERE stock = 0;
-        explanation: |
-          WHERE ne conserve que les lignes dont le stock est égal à 0. Le nombre 0 s'écrit sans apostrophes,
-          contrairement aux textes et aux dates.
-        xp: 10
-        payload:
-          mode: READ
-          starter: "SELECT nom, stock\nFROM produits\n"
-      - slug: sql-ex-commandes-annulees
-        kind: SQL
-        title: "Commandes non annulées depuis 2025"
-        difficulty: INTERMEDIAIRE
-        skill: sql-select
-        statement: |
-          Affiche l'**id**, la **date_commande** et le **statut** des commandes passées **à partir du
-          1er janvier 2025**. (Nous verrons dans le chapitre suivant comment combiner plusieurs conditions.)
-        criteria: "3 colonnes (id, date_commande, statut) et uniquement les commandes datées du 2025-01-01 ou après."
-        hints:
-          - "La colonne de date est `date_commande` dans la table `commandes`."
-          - "Une date s'écrit entre apostrophes au format 'AAAA-MM-JJ' ; « à partir de » inclut la date."
-          - "`WHERE date_commande >= '2025-01-01'`"
-        solution: |
-          SELECT id, date_commande, statut
-          FROM commandes
-          WHERE date_commande >= '2025-01-01';
-        explanation: |
-          `>=` inclut le 1er janvier. PostgreSQL convertit automatiquement le texte '2025-01-01' en date pour
-          le comparer à la colonne de type DATE.
-        xp: 15
-        payload:
-          mode: READ
-
-  # ===================================================================== LEÇON 4
-  - slug: sql-order-by-limit
-    title: "Trier et limiter les résultats"
-    duration: 10
-    objective: "Ordonner un résultat avec ORDER BY (ASC, DESC, plusieurs critères) et n'en garder qu'une partie avec LIMIT et OFFSET."
-    prerequisites: "SELECT, FROM et WHERE."
-    skills: [sql-select]
-    xp: 10
-    memo: |
-      - `ORDER BY colonne` trie par ordre **croissant** (`ASC`, par défaut) ; `DESC` pour décroissant.
-      - Plusieurs critères : `ORDER BY ville ASC, nom ASC` (le 2ᵉ critère départage les égalités du 1ᵉʳ).
-      - `LIMIT n` garde les **n premières** lignes ; `OFFSET k` saute les k premières (pagination).
-      - Ordre des clauses : `SELECT … FROM … WHERE … ORDER BY … LIMIT …`.
-      - Sans ORDER BY, l'ordre des lignes n'est **pas garanti**.
-    commonMistakes: |
-      - Utiliser LIMIT sans ORDER BY pour obtenir « les plus chers » : sans tri, ce sont des lignes quelconques.
-      - Écrire `ORDER BY prix DESC, ASC nom` : le sens se place **après** chaque colonne.
-      - Placer ORDER BY avant WHERE.
-    blocks:
-      - type: text
-        md: |
-          Un catalogue se lit trié : du moins cher au plus cher, par ordre alphabétique, du plus récent au plus
-          ancien… En SQL, on trie avec `ORDER BY`, et on limite le nombre de lignes avec `LIMIT` — exactement ce
-          que fait une page « Top 5 » ou une liste paginée dans une application.
-      - type: code
-        language: sql
-        title: "Les produits du plus cher au moins cher"
-        code: |
-          SELECT nom, prix
-          FROM produits
-          ORDER BY prix DESC;
-        lines:
-          - n: 3
-            note: "`ORDER BY prix` trie selon le prix ; `DESC` (descending) inverse l'ordre : du plus grand au plus petit."
-      - type: demo
-        title: "Démonstration"
-        md: "Exécute, puis remplace `DESC` par `ASC` (ou supprime-le) pour trier du moins cher au plus cher."
-        language: sql
-        code: |
-          SELECT nom, prix
-          FROM produits
-          ORDER BY prix DESC;
-      - type: question
-        ref: sql-l4-q1
-      - type: code
-        language: sql
-        title: "Plusieurs critères de tri"
-        code: |
-          SELECT ville, nom, prenom
-          FROM clients
-          WHERE ville IS NOT NULL
-          ORDER BY ville ASC, nom ASC;
-        lines:
-          - n: 3
-            note: "On écarte les clients sans ville (tu verras `IS NOT NULL` en détail au chapitre suivant)."
-          - n: 4
-            note: "Tri d'abord par ville ; pour une même ville, tri par nom. Le second critère ne sert qu'à départager."
-      - type: demo
-        title: "Démonstration : regarde les clients de Paris"
-        language: sql
-        code: |
-          SELECT ville, nom, prenom
-          FROM clients
-          WHERE ville IS NOT NULL
-          ORDER BY ville ASC, nom ASC;
-      - type: definition
-        id: def-limit-et-offset
-        term: "LIMIT et OFFSET"
-        md: |
-          `LIMIT n` ne garde que les n premières lignes **après le tri**. `OFFSET k` saute les k premières.
-          Pour afficher la page 3 d'une liste de 10 éléments par page : `LIMIT 10 OFFSET 20`.
-      - type: code
-        language: sql
-        title: "Le top 3 des produits les plus chers"
-        code: |
-          SELECT nom, prix
-          FROM produits
-          ORDER BY prix DESC
-          LIMIT 3;
-        lines:
-          - n: 3
-            note: "On trie d'abord : les plus chers en premier."
-          - n: 4
-            note: "Puis on ne garde que les 3 premières lignes du résultat trié."
-      - type: demo
-        title: "Démonstration"
-        language: sql
-        code: |
-          SELECT nom, prix
-          FROM produits
-          ORDER BY prix DESC
-          LIMIT 3;
-      - type: question
-        ref: sql-l4-q2
-      - type: question
-        ref: sql-l4-q3
-      - type: exercise
-        ref: sql-ex-derniers-clients
-      - type: question
-        ref: sql-l4-q4
-      - type: exercise
-        ref: sql-ex-ordre-clauses
-      - type: quiz
-        items:
-          - ref: sqlq-order-1
-          - ref: sqlq-order-2
-            review: def-limit-et-offset
-          - ref: sqlq-order-3
-    questions:
-      - code: sql-l4-q1
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: sql-select
-        prompt: "Sans précision de sens, `ORDER BY prix` trie…"
-        choices:
-          - label: "par ordre croissant (du plus petit au plus grand)"
-            correct: true
-            why: "ASC est le sens par défaut."
-          - label: "par ordre décroissant"
-            correct: false
-            why: "Il faut écrire DESC explicitement pour trier du plus grand au plus petit."
-          - label: "dans un ordre aléatoire"
-            correct: false
-            why: "Le tri est déterministe dès qu'on écrit ORDER BY."
-        explanation: "`ASC` (ascending) est implicite. Beaucoup de développeurs l'écrivent quand même, pour la lisibilité."
-      - code: sql-l4-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: sql-select
-        prompt: "Tu affiches 10 produits par page, triés par nom. Quelle requête affiche la **page 2** ?"
-        choices:
-          - label: "`SELECT nom FROM produits ORDER BY nom LIMIT 10 OFFSET 10;`"
-            correct: true
-            why: "On saute les 10 premiers (page 1) et on en garde 10."
-          - label: "`SELECT nom FROM produits ORDER BY nom LIMIT 20;`"
-            correct: false
-            why: "Cela affiche les pages 1 et 2 ensemble."
-          - label: "`SELECT nom FROM produits LIMIT 10 OFFSET 2;`"
-            correct: false
-            why: "OFFSET compte des lignes, pas des pages, et le tri a disparu."
-          - label: "`SELECT nom FROM produits ORDER BY nom OFFSET 10 LIMIT 2;`"
-            correct: false
-            why: "LIMIT 2 ne garderait que deux lignes."
-        explanation: "Page p (en commençant à 1) avec n éléments par page : `LIMIT n OFFSET (p − 1) × n`. C'est la base de la pagination d'une API REST."
-      - code: sql-l4-q3
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: sql-select
-        prompt: "`SELECT nom FROM produits LIMIT 3;` renvoie toujours les trois premiers produits ajoutés dans la table."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "Sans ORDER BY, PostgreSQL peut renvoyer les lignes dans n'importe quel ordre."
-          - label: "Faux"
-            correct: true
-            why: "Exact : l'ordre n'est garanti que par un ORDER BY."
-        explanation: "Une table SQL n'a pas d'ordre « naturel ». Pour « les trois premiers ajoutés », il faut trier explicitement : `ORDER BY date_ajout LIMIT 3`."
-      - code: sql-l4-q4
-        kind: COMPLETER_CODE
-        difficulty: 1
-        skill: sql-select
-        prompt: "Complète pour trier les clients du plus récent au plus ancien."
-        snippet: |
-          SELECT prenom, nom, date_inscription
-          FROM clients
-          ORDER BY date_inscription ____;
-        language: sql
-        answers: ["DESC"]
-        explanation: "Pour des dates, l'ordre décroissant (`DESC`) place les plus récentes en premier."
-      - code: sqlq-order-1
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: sql-select
-        prompt: Quel mot-clé trie du plus grand au plus petit ?
-        choices:
-          - label: '`DESC`'
-            correct: true
-            why: 'Oui : descendant.'
-          - label: '`ASC`'
-            correct: false
-            why: ASC trie du plus petit au plus grand (c'est le défaut).
-          - label: '`LIMIT`'
-            correct: false
-            why: LIMIT limite le nombre de lignes.
-        explanation: '`ORDER BY prix DESC` : du plus cher au moins cher.'
-      - code: sqlq-order-2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: sql-select
-        prompt: Que renvoie `ORDER BY nom LIMIT 5 OFFSET 10` ?
-        choices:
-          - label: Les lignes 11 à 15 du résultat trié
-            correct: true
-            why: 'Oui : on saute 10 lignes, puis on en garde 5.'
-          - label: Les lignes 5 à 10
-            correct: false
-            why: OFFSET indique combien de lignes sauter.
-          - label: Les 15 premières lignes
-            correct: false
-            why: LIMIT en garde seulement 5.
-        explanation: "C'est le principe de la pagination : page 3 de 5 éléments = OFFSET 10."
-      - code: sqlq-order-3
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: sql-select
-        prompt: Sans ORDER BY, PostgreSQL garantit l'ordre d'insertion des lignes.
-        choices:
-          - label: Vrai
-            correct: false
-            why: "Non : l'ordre peut changer d'une exécution à l'autre."
-          - label: Faux
-            correct: true
-            why: 'Exact : seul ORDER BY garantit un ordre.'
-        explanation: Toujours écrire ORDER BY quand l'ordre compte (pagination, top 3…).
-    exercises:
-      - slug: sql-ex-derniers-clients
-        kind: SQL
-        title: "Les 5 dernières inscriptions"
-        difficulty: FACILE
-        skill: sql-select
-        statement: |
-          Affiche le **prénom**, le **nom** et la **date_inscription** des **5 clients inscrits le plus
-          récemment**, du plus récent au plus ancien.
-        criteria: "3 colonnes, 5 lignes, triées par date d'inscription décroissante."
-        hints:
-          - "Il faut trier, puis ne garder que quelques lignes."
-          - "Le plus récent en premier : ORDER BY date_inscription DESC."
-          - "Termine par `LIMIT 5`."
-        solution: |
-          SELECT prenom, nom, date_inscription
-          FROM clients
-          ORDER BY date_inscription DESC
-          LIMIT 5;
-        explanation: |
-          On trie par date décroissante pour avoir les plus récentes en tête, puis `LIMIT 5` coupe après
-          5 lignes. L'ordre des clauses est important : ORDER BY avant LIMIT.
-        xp: 10
-        payload:
-          mode: READ
-          ordered: true
-      - slug: sql-ex-ordre-clauses
-        kind: REMETTRE_ORDRE
-        title: "Remets la requête dans l'ordre"
-        difficulty: FACILE
-        skill: sql-select
-        statement: |
-          Ces lignes forment une requête qui affiche les 3 produits les moins chers de la catégorie 1.
-          Remets-les dans le bon ordre.
-        criteria: "L'ordre des clauses SQL est respecté."
-        hints:
-          - "Une requête commence toujours par ce que l'on veut afficher."
-          - "Ordre des clauses : SELECT, FROM, WHERE, ORDER BY, LIMIT."
-          - "LIMIT est toujours la dernière clause."
-        solution: |
-          SELECT nom, prix
-          FROM produits
-          WHERE categorie_id = 1
-          ORDER BY prix ASC
-          LIMIT 3;
-        explanation: |
-          PostgreSQL impose l'ordre d'écriture SELECT → FROM → WHERE → ORDER BY → LIMIT. Logiquement, il
-          lit la table, filtre, trie puis coupe : c'est pourquoi LIMIT arrive en dernier.
-        xp: 10
-        payload:
-          language: sql
-          lines:
-            - "SELECT nom, prix"
-            - "FROM produits"
-            - "WHERE categorie_id = 1"
-            - "ORDER BY prix ASC"
-            - "LIMIT 3;"
 
 bank:
   - code: sql-c1-b1
@@ -1049,160 +1015,86 @@ bank:
     choices:
       - label: "Structured Query Language"
         correct: true
-        why: "Langage de requêtes structuré, normalisé depuis les années 1980."
+        why: "Langage de requêtes structuré."
       - label: "Simple Question Library"
         correct: false
         why: "Inventé : SQL n'est pas une bibliothèque."
       - label: "Server Quality Layer"
         correct: false
         why: "Inventé également."
-    explanation: "SQL = Structured Query Language, le langage standard des bases relationnelles."
+    explanation: "SQL = Structured Query Language, la langue des bases de données relationnelles."
   - code: sql-c1-b2
     kind: CHOIX_MULTIPLE
     difficulty: 1
     skill: sql-select
-    prompt: "Parmi ces logiciels, lesquels sont des SGBD relationnels ? (plusieurs réponses)"
+    prompt: "Parmi ces logiciels, lesquels sont des SGBD ? (plusieurs réponses)"
     choices:
       - label: "PostgreSQL"
         correct: true
-        why: "SGBD relationnel libre, utilisé dans ce parcours."
+        why: "Le SGBD utilisé dans ce parcours."
       - label: "MySQL"
         correct: true
-        why: "SGBD relationnel très répandu dans le web."
+        why: "Un SGBD très répandu."
       - label: "Angular"
         correct: false
-        why: "Framework frontend : il ne stocke pas de données."
+        why: "Angular sert à construire l'interface, il ne range pas de données."
       - label: "Oracle Database"
         correct: true
-        why: "SGBD relationnel commercial."
-    explanation: "PostgreSQL, MySQL/MariaDB, Oracle, SQL Server sont des SGBD relationnels. Angular est un framework d'interface."
-  - code: sql-c1-b3
-    kind: RESULTAT_CODE
-    difficulty: 2
-    skill: sql-select
-    prompt: "On demande 5 lignes avec `LIMIT 5`, mais `OFFSET` fait sauter presque toutes les lignes de la table. Que se passe-t-il ?"
-    snippet: |
-      SELECT nom
-      FROM produits
-      ORDER BY prix DESC
-      LIMIT 5 OFFSET 28;
-    language: sql
-    choices:
-      - label: "On obtient seulement les lignes qui restent, même s'il y en a moins de 5"
-        correct: true
-        why: "LIMIT fixe un maximum : il ne peut pas inventer des lignes qui n'existent pas."
-      - label: "On obtient toujours 5 lignes"
-        correct: false
-        why: "LIMIT est un maximum, pas un nombre garanti."
-      - label: "Une erreur"
-        correct: false
-        why: "Dépasser la fin du résultat n'est pas une erreur."
-    explanation: "LIMIT fixe un **maximum**. Après un grand OFFSET, il peut rester moins de lignes que demandé, voire aucune."
-  - code: sql-c1-b4
-    kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: sql-select
-    prompt: "Quelle requête est **syntaxiquement correcte** ?"
-    choices:
-      - label: "`SELECT nom FROM produits WHERE prix < 20 ORDER BY nom;`"
-        correct: true
-        why: "Les clauses sont dans l'ordre : SELECT, FROM, WHERE, ORDER BY."
-      - label: "`SELECT nom FROM produits ORDER BY nom WHERE prix < 20;`"
-        correct: false
-        why: "WHERE doit précéder ORDER BY."
-      - label: "`SELECT nom, FROM produits WHERE prix < 20;`"
-        correct: false
-        why: "Virgule en trop avant FROM."
-      - label: "`SELECT nom FROM produits WHERE prix < '20 €';`"
-        correct: false
-        why: "'20 €' n'est pas un nombre : la comparaison échoue."
-    explanation: "Ordre d'écriture à connaître par cœur : SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY → LIMIT."
+        why: "Un SGBD commercial."
+    explanation: "PostgreSQL, MySQL, Oracle et SQL Server sont des SGBD. Angular est un outil d'interface."
   - code: sql-c1-b5
     kind: VRAI_FAUX
     difficulty: 1
     skill: sql-select
-    prompt: "Les mots-clés SQL comme SELECT et FROM peuvent être écrits en minuscules."
+    prompt: "Les mots-clés SQL comme SELECT et FROM peuvent s'écrire en minuscules."
     choices:
       - label: "Vrai"
         correct: true
-        why: "Les mots-clés ne sont pas sensibles à la casse ; les majuscules sont une convention de lisibilité."
+        why: "Les majuscules sont une habitude de lisibilité."
       - label: "Faux"
         correct: false
-        why: "`select nom from produits;` fonctionne parfaitement."
-    explanation: "Convention : mots-clés en MAJUSCULES, noms de tables et de colonnes en minuscules (snake_case)."
-  - code: sql-c1-b6
-    kind: COMPLETER_CODE
-    difficulty: 1
-    skill: sql-select
-    prompt: "Complète pour n'afficher que les commandes dont le statut est 'LIVREE'."
-    snippet: |
-      SELECT id, date_commande
-      FROM commandes
-      ____ statut = 'LIVREE';
-    language: sql
-    answers: ["WHERE"]
-    explanation: "WHERE introduit la condition de filtre sur les lignes."
+        why: "`select nom from produits;` fonctionne."
+    explanation: "Habitude : mots-clés en MAJUSCULES, noms de tables et de colonnes en minuscules."
   - code: sql-c1-b7
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: sql-select
     prompt: "Pourquoi éviter `SELECT *` dans le code d'une application ?"
     choices:
-      - label: "On récupère des colonnes inutiles (voire sensibles) et le code dépend de la structure exacte de la table"
+      - label: "On récupère des colonnes inutiles, voire sensibles"
         correct: true
-        why: "Lister les colonnes rend la requête plus rapide, plus sûre et plus robuste aux évolutions."
+        why: "Lister les colonnes utiles est plus sûr et plus léger."
       - label: "Parce que `*` est interdit par PostgreSQL"
         correct: false
         why: "`*` est parfaitement valide."
       - label: "Parce que `*` ne renvoie que la première colonne"
         correct: false
         why: "`*` renvoie toutes les colonnes."
-    explanation: "`SELECT *` est idéal pour explorer ; dans une application, on liste les colonnes utiles. Imagine une colonne `password_hash` ajoutée plus tard…"
-  - code: sql-c1-b8
-    kind: RESULTAT_CODE
-    difficulty: 2
-    skill: sql-select
-    prompt: "Que renvoie cette requête ?"
-    snippet: |
-      SELECT 'Code' || ' en ' || 'Clair' AS titre;
-    language: sql
-    choices:
-      - label: "Code en Clair"
-        correct: true
-        why: "`||` colle les trois morceaux, espaces compris."
-      - label: "CodeenClair"
-        correct: false
-        why: "Les espaces sont écrits dans le morceau ' en ' : ils sont conservés."
-      - label: "Une erreur, car il n'y a pas de FROM"
-        correct: false
-        why: "En PostgreSQL, un SELECT sans FROM est permis pour tester une expression."
-    explanation: "`||` colle des textes. PostgreSQL accepte `SELECT` sans `FROM`, pratique pour tester une expression."
-  - code: sql-c1-b9
+    explanation: "`SELECT *` est idéal pour découvrir une table ; dans une application, on liste les colonnes utiles."
+  - code: sql-c1-b11
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: sql-select
-    prompt: "Quelle requête affiche le produit le **moins cher** ?"
+    prompt: "Quelle requête affiche le nom des catégories sous le titre `rayon` ?"
     choices:
-      - label: "`SELECT nom, prix FROM produits ORDER BY prix ASC LIMIT 1;`"
+      - label: "`SELECT nom AS rayon FROM categories;`"
         correct: true
-        why: "Tri croissant puis on garde la première ligne."
-      - label: "`SELECT nom, prix FROM produits ORDER BY prix DESC LIMIT 1;`"
+        why: "AS donne le titre `rayon` à la colonne nom."
+      - label: "`SELECT rayon FROM categories;`"
         correct: false
-        why: "DESC donne le plus cher."
-      - label: "`SELECT nom, prix FROM produits LIMIT 1;`"
+        why: "Il n'existe pas de colonne rayon dans la table."
+      - label: "`SELECT nom, rayon FROM categories;`"
         correct: false
-        why: "Sans tri, la ligne renvoyée est quelconque."
-    explanation: "« Le plus / le moins » se traduit souvent par ORDER BY + LIMIT 1 (ou par MIN/MAX, que tu verras avec l'agrégation)."
-  - code: sql-c1-b10
-    kind: VRAI_FAUX
-    difficulty: 2
+        why: "Cette requête cherche deux colonnes, dont une qui n'existe pas."
+    explanation: "L'alias se place après la colonne, précédé de AS."
+  - code: sql-c1-b12
+    kind: COMPLETER_CODE
+    difficulty: 1
     skill: sql-select
-    prompt: "Dans PostgreSQL, `WHERE nom = \"Martin\"` compare la colonne nom au texte Martin."
-    choices:
-      - label: "Vrai"
-        correct: false
-        why: "Les guillemets doubles désignent un identifiant : PostgreSQL cherche une colonne nommée Martin."
-      - label: "Faux"
-        correct: true
-        why: "Il faut écrire 'Martin' avec des apostrophes simples."
-    explanation: "Erreur classique en venant de MySQL : en SQL standard (et donc en PostgreSQL), les textes s'écrivent entre apostrophes simples."
+    prompt: "Complète pour afficher le nom des produits en majuscules."
+    snippet: |
+      SELECT ____(nom)
+      FROM produits;
+    language: sql
+    answers: ["UPPER"]
+    explanation: "`UPPER` met un texte en majuscules."

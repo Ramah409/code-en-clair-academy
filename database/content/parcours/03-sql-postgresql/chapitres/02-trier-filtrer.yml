@@ -1,0 +1,1364 @@
+slug: trier-filtrer
+position: 2
+level: DEBUTANT
+title: "Trier et filtrer"
+summary: "Trier un résultat, n'en garder qu'une partie, puis choisir les lignes avec WHERE : l'égalité, les comparaisons, AND, OR et NOT. Une seule notion par leçon."
+quizQuestionCount: 12
+
+lessons:
+  # ===================================================================== LEÇON 1
+  - slug: sql-order-by-limit
+    title: "Trier avec ORDER BY"
+    duration: 8
+    objective: "Trier un résultat du plus petit au plus grand, ou l'inverse, avec ORDER BY, ASC et DESC."
+    prerequisites: "Chapitre « Premiers pas avec SQL »."
+    skills: [sql-select]
+    xp: 10
+    memo: |
+      - `ORDER BY prix` trie du plus petit au plus grand (**croissant**, `ASC`, c'est le choix par défaut).
+      - `ORDER BY prix DESC` trie du plus grand au plus petit (**décroissant**).
+      - Pour un texte : `ORDER BY nom` trie de A à Z.
+      - Plusieurs critères : `ORDER BY ville, nom` (le nom départage les clients d'une même ville).
+      - `ORDER BY` s'écrit **après** `FROM`.
+    commonMistakes: |
+      - Écrire `ORDER BY DESC prix` : le sens se place **après** la colonne.
+      - Croire que les lignes sont triées sans ORDER BY : sans tri demandé, l'ordre est quelconque.
+    blocks:
+      - type: text
+        md: |
+          Un catalogue se lit trié : par nom, du moins cher au plus cher… En SQL, on trie avec `ORDER BY`.
+      - type: definition
+        id: def-order-by
+        term: "ORDER BY"
+        md: |
+          Le **rangement** du résultat, comme on range des livres par ordre alphabétique sur une étagère.
+          `ASC` range du plus petit au plus grand (de A à Z), `DESC` fait l'inverse.
+      - type: code
+        id: code-order-by
+        language: sql
+        title: "Les produits du plus cher au moins cher"
+        code: |
+          SELECT nom, prix
+          FROM produits
+          ORDER BY prix DESC;
+        lines:
+          - n: 3
+            note: "`ORDER BY prix` trie selon le prix ; `DESC` inverse le sens : les plus chers d'abord."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis remplace `DESC` par `ASC`. Essaie aussi `ORDER BY nom` pour trier de A à Z."
+        language: sql
+        code: |
+          SELECT nom, prix
+          FROM produits
+          ORDER BY prix DESC;
+      - type: question
+        ref: sql-l4-q1
+        review: def-order-by
+      - type: code
+        id: code-order-by-deux
+        language: sql
+        title: "Deux critères de tri"
+        code: |
+          SELECT ville, nom, prenom
+          FROM clients
+          ORDER BY ville, nom;
+        lines:
+          - n: 3
+            note: "Tri d'abord par ville ; pour une même ville, tri par nom. Le deuxième critère ne sert qu'à départager."
+      - type: question
+        ref: sql-p6-q4
+        review: code-order-by-deux
+      - type: text
+        md: "Exercice guidé : complète le tri."
+      - type: exercise
+        ref: sql-ex-tri-guide
+      - type: text
+        md: "En autonomie : trie les produits du moins cher au plus cher."
+      - type: exercise
+        ref: sql-ex-tri-produits
+      - type: quiz
+        items:
+          - ref: sqlq-order-1
+            review: def-order-by
+          - ref: sql-l4-q4
+            review: code-order-by
+          - ref: sql-p6-q5
+            review: def-order-by
+    questions:
+      - code: sql-l4-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Sans préciser le sens, `ORDER BY prix` trie…"
+        choices:
+          - label: "du plus petit au plus grand"
+            correct: true
+            why: "ASC (croissant) est le choix par défaut."
+          - label: "du plus grand au plus petit"
+            correct: false
+            why: "Il faut écrire DESC pour ce sens-là."
+          - label: "au hasard"
+            correct: false
+            why: "Dès qu'on écrit ORDER BY, le tri est bien rangé."
+        explanation: "`ASC` est implicite. Beaucoup de développeurs l'écrivent quand même, pour la lisibilité."
+      - code: sql-p6-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: "Avec `ORDER BY ville, nom`, comment sont rangés les clients ?"
+        choices:
+          - label: "Par ville ; pour une même ville, par nom"
+            correct: true
+            why: "Le deuxième critère départage les clients d'une même ville."
+          - label: "Par nom seulement"
+            correct: false
+            why: "Le premier critère, c'est la ville."
+          - label: "Par ville, puis tous les noms à la fin"
+            correct: false
+            why: "Le nom ne sert qu'à ranger les clients à l'intérieur de chaque ville."
+        explanation: "Comme un annuaire : par ville, puis par nom dans chaque ville."
+      - code: sqlq-order-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Quel mot-clé trie du plus grand au plus petit ?
+        choices:
+          - label: '`DESC`'
+            correct: true
+            why: 'Oui : décroissant.'
+          - label: '`ASC`'
+            correct: false
+            why: ASC trie du plus petit au plus grand (c'est le défaut).
+          - label: '`AS`'
+            correct: false
+            why: AS sert à renommer une colonne.
+        explanation: '`ORDER BY prix DESC` : du plus cher au moins cher.'
+      - code: sql-l4-q4
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Complète pour trier les clients du plus récent au plus ancien."
+        snippet: |
+          SELECT prenom, nom, date_inscription
+          FROM clients
+          ORDER BY date_inscription ____;
+        language: sql
+        answers: ["DESC"]
+        explanation: "Pour des dates, `DESC` place les plus récentes en premier."
+      - code: sql-p6-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: "`ORDER BY nom` range les noms de A à Z."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Pour un texte, l'ordre croissant est l'ordre alphabétique."
+          - label: "Faux"
+            correct: false
+            why: "C'est bien l'ordre alphabétique."
+        explanation: "Pour de Z à A, on écrirait `ORDER BY nom DESC`."
+    exercises:
+      - slug: sql-ex-tri-guide
+        kind: COMPLETER
+        title: "Compléter le tri"
+        difficulty: FACILE
+        skill: sql-select
+        statement: "Complète pour afficher les catégories rangées de Z à A."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le tri s'écrit avec deux mots : ORDER BY."
+          - "De Z à A, c'est l'ordre décroissant."
+          - "ORDER, BY, DESC."
+        solution: '["ORDER", "BY", "DESC"]'
+        explanation: "`ORDER BY nom DESC` : de Z à A."
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            SELECT nom
+            FROM categories
+            [[1]] [[2]] nom [[3]];
+          blanks:
+            - ["ORDER"]
+            - ["BY"]
+            - ["DESC"]
+      - slug: sql-ex-tri-produits
+        kind: SQL
+        title: "Du moins cher au plus cher"
+        difficulty: FACILE
+        skill: sql-select
+        statement: |
+          Affiche le **nom** et le **prix** de tous les produits, du **moins cher** au **plus cher**.
+          Quand deux produits ont le même prix, range-les par **nom**.
+        criteria: "2 colonnes (nom, prix), 30 lignes, triées par prix croissant puis par nom."
+        hints:
+          - "Le tri s'écrit après FROM."
+          - "Du moins cher au plus cher : l'ordre croissant, le choix par défaut."
+          - "`ORDER BY prix, nom`"
+        solution: |
+          SELECT nom, prix
+          FROM produits
+          ORDER BY prix, nom;
+        explanation: "`ORDER BY prix` range du moins cher au plus cher ; `nom` départage les prix identiques."
+        xp: 10
+        payload:
+          mode: READ
+          ordered: true
+          starter: "SELECT nom, prix\nFROM produits\n"
+
+  # ===================================================================== LEÇON 2
+  - slug: sql-limit
+    title: "Garder les premières lignes avec LIMIT"
+    duration: 8
+    objective: "N'afficher qu'une partie d'un résultat trié avec LIMIT, et passer des lignes avec OFFSET."
+    prerequisites: "Leçon « Trier avec ORDER BY »."
+    skills: [sql-select]
+    xp: 10
+    memo: |
+      - `LIMIT 3` garde seulement les **3 premières** lignes du résultat.
+      - On trie **d'abord** (`ORDER BY`), on coupe **ensuite** (`LIMIT`).
+      - `OFFSET 10` saute les 10 premières lignes : c'est la **pagination** (page suivante).
+      - `LIMIT` s'écrit tout à la fin de la requête.
+    commonMistakes: |
+      - Utiliser LIMIT sans ORDER BY pour avoir « les plus chers » : sans tri, ce sont des lignes quelconques.
+      - Écrire LIMIT avant ORDER BY.
+    blocks:
+      - type: text
+        md: |
+          Une page « Top 3 » ou une liste « 10 résultats par page » n'affiche qu'une partie des lignes. En SQL,
+          c'est le rôle de `LIMIT`.
+      - type: definition
+        id: def-limit-et-offset
+        term: "LIMIT et OFFSET"
+        md: |
+          `LIMIT`, c'est le **podium** : on ne garde que les premiers du classement. `OFFSET`, c'est **tourner
+          la page** : on saute les premières lignes pour voir les suivantes.
+      - type: code
+        id: code-limit
+        language: sql
+        title: "Le top 3 des produits les plus chers"
+        code: |
+          SELECT nom, prix
+          FROM produits
+          ORDER BY prix DESC
+          LIMIT 3;
+        lines:
+          - n: 3
+            note: "On trie d'abord : les plus chers en premier."
+          - n: 4
+            note: "Puis on ne garde que les 3 premières lignes."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis remplace `LIMIT 3` par `LIMIT 3 OFFSET 3` : tu vois les trois suivants."
+        language: sql
+        code: |
+          SELECT nom, prix
+          FROM produits
+          ORDER BY prix DESC
+          LIMIT 3;
+      - type: question
+        ref: sql-c1-b9
+        review: code-limit
+      - type: question
+        ref: sql-l4-q3
+        review: def-limit-et-offset
+      - type: text
+        md: "Exercice guidé : complète le top 3."
+      - type: exercise
+        ref: sql-ex-limit-guide
+      - type: text
+        md: "En autonomie : les 5 dernières inscriptions."
+      - type: exercise
+        ref: sql-ex-derniers-clients
+      - type: quiz
+        items:
+          - ref: sqlq-order-2
+            review: def-limit-et-offset
+          - ref: sql-l4-q2
+            review: def-limit-et-offset
+          - ref: sqlq-order-3
+            review: code-limit
+    questions:
+      - code: sql-c1-b9
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Quelle requête affiche le produit le **moins cher** ?"
+        choices:
+          - label: "`SELECT nom, prix FROM produits ORDER BY prix ASC LIMIT 1;`"
+            correct: true
+            why: "On range du moins cher au plus cher, puis on garde la première ligne."
+          - label: "`SELECT nom, prix FROM produits ORDER BY prix DESC LIMIT 1;`"
+            correct: false
+            why: "DESC met le plus cher en premier."
+          - label: "`SELECT nom, prix FROM produits LIMIT 1;`"
+            correct: false
+            why: "Sans tri, la ligne gardée est quelconque."
+        explanation: "« Le plus / le moins » se traduit souvent par ORDER BY puis LIMIT 1."
+      - code: sql-l4-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-select
+        prompt: "`SELECT nom FROM produits LIMIT 3;` renvoie toujours les trois premiers produits ajoutés dans la table."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Sans ORDER BY, PostgreSQL peut renvoyer les lignes dans n'importe quel ordre."
+          - label: "Faux"
+            correct: true
+            why: "Exact : seul ORDER BY garantit un ordre."
+        explanation: "Une table n'a pas d'ordre « naturel ». Pour les premiers ajoutés : `ORDER BY date_ajout LIMIT 3`."
+      - code: sqlq-order-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: "Que fait `OFFSET 10` dans `ORDER BY nom LIMIT 5 OFFSET 10` ?"
+        choices:
+          - label: "Il saute les 10 premières lignes avant d'en garder 5"
+            correct: true
+            why: "C'est comme tourner la page."
+          - label: "Il garde 10 lignes"
+            correct: false
+            why: "C'est LIMIT qui dit combien de lignes garder."
+          - label: "Il trie par 10"
+            correct: false
+            why: "Le tri, c'est ORDER BY."
+        explanation: "LIMIT = combien de lignes garder ; OFFSET = combien de lignes sauter avant."
+      - code: sql-l4-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: "Tu affiches 10 produits par page, rangés par nom. Quelle requête affiche la **page 2** ?"
+        choices:
+          - label: "`SELECT nom FROM produits ORDER BY nom LIMIT 10 OFFSET 10;`"
+            correct: true
+            why: "On saute la page 1 (10 lignes) et on garde les 10 suivantes."
+          - label: "`SELECT nom FROM produits ORDER BY nom LIMIT 10;`"
+            correct: false
+            why: "Cela affiche la page 1."
+          - label: "`SELECT nom FROM produits LIMIT 10 OFFSET 10;`"
+            correct: false
+            why: "Il manque le tri : les pages ne seraient pas fiables."
+        explanation: "La pagination d'une application repose sur ORDER BY, LIMIT et OFFSET."
+      - code: sqlq-order-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-select
+        prompt: Sans ORDER BY, PostgreSQL garantit l'ordre dans lequel les lignes ont été ajoutées.
+        choices:
+          - label: Vrai
+            correct: false
+            why: "Non : l'ordre peut changer d'une fois à l'autre."
+          - label: Faux
+            correct: true
+            why: 'Exact : seul ORDER BY garantit un ordre.'
+        explanation: Toujours écrire ORDER BY quand l'ordre compte (pagination, top 3…).
+    exercises:
+      - slug: sql-ex-limit-guide
+        kind: COMPLETER
+        title: "Compléter le top 3"
+        difficulty: FACILE
+        skill: sql-select
+        statement: "Complète pour afficher les 3 produits les plus chers."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Les plus chers d'abord : l'ordre décroissant."
+          - "Garder seulement les 3 premières lignes : LIMIT."
+          - "DESC, LIMIT."
+        solution: '["DESC", "LIMIT"]'
+        explanation: "On trie du plus cher au moins cher, puis on garde les 3 premiers."
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            SELECT nom, prix
+            FROM produits
+            ORDER BY prix [[1]]
+            [[2]] 3;
+          blanks:
+            - ["DESC"]
+            - ["LIMIT"]
+      - slug: sql-ex-derniers-clients
+        kind: SQL
+        title: "Les 5 dernières inscriptions"
+        difficulty: FACILE
+        skill: sql-select
+        statement: |
+          Affiche le **prénom**, le **nom** et la **date_inscription** des **5 clients inscrits le plus
+          récemment**, du plus récent au plus ancien.
+        criteria: "3 colonnes, 5 lignes, triées par date d'inscription décroissante."
+        hints:
+          - "Il faut trier, puis ne garder que quelques lignes."
+          - "Le plus récent en premier : ORDER BY date_inscription DESC."
+          - "Termine par `LIMIT 5`."
+        solution: |
+          SELECT prenom, nom, date_inscription
+          FROM clients
+          ORDER BY date_inscription DESC
+          LIMIT 5;
+        explanation: "On trie par date décroissante, puis `LIMIT 5` coupe après 5 lignes. ORDER BY avant LIMIT."
+        xp: 10
+        payload:
+          mode: READ
+          ordered: true
+
+  # ===================================================================== LEÇON 3
+  - slug: sql-where
+    title: "Filtrer avec WHERE : l'égalité"
+    duration: 8
+    objective: "Ne garder que les lignes dont une colonne vaut une valeur précise, avec WHERE et =."
+    prerequisites: "Leçon « Garder les premières lignes avec LIMIT »."
+    skills: [sql-select]
+    xp: 10
+    memo: |
+      - `WHERE ville = 'Paris'` garde seulement les lignes dont la ville vaut « Paris ».
+      - Un **texte** ou une **date** s'écrit entre **apostrophes** : `'Paris'`, `'2025-01-01'`.
+      - Un **nombre** s'écrit sans apostrophes : `stock = 0`.
+      - Les majuscules comptent : `'paris'` n'est pas `'Paris'`.
+      - `WHERE` s'écrit après `FROM`, avant `ORDER BY`.
+    commonMistakes: |
+      - Écrire `"Paris"` avec des guillemets doubles : PostgreSQL cherche alors une colonne nommée Paris.
+      - Écrire `==` : en SQL, l'égalité s'écrit avec un seul `=`.
+      - Placer WHERE avant FROM.
+    blocks:
+      - type: text
+        md: |
+          On veut rarement **toutes** les lignes : on veut **celles qui nous intéressent**. C'est le rôle de
+          `WHERE`, le **filtre**.
+      - type: definition
+        id: def-condition-predicat
+        term: "WHERE (le filtre)"
+        md: |
+          Une **passoire** : on verse toutes les lignes, seules celles qui respectent la condition restent.
+          La condition est une question à laquelle chaque ligne répond oui ou non : « ta ville est-elle Paris ? »
+      - type: code
+        id: code-where
+        language: sql
+        title: "Les clients parisiens"
+        code: |
+          SELECT prenom, nom, ville
+          FROM clients
+          WHERE ville = 'Paris';
+        lines:
+          - n: 3
+            note: "On ne garde que les lignes dont la ville vaut exactement 'Paris' (apostrophes pour un texte)."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis remplace `'Paris'` par `'paris'` : aucune ligne ! Les majuscules comptent."
+        language: sql
+        code: |
+          SELECT prenom, nom, ville
+          FROM clients
+          WHERE ville = 'Paris';
+      - type: question
+        ref: sql-l3-q2
+        review: code-where
+      - type: question
+        ref: sqlq-where-1
+        review: def-condition-predicat
+      - type: text
+        md: "Exercice guidé : complète le filtre."
+      - type: exercise
+        ref: sql-ex-where-guide
+      - type: text
+        md: "En autonomie : les produits en rupture de stock."
+      - type: exercise
+        ref: sql-ex-rupture-stock
+      - type: quiz
+        items:
+          - ref: sql-l3-q4
+            review: code-where
+          - ref: sqlq-where-3
+            review: def-condition-predicat
+          - ref: sql-c1-b6
+            review: code-where
+    questions:
+      - code: sql-l3-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Comment écrire correctement la ville de Lyon dans un filtre ?"
+        choices:
+          - label: "`ville = 'Lyon'`"
+            correct: true
+            why: "Un texte s'écrit entre apostrophes."
+          - label: "`ville = \"Lyon\"`"
+            correct: false
+            why: "Les guillemets doubles désignent une colonne, d'où une erreur."
+          - label: "`ville = Lyon`"
+            correct: false
+            why: "Sans apostrophes, PostgreSQL cherche une colonne nommée lyon."
+        explanation: "Apostrophes pour les **valeurs** (textes, dates) ; guillemets doubles pour les **noms** (colonnes)."
+      - code: sqlq-where-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Quelle requête affiche les produits dont le stock vaut exactement 0 ?
+        choices:
+          - label: '`SELECT * FROM produits WHERE stock = 0;`'
+            correct: true
+            why: 'Oui : un seul `=` pour comparer.'
+          - label: '`SELECT * FROM produits WHERE stock == 0;`'
+            correct: false
+            why: "`==` n'existe pas en SQL."
+          - label: '`SELECT * FROM produits IF stock = 0;`'
+            correct: false
+            why: Le filtre s'écrit avec WHERE.
+        explanation: En SQL, l'égalité s'écrit avec un seul `=`.
+      - code: sql-l3-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: "La clause WHERE s'écrit après la clause FROM."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Oui : SELECT … FROM … WHERE …"
+          - label: "Faux"
+            correct: false
+            why: "L'ordre est imposé : WHERE vient après FROM."
+        explanation: "Ordre d'écriture vu jusqu'ici : **SELECT → FROM → WHERE → ORDER BY → LIMIT**."
+      - code: sqlq-where-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: Un WHERE modifie les données de la table.
+        choices:
+          - label: Vrai
+            correct: false
+            why: 'Non : il choisit seulement les lignes affichées.'
+          - label: Faux
+            correct: true
+            why: 'Exact : SELECT ... WHERE ne fait que lire.'
+        explanation: WHERE choisit les lignes sans rien changer dans la table.
+      - code: sql-c1-b6
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Complète pour n'afficher que les commandes dont le statut est 'LIVREE'."
+        snippet: |
+          SELECT id, date_commande
+          FROM commandes
+          ____ statut = 'LIVREE';
+        language: sql
+        answers: ["WHERE"]
+        explanation: "WHERE introduit le filtre sur les lignes."
+    exercises:
+      - slug: sql-ex-where-guide
+        kind: COMPLETER
+        title: "Compléter le filtre"
+        difficulty: FACILE
+        skill: sql-select
+        statement: "Complète pour afficher les clients qui habitent à Lyon."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le filtre commence par WHERE."
+          - "Un texte s'écrit entre apostrophes."
+          - "WHERE, =, 'Lyon'."
+        solution: '["WHERE", "=", "''Lyon''"]'
+        explanation: "`WHERE ville = 'Lyon'` : on ne garde que les clients lyonnais."
+        xp: 10
+        payload:
+          language: sql
+          caseSensitive: true
+          template: |
+            SELECT prenom, nom
+            FROM clients
+            [[1]] ville [[2]] [[3]];
+          blanks:
+            - ["WHERE", "where"]
+            - ["="]
+            - ["'Lyon'"]
+      - slug: sql-ex-rupture-stock
+        kind: SQL
+        title: "Produits en rupture de stock"
+        difficulty: FACILE
+        skill: sql-select
+        statement: |
+          Le responsable logistique veut savoir quels produits sont **en rupture** : affiche le **nom** et le
+          **stock** des produits dont le stock vaut **0**.
+        criteria: "2 colonnes (nom, stock) et uniquement les produits dont le stock est nul."
+        hints:
+          - "Il faut filtrer les lignes : pense à WHERE."
+          - "La colonne à tester est `stock`. 0 est un nombre : pas d'apostrophes."
+          - "`SELECT nom, stock FROM produits WHERE stock = 0;`"
+        solution: |
+          SELECT nom, stock
+          FROM produits
+          WHERE stock = 0;
+        explanation: "WHERE ne garde que les lignes dont le stock vaut 0. Un nombre s'écrit sans apostrophes."
+        xp: 10
+        payload:
+          mode: READ
+          starter: "SELECT nom, stock\nFROM produits\n"
+
+  # ===================================================================== LEÇON 4
+  - slug: sql-comparaisons
+    title: "Comparer : plus grand, plus petit, différent"
+    duration: 9
+    objective: "Filtrer avec les comparaisons <, >, <=, >= et <> (différent)."
+    prerequisites: "Leçon « Filtrer avec WHERE : l'égalité »."
+    skills: [sql-select]
+    xp: 10
+    memo: |
+      - `>` plus grand, `<` plus petit.
+      - `>=` plus grand **ou égal**, `<=` plus petit **ou égal**.
+      - `<>` **différent de** (PostgreSQL accepte aussi `!=`).
+      - Pour une date : `date_commande >= '2025-01-01'` (à partir du 1er janvier 2025).
+    commonMistakes: |
+      - Confondre `>` (sans la valeur elle-même) et `>=` (avec la valeur).
+      - Écrire `=>` au lieu de `>=`.
+    blocks:
+      - type: text
+        md: |
+          L'égalité ne suffit pas toujours : « les produits **en dessous** de 20 € », « les commandes **depuis**
+          janvier ». Pour ça, on **compare**.
+      - type: definition
+        id: def-comparaisons
+        term: "Les comparaisons"
+        md: |
+          Comme une **toise** chez le médecin : on se demande si la valeur est au-dessus, en dessous, ou
+          différente d'un repère.
+
+          | Signe | Se lit | Exemple |
+          |-------|--------|---------|
+          | `>` | plus grand que | `prix > 50` |
+          | `<` | plus petit que | `stock < 10` |
+          | `>=` | plus grand ou égal | `date_commande >= '2025-01-01'` |
+          | `<=` | plus petit ou égal | `prix <= 20` |
+          | `<>` | différent de | `statut <> 'ANNULEE'` |
+      - type: code
+        id: code-comparaison
+        language: sql
+        title: "Les produits à moins de 20 €"
+        code: |
+          SELECT nom, prix
+          FROM produits
+          WHERE prix < 20;
+        lines:
+          - n: 3
+            note: "`<` : on garde les produits dont le prix est plus petit que 20."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis essaie `WHERE statut <> 'ANNULEE'` sur la table `commandes`."
+        language: sql
+        code: |
+          SELECT nom, prix
+          FROM produits
+          WHERE prix < 20;
+      - type: question
+        ref: sql-l3-q1
+        review: def-comparaisons
+      - type: question
+        ref: sql-l3-q3
+        review: def-comparaisons
+      - type: text
+        md: "Exercice guidé : complète les comparaisons."
+      - type: exercise
+        ref: sql-ex-comparaisons-guide
+      - type: text
+        md: "En autonomie : les commandes depuis 2025."
+      - type: exercise
+        ref: sql-ex-commandes-annulees
+      - type: text
+        md: "Pour finir : remets une requête complète dans l'ordre."
+      - type: exercise
+        ref: sql-ex-ordre-clauses
+      - type: quiz
+        items:
+          - ref: sqlq-where-2
+            review: def-comparaisons
+          - ref: sql-p9-q4
+            review: def-comparaisons
+          - ref: sql-p9-q5
+            review: code-comparaison
+    questions:
+      - code: sql-l3-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Quelle condition garde les produits **plus chers que** 50 € (50 € exactement exclu) ?"
+        choices:
+          - label: "`WHERE prix > 50`"
+            correct: true
+            why: "`>` : strictement plus grand, 50 lui-même n'est pas gardé."
+          - label: "`WHERE prix >= 50`"
+            correct: false
+            why: "`>=` garde aussi les produits à 50 € pile."
+          - label: "`WHERE 'prix' > 50`"
+            correct: false
+            why: "Entre apostrophes, 'prix' est un texte, pas la colonne."
+        explanation: "`>` exclut la valeur repère, `>=` l'inclut."
+      - code: sql-l3-q3
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-select
+        prompt: "Que renvoie cette requête sur la table `categories` ?"
+        snippet: |
+          SELECT nom
+          FROM categories
+          WHERE id <> 3;
+        language: sql
+        choices:
+          - label: "Toutes les catégories sauf celle d'id 3"
+            correct: true
+            why: "`<>` signifie « différent de »."
+          - label: "Seulement la catégorie d'id 3"
+            correct: false
+            why: "Ce serait `id = 3`."
+          - label: "Toutes les catégories"
+            correct: false
+            why: "La catégorie d'id 3 est écartée."
+        explanation: "`<>` est la façon standard d'écrire « différent de »."
+      - code: sqlq-where-2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Comment écrire « la ville est différente de Paris » ?
+        choices:
+          - label: "`ville <> 'Paris'`"
+            correct: true
+            why: Oui (on peut aussi écrire `!=`).
+          - label: "`ville = 'Paris'`"
+            correct: false
+            why: "Ça, c'est l'égalité."
+          - label: "`ville =/ 'Paris'`"
+            correct: false
+            why: Ce signe n'existe pas.
+        explanation: '`<>` (norme SQL) ou `!=` (accepté par PostgreSQL).'
+      - code: sql-p9-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Quelle condition garde les commandes passées **à partir du** 1er janvier 2025 (ce jour compris) ?"
+        choices:
+          - label: "`date_commande >= '2025-01-01'`"
+            correct: true
+            why: "`>=` inclut le 1er janvier."
+          - label: "`date_commande > '2025-01-01'`"
+            correct: false
+            why: "`>` exclut le 1er janvier lui-même."
+          - label: "`date_commande >= 2025-01-01`"
+            correct: false
+            why: "Une date s'écrit entre apostrophes."
+        explanation: "« À partir de » inclut le jour : `>=`. Une date s'écrit `'AAAA-MM-JJ'`."
+      - code: sql-p9-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: "`WHERE stock <= 10` garde aussi les produits dont le stock vaut exactement 10."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "`<=` signifie plus petit **ou égal**."
+          - label: "Faux"
+            correct: false
+            why: "Le signe `=` dans `<=` inclut la valeur 10."
+        explanation: "`<` exclut la valeur, `<=` l'inclut."
+    exercises:
+      - slug: sql-ex-comparaisons-guide
+        kind: COMPLETER
+        title: "Le bon signe"
+        difficulty: FACILE
+        skill: sql-select
+        statement: "Complète chaque filtre avec le bon signe : <, >=, <>."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Moins de 10 : plus petit que."
+          - "Différent de : <>."
+          - "<, >=, <>."
+        solution: '["<", ">=", "<>"]'
+        explanation: "`<` plus petit, `>=` plus grand ou égal, `<>` différent."
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            -- Les produits dont le stock est plus petit que 10
+            SELECT nom FROM produits WHERE stock [[1]] 10;
+            -- Les commandes à partir du 1er mars 2025 (ce jour compris)
+            SELECT id FROM commandes WHERE date_commande [[2]] '2025-03-01';
+            -- Les commandes qui ne sont pas annulées
+            SELECT id FROM commandes WHERE statut [[3]] 'ANNULEE';
+          blanks:
+            - ["<"]
+            - [">="]
+            - ["<>", "!="]
+      - slug: sql-ex-commandes-annulees
+        kind: SQL
+        title: "Les commandes depuis 2025"
+        difficulty: FACILE
+        skill: sql-select
+        statement: |
+          Affiche l'**id**, la **date_commande** et le **statut** des commandes passées **à partir du
+          1er janvier 2025** (ce jour compris).
+        criteria: "3 colonnes (id, date_commande, statut) et uniquement les commandes datées du 2025-01-01 ou après."
+        hints:
+          - "La colonne de date est `date_commande` dans la table `commandes`."
+          - "Une date s'écrit entre apostrophes au format 'AAAA-MM-JJ' ; « à partir de » inclut la date."
+          - "`WHERE date_commande >= '2025-01-01'`"
+        solution: |
+          SELECT id, date_commande, statut
+          FROM commandes
+          WHERE date_commande >= '2025-01-01';
+        explanation: "`>=` inclut le 1er janvier. PostgreSQL compare les dates dans l'ordre du calendrier."
+        xp: 10
+        payload:
+          mode: READ
+      - slug: sql-ex-ordre-clauses
+        kind: REMETTRE_ORDRE
+        title: "Remets la requête dans l'ordre"
+        difficulty: FACILE
+        skill: sql-select
+        statement: |
+          Ces lignes forment une requête qui affiche les 3 produits les moins chers de la catégorie 1.
+          Remets-les dans le bon ordre.
+        criteria: "L'ordre des clauses SQL est respecté."
+        hints:
+          - "Une requête commence toujours par ce que l'on veut afficher."
+          - "Ordre : SELECT, FROM, WHERE, ORDER BY, LIMIT."
+          - "LIMIT est toujours la dernière."
+        solution: |
+          SELECT nom, prix
+          FROM produits
+          WHERE categorie_id = 1
+          ORDER BY prix ASC
+          LIMIT 3;
+        explanation: "L'ordre d'écriture est imposé : SELECT → FROM → WHERE → ORDER BY → LIMIT."
+        xp: 10
+        payload:
+          language: sql
+          lines:
+            - "SELECT nom, prix"
+            - "FROM produits"
+            - "WHERE categorie_id = 1"
+            - "ORDER BY prix ASC"
+            - "LIMIT 3;"
+
+  # ===================================================================== LEÇON 5
+  - slug: sql-and
+    title: "Deux conditions à la fois : AND"
+    duration: 8
+    objective: "Garder les lignes qui respectent deux conditions en même temps avec AND."
+    prerequisites: "Leçon « Comparer : plus grand, plus petit, différent »."
+    skills: [sql-select]
+    xp: 10
+    memo: |
+      - `WHERE categorie_id = 1 AND stock > 10` : les **deux** conditions doivent être vraies.
+      - Chaque `AND` ajouté rend le filtre **plus strict** : il reste moins de lignes (ou autant).
+      - On peut enchaîner plusieurs `AND`.
+    commonMistakes: |
+      - Écrire `WHERE ville = 'Paris' AND 'Lyon'` : chaque côté du AND doit être une condition complète.
+      - Utiliser AND pour « Paris et Lyon » : une cliente n'habite pas dans deux villes à la fois (ce sera OR, à la leçon suivante).
+    blocks:
+      - type: text
+        md: |
+          Souvent, on veut plusieurs critères **en même temps** : « les livres **encore bien en stock** ».
+      - type: definition
+        id: def-and-et
+        term: "AND (et)"
+        md: |
+          Une **porte avec deux serrures** : il faut les deux clés pour entrer. Une ligne est gardée seulement
+          si **toutes** les conditions reliées par AND sont vraies.
+      - type: code
+        id: code-and
+        language: sql
+        title: "Les livres bien en stock"
+        code: |
+          SELECT nom, stock
+          FROM produits
+          WHERE categorie_id = 1
+            AND stock > 10;
+        lines:
+          - n: 3
+            note: "Première condition : la catégorie 1, ce sont les livres."
+          - n: 4
+            note: "`AND` : et **en plus**, un stock au-dessus de 10. Les deux doivent être vraies."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis ajoute une troisième condition : `AND prix < 40`."
+        language: sql
+        code: |
+          SELECT nom, stock
+          FROM produits
+          WHERE categorie_id = 1
+            AND stock > 10;
+      - type: question
+        ref: sqlq-andor-1
+        review: def-and-et
+      - type: question
+        ref: sql-p10-q2
+        review: code-and
+      - type: text
+        md: "Exercice guidé : complète le filtre à deux conditions."
+      - type: exercise
+        ref: sql-ex-and-guide
+      - type: text
+        md: "En autonomie : les petits prix bien en stock."
+      - type: exercise
+        ref: sql-ex-and-produits
+      - type: quiz
+        items:
+          - ref: sql-p10-q3
+            review: def-and-et
+          - ref: sql-p10-q4
+            review: code-and
+          - ref: sql-p10-q5
+            review: def-and-et
+    questions:
+      - code: sqlq-andor-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: Avec AND, une ligne est gardée quand…
+        choices:
+          - label: les deux conditions sont vraies
+            correct: true
+            why: 'Oui : les deux à la fois.'
+          - label: au moins une condition est vraie
+            correct: false
+            why: "Ça, ce sera OR, à la leçon suivante."
+          - label: aucune condition n'est vraie
+            correct: false
+            why: "Au contraire : il faut qu'elles soient toutes vraies."
+        explanation: "AND = toutes les conditions à la fois."
+      - code: sql-p10-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Quelle requête garde les clients de Paris inscrits à partir de 2025 ?"
+        choices:
+          - label: "`SELECT * FROM clients WHERE ville = 'Paris' AND date_inscription >= '2025-01-01';`"
+            correct: true
+            why: "Deux conditions complètes, reliées par AND."
+          - label: "`SELECT * FROM clients WHERE ville = 'Paris', date_inscription >= '2025-01-01';`"
+            correct: false
+            why: "On ne sépare pas des conditions par une virgule."
+          - label: "`SELECT * FROM clients WHERE ville = 'Paris' AND >= '2025-01-01';`"
+            correct: false
+            why: "Chaque côté du AND doit être une condition complète."
+        explanation: "`condition1 AND condition2` : chaque condition a sa colonne, son signe et sa valeur."
+      - code: sql-p10-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Tu ajoutes un AND à un filtre. Le nombre de lignes affichées…"
+        choices:
+          - label: "diminue ou reste le même"
+            correct: true
+            why: "Chaque AND ajoute une exigence : le filtre devient plus strict."
+          - label: "augmente"
+            correct: false
+            why: "Une condition en plus ne peut pas ajouter de lignes."
+          - label: "double toujours"
+            correct: false
+            why: "AND rend le filtre plus strict, pas plus large."
+        explanation: "Plus de serrures = moins de monde qui passe."
+      - code: sql-p10-q4
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Complète pour garder les employés du service 2 dont le poste est 'Développeur'."
+        snippet: |
+          SELECT prenom, nom
+          FROM employes
+          WHERE service_id = 2 ____ poste = 'Développeur';
+        language: sql
+        answers: ["AND"]
+        explanation: "Les deux conditions doivent être vraies en même temps : AND."
+      - code: sql-p10-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-select
+        prompt: "`WHERE ville = 'Paris' AND ville = 'Lyon'` renvoie les clients de Paris et ceux de Lyon."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Une cliente n'habite pas dans deux villes à la fois : aucune ligne n'est gardée."
+          - label: "Faux"
+            correct: true
+            why: "Exact : les deux conditions ne peuvent pas être vraies en même temps."
+        explanation: "« Paris et Lyon » en français se traduit par OR en SQL : tu le verras à la leçon suivante."
+    exercises:
+      - slug: sql-ex-and-guide
+        kind: COMPLETER
+        title: "Deux conditions"
+        difficulty: FACILE
+        skill: sql-select
+        statement: "Complète pour garder les commandes livrées passées à partir du 1er janvier 2025."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le filtre commence par WHERE."
+          - "Les deux conditions à la fois : AND."
+          - "WHERE, AND, >=."
+        solution: '["WHERE", "AND", ">="]'
+        explanation: "`WHERE statut = 'LIVREE' AND date_commande >= '2025-01-01'`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            SELECT id, date_commande
+            FROM commandes
+            [[1]] statut = 'LIVREE'
+              [[2]] date_commande [[3]] '2025-01-01';
+          blanks:
+            - ["WHERE"]
+            - ["AND"]
+            - [">="]
+      - slug: sql-ex-and-produits
+        kind: SQL
+        title: "Petits prix bien en stock"
+        difficulty: FACILE
+        skill: sql-select
+        statement: |
+          Affiche le **nom**, le **prix** et le **stock** des produits dont le prix est **plus petit que 20**
+          **et** dont le stock est **plus grand que 50**.
+        criteria: "3 colonnes (nom, prix, stock), uniquement les produits à moins de 20 € avec plus de 50 en stock."
+        hints:
+          - "Deux conditions, reliées par AND."
+          - "`prix < 20` et `stock > 50`."
+          - "`WHERE prix < 20 AND stock > 50`"
+        solution: |
+          SELECT nom, prix, stock
+          FROM produits
+          WHERE prix < 20
+            AND stock > 50;
+        explanation: "Un produit n'est gardé que s'il respecte les deux conditions."
+        xp: 10
+        payload:
+          mode: READ
+
+  # ===================================================================== LEÇON 6
+  - slug: sql-and-or-not
+    title: "L'une ou l'autre : OR, NOT et parenthèses"
+    duration: 10
+    objective: "Garder les lignes qui respectent au moins une condition avec OR, inverser une condition avec NOT, et bien placer les parenthèses."
+    prerequisites: "Leçon « Deux conditions à la fois : AND »."
+    skills: [sql-select]
+    xp: 10
+    memo: |
+      - `OR` : **au moins une** condition doit être vraie. Chaque OR rend le filtre **plus large**.
+      - `NOT` inverse une condition : `NOT (statut = 'ANNULEE')`.
+      - `AND` passe **toujours avant** `OR`. Dès que tu mélanges les deux, mets des **parenthèses**.
+    commonMistakes: |
+      - `WHERE ville = 'Paris' OR 'Lyon'` : il faut `ville = 'Paris' OR ville = 'Lyon'`.
+      - Oublier les parenthèses entre AND et OR : le filtre ne fait pas ce que tu penses.
+    blocks:
+      - type: text
+        md: |
+          « Les commandes **livrées ou expédiées** » : une seule des deux conditions suffit. C'est le rôle de `OR`.
+      - type: definition
+        id: def-or-ou
+        term: "OR (ou)"
+        md: |
+          Une **porte qui s'ouvre avec l'une ou l'autre clé**. Une ligne est gardée dès qu'**au moins une**
+          condition est vraie.
+      - type: code
+        id: code-or
+        language: sql
+        title: "Les clients de Paris ou de Lyon"
+        code: |
+          SELECT prenom, nom, ville
+          FROM clients
+          WHERE ville = 'Paris'
+             OR ville = 'Lyon';
+        lines:
+          - n: 3
+            note: "Première condition complète."
+          - n: 4
+            note: "`OR` : on garde aussi les clients de Lyon. Chaque côté est une condition complète."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis remplace `OR` par `AND` : plus aucune ligne, personne n'habite dans deux villes."
+        language: sql
+        code: |
+          SELECT prenom, nom, ville
+          FROM clients
+          WHERE ville = 'Paris'
+             OR ville = 'Lyon';
+      - type: question
+        ref: sql-c2l1-q1
+        review: def-or-ou
+      - type: definition
+        id: def-parentheses
+        term: "Les parenthèses"
+        md: |
+          `AND` passe **toujours avant** `OR`, c'est une règle fixe de SQL. Les parenthèses servent à dire
+          « regroupe d'abord ceci », comme on regroupe des mots avec des virgules pour qu'une phrase garde
+          son sens.
+      - type: compare
+        left:
+          title: "Sans parenthèses (piège)"
+          good: false
+          language: sql
+          code: |
+            WHERE statut = 'LIVREE'
+               OR statut = 'EXPEDIEE'
+              AND date_commande >= '2025-01-01'
+          md: "Comprise comme : livrée (n'importe quand) **ou** (expédiée **et** en 2025)."
+        right:
+          title: "Avec parenthèses (intention claire)"
+          good: true
+          language: sql
+          code: |
+            WHERE (statut = 'LIVREE'
+                   OR statut = 'EXPEDIEE')
+              AND date_commande >= '2025-01-01'
+          md: "Livrée **ou** expédiée, **et** dans tous les cas en 2025."
+      - type: question
+        ref: sql-c2l1-q2
+        review: def-parentheses
+      - type: definition
+        id: def-not
+        term: "NOT (le contraire)"
+        md: |
+          `NOT` retourne une condition, comme on retourne une carte. `NOT (statut = 'ANNULEE')` garde tout
+          ce qui n'est **pas** annulé.
+      - type: question
+        ref: sql-c2l1-q3
+        review: def-not
+      - type: text
+        md: "Exercice guidé : complète le filtre avec OR."
+      - type: exercise
+        ref: sql-ex-or-guide
+      - type: text
+        md: "En autonomie : les commandes 2025 livrées ou expédiées."
+      - type: exercise
+        ref: sql-ex-commandes-2025-actives
+      - type: quiz
+        items:
+          - ref: sqlq-andor-3
+            review: def-or-ou
+          - ref: sqlq-andor-2
+            review: def-parentheses
+          - ref: sql-c2l1-q4
+            review: def-parentheses
+    questions:
+      - code: sql-c2l1-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-select
+        prompt: "Tu remplaces `AND` par `OR` dans un filtre à deux conditions. Le nombre de lignes affichées…"
+        choices:
+          - label: "augmente ou reste le même"
+            correct: true
+            why: "OR garde une ligne dès qu'une condition est vraie : le filtre est plus large."
+          - label: "diminue ou reste le même"
+            correct: false
+            why: "C'est l'effet inverse : AND est plus strict que OR."
+          - label: "ne change jamais"
+            correct: false
+            why: "Les deux mots n'ont pas le même sens."
+        explanation: "AND = plus strict, OR = plus large."
+      - code: sql-c2l1-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-select
+        prompt: "Comment PostgreSQL comprend-il cette condition ?"
+        snippet: |
+          WHERE categorie_id = 1 OR categorie_id = 2 AND stock > 0
+        language: sql
+        choices:
+          - label: "`categorie_id = 1 OR (categorie_id = 2 AND stock > 0)`"
+            correct: true
+            why: "AND passe toujours avant OR."
+          - label: "`(categorie_id = 1 OR categorie_id = 2) AND stock > 0`"
+            correct: false
+            why: "Il faudrait des parenthèses autour du OR pour obtenir ce sens."
+          - label: "La requête provoque une erreur"
+            correct: false
+            why: "Elle est valide : c'est pour ça que le piège est dangereux."
+        explanation: "Dès que tu mélanges AND et OR, ajoute des parenthèses : ta requête dit exactement ce que tu veux."
+      - code: sql-c2l1-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: "`WHERE NOT (ville = 'Paris')` garde les clients qui n'habitent pas à Paris."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "NOT retourne la condition."
+          - label: "Faux"
+            correct: false
+            why: "C'est exactement le rôle de NOT."
+        explanation: "`NOT (ville = 'Paris')` revient au même que `ville <> 'Paris'`."
+      - code: sqlq-andor-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-select
+        prompt: '`WHERE service_id = 2 OR service_id = 3` garde les employés des services 2 et 3.'
+        choices:
+          - label: Vrai
+            correct: true
+            why: "Oui : chaque employé est dans l'un OU l'autre."
+          - label: Faux
+            correct: false
+            why: Avec AND, on ne trouverait personne (un employé n'est pas dans deux services).
+        explanation: 'Piège classique : « les services 2 et 3 » se traduit par OR.'
+      - code: sqlq-andor-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-select
+        prompt: Pourquoi mettre des parenthèses dans `WHERE ville = 'Paris' AND (statut = 'LIVREE' OR statut = 'EXPEDIEE')` ?
+        choices:
+          - label: 'Parce que AND passe avant OR : sans parenthèses, le sens change'
+            correct: true
+            why: "Oui : les parenthèses imposent l'ordre voulu."
+          - label: Parce que SQL l'exige toujours
+            correct: false
+            why: Elles sont facultatives, mais ici elles changent le sens.
+          - label: Pour rendre la requête plus rapide
+            correct: false
+            why: Elles ne changent pas la vitesse.
+        explanation: AND passe avant OR. En cas de doute, mets des parenthèses.
+      - code: sql-c2l1-q4
+        kind: COMPLETER_CODE
+        difficulty: 2
+        skill: sql-select
+        prompt: "Complète pour garder les employés du service 2 **ou** 3 dont le poste est 'Développeur'."
+        snippet: |
+          SELECT prenom, nom
+          FROM employes
+          WHERE ____ AND poste = 'Développeur';
+        language: sql
+        answers: ["(service_id = 2 OR service_id = 3)", "(service_id = 3 OR service_id = 2)"]
+        explanation: "Il faut des **parenthèses** autour du OR. Sans elles, le poste ne serait vérifié que pour le service 3."
+    exercises:
+      - slug: sql-ex-or-guide
+        kind: COMPLETER
+        title: "L'une ou l'autre"
+        difficulty: FACILE
+        skill: sql-select
+        statement: "Complète pour garder les produits des catégories 5 (Jeux) ou 7 (Papeterie)."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "L'une ou l'autre : OR."
+          - "Chaque côté du OR est une condition complète : répète la colonne."
+          - "OR, categorie_id, =."
+        solution: '["OR", "categorie_id", "="]'
+        explanation: "`WHERE categorie_id = 5 OR categorie_id = 7`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            SELECT nom
+            FROM produits
+            WHERE categorie_id = 5
+               [[1]] [[2]] [[3]] 7;
+          blanks:
+            - ["OR"]
+            - ["categorie_id"]
+            - ["="]
+      - slug: sql-ex-commandes-2025-actives
+        kind: SQL
+        title: "Commandes 2025 livrées ou expédiées"
+        difficulty: INTERMEDIAIRE
+        skill: sql-select
+        statement: |
+          Le service logistique veut les commandes **livrées ou expédiées** passées **à partir du
+          1er janvier 2025**. Affiche leur **id**, **date_commande** et **statut**, rangées par date
+          (puis par id quand deux commandes ont la même date).
+        criteria: "3 colonnes, uniquement des commandes LIVREE ou EXPEDIEE datées de 2025, triées par date puis id."
+        hints:
+          - "Deux conditions sur le statut (reliées par OR) et une condition sur la date."
+          - "Mets les deux conditions de statut entre parenthèses avant d'ajouter `AND date_commande >= '2025-01-01'`."
+          - "`WHERE (statut = 'LIVREE' OR statut = 'EXPEDIEE') AND date_commande >= '2025-01-01' ORDER BY date_commande, id`"
+        solution: |
+          SELECT id, date_commande, statut
+          FROM commandes
+          WHERE (statut = 'LIVREE' OR statut = 'EXPEDIEE')
+            AND date_commande >= '2025-01-01'
+          ORDER BY date_commande, id;
+        explanation: |
+          Les parenthèses regroupent d'abord « livrée ou expédiée », puis la condition de date s'applique à
+          toutes ces lignes. Sans parenthèses, les commandes livrées de 2024 seraient aussi gardées.
+        xp: 15
+        payload:
+          mode: READ
+          ordered: true
+
+bank:
+  - code: sql-c1-b3
+    kind: RESULTAT_CODE
+    difficulty: 2
+    skill: sql-select
+    prompt: "On demande 5 lignes avec `LIMIT 5`, mais `OFFSET` fait sauter presque toutes les lignes de la table. Que se passe-t-il ?"
+    snippet: |
+      SELECT nom
+      FROM produits
+      ORDER BY prix DESC
+      LIMIT 5 OFFSET 28;
+    language: sql
+    choices:
+      - label: "On obtient seulement les lignes qui restent, même s'il y en a moins de 5"
+        correct: true
+        why: "LIMIT fixe un maximum : il ne peut pas inventer des lignes."
+      - label: "On obtient toujours 5 lignes"
+        correct: false
+        why: "LIMIT est un maximum, pas un nombre garanti."
+      - label: "Une erreur"
+        correct: false
+        why: "Arriver au bout du résultat n'est pas une erreur."
+    explanation: "LIMIT fixe un **maximum**. Après un grand OFFSET, il peut rester moins de lignes, voire aucune."
+  - code: sql-c1-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-select
+    prompt: "Quelle requête est **correctement écrite** ?"
+    choices:
+      - label: "`SELECT nom FROM produits WHERE prix < 20 ORDER BY nom;`"
+        correct: true
+        why: "Les clauses sont dans l'ordre : SELECT, FROM, WHERE, ORDER BY."
+      - label: "`SELECT nom FROM produits ORDER BY nom WHERE prix < 20;`"
+        correct: false
+        why: "WHERE doit venir avant ORDER BY."
+      - label: "`SELECT nom, FROM produits WHERE prix < 20;`"
+        correct: false
+        why: "Virgule en trop avant FROM."
+    explanation: "Ordre d'écriture : SELECT → FROM → WHERE → ORDER BY → LIMIT."
+  - code: sql-c1-b10
+    kind: VRAI_FAUX
+    difficulty: 2
+    skill: sql-select
+    prompt: "Dans PostgreSQL, `WHERE nom = \"Martin\"` compare la colonne nom au texte Martin."
+    choices:
+      - label: "Vrai"
+        correct: false
+        why: "Les guillemets doubles désignent une colonne nommée Martin : erreur."
+      - label: "Faux"
+        correct: true
+        why: "Il faut des apostrophes : `nom = 'Martin'`."
+    explanation: "Apostrophes pour les textes, guillemets doubles pour les noms de colonnes."
+  - code: sql-c2-b11
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: sql-select
+    prompt: "Quelle requête affiche les clients de Lille, rangés par nom ?"
+    choices:
+      - label: "`SELECT prenom, nom FROM clients WHERE ville = 'Lille' ORDER BY nom;`"
+        correct: true
+        why: "Le filtre (WHERE) vient avant le tri (ORDER BY)."
+      - label: "`SELECT prenom, nom FROM clients ORDER BY nom WHERE ville = 'Lille';`"
+        correct: false
+        why: "WHERE doit venir avant ORDER BY."
+      - label: "`SELECT prenom, nom FROM clients WHERE ville = Lille ORDER BY nom;`"
+        correct: false
+        why: "Lille est un texte : il faut des apostrophes."
+    explanation: "On filtre d'abord, on range ensuite."
+  - code: sql-c2-b12
+    kind: CHOIX_UNIQUE
+    difficulty: 2
+    skill: sql-select
+    prompt: "Que garde `WHERE statut = 'LIVREE' OR statut = 'EXPEDIEE'` ?"
+    choices:
+      - label: "Les commandes livrées et les commandes expédiées"
+        correct: true
+        why: "OR garde une ligne dès qu'une des deux conditions est vraie."
+      - label: "Aucune commande"
+        correct: false
+        why: "Ce serait le cas avec AND : une commande n'a qu'un statut."
+      - label: "Toutes les commandes"
+        correct: false
+        why: "Les commandes en attente ou annulées sont écartées."
+    explanation: "OR élargit le filtre : l'une ou l'autre condition suffit."

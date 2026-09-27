@@ -1,5 +1,5 @@
 slug: sous-requetes
-position: 5
+position: 6
 level: AVANCE
 title: "Sous-requêtes, CTE et fonctions de fenêtrage"
 summary: "Imbriquer des requêtes, tester l'existence de lignes liées, structurer une requête complexe avec WITH et calculer des classements avec les fonctions de fenêtrage."

@@ -1,5 +1,5 @@
 slug: jointures
-position: 4
+position: 5
 level: INTERMEDIAIRE
 title: "Croiser les tables : les jointures"
 summary: "Relier les tables grâce aux clés étrangères : INNER JOIN, LEFT JOIN, jointures multiples via une table d'association et auto-jointure."
