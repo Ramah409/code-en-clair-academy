@@ -72,22 +72,22 @@ class LearningFlowIntegrationTest extends PostgresIntegrationTest {
                 status().isOk());
         call("POST", "/api/lessons/sql-bases-relationnelles/questions/sql-l1-q2/answer", "{\"choices\":[2]}",
                 status().isOk());
-        call("POST", "/api/lessons/sql-bases-relationnelles/questions/sql-l1-q3/answer", "{\"text\":\"*\"}",
-                status().isOk());
-        call("POST", "/api/lessons/sql-bases-relationnelles/questions/sql-l1-q4/answer", "{\"choices\":[1]}",
-                status().isOk());
 
-        JsonNode failed = call("POST", "/api/exercises/sql-ex-select-services/submit",
-                "{\"answer\":\"SELECT nom FROM services\"}", status().isOk());
+        JsonNode failed = call("POST", "/api/exercises/sql-ex-decrire-table/submit",
+                "{\"answer\":\"Table : livres\"}", status().isOk());
         assertThat(failed.get("success").asBoolean()).isFalse();
         assertThat(failed.get("feedback").get(0).asText()).contains("colonne");
         assertThat(failed.has("solution")).isFalse();
 
-        JsonNode solved = call("POST", "/api/exercises/sql-ex-select-services/submit",
-                "{\"answer\":\"select * from services;\"}", status().isOk());
+        JsonNode solved = call("POST", "/api/exercises/sql-ex-decrire-table/submit",
+                "{\"answer\":\"Table : livres\\nColonnes : id, titre, auteur\\nClé primaire : id\"}", status().isOk());
         assertThat(solved.get("success").asBoolean()).isTrue();
         assertThat(solved.at("/reward/xpEarned").asInt()).isPositive();
         assertThat(solved.get("explanation").asText()).isNotBlank();
+
+        JsonNode guided = call("POST", "/api/exercises/sql-ex-vocabulaire-guide/submit",
+                "{\"answer\":[\"table\",\"ligne\",\"colonne\",\"clé primaire\"]}", status().isOk());
+        assertThat(guided.get("success").asBoolean()).isTrue();
 
         // Le QCM de fin de leçon est obligatoire : sans lui, la leçon n'est pas validée
         JsonNode pending = call("POST", "/api/lessons/sql-bases-relationnelles/complete", null,
@@ -105,20 +105,20 @@ class LearningFlowIntegrationTest extends PostgresIntegrationTest {
         assertThat(quiz.at("/items/0/question/prompt").asText()).isNotBlank();
         call("POST", "/api/lessons/sql-bases-relationnelles/questions/sqlq-bases-1/answer", "{\"choices\":[1]}",
                 status().isOk());
-        call("POST", "/api/lessons/sql-bases-relationnelles/questions/sqlq-bases-2/answer", "{\"choices\":[1]}",
-                status().isOk());
         call("POST", "/api/lessons/sql-bases-relationnelles/questions/sqlq-bases-3/answer", "{\"choices\":[2]}",
+                status().isOk());
+        call("POST", "/api/lessons/sql-bases-relationnelles/questions/sql-p1-q5/answer", "{\"choices\":[1]}",
                 status().isOk());
 
         JsonNode done = call("POST", "/api/lessons/sql-bases-relationnelles/complete", "{\"secondsSpent\":300}",
                 status().isOk());
-        assertThat(done.at("/next/slug").asText()).isEqualTo("sql-select-colonnes");
+        assertThat(done.at("/next/slug").asText()).isEqualTo("sql-select-etoile");
         assertThat(done.at("/reward/newBadges/0/code").asText()).isEqualTo("premiere-lecon");
 
-        call("GET", "/api/lessons/sql-select-colonnes", null, status().isOk());
+        call("GET", "/api/lessons/sql-select-etoile", null, status().isOk());
         JsonNode dashboard = call("GET", "/api/dashboard", null, status().isOk());
         assertThat(dashboard.at("/streak/current").asInt()).isEqualTo(1);
-        assertThat(dashboard.at("/resume/lessonSlug").asText()).isEqualTo("sql-select-colonnes");
+        assertThat(dashboard.at("/resume/lessonSlug").asText()).isEqualTo("sql-select-etoile");
     }
 
     @Test

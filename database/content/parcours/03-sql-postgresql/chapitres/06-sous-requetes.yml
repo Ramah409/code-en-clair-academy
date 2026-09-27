@@ -422,114 +422,89 @@ lessons:
 
   # ===================================================================== LEÇON 3
   - slug: sql-cte-fenetrage
-    title: "WITH (CTE) et fonctions de fenêtrage"
-    duration: 15
-    objective: "Découper une requête complexe en étapes nommées avec WITH et produire des classements avec OVER."
-    prerequisites: "Sous-requêtes et GROUP BY."
-    skills: [sql-avance, sql-agregation]
-    xp: 20
+    title: "Découper en étapes : WITH (CTE)"
+    duration: 10
+    objective: "Nommer une étape intermédiaire avec WITH, puis la lire comme une table."
+    prerequisites: "Leçon « EXISTS et NOT EXISTS »."
+    skills: [sql-avance]
+    xp: 15
     memo: |
-      - `WITH nom AS (requête)` définit une **table temporaire nommée** (CTE) utilisable dans la requête qui suit.
-      - Les **fonctions de fenêtrage** calculent sur un ensemble de lignes **sans les regrouper** : `RANK() OVER (ORDER BY ...)`.
-      - `PARTITION BY` découpe en groupes pour la fenêtre : `RANK() OVER (PARTITION BY categorie_id ORDER BY prix DESC)`.
-      - `ROW_NUMBER` numérote, `RANK` gère les ex æquo (avec trous), `DENSE_RANK` sans trous.
+      - `WITH nom AS (requête)` crée une **étape nommée** (une CTE).
+      - La requête qui suit lit cette étape **comme une table** : `FROM nom`.
+      - La CTE n'existe que le temps de la requête : rien n'est enregistré dans la base.
     commonMistakes: |
-      - Filtrer une fonction de fenêtrage dans WHERE : impossible, il faut passer par une CTE ou une sous-requête.
-      - Confondre GROUP BY (réduit le nombre de lignes) et OVER (garde toutes les lignes).
+      - Oublier les parenthèses autour de la requête de la CTE.
+      - Mettre un point-virgule entre la CTE et la requête principale : c'est une seule requête.
     blocks:
       - type: text
         md: |
-          Quand une requête devient longue, on a envie de la **découper en étapes**, comme on découpe un
-          programme en fonctions. La clause `WITH` (Common Table Expression) le permet.
+          Quand une requête devient longue, on a envie de la **découper en étapes**, comme une recette :
+          « d'abord préparer la pâte, ensuite la garnir ». La clause `WITH` fait exactement ça.
+      - type: definition
+        id: def-cte
+        term: "CTE (WITH)"
+        md: |
+          Un **brouillon nommé** : tu prépares un résultat intermédiaire, tu lui donnes un nom, puis tu
+          t'en sers juste après comme d'une table.
       - type: code
+        id: code-cte
         language: sql
-        title: "Étape 1 : le nombre d'articles de chaque commande ; étape 2 : les commandes plus garnies que la moyenne"
+        title: "Étape 1 : les commandes de chaque client ; étape 2 : les clients fidèles"
         code: |
-          WITH articles AS (
-            SELECT commande_id,
-                   SUM(quantite) AS nb_articles
-            FROM lignes_commande
-            GROUP BY commande_id
+          WITH commandes_par_client AS (
+            SELECT client_id, COUNT(*) AS nb
+            FROM commandes
+            GROUP BY client_id
           )
-          SELECT commande_id, nb_articles
-          FROM articles
-          WHERE nb_articles > (SELECT AVG(nb_articles) FROM articles)
-          ORDER BY nb_articles DESC;
+          SELECT client_id, nb
+          FROM commandes_par_client
+          WHERE nb >= 3
+          ORDER BY nb DESC, client_id;
         lines:
           - n: 1
-            note: "On nomme une étape intermédiaire `articles`."
+            note: "On nomme l'étape intermédiaire `commandes_par_client`."
           - n: 2
-            note: "Elle compte les articles de chaque commande…"
-          - n: 5
-            note: "…grâce à un GROUP BY par commande."
-          - n: 7
-            note: "La requête principale lit `articles` comme une table ordinaire."
-          - n: 9
-            note: "Et l'utilise même deux fois : pour filtrer et pour obtenir la moyenne (c'est la base qui la calcule)."
+            note: "Elle compte les commandes de chaque client (GROUP BY, déjà vu)."
+          - n: 6
+            note: "La requête principale lit l'étape comme une table ordinaire."
+          - n: 8
+            note: "Comme `nb` est une vraie colonne de l'étape, on peut la filtrer avec WHERE."
       - type: demo
-        title: "Démonstration"
+        title: "Essaie"
+        md: "Exécute, puis remplace `nb >= 3` par `nb = 1` : les clients qui n'ont commandé qu'une fois."
         language: sql
         code: |
-          WITH articles AS (
-            SELECT commande_id,
-                   SUM(quantite) AS nb_articles
-            FROM lignes_commande
-            GROUP BY commande_id
+          WITH commandes_par_client AS (
+            SELECT client_id, COUNT(*) AS nb
+            FROM commandes
+            GROUP BY client_id
           )
-          SELECT commande_id, nb_articles
-          FROM articles
-          WHERE nb_articles > (SELECT AVG(nb_articles) FROM articles)
-          ORDER BY nb_articles DESC;
+          SELECT client_id, nb
+          FROM commandes_par_client
+          WHERE nb >= 3
+          ORDER BY nb DESC, client_id;
       - type: question
         ref: sql-c5l3-q1
-      - type: definition
-        id: def-fonction-de-fenetrage-over
-        term: "Fonction de fenêtrage (OVER)"
-        md: |
-          Fonction calculée sur une « fenêtre » de lignes liées à la ligne courante, **sans fusionner les
-          lignes** comme le ferait GROUP BY. Chaque ligne garde son détail et reçoit en plus une valeur
-          calculée : un rang, un total cumulé, une moyenne du groupe…
-      - type: code
-        language: sql
-        title: "Classer les produits par prix dans chaque catégorie"
-        code: |
-          SELECT nom, categorie_id, prix,
-                 RANK() OVER (PARTITION BY categorie_id ORDER BY prix DESC) AS rang,
-                 ROUND(AVG(prix) OVER (PARTITION BY categorie_id), 2) AS moyenne_categorie
-          FROM produits
-          WHERE categorie_id IS NOT NULL
-          ORDER BY categorie_id, rang;
-        lines:
-          - n: 2
-            note: "RANK numérote les produits du plus cher au moins cher, **en recommençant à 1 dans chaque catégorie** (PARTITION BY)."
-          - n: 3
-            note: "La moyenne de la catégorie est affichée sur chaque ligne, sans regrouper les lignes."
-          - n: 6
-            note: "Le tri final affiche les catégories dans l'ordre, et les produits par rang."
-      - type: demo
-        title: "Démonstration"
-        language: sql
-        code: |
-          SELECT nom, categorie_id, prix,
-                 RANK() OVER (PARTITION BY categorie_id ORDER BY prix DESC) AS rang,
-                 ROUND(AVG(prix) OVER (PARTITION BY categorie_id), 2) AS moyenne_categorie
-          FROM produits
-          WHERE categorie_id IS NOT NULL
-          ORDER BY categorie_id, rang;
+        review: def-cte
       - type: question
-        ref: sql-c5l3-q2
-      - type: question
-        ref: sql-c5l3-q3
+        ref: sqlq-cte-1
+        review: code-cte
+      - type: text
+        md: "Exercice guidé : complète la CTE."
       - type: exercise
-        ref: sql-ex-top2-par-categorie
-      - type: question
-        ref: sql-c5l3-q4
+        ref: sql-ex-cte-guide
+      - type: text
+        md: "En autonomie : les catégories bien remplies."
+      - type: exercise
+        ref: sql-ex-cte-categories
       - type: quiz
         items:
-          - ref: sqlq-cte-1
-          - ref: sqlq-cte-2
-            review: def-fonction-de-fenetrage-over
-          - ref: sqlq-cte-3
+          - ref: sql-c5-b3
+            review: def-cte
+          - ref: sql-p20-q4
+            review: code-cte
+          - ref: sql-p20-q5
+            review: def-cte
     questions:
       - code: sql-c5l3-q1
         kind: CHOIX_UNIQUE
@@ -537,68 +512,19 @@ lessons:
         skill: sql-avance
         prompt: "Quel est le principal intérêt d'une CTE (`WITH ... AS`) ?"
         choices:
-          - label: "Découper une requête complexe en étapes nommées et réutilisables dans la requête"
+          - label: "Découper une requête longue en étapes nommées"
             correct: true
-            why: "Elle améliore la lisibilité et évite de répéter une sous-requête."
+            why: "Elle rend la requête plus lisible."
           - label: "Créer une table permanente dans la base"
             correct: false
-            why: "La CTE n'existe que pendant l'exécution de la requête."
-          - label: "Accélérer systématiquement la requête"
+            why: "La CTE n'existe que pendant la requête."
+          - label: "Rendre la requête toujours plus rapide"
             correct: false
-            why: "Son intérêt principal est la lisibilité, pas la performance."
-        explanation: "Une CTE est une sous-requête nommée, placée avant la requête principale. Elle rend les requêtes d'analyse beaucoup plus lisibles."
-      - code: sql-c5l3-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 3
-        skill: sql-avance
-        prompt: "Quelle différence entre `GROUP BY categorie_id` et `OVER (PARTITION BY categorie_id)` ?"
-        choices:
-          - label: "GROUP BY produit une ligne par catégorie ; OVER garde toutes les lignes et ajoute un calcul par catégorie"
-            correct: true
-            why: "La fenêtre calcule sans fusionner les lignes."
-          - label: "Aucune, ce sont deux syntaxes du même calcul"
-            correct: false
-            why: "Le nombre de lignes du résultat diffère."
-          - label: "OVER est plus ancien et déconseillé"
-            correct: false
-            why: "Les fonctions de fenêtrage sont modernes et très utilisées."
-        explanation: "Avec OVER, tu peux afficher le détail d'un produit **et** la moyenne de sa catégorie sur la même ligne."
-      - code: sql-c5l3-q3
-        kind: RESULTAT_CODE
-        difficulty: 3
-        skill: sql-avance
-        prompt: "Trois produits coûtent 50, 50 et 40 €. Quels rangs donne `RANK() OVER (ORDER BY prix DESC)` ?"
-        snippet: |
-          SELECT prix, RANK() OVER (ORDER BY prix DESC)
-          FROM (VALUES (50), (50), (40)) AS t(prix);
-        language: sql
-        choices:
-          - label: "1, 1, 3"
-            correct: true
-            why: "Les ex æquo partagent le rang 1, et le rang suivant saute à 3."
-          - label: "1, 1, 2"
-            correct: false
-            why: "C'est le comportement de DENSE_RANK."
-          - label: "1, 2, 3"
-            correct: false
-            why: "C'est le comportement de ROW_NUMBER."
-        explanation: "ROW_NUMBER : 1, 2, 3 ; RANK : 1, 1, 3 ; DENSE_RANK : 1, 1, 2."
-      - code: sql-c5l3-q4
-        kind: VRAI_FAUX
-        difficulty: 3
-        skill: sql-avance
-        prompt: "On peut écrire `WHERE RANK() OVER (ORDER BY prix DESC) <= 3` pour garder les 3 produits les plus chers."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "Les fonctions de fenêtrage sont calculées après WHERE : elles y sont interdites."
-          - label: "Faux"
-            correct: true
-            why: "Il faut calculer le rang dans une CTE (ou sous-requête), puis filtrer dessus."
-        explanation: "Motif classique : `WITH classement AS (SELECT ..., RANK() OVER (...) AS rang FROM ...) SELECT * FROM classement WHERE rang <= 3`."
+            why: "Son intérêt principal est la lisibilité."
+        explanation: "Une CTE est une étape nommée, placée avant la requête principale."
       - code: sqlq-cte-1
         kind: CHOIX_UNIQUE
-        difficulty: 2
+        difficulty: 1
         skill: sql-avance
         prompt: Comment commence une CTE ?
         choices:
@@ -610,38 +536,284 @@ lessons:
             why: Cette syntaxe n'existe pas.
           - label: '`SELECT ... INTO nom`'
             correct: false
-            why: SELECT INTO crée une table.
-        explanation: Une CTE nomme un résultat intermédiaire utilisable dans la requête qui suit.
-      - code: sqlq-cte-2
+            why: Ce n'est pas une CTE.
+        explanation: "`WITH`, le nom, `AS`, puis la requête entre parenthèses."
+      - code: sql-c5-b3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-avance
+        prompt: "Une CTE définie avec `WITH` n'existe que pendant la requête qui la suit."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "C'est un brouillon, jeté après la requête."
+          - label: "Faux"
+            correct: false
+            why: "Rien n'est enregistré dans la base."
+        explanation: "Pour enregistrer une requête réutilisable, on utilisera une vue (chapitre 8)."
+      - code: sql-p20-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-avance
+        prompt: "Dans l'exemple de la leçon, la requête principale lit `commandes_par_client` comme une table."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "`FROM commandes_par_client`, exactement comme une table."
+          - label: "Faux"
+            correct: false
+            why: "C'est tout l'intérêt de nommer l'étape."
+        explanation: "Une CTE se lit avec FROM, comme une table."
+      - code: sql-p20-q5
         kind: CHOIX_UNIQUE
         difficulty: 2
+        skill: sql-avance
+        prompt: "Pourquoi peut-on écrire `WHERE nb >= 3` dans la requête principale de l'exemple ?"
+        choices:
+          - label: "Parce que `nb` est une colonne de l'étape `commandes_par_client`"
+            correct: true
+            why: "Le comptage est déjà fait dans l'étape : `nb` y est une colonne comme une autre."
+          - label: "Parce que WHERE accepte toujours COUNT(*)"
+            correct: false
+            why: "Non : sans étape, il faudrait HAVING."
+          - label: "Parce que WITH remplace GROUP BY"
+            correct: false
+            why: "La CTE contient justement un GROUP BY."
+        explanation: "La CTE transforme un résultat en table : on filtre ensuite ses colonnes avec WHERE."
+    exercises:
+      - slug: sql-ex-cte-guide
+        kind: COMPLETER
+        title: "Compléter la CTE"
+        difficulty: FACILE
+        skill: sql-avance
+        statement: "Complète pour nommer l'étape `clients_lyon`, puis la lire."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Une CTE commence par WITH."
+          - "Après le nom : AS, puis la requête entre parenthèses."
+          - "WITH, AS, clients_lyon."
+        solution: '["WITH", "AS", "clients_lyon"]'
+        explanation: "`WITH clients_lyon AS (...) SELECT ... FROM clients_lyon;`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            [[1]] clients_lyon [[2]] (
+              SELECT prenom, nom
+              FROM clients
+              WHERE ville = 'Lyon'
+            )
+            SELECT prenom, nom
+            FROM [[3]];
+          blanks:
+            - ["WITH"]
+            - ["AS"]
+            - ["clients_lyon"]
+      - slug: sql-ex-cte-categories
+        kind: SQL
+        title: "Les catégories bien remplies"
+        difficulty: INTERMEDIAIRE
+        skill: sql-avance
+        statement: |
+          Avec une CTE nommée `produits_par_categorie` qui compte les produits de chaque **categorie_id**
+          (colonne `nb`), affiche les catégories qui ont **au moins 4 produits**, rangées par categorie_id.
+        criteria: "2 colonnes (categorie_id, nb), uniquement les catégories d'au moins 4 produits, triées par categorie_id."
+        hints:
+          - "Dans la CTE : `SELECT categorie_id, COUNT(*) AS nb FROM produits GROUP BY categorie_id`."
+          - "Dans la requête principale : `FROM produits_par_categorie WHERE nb >= 4`."
+          - "N'oublie pas `ORDER BY categorie_id`."
+        solution: |
+          WITH produits_par_categorie AS (
+            SELECT categorie_id, COUNT(*) AS nb
+            FROM produits
+            GROUP BY categorie_id
+          )
+          SELECT categorie_id, nb
+          FROM produits_par_categorie
+          WHERE nb >= 4
+          ORDER BY categorie_id;
+        explanation: "La CTE compte, la requête principale filtre : deux étapes lisibles."
+        xp: 20
+        payload:
+          mode: READ
+          ordered: true
+          requiredKeywords:
+            - pattern: "\\bwith\\b"
+              message: "Utilise une CTE (WITH produits_par_categorie AS (...))."
+
+  # ===================================================================== LEÇON 4
+  - slug: sql-fenetrage
+    title: "Classer sans regrouper : les fonctions de fenêtrage"
+    duration: 12
+    objective: "Numéroter ou classer des lignes avec ROW_NUMBER, RANK et OVER, sans les regrouper."
+    prerequisites: "Leçon « Découper en étapes : WITH (CTE) »."
+    skills: [sql-avance]
+    xp: 15
+    memo: |
+      - `ROW_NUMBER() OVER (ORDER BY prix DESC)` numérote les lignes 1, 2, 3… du plus cher au moins cher.
+      - `RANK()` donne le même rang aux ex æquo.
+      - `PARTITION BY categorie_id` recommence la numérotation **dans chaque catégorie**.
+      - Contrairement à GROUP BY, **toutes les lignes restent** affichées.
+    commonMistakes: |
+      - Filtrer un rang dans WHERE : impossible, il faut passer par une CTE.
+      - Confondre GROUP BY (une ligne par groupe) et OVER (toutes les lignes gardées).
+    blocks:
+      - type: text
+        md: |
+          « Le produit le plus cher **de chaque catégorie** » : il faut classer les produits, catégorie par
+          catégorie, en gardant chaque produit visible. C'est le rôle des **fonctions de fenêtrage**.
+      - type: definition
+        id: def-fonction-de-fenetrage-over
+        term: "Fonction de fenêtrage (OVER)"
+        md: |
+          Un **podium par épreuve** : chaque sportif garde sa ligne, et reçoit en plus sa place dans son
+          épreuve. `OVER (...)` dit comment ranger ; `PARTITION BY` dit « une épreuve par catégorie ».
+      - type: code
+        id: code-fenetrage
+        language: sql
+        title: "Classer les produits par prix dans chaque catégorie"
+        code: |
+          SELECT nom, categorie_id, prix,
+                 RANK() OVER (PARTITION BY categorie_id ORDER BY prix DESC) AS rang
+          FROM produits
+          WHERE categorie_id IS NOT NULL
+          ORDER BY categorie_id, rang;
+        lines:
+          - n: 2
+            note: "RANK classe du plus cher au moins cher, **en recommençant à 1 dans chaque catégorie** (PARTITION BY)."
+          - n: 5
+            note: "On affiche les catégories dans l'ordre, et les produits par rang."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis retire `PARTITION BY categorie_id` : le classement devient général."
+        language: sql
+        code: |
+          SELECT nom, categorie_id, prix,
+                 RANK() OVER (PARTITION BY categorie_id ORDER BY prix DESC) AS rang
+          FROM produits
+          WHERE categorie_id IS NOT NULL
+          ORDER BY categorie_id, rang;
+      - type: question
+        ref: sqlq-cte-3
+        review: def-fonction-de-fenetrage-over
+      - type: question
+        ref: sqlq-cte-2
+        review: code-fenetrage
+      - type: text
+        md: "Exercice guidé : complète le classement."
+      - type: exercise
+        ref: sql-ex-fenetre-guide
+      - type: text
+        md: "En autonomie : le top 2 de chaque catégorie (fenêtrage + CTE)."
+      - type: exercise
+        ref: sql-ex-top2-par-categorie
+      - type: quiz
+        items:
+          - ref: sql-c5l3-q2
+            review: def-fonction-de-fenetrage-over
+          - ref: sql-c5l3-q3
+            review: code-fenetrage
+          - ref: sql-c5l3-q4
+            review: def-fonction-de-fenetrage-over
+    questions:
+      - code: sqlq-cte-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-avance
+        prompt: Contrairement à GROUP BY, une fonction de fenêtrage garde toutes les lignes du résultat.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : chaque ligne reçoit en plus sa valeur (son rang).'
+          - label: Faux
+            correct: false
+            why: C'est la différence principale avec GROUP BY.
+        explanation: GROUP BY donne une ligne par groupe ; OVER ajoute une colonne à chaque ligne.
+      - code: sqlq-cte-2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
         skill: sql-avance
         prompt: Que fait `ROW_NUMBER() OVER (ORDER BY prix DESC)` ?
         choices:
           - label: Numérote les lignes 1, 2, 3… du plus cher au moins cher
             correct: true
-            why: 'Oui : un numéro unique par ligne.'
+            why: 'Oui : un numéro par ligne.'
           - label: Compte le nombre de produits
             correct: false
             why: Ce serait COUNT.
           - label: Regroupe les produits de même prix
             correct: false
             why: Aucune ligne n'est regroupée avec OVER.
-        explanation: Les fonctions de fenêtrage calculent sur un ensemble de lignes sans les fusionner.
-      - code: sqlq-cte-3
+        explanation: Les fonctions de fenêtrage classent sans fusionner les lignes.
+      - code: sql-c5l3-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: "Quelle différence entre `GROUP BY categorie_id` et `OVER (PARTITION BY categorie_id)` ?"
+        choices:
+          - label: "GROUP BY donne une ligne par catégorie ; OVER garde toutes les lignes"
+            correct: true
+            why: "La fenêtre ajoute une valeur sans fusionner les lignes."
+          - label: "Aucune, ce sont deux écritures de la même chose"
+            correct: false
+            why: "Le nombre de lignes du résultat n'est pas le même."
+          - label: "OVER est ancien et déconseillé"
+            correct: false
+            why: "Les fonctions de fenêtrage sont modernes et très utilisées."
+        explanation: "Avec OVER, tu vois chaque produit **et** son rang dans sa catégorie."
+      - code: sql-c5l3-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: "Deux produits ont exactement le même prix. Quelle fonction leur donne le **même** rang ?"
+        choices:
+          - label: "`RANK()`"
+            correct: true
+            why: "RANK donne le même rang aux ex æquo."
+          - label: "`ROW_NUMBER()`"
+            correct: false
+            why: "ROW_NUMBER donne toujours un numéro différent à chaque ligne."
+          - label: "`COUNT()`"
+            correct: false
+            why: "COUNT compte, il ne classe pas."
+        explanation: "ROW_NUMBER : un numéro unique par ligne. RANK : les ex æquo partagent leur rang."
+      - code: sql-c5l3-q4
         kind: VRAI_FAUX
         difficulty: 2
         skill: sql-avance
-        prompt: Contrairement à GROUP BY, une fonction de fenêtrage garde toutes les lignes du résultat.
+        prompt: "On peut écrire `WHERE RANK() OVER (ORDER BY prix DESC) <= 3` pour garder les 3 produits les plus chers."
         choices:
-          - label: Vrai
-            correct: true
-            why: 'Oui : chaque ligne reçoit sa valeur calculée.'
-          - label: Faux
+          - label: "Vrai"
             correct: false
-            why: C'est la différence principale avec GROUP BY.
-        explanation: GROUP BY réduit à une ligne par groupe ; OVER ajoute une colonne calculée à chaque ligne.
+            why: "Le rang est calculé après WHERE : il y est interdit."
+          - label: "Faux"
+            correct: true
+            why: "On calcule le rang dans une CTE, puis on filtre dessus."
+        explanation: "`WITH classement AS (SELECT ..., RANK() OVER (...) AS rang FROM ...) SELECT * FROM classement WHERE rang <= 3`."
     exercises:
+      - slug: sql-ex-fenetre-guide
+        kind: COMPLETER
+        title: "Compléter le classement"
+        difficulty: FACILE
+        skill: sql-avance
+        statement: "Complète pour numéroter les clients du plus récent au plus ancien."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "La numérotation : ROW_NUMBER()."
+          - "La fenêtre s'écrit avec OVER."
+          - "ROW_NUMBER, OVER."
+        solution: '["ROW_NUMBER", "OVER"]'
+        explanation: "`ROW_NUMBER() OVER (ORDER BY date_inscription DESC) AS numero`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            SELECT prenom, date_inscription,
+                   [[1]]() [[2]] (ORDER BY date_inscription DESC) AS numero
+            FROM clients;
+          blanks:
+            - ["ROW_NUMBER"]
+            - ["OVER"]
       - slug: sql-ex-top2-par-categorie
         kind: SQL
         title: "Les 2 produits les plus chers de chaque catégorie"
@@ -653,7 +825,7 @@ lessons:
           par rang. Utilise `ROW_NUMBER()` pour qu'il y ait exactement deux produits par catégorie.
         criteria: "4 colonnes, au plus 2 produits par catégorie, tri par categorie_id puis rang."
         hints:
-          - "Calcule d'abord le rang de chaque produit dans sa catégorie avec une fonction de fenêtrage, dans une CTE."
+          - "Calcule d'abord le rang de chaque produit dans sa catégorie, dans une CTE."
           - "`ROW_NUMBER() OVER (PARTITION BY categorie_id ORDER BY prix DESC) AS rang`"
           - "`WITH classement AS (...) SELECT categorie_id, nom, prix, rang FROM classement WHERE rang <= 2 ORDER BY categorie_id, rang;`"
         solution: |
@@ -669,7 +841,7 @@ lessons:
           ORDER BY categorie_id, rang;
         explanation: |
           La fenêtre numérote les produits de chaque catégorie du plus cher au moins cher. Comme on ne peut pas
-          filtrer une fonction de fenêtrage dans WHERE, on passe par la CTE `classement`, puis on garde les rangs 1 et 2.
+          filtrer un rang dans WHERE, on passe par la CTE `classement`, puis on garde les rangs 1 et 2.
         xp: 30
         payload:
           mode: READ
@@ -714,19 +886,6 @@ bank:
         correct: false
         why: "C'est autorisé, avec un alias (ici t)."
     explanation: "Agréger un agrégat nécessite deux niveaux : une sous-requête (ou une CTE), puis une seconde agrégation."
-  - code: sql-c5-b3
-    kind: VRAI_FAUX
-    difficulty: 1
-    skill: sql-avance
-    prompt: "Une CTE définie avec `WITH` n'existe que pendant l'exécution de la requête qui la suit."
-    choices:
-      - label: "Vrai"
-        correct: true
-        why: "La CTE est une table temporaire nommée, limitée à la requête."
-      - label: "Faux"
-        correct: false
-        why: "Pour une table durable, il faudrait CREATE TABLE (ou une vue avec CREATE VIEW)."
-    explanation: "WITH structure une requête ; CREATE VIEW enregistre une requête réutilisable dans la base."
   - code: sql-c5-b4
     kind: CHOIX_UNIQUE
     difficulty: 3

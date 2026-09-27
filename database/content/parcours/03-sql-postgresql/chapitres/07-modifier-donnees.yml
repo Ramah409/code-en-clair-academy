@@ -229,92 +229,84 @@ lessons:
 
   # ===================================================================== LEÇON 2
   - slug: sql-update-delete
-    title: "Modifier et supprimer : UPDATE et DELETE"
-    duration: 12
-    objective: "Mettre à jour et supprimer des lignes ciblées, sans jamais oublier le WHERE."
-    prerequisites: "INSERT et WHERE."
+    title: "Modifier des lignes : UPDATE"
+    duration: 10
+    objective: "Modifier des lignes existantes avec UPDATE … SET … WHERE, sans jamais oublier le WHERE."
+    prerequisites: "Leçon « Ajouter des lignes avec INSERT »."
     skills: [sql-dml]
     xp: 12
     memo: |
-      - `UPDATE table SET col = valeur WHERE condition;`
-      - `DELETE FROM table WHERE condition;`
-      - **Sans WHERE, toutes les lignes sont concernées.** Teste d'abord ta condition avec un SELECT.
-      - Une clé étrangère empêche de supprimer une ligne encore référencée (sauf `ON DELETE CASCADE`).
+      - `UPDATE table SET colonne = nouvelle_valeur WHERE condition;`
+      - Plusieurs colonnes : `SET ville = 'Lyon', email = 'awa@exemple.fr'`.
+      - **Sans WHERE, toutes les lignes sont modifiées.** Teste d'abord ta condition avec un SELECT.
     commonMistakes: |
-      - Oublier le WHERE : tous les prix passent à 0, tous les clients sont supprimés…
-      - Supprimer un client qui a des commandes → erreur 23503 (violation de clé étrangère).
-      - Confondre `DELETE` (lignes) et `DROP TABLE` (la table entière).
+      - Oublier le WHERE : tous les clients déménagent à Lyon !
+      - Oublier le mot SET.
     blocks:
       - type: text
         md: |
-          Un changement de prix, une adresse modifiée, un compte supprimé… Les données vivent. `UPDATE` modifie
-          des lignes existantes et `DELETE` en supprime. Ce sont les instructions les plus **dangereuses** du
-          SQL : un oubli de condition touche toute la table.
+          Une cliente déménage, une commande est expédiée… Les données changent. `UPDATE` **modifie** des
+          lignes qui existent déjà. C'est une instruction **à manier avec prudence** : un oubli de WHERE
+          touche toute la table.
+      - type: definition
+        id: def-update
+        term: "UPDATE"
+        md: |
+          Le **correcteur blanc** : tu choisis la ligne (WHERE), la case (la colonne), et tu écris la
+          nouvelle valeur (SET). Sans WHERE, tu repasses du blanc sur **toute la page**.
       - type: code
+        id: code-update
         language: sql
-        title: "Augmenter de 5 % les prix d'une catégorie"
+        title: "Une cliente déménage"
         code: |
-          UPDATE produits
-          SET prix = ROUND(prix * 1.05, 2)
-          WHERE categorie_id = 3;
+          UPDATE clients
+          SET ville = 'Nantes'
+          WHERE id = 4;
         lines:
           - n: 1
             note: "La table à modifier."
           - n: 2
-            note: "`SET` : la nouvelle valeur. Elle peut être calculée à partir de l'ancienne (`prix * 1.05`)."
+            note: "`SET` : la colonne et sa nouvelle valeur."
           - n: 3
-            note: "Seules les lignes de la catégorie 3 (Maison) sont modifiées. **Sans cette ligne, tout le catalogue augmenterait.**"
+            note: "Seule la cliente n°4 est concernée. **Sans cette ligne, tous les clients habiteraient à Nantes.**"
       - type: demo
-        title: "Démonstration : vérifier avant et après"
-        md: "Le premier SELECT montre les prix avant, le second après la mise à jour, dans la même transaction."
+        title: "Vérifier avant et après"
+        md: "Le premier SELECT montre la ville avant, le second après. Dans le bac à sable, rien n'est enregistré pour de vrai."
         language: sql
         code: |
-          SELECT id, nom, prix FROM produits WHERE categorie_id = 3;
-          UPDATE produits
-          SET prix = ROUND(prix * 1.05, 2)
-          WHERE categorie_id = 3;
-          SELECT id, nom, prix FROM produits WHERE categorie_id = 3;
+          SELECT id, prenom, ville FROM clients WHERE id = 4;
+          UPDATE clients
+          SET ville = 'Nantes'
+          WHERE id = 4;
+          SELECT id, prenom, ville FROM clients WHERE id = 4;
       - type: question
         ref: sql-c6l2-q1
+        review: code-update
       - type: steps
         title: "La méthode sûre, en entreprise comme à l'examen"
         items:
-          - "Écris d'abord un **SELECT** avec la condition prévue et vérifie les lignes renvoyées."
-          - "Remplace `SELECT ... FROM` par `UPDATE ... SET` ou `DELETE FROM`, **en gardant le même WHERE**."
-          - "Exécute dans une **transaction** (leçon suivante) pour pouvoir annuler."
-          - "Vérifie le nombre de lignes affectées annoncé par PostgreSQL."
-      - type: code
-        language: sql
-        title: "Supprimer des avis"
-        code: |
-          DELETE FROM avis
-          WHERE note <= 2;
-        lines:
-          - n: 1
-            note: "`DELETE FROM` : on supprime des lignes de la table avis."
-          - n: 2
-            note: "Seulement les avis dont la note est inférieure ou égale à 2."
-      - type: demo
-        title: "Démonstration : une suppression refusée"
-        md: "Essaie de supprimer la cliente n°1 : elle a des commandes, la clé étrangère de `commandes` l'interdit (erreur 23503)."
-        language: sql
-        code: |
-          DELETE FROM clients WHERE id = 1;
+          - "Écris d'abord un **SELECT** avec la condition prévue et regarde les lignes renvoyées."
+          - "Remplace `SELECT ... FROM` par `UPDATE ... SET`, **en gardant le même WHERE**."
+          - "Regarde le nombre de lignes modifiées annoncé par PostgreSQL."
       - type: question
-        ref: sql-c6l2-q2
-      - type: question
-        ref: sql-c6l2-q3
+        ref: sqlq-upd-1
+        review: def-update
+      - type: text
+        md: "Exercice guidé : complète la mise à jour."
+      - type: exercise
+        ref: sql-ex-update-guide
+      - type: text
+        md: "En autonomie : le réassort des produits en rupture."
       - type: exercise
         ref: sql-ex-update-stock
-      - type: question
-        ref: sql-c6l2-q4
-      - type: exercise
-        ref: sql-ex-delete-commandes-annulees
       - type: quiz
         items:
-          - ref: sqlq-upd-1
+          - ref: sql-c6l2-q4
+            review: code-update
           - ref: sqlq-upd-2
-          - ref: sqlq-upd-3
+            review: def-update
+          - ref: sql-p21-q5
+            review: def-update
     questions:
       - code: sql-c6l2-q1
         kind: CHOIX_UNIQUE
@@ -324,46 +316,30 @@ lessons:
         choices:
           - label: "Met le stock de **tous** les produits à 0"
             correct: true
-            why: "Sans WHERE, toutes les lignes de la table sont modifiées."
+            why: "Sans WHERE, toutes les lignes sont modifiées."
           - label: "Rien, car il manque le WHERE"
             correct: false
             why: "Le WHERE est facultatif : son absence ne provoque aucune erreur."
-          - label: "Supprime les produits en stock"
+          - label: "Supprime les produits"
             correct: false
             why: "UPDATE modifie, il ne supprime pas."
-        explanation: "C'est l'erreur la plus coûteuse en production. Écris toujours ton WHERE **avant** le SET dans ta tête… et teste-le avec un SELECT."
-      - code: sql-c6l2-q2
-        kind: RESULTAT_CODE
-        difficulty: 2
-        skill: sql-dml
-        prompt: "La cliente n°1 a passé des commandes. Que se passe-t-il ?"
-        snippet: |
-          DELETE FROM clients WHERE id = 1;
-        language: sql
-        choices:
-          - label: "Erreur de clé étrangère : des commandes la référencent encore"
-            correct: true
-            why: "La base protège la cohérence : une commande ne peut pas pointer vers un client inexistant."
-          - label: "La cliente et toutes ses commandes sont supprimées"
-            correct: false
-            why: "Ce serait le cas uniquement avec ON DELETE CASCADE sur la clé étrangère."
-          - label: "La cliente est supprimée, ses commandes gardent un client_id orphelin"
-            correct: false
-            why: "C'est justement ce qu'empêche l'intégrité référentielle."
-        explanation: "Le comportement à la suppression se choisit à la conception : RESTRICT (par défaut), CASCADE, SET NULL…"
-      - code: sql-c6l2-q3
-        kind: VRAI_FAUX
+        explanation: "C'est l'erreur la plus grave en production : teste toujours ton WHERE avec un SELECT d'abord."
+      - code: sqlq-upd-1
+        kind: CHOIX_UNIQUE
         difficulty: 1
         skill: sql-dml
-        prompt: "`DELETE FROM avis;` supprime la table avis de la base."
+        prompt: Quel est le réflexe à avoir avant un UPDATE ?
         choices:
-          - label: "Vrai"
-            correct: false
-            why: "DELETE supprime les lignes ; la table (vide) existe toujours."
-          - label: "Faux"
+          - label: Écrire le WHERE et le tester d'abord avec un SELECT
             correct: true
-            why: "Pour supprimer la table elle-même, il faut DROP TABLE."
-        explanation: "DELETE = données (DML) ; DROP = structure (DDL)."
+            why: 'Oui : on voit exactement les lignes touchées.'
+          - label: Supprimer les contraintes
+            correct: false
+            why: 'Surtout pas : elles protègent les données.'
+          - label: Ne jamais utiliser de WHERE
+            correct: false
+            why: Sans WHERE, toutes les lignes sont touchées.
+        explanation: Un SELECT avec le même WHERE, puis l'UPDATE.
       - code: sql-c6l2-q4
         kind: COMPLETER_CODE
         difficulty: 1
@@ -375,57 +351,65 @@ lessons:
           WHERE id = 36;
         language: sql
         answers: ["SET"]
-        explanation: "`SET colonne = valeur` ; plusieurs colonnes se séparent par des virgules : `SET a = 1, b = 2`."
-      - code: sqlq-upd-1
+        explanation: "`SET colonne = valeur` ; plusieurs colonnes se séparent par des virgules."
+      - code: sqlq-upd-2
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: sql-dml
-        prompt: Quel est le réflexe à avoir avant un UPDATE ou un DELETE ?
+        prompt: Quelle requête change l'e-mail du client n°7 ?
         choices:
-          - label: Écrire le WHERE et le tester d'abord avec un SELECT
+          - label: "`UPDATE clients SET email = 'nouveau@exemple.fr' WHERE id = 7;`"
             correct: true
-            why: 'Oui : on voit exactement les lignes touchées.'
-          - label: Supprimer les contraintes
+            why: Table, SET, nouvelle valeur, WHERE.
+          - label: "`UPDATE clients email = 'nouveau@exemple.fr' WHERE id = 7;`"
             correct: false
-            why: 'Surtout pas : elles protègent les données.'
-          - label: Ne jamais utiliser de WHERE
+            why: Il manque le mot SET.
+          - label: "`UPDATE clients SET email = 'nouveau@exemple.fr';`"
             correct: false
-            why: Sans WHERE, toutes les lignes sont touchées.
-        explanation: SELECT avec le même WHERE, puis UPDATE/DELETE, idéalement dans une transaction.
-      - code: sqlq-upd-2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: sql-dml
-        prompt: Quelle requête augmente de 10 % le prix des produits de la catégorie 2 ?
-        choices:
-          - label: '`UPDATE produits SET prix = prix * 1.10 WHERE categorie_id = 2;`'
-            correct: true
-            why: Oui.
-          - label: '`UPDATE produits SET prix = 10% WHERE categorie_id = 2;`'
-            correct: false
-            why: Le prix deviendrait une valeur fixe (et `10%` n'est pas valide).
-          - label: '`UPDATE produits prix + 10 WHERE categorie_id = 2;`'
-            correct: false
-            why: Il manque SET, et +10 ajoute 10 €, pas 10 %.
-        explanation: SET colonne = expression, qui peut utiliser l'ancienne valeur.
-      - code: sqlq-upd-3
+            why: Sans WHERE, tous les clients auraient le même e-mail.
+        explanation: "`UPDATE table SET colonne = valeur WHERE condition;`"
+      - code: sql-p21-q5
         kind: VRAI_FAUX
-        difficulty: 2
+        difficulty: 1
         skill: sql-dml
-        prompt: Une clé étrangère peut empêcher un DELETE.
+        prompt: "UPDATE peut modifier plusieurs colonnes en une seule instruction."
         choices:
-          - label: Vrai
+          - label: "Vrai"
             correct: true
-            why: 'Oui : on ne supprime pas une ligne encore référencée (par défaut).'
-          - label: Faux
+            why: "`SET ville = 'Lyon', email = '...'` : on sépare par des virgules."
+          - label: "Faux"
             correct: false
-            why: La contrainte protège l'intégrité référentielle.
-        explanation: 'Erreur 23503 : la ligne est encore utilisée ailleurs.'
+            why: "Un seul SET suffit pour plusieurs colonnes."
+        explanation: "Plusieurs `colonne = valeur`, séparés par des virgules, après un seul SET."
     exercises:
+      - slug: sql-ex-update-guide
+        kind: COMPLETER
+        title: "Compléter la mise à jour"
+        difficulty: FACILE
+        skill: sql-dml
+        statement: "Complète pour passer la commande n°12 au statut LIVREE."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Modifier une ligne : UPDATE."
+          - "La nouvelle valeur s'écrit après SET."
+          - "UPDATE, SET, WHERE."
+        solution: '["UPDATE", "SET", "WHERE"]'
+        explanation: "`UPDATE commandes SET statut = 'LIVREE' WHERE id = 12;`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            [[1]] commandes
+            [[2]] statut = 'LIVREE'
+            [[3]] id = 12;
+          blanks:
+            - ["UPDATE"]
+            - ["SET"]
+            - ["WHERE"]
       - slug: sql-ex-update-stock
         kind: SQL
         title: "Réassort des produits en rupture"
-        difficulty: INTERMEDIAIRE
+        difficulty: FACILE
         skill: sql-dml
         statement: |
           Une livraison vient d'arriver : **tous les produits en rupture** (stock égal à 0) passent à un stock
@@ -440,12 +424,182 @@ lessons:
           SET stock = 20
           WHERE stock = 0;
         explanation: |
-          Le WHERE limite la mise à jour aux 3 produits en rupture. La vérification relit le stock de tous les
+          Le WHERE limite la mise à jour aux produits en rupture. La vérification relit le stock de tous les
           produits : si un autre stock avait changé (WHERE oublié), l'écart serait détecté.
         xp: 15
         payload:
           mode: WRITE
           check: "SELECT id, stock FROM produits ORDER BY id"
+
+  # ===================================================================== LEÇON 3
+  - slug: sql-delete
+    title: "Supprimer des lignes : DELETE"
+    duration: 10
+    objective: "Supprimer des lignes ciblées avec DELETE FROM … WHERE, et comprendre pourquoi une clé étrangère peut refuser une suppression."
+    prerequisites: "Leçon « Modifier des lignes : UPDATE »."
+    skills: [sql-dml]
+    xp: 12
+    memo: |
+      - `DELETE FROM table WHERE condition;`
+      - **Sans WHERE, toutes les lignes sont supprimées.**
+      - Une ligne encore utilisée ailleurs (clé étrangère) ne peut pas être supprimée : on supprime d'abord les « enfants ».
+      - DELETE vide des lignes ; la table, elle, existe toujours.
+    commonMistakes: |
+      - Oublier le WHERE.
+      - Supprimer un client qui a des commandes → erreur 23503.
+    blocks:
+      - type: text
+        md: |
+          Un compte fermé, un avis indésirable… `DELETE` **supprime** des lignes. Même prudence qu'avec
+          UPDATE : le WHERE décide de ce qui disparaît.
+      - type: definition
+        id: def-delete
+        term: "DELETE"
+        md: |
+          La **gomme** : tu effaces les lignes choisies par le WHERE. Sans WHERE, tu effaces **toute la page** —
+          mais la page (la table) reste là, vide.
+      - type: code
+        id: code-delete
+        language: sql
+        title: "Supprimer les avis très négatifs"
+        code: |
+          DELETE FROM avis
+          WHERE note = 1;
+        lines:
+          - n: 1
+            note: "`DELETE FROM` : on supprime des lignes de la table avis."
+          - n: 2
+            note: "Seulement les avis dont la note vaut 1."
+      - type: demo
+        title: "Une suppression refusée"
+        md: "Essaie de supprimer la cliente n°1 : elle a des commandes, la base refuse (erreur 23503). Une commande ne peut pas pointer vers une cliente qui n'existe plus."
+        language: sql
+        code: |
+          DELETE FROM clients WHERE id = 1;
+      - type: question
+        ref: sql-c6l2-q2
+        review: code-delete
+      - type: question
+        ref: sql-p22-q2
+        review: def-delete
+      - type: text
+        md: "Exercice guidé : complète la suppression."
+      - type: exercise
+        ref: sql-ex-delete-guide
+      - type: text
+        md: "En autonomie : purger les commandes annulées (enfants d'abord, parents ensuite)."
+      - type: exercise
+        ref: sql-ex-delete-commandes-annulees
+      - type: quiz
+        items:
+          - ref: sql-c6l2-q3
+            review: def-delete
+          - ref: sqlq-upd-3
+            review: code-delete
+          - ref: sql-p22-q5
+            review: def-delete
+    questions:
+      - code: sql-c6l2-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-dml
+        prompt: "La cliente n°1 a passé des commandes. Que se passe-t-il ?"
+        snippet: |
+          DELETE FROM clients WHERE id = 1;
+        language: sql
+        choices:
+          - label: "Une erreur : des commandes utilisent encore cette cliente"
+            correct: true
+            why: "La base protège la cohérence : une commande ne peut pas pointer vers une cliente inexistante."
+          - label: "La cliente et toutes ses commandes sont supprimées"
+            correct: false
+            why: "Il faudrait l'avoir prévu à la création de la table (ON DELETE CASCADE)."
+          - label: "La cliente est supprimée, ses commandes restent sans cliente"
+            correct: false
+            why: "C'est justement ce que la base empêche."
+        explanation: "On supprime d'abord les lignes qui dépendent de la cliente, ou on garde la cliente."
+      - code: sql-p22-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-dml
+        prompt: "Quelle instruction supprime les commandes annulées ?"
+        choices:
+          - label: "`DELETE FROM commandes WHERE statut = 'ANNULEE';`"
+            correct: true
+            why: "DELETE FROM, la table, puis le WHERE."
+          - label: "`DELETE commandes statut = 'ANNULEE';`"
+            correct: false
+            why: "Il manque FROM et WHERE."
+          - label: "`DELETE FROM commandes;`"
+            correct: false
+            why: "Sans WHERE, toutes les commandes seraient supprimées."
+        explanation: "`DELETE FROM table WHERE condition;`"
+      - code: sql-c6l2-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-dml
+        prompt: "`DELETE FROM avis;` supprime la table avis de la base."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "DELETE supprime les lignes ; la table, vide, existe toujours."
+          - label: "Faux"
+            correct: true
+            why: "Pour supprimer la table elle-même, il faut une autre instruction (DROP TABLE, chapitre 8)."
+        explanation: "DELETE = les données ; la structure de la table reste."
+      - code: sqlq-upd-3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-dml
+        prompt: Une clé étrangère peut empêcher un DELETE.
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : on ne supprime pas une ligne encore utilisée ailleurs.'
+          - label: Faux
+            correct: false
+            why: La clé étrangère protège la cohérence des données.
+        explanation: 'Erreur 23503 : la ligne est encore utilisée ailleurs.'
+      - code: sql-p22-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-dml
+        prompt: "Pour supprimer une commande et ses lignes de commande, dans quel ordre faut-il faire ?"
+        choices:
+          - label: "D'abord les lignes de commande, ensuite la commande"
+            correct: true
+            why: "Les lignes dépendent de la commande : on supprime les « enfants » avant le « parent »."
+          - label: "D'abord la commande, ensuite ses lignes"
+            correct: false
+            why: "La base refuserait : les lignes utilisent encore la commande."
+          - label: "L'ordre n'a pas d'importance"
+            correct: false
+            why: "Avec une clé étrangère, l'ordre compte."
+        explanation: "Enfants d'abord, parents ensuite."
+    exercises:
+      - slug: sql-ex-delete-guide
+        kind: COMPLETER
+        title: "Compléter la suppression"
+        difficulty: FACILE
+        skill: sql-dml
+        statement: "Complète pour supprimer les avis dont la note vaut 1."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Supprimer : DELETE FROM."
+          - "Ne pas oublier le filtre."
+          - "DELETE, FROM, WHERE."
+        solution: '["DELETE", "FROM", "WHERE"]'
+        explanation: "`DELETE FROM avis WHERE note = 1;`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            [[1]] [[2]] avis
+            [[3]] note = 1;
+          blanks:
+            - ["DELETE"]
+            - ["FROM"]
+            - ["WHERE"]
       - slug: sql-ex-delete-commandes-annulees
         kind: SQL
         title: "Purger les commandes annulées"
@@ -453,11 +607,11 @@ lessons:
         skill: sql-dml
         statement: |
           On veut supprimer les **commandes annulées**. Attention : leurs **lignes de commande** les
-          référencent. Écris les instructions nécessaires, **dans le bon ordre**, pour supprimer d'abord ces
-          lignes, puis les commandes annulées elles-mêmes.
+          utilisent. Écris les instructions nécessaires, **dans le bon ordre** : d'abord ces lignes, puis
+          les commandes annulées elles-mêmes.
         criteria: "Plus aucune commande ANNULEE ni aucune ligne de commande qui leur appartenait ; le reste est intact."
         hints:
-          - "Deux instructions DELETE sont nécessaires, séparées par un point-virgule."
+          - "Deux instructions DELETE, séparées par un point-virgule."
           - "Commence par `lignes_commande`, en ciblant les commandes annulées grâce à une sous-requête."
           - "`DELETE FROM lignes_commande WHERE commande_id IN (SELECT id FROM commandes WHERE statut = 'ANNULEE');` puis `DELETE FROM commandes WHERE statut = 'ANNULEE';`"
         solution: |
@@ -466,14 +620,14 @@ lessons:
           DELETE FROM commandes
           WHERE statut = 'ANNULEE';
         explanation: |
-          Les lignes de commande dépendent des commandes (clé étrangère) : on supprime d'abord les « enfants »,
-          puis les « parents ». Dans l'autre ordre, PostgreSQL refuserait la suppression (erreur 23503).
+          Les lignes de commande dépendent des commandes : on supprime d'abord les « enfants », puis les
+          « parents ». Dans l'autre ordre, PostgreSQL refuserait (erreur 23503).
         xp: 25
         payload:
           mode: WRITE
           check: "SELECT (SELECT count(*) FROM commandes) AS commandes, (SELECT count(*) FROM lignes_commande) AS lignes, (SELECT count(*) FROM commandes WHERE statut = 'ANNULEE') AS annulees"
 
-  # ===================================================================== LEÇON 3
+  # ===================================================================== LEÇON 4
   - slug: sql-transactions
     title: "Les transactions : tout ou rien"
     duration: 10
@@ -694,7 +848,7 @@ bank:
     skill: sql-dml
     prompt: "La catégorie 3 contient 3 produits. Que signale PostgreSQL après cette instruction ?"
     snippet: |
-      UPDATE produits SET prix = prix + 1 WHERE categorie_id = 3;
+      UPDATE produits SET stock = 50 WHERE categorie_id = 3;
     language: sql
     choices:
       - label: "UPDATE 3"

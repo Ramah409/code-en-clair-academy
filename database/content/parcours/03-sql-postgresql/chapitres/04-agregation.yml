@@ -2,79 +2,67 @@ slug: agregation
 position: 4
 level: INTERMEDIAIRE
 title: "Agréger et regrouper"
-summary: "Compter, additionner, faire des moyennes, regrouper les lignes par catégorie et filtrer les groupes : les requêtes des tableaux de bord."
+summary: "Compter, trouver le plus petit et le plus grand, laisser la base faire les totaux, puis regrouper les lignes et filtrer les groupes. Une notion par leçon."
 quizQuestionCount: 15
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: sql-fonctions-agregat
-    title: "Les fonctions d'agrégat : COUNT, SUM, AVG, MIN, MAX"
-    duration: 10
-    objective: "Résumer toute une table en une valeur : nombre de lignes, total, moyenne, minimum et maximum."
-    prerequisites: "SELECT, WHERE et NULL (chapitres 1 et 2)."
+    title: "Compter les lignes : COUNT"
+    duration: 9
+    objective: "Compter des lignes avec COUNT(*), compter les valeurs renseignées avec COUNT(colonne) et les valeurs différentes avec COUNT(DISTINCT colonne)."
+    prerequisites: "Chapitre « Filtres pratiques » (NULL et DISTINCT)."
     skills: [sql-agregation]
-    xp: 12
+    xp: 10
     memo: |
-      - `COUNT(*)` compte les **lignes** ; `COUNT(col)` compte les valeurs **non NULL** de la colonne.
-      - `SUM`, `AVG`, `MIN`, `MAX` ignorent les NULL.
-      - `COUNT(DISTINCT col)` compte les valeurs différentes.
-      - Un agrégat sans GROUP BY renvoie **une seule ligne**.
+      - `COUNT(*)` compte les **lignes**.
+      - `COUNT(ville)` compte seulement les lignes où la ville est **renseignée** (pas NULL).
+      - `COUNT(DISTINCT ville)` compte les villes **différentes**.
+      - Tu n'as rien à calculer : c'est PostgreSQL qui compte et affiche le nombre.
+      - Sans autre chose dans le SELECT, le résultat tient en **une seule ligne**.
     commonMistakes: |
-      - Confondre `COUNT(*)` et `COUNT(colonne)` quand la colonne contient des NULL.
-      - Mélanger une colonne simple et un agrégat sans GROUP BY : `SELECT nom, MAX(prix)` provoque une erreur.
-      - Oublier d'arrondir une moyenne : `AVG` renvoie beaucoup de décimales.
+      - Confondre `COUNT(*)` (toutes les lignes) et `COUNT(colonne)` (les cases remplies).
+      - Écrire `SELECT nom, COUNT(*) FROM produits;` : on ne mélange pas une colonne simple et un comptage (tu verras pourquoi avec GROUP BY).
     blocks:
       - type: text
         md: |
-          Un tableau de bord n'affiche pas 40 commandes une par une : il affiche **« 40 commandes, 3 550 €
-          de chiffre d'affaires, panier moyen de 88 € »**. Ces valeurs de synthèse s'obtiennent avec les
-          **fonctions d'agrégat**, qui transforment plusieurs lignes en une seule valeur.
+          « Combien de clients avons-nous ? » On ne va pas les compter à la main sur l'écran : on demande
+          à la base de **compter pour nous**, avec `COUNT`.
       - type: definition
         id: def-fonction-d-agregat
-        term: "Fonction d'agrégat"
-        md: "Fonction qui prend **un ensemble de lignes** et renvoie **une valeur** : `COUNT` (nombre), `SUM` (somme), `AVG` (moyenne), `MIN` et `MAX`."
+        term: "COUNT (compter)"
+        md: |
+          Un **compteur à l'entrée d'un magasin** : il ne retient pas qui est entré, seulement **combien**.
+          `COUNT` résume plusieurs lignes en **un seul nombre**.
       - type: code
+        id: code-count
         language: sql
-        title: "Le résumé du catalogue en une requête"
+        title: "Combien de produits dans le catalogue ?"
         code: |
-          SELECT COUNT(*)            AS nb_produits,
-                 MIN(prix)           AS prix_min,
-                 MAX(prix)           AS prix_max,
-                 ROUND(AVG(prix), 2) AS prix_moyen,
-                 SUM(stock)          AS stock_total
+          SELECT COUNT(*) AS nb_produits
           FROM produits;
         lines:
           - n: 1
-            note: "`COUNT(*)` compte toutes les lignes de la table, quelles que soient leurs valeurs."
-          - n: 2
-            note: "Le plus petit prix du catalogue."
-          - n: 3
-            note: "Le plus grand prix."
-          - n: 4
-            note: "La moyenne des prix, arrondie à deux décimales pour rester lisible."
-          - n: 5
-            note: "La somme des stocks de tous les produits."
-          - n: 6
-            note: "Sans GROUP BY, toute la table forme un seul groupe : le résultat tient en **une ligne**."
+            note: "`COUNT(*)` compte toutes les lignes. `AS nb_produits` donne un nom clair au résultat."
       - type: demo
-        title: "Démonstration"
-        md: "Ajoute `WHERE categorie_id = 1` pour obtenir le même résumé pour les seuls livres."
+        title: "Essaie"
+        md: "Exécute, puis ajoute `WHERE categorie_id = 1` : tu obtiens le nombre de livres."
         language: sql
         code: |
-          SELECT COUNT(*)            AS nb_produits,
-                 MIN(prix)           AS prix_min,
-                 MAX(prix)           AS prix_max,
-                 ROUND(AVG(prix), 2) AS prix_moyen,
-                 SUM(stock)          AS stock_total
+          SELECT COUNT(*) AS nb_produits
           FROM produits;
       - type: question
-        ref: sql-c3l1-q1
-      - type: text
+        ref: sqlq-agg-1
+        review: def-fonction-d-agregat
+      - type: definition
+        id: def-count-colonne
+        term: "COUNT(*) ou COUNT(colonne) ?"
         md: |
-          **COUNT(*) ou COUNT(colonne) ?** La différence apparaît avec les NULL :
+          `COUNT(*)` compte **toutes les lignes**. `COUNT(ville)` saute les cases vides (NULL) : il compte
+          les clients **qui ont une ville**. `COUNT(DISTINCT ville)` compte les villes **différentes**.
       - type: demo
-        title: "Démonstration : trois façons de compter"
-        md: "25 clients, dont 3 sans ville renseignée, répartis dans 9 villes différentes."
+        title: "Trois façons de compter"
+        md: "Compare les trois colonnes : tous les clients, ceux qui ont une ville, les villes différentes."
         language: sql
         code: |
           SELECT COUNT(*)              AS clients,
@@ -82,19 +70,216 @@ lessons:
                  COUNT(DISTINCT ville) AS villes_differentes
           FROM clients;
       - type: question
-        ref: sql-c3l1-q2
-      - type: question
-        ref: sql-c3l1-q3
+        ref: sqlq-agg-2
+        review: def-count-colonne
+      - type: text
+        md: "Exercice guidé : complète le comptage."
       - type: exercise
-        ref: sql-ex-stats-avis
-      - type: question
-        ref: sql-c3l1-q4
+        ref: sql-ex-count-guide
+      - type: text
+        md: "En autonomie : combien de commandes livrées ?"
+      - type: exercise
+        ref: sql-ex-count-livrees
       - type: quiz
         items:
-          - ref: sqlq-agg-1
-            review: def-fonction-d-agregat
-          - ref: sqlq-agg-2
-          - ref: sqlq-agg-3
+          - ref: sql-c3l1-q2
+            review: def-count-colonne
+          - ref: sql-c3l1-q4
+            review: def-count-colonne
+          - ref: sql-p17-q5
+            review: code-count
+    questions:
+      - code: sqlq-agg-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-agregation
+        prompt: Combien de lignes renvoie `SELECT COUNT(*) FROM produits;` ?
+        choices:
+          - label: Une seule ligne, qui contient le nombre de produits
+            correct: true
+            why: "Oui : COUNT résume toutes les lignes en un seul nombre."
+          - label: Une ligne par produit
+            correct: false
+            why: COUNT regroupe toutes les lignes.
+          - label: Aucune
+            correct: false
+            why: Même sur une table vide, COUNT renvoie une ligne (avec 0).
+        explanation: COUNT résume toute la table en un seul résultat.
+      - code: sqlq-agg-2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: Quelle différence entre `COUNT(*)` et `COUNT(commentaire)` ?
+        choices:
+          - label: COUNT(commentaire) ne compte pas les lignes où commentaire est NULL
+            correct: true
+            why: Oui.
+          - label: Aucune
+            correct: false
+            why: Elles diffèrent dès qu'il y a des cases vides.
+          - label: COUNT(*) saute les NULL
+            correct: false
+            why: "C'est l'inverse : COUNT(*) compte toutes les lignes."
+        explanation: COUNT(*) compte les lignes ; COUNT(colonne) compte les cases remplies.
+      - code: sql-c3l1-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "Certains avis n'ont pas de commentaire. Que montrent les deux colonnes ?"
+        snippet: |
+          SELECT COUNT(*), COUNT(commentaire)
+          FROM avis;
+        language: sql
+        choices:
+          - label: "Le nombre de tous les avis, puis le nombre d'avis qui ont un commentaire"
+            correct: true
+            why: "COUNT(*) compte toutes les lignes ; COUNT(commentaire) saute les cases vides."
+          - label: "Deux fois le même nombre"
+            correct: false
+            why: "COUNT(colonne) ne compte pas les NULL : les deux nombres diffèrent."
+          - label: "Le nombre d'avis sans commentaire, deux fois"
+            correct: false
+            why: "COUNT(*) compte toutes les lignes, avec ou sans commentaire."
+        explanation: "`COUNT(*)` = toutes les lignes ; `COUNT(col)` = les lignes où col est renseignée."
+      - code: sql-c3l1-q4
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-agregation
+        prompt: "Complète pour compter les **villes différentes** où habitent les clients."
+        snippet: |
+          SELECT COUNT(____ ville) AS nb_villes
+          FROM clients;
+        language: sql
+        answers: ["DISTINCT"]
+        explanation: "`COUNT(DISTINCT col)` compte les valeurs différentes (DISTINCT, vu au chapitre 3)."
+      - code: sql-p17-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-agregation
+        prompt: "Avec COUNT, c'est PostgreSQL qui compte les lignes : tu n'as rien à calculer."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Tu écris la question, la base donne la réponse."
+          - label: "Faux"
+            correct: false
+            why: "COUNT fait tout le travail."
+        explanation: "Ton rôle : choisir quoi compter (`*`, une colonne, `DISTINCT`) et filtrer avec WHERE."
+    exercises:
+      - slug: sql-ex-count-guide
+        kind: COMPLETER
+        title: "Compléter le comptage"
+        difficulty: FACILE
+        skill: sql-agregation
+        statement: "Complète pour compter les clients qui habitent à Lyon."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Compter des lignes : COUNT(*)."
+          - "On nomme le résultat avec AS."
+          - "COUNT, AS, WHERE."
+        solution: '["COUNT", "AS", "WHERE"]'
+        explanation: "`SELECT COUNT(*) AS nb_clients FROM clients WHERE ville = 'Lyon';`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            SELECT [[1]](*) [[2]] nb_clients
+            FROM clients
+            [[3]] ville = 'Lyon';
+          blanks:
+            - ["COUNT"]
+            - ["AS"]
+            - ["WHERE"]
+      - slug: sql-ex-count-livrees
+        kind: SQL
+        title: "Combien de commandes livrées ?"
+        difficulty: FACILE
+        skill: sql-agregation
+        statement: |
+          Affiche, dans une colonne nommée `nb_livrees`, le **nombre de commandes** dont le statut est `'LIVREE'`.
+        criteria: "Une ligne, une colonne nb_livrees."
+        hints:
+          - "On filtre d'abord avec WHERE, puis on compte."
+          - "`COUNT(*) AS nb_livrees`"
+          - "`SELECT COUNT(*) AS nb_livrees FROM commandes WHERE statut = 'LIVREE';`"
+        solution: |
+          SELECT COUNT(*) AS nb_livrees
+          FROM commandes
+          WHERE statut = 'LIVREE';
+        explanation: "WHERE garde les commandes livrées, COUNT les compte."
+        xp: 10
+        payload:
+          mode: READ
+
+  # ===================================================================== LEÇON 2
+  - slug: sql-min-max
+    title: "Le plus petit et le plus grand : MIN et MAX"
+    duration: 8
+    objective: "Trouver la plus petite et la plus grande valeur d'une colonne avec MIN et MAX."
+    prerequisites: "Leçon « Compter les lignes : COUNT »."
+    skills: [sql-agregation]
+    xp: 10
+    memo: |
+      - `MIN(prix)` : le plus petit prix. `MAX(prix)` : le plus grand.
+      - Pour une date : `MIN` = la plus ancienne, `MAX` = la plus récente.
+      - Pour un texte : `MIN` = le premier dans l'ordre alphabétique.
+      - Les cases vides (NULL) sont ignorées.
+    commonMistakes: |
+      - Écrire `WHERE prix = MAX` : MAX est une fonction, elle s'écrit avec des parenthèses dans le SELECT.
+    blocks:
+      - type: text
+        md: |
+          « Quelle est notre commande la plus ancienne ? la plus récente ? » `MIN` et `MAX` répondent
+          directement, sans trier toute la table.
+      - type: definition
+        id: def-min-max
+        term: "MIN et MAX"
+        md: |
+          Les **deux bouts d'une file rangée** : MIN donne le premier (le plus petit, le plus ancien),
+          MAX donne le dernier (le plus grand, le plus récent).
+      - type: code
+        id: code-min-max
+        language: sql
+        title: "La première et la dernière commande"
+        code: |
+          SELECT MIN(date_commande) AS premiere,
+                 MAX(date_commande) AS derniere
+          FROM commandes;
+        lines:
+          - n: 1
+            note: "La date la plus ancienne."
+          - n: 2
+            note: "La date la plus récente. Le résultat tient en une ligne."
+      - type: demo
+        title: "Essaie"
+        md: "Remplace `date_commande` par `prix` et `commandes` par `produits`."
+        language: sql
+        code: |
+          SELECT MIN(date_commande) AS premiere,
+                 MAX(date_commande) AS derniere
+          FROM commandes;
+      - type: question
+        ref: sql-c3l1-q1
+        review: def-min-max
+      - type: question
+        ref: sql-p18-q2
+        review: code-min-max
+      - type: text
+        md: "Exercice guidé : complète MIN et MAX."
+      - type: exercise
+        ref: sql-ex-minmax-guide
+      - type: text
+        md: "En autonomie : les inscriptions extrêmes."
+      - type: exercise
+        ref: sql-ex-inscriptions-extremes
+      - type: quiz
+        items:
+          - ref: sql-p18-q3
+            review: def-min-max
+          - ref: sql-p18-q4
+            review: def-min-max
+          - ref: sql-p18-q5
+            review: code-min-max
     questions:
       - code: sql-c3l1-q1
         kind: CHOIX_UNIQUE
@@ -107,118 +292,298 @@ lessons:
             why: "MAX renvoie la plus grande valeur de la colonne."
           - label: "`SELECT prix FROM produits WHERE prix = MAX;`"
             correct: false
-            why: "MAX est une fonction, elle s'utilise avec des parenthèses et pas dans WHERE."
+            why: "MAX est une fonction : elle s'écrit avec des parenthèses, dans le SELECT."
           - label: "`SELECT COUNT(prix) FROM produits;`"
             correct: false
-            why: "COUNT compte les valeurs, il ne cherche pas la plus grande."
-        explanation: "`MAX(colonne)` et `MIN(colonne)` donnent directement les extrêmes. Pour afficher aussi le nom du produit, il faudra `ORDER BY prix DESC LIMIT 1` ou une sous-requête."
-      - code: sql-c3l1-q2
-        kind: RESULTAT_CODE
-        difficulty: 2
+            why: "COUNT compte, il ne cherche pas la plus grande valeur."
+        explanation: "Pour afficher aussi le nom du produit : `ORDER BY prix DESC LIMIT 1` (chapitre 2)."
+      - code: sql-p18-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
         skill: sql-agregation
-        prompt: "La table `avis` contient 26 avis, dont 3 sans commentaire. Que renvoie cette requête ?"
-        snippet: |
-          SELECT COUNT(*), COUNT(commentaire)
-          FROM avis;
-        language: sql
+        prompt: "Sur une colonne de dates, que donne `MIN(date_inscription)` ?"
         choices:
-          - label: "26 et 23"
+          - label: "La date d'inscription la plus ancienne"
             correct: true
-            why: "COUNT(*) compte toutes les lignes ; COUNT(commentaire) ignore les 3 NULL."
-          - label: "26 et 26"
+            why: "Pour une date, le plus petit = le plus tôt."
+          - label: "La date la plus récente"
             correct: false
-            why: "COUNT(colonne) ne compte pas les NULL."
-          - label: "23 et 23"
+            why: "Ce serait MAX."
+          - label: "Le nombre d'inscriptions"
             correct: false
-            why: "COUNT(*) compte les lignes, même si certaines colonnes sont NULL."
-        explanation: "Retiens : `COUNT(*)` = nombre de lignes ; `COUNT(col)` = nombre de valeurs **renseignées** dans col."
-      - code: sql-c3l1-q3
-        kind: VRAI_FAUX
-        difficulty: 2
+            why: "Ce serait COUNT."
+        explanation: "MIN = la plus ancienne, MAX = la plus récente."
+      - code: sql-p18-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
         skill: sql-agregation
-        prompt: "`AVG(note)` compte une note NULL comme un zéro dans le calcul de la moyenne."
+        prompt: "Quelle fonction donne la plus grande valeur d'une colonne ?"
+        choices:
+          - label: "`MAX`"
+            correct: true
+            why: "MAX = maximum, le plus grand."
+          - label: "`MIN`"
+            correct: false
+            why: "MIN donne le plus petit."
+          - label: "`COUNT`"
+            correct: false
+            why: "COUNT compte les lignes."
+        explanation: "MIN (minimum) et MAX (maximum)."
+      - code: sql-p18-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-agregation
+        prompt: "`MIN(nom)` sur des textes donne le nom qui vient en premier dans l'ordre alphabétique."
         choices:
           - label: "Vrai"
-            correct: false
-            why: "Les agrégats ignorent les NULL : ni au numérateur, ni au dénominateur."
-          - label: "Faux"
             correct: true
-            why: "La moyenne est calculée sur les seules valeurs renseignées."
-        explanation: "Pour compter les NULL comme 0 : `AVG(COALESCE(note, 0))`. Le choix dépend du sens métier."
-      - code: sql-c3l1-q4
+            why: "Pour un texte, le plus petit = le premier de A à Z."
+          - label: "Faux"
+            correct: false
+            why: "MIN fonctionne aussi avec les textes."
+        explanation: "MIN et MAX marchent avec les nombres, les dates et les textes."
+      - code: sql-p18-q5
         kind: COMPLETER_CODE
         difficulty: 1
         skill: sql-agregation
-        prompt: "Complète pour compter le nombre de **villes différentes** où habitent les clients."
+        prompt: "Complète pour afficher le plus petit stock du catalogue."
         snippet: |
-          SELECT COUNT(____ ville) AS nb_villes
-          FROM clients;
+          SELECT ____(stock) AS plus_petit_stock
+          FROM produits;
         language: sql
-        answers: ["DISTINCT"]
-        explanation: "`COUNT(DISTINCT col)` compte les valeurs distinctes non NULL. Ici : 9 villes."
-      - code: sqlq-agg-1
-        kind: CHOIX_UNIQUE
-        difficulty: 1
+        answers: ["MIN"]
+        explanation: "`MIN(stock)` : la plus petite valeur de la colonne stock."
+    exercises:
+      - slug: sql-ex-minmax-guide
+        kind: COMPLETER
+        title: "Compléter MIN et MAX"
+        difficulty: FACILE
         skill: sql-agregation
-        prompt: Combien de lignes renvoie `SELECT COUNT(*) FROM produits;` (sans GROUP BY) ?
-        choices:
-          - label: Une seule ligne
-            correct: true
-            why: "Oui : une fonction d'agrégat résume tout en une valeur."
-          - label: Une ligne par produit
-            correct: false
-            why: L'agrégat regroupe toutes les lignes.
-          - label: Aucune
-            correct: false
-            why: Même sur une table vide, COUNT renvoie une ligne (0).
-        explanation: Sans GROUP BY, un agrégat produit un résumé unique.
-      - code: sqlq-agg-2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
+        statement: "Complète pour afficher le prix le plus bas et le prix le plus haut du catalogue."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Le plus bas : MIN."
+          - "Le plus haut : MAX."
+          - "MIN, MAX."
+        solution: '["MIN", "MAX"]'
+        explanation: "`MIN(prix)` et `MAX(prix)`."
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            SELECT [[1]](prix) AS prix_bas,
+                   [[2]](prix) AS prix_haut
+            FROM produits;
+          blanks:
+            - ["MIN"]
+            - ["MAX"]
+      - slug: sql-ex-inscriptions-extremes
+        kind: SQL
+        title: "La première et la dernière inscription"
+        difficulty: FACILE
         skill: sql-agregation
-        prompt: Quelle différence entre `COUNT(*)` et `COUNT(commentaire)` ?
-        choices:
-          - label: COUNT(commentaire) ne compte pas les lignes où commentaire est NULL
-            correct: true
-            why: Oui.
-          - label: Aucune
-            correct: false
-            why: Elles diffèrent dès qu'il y a des NULL.
-          - label: COUNT(*) ignore les NULL
-            correct: false
-            why: "C'est l'inverse : COUNT(*) compte toutes les lignes."
-        explanation: COUNT(*) compte les lignes ; COUNT(colonne) compte les valeurs non NULL.
+        statement: |
+          Affiche la date d'inscription la **plus ancienne** (colonne `premiere`) et la **plus récente**
+          (colonne `derniere`) de la table `clients`.
+        criteria: "Une ligne, deux colonnes : premiere et derniere."
+        hints:
+          - "La plus ancienne : MIN. La plus récente : MAX."
+          - "La colonne s'appelle `date_inscription`."
+          - "`SELECT MIN(date_inscription) AS premiere, MAX(date_inscription) AS derniere FROM clients;`"
+        solution: |
+          SELECT MIN(date_inscription) AS premiere,
+                 MAX(date_inscription) AS derniere
+          FROM clients;
+        explanation: "MIN et MAX parcourent toute la colonne et gardent les deux extrêmes."
+        xp: 10
+        payload:
+          mode: READ
+
+  # ===================================================================== LEÇON 3
+  - slug: sql-sum-avg
+    title: "La base calcule pour toi : SUM et AVG"
+    duration: 9
+    objective: "Savoir quand utiliser SUM (le total) et AVG (la moyenne) : c'est PostgreSQL qui fait le calcul."
+    prerequisites: "Leçon « Le plus petit et le plus grand : MIN et MAX »."
+    skills: [sql-agregation]
+    xp: 10
+    memo: |
+      - `SUM(stock)` : le **total** de la colonne. `AVG(note)` : la **moyenne**.
+      - **Tu ne calcules rien** : tu choisis la bonne fonction, PostgreSQL fait le calcul.
+      - `ROUND(AVG(note), 2)` garde 2 chiffres après la virgule, pour un affichage propre.
+      - Les cases vides (NULL) sont ignorées.
+    commonMistakes: |
+      - Confondre SUM (total) et COUNT (nombre de lignes).
+      - Oublier ROUND : AVG affiche beaucoup de chiffres après la virgule.
+    blocks:
+      - type: text
+        md: |
+          Dans un tableau de bord, on affiche « le stock total » ou « la note moyenne ». Ces valeurs, tu
+          ne les calcules jamais toi-même : tu demandes à la base avec `SUM` ou `AVG`.
+      - type: definition
+        id: def-sum-avg
+        term: "SUM et AVG"
+        md: |
+          Une **calculatrice intégrée** à la base : tu appuies sur le bon bouton, elle affiche la réponse.
+          `SUM` = le bouton « total », `AVG` = le bouton « moyenne ».
+      - type: code
+        id: code-sum-avg
+        language: sql
+        title: "Le résumé des avis"
+        code: |
+          SELECT COUNT(*)            AS nb_avis,
+                 ROUND(AVG(note), 2) AS note_moyenne
+          FROM avis;
+        lines:
+          - n: 1
+            note: "Le nombre d'avis (COUNT, déjà vu)."
+          - n: 2
+            note: "La note moyenne, calculée par PostgreSQL. `ROUND(…, 2)` garde deux chiffres après la virgule."
+      - type: demo
+        title: "Essaie"
+        md: "Exécute, puis essaie `SELECT SUM(stock) AS stock_total FROM produits;`."
+        language: sql
+        code: |
+          SELECT COUNT(*)            AS nb_avis,
+                 ROUND(AVG(note), 2) AS note_moyenne
+          FROM avis;
+      - type: question
+        ref: sqlq-agg-3
+        review: def-sum-avg
+      - type: question
+        ref: sql-p19-q2
+        review: def-sum-avg
+      - type: text
+        md: "Exercice guidé : choisis la bonne fonction."
+      - type: exercise
+        ref: sql-ex-sumavg-guide
+      - type: text
+        md: "En autonomie : toutes les fonctions du chapitre dans une requête."
+      - type: exercise
+        ref: sql-ex-stats-avis
+      - type: quiz
+        items:
+          - ref: sql-c3l1-q3
+            review: def-sum-avg
+          - ref: sql-p19-q4
+            review: code-sum-avg
+          - ref: sql-p19-q5
+            review: def-sum-avg
+    questions:
       - code: sqlq-agg-3
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: sql-agregation
-        prompt: Quelle fonction calcule la moyenne ?
+        prompt: Quelle fonction donne la moyenne ?
         choices:
           - label: '`AVG`'
             correct: true
-            why: Oui (average).
+            why: Oui (average = moyenne en anglais).
           - label: '`SUM`'
             correct: false
-            why: SUM fait la somme.
+            why: SUM donne le total.
           - label: '`MID`'
             correct: false
             why: Cette fonction n'existe pas en PostgreSQL.
-        explanation: 'COUNT, SUM, AVG, MIN, MAX : les cinq agrégats de base.'
+        explanation: 'COUNT, SUM, AVG, MIN, MAX : les cinq fonctions de résumé.'
+      - code: sql-p19-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-agregation
+        prompt: "Tu veux afficher le **stock total** de tous les produits. Quelle fonction choisir ?"
+        choices:
+          - label: "`SUM(stock)`"
+            correct: true
+            why: "SUM additionne toute la colonne à ta place."
+          - label: "`COUNT(stock)`"
+            correct: false
+            why: "COUNT compte les lignes, il n'additionne pas les stocks."
+          - label: "`MAX(stock)`"
+            correct: false
+            why: "MAX donne seulement le plus grand stock."
+        explanation: "Total = SUM ; nombre de lignes = COUNT."
+      - code: sql-c3l1-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: sql-agregation
+        prompt: "`AVG(note)` compte une note NULL comme un zéro."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Les cases vides sont simplement ignorées."
+          - label: "Faux"
+            correct: true
+            why: "La moyenne se fait sur les seules notes renseignées."
+        explanation: "SUM, AVG, MIN et MAX ignorent les NULL."
+      - code: sql-p19-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-agregation
+        prompt: "À quoi sert `ROUND(…, 2)` autour de `AVG(note)` ?"
+        choices:
+          - label: "À garder deux chiffres après la virgule, pour un affichage propre"
+            correct: true
+            why: "Sans ROUND, la moyenne peut avoir beaucoup de chiffres."
+          - label: "À compter deux notes"
+            correct: false
+            why: "ROUND ne compte rien."
+          - label: "À garder les deux meilleures notes"
+            correct: false
+            why: "ROUND arrondit l'affichage, il ne filtre pas."
+        explanation: "`ROUND(valeur, 2)` = arrondi à 2 chiffres après la virgule."
+      - code: sql-p19-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-agregation
+        prompt: "Pour utiliser SUM ou AVG, il faut savoir faire le calcul soi-même."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "C'est la base qui calcule."
+          - label: "Faux"
+            correct: true
+            why: "Ton rôle est seulement de choisir la bonne fonction."
+        explanation: "Total → SUM, moyenne → AVG, nombre → COUNT, extrêmes → MIN et MAX."
     exercises:
+      - slug: sql-ex-sumavg-guide
+        kind: COMPLETER
+        title: "La bonne fonction"
+        difficulty: FACILE
+        skill: sql-agregation
+        statement: "Complète : le stock total, puis la note moyenne arrondie."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le total : SUM."
+          - "La moyenne : AVG, entourée de ROUND pour l'arrondi."
+          - "SUM, ROUND, AVG."
+        solution: '["SUM", "ROUND", "AVG"]'
+        explanation: "`SUM(stock)` puis `ROUND(AVG(note), 2)`."
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            -- Le stock total du catalogue
+            SELECT [[1]](stock) AS stock_total FROM produits;
+            -- La note moyenne, avec deux chiffres après la virgule
+            SELECT [[2]]([[3]](note), 2) AS note_moyenne FROM avis;
+          blanks:
+            - ["SUM"]
+            - ["ROUND"]
+            - ["AVG"]
       - slug: sql-ex-stats-avis
         kind: SQL
-        title: "Statistiques des avis"
+        title: "Le résumé des avis"
         difficulty: FACILE
         skill: sql-agregation
         statement: |
           Affiche en une seule ligne :
-          - le **nombre total d'avis** (`nb_avis`) ;
-          - la **note moyenne** arrondie à 2 décimales (`note_moyenne`) ;
+          - le **nombre d'avis** (`nb_avis`) ;
+          - la **note moyenne** arrondie à 2 chiffres après la virgule (`note_moyenne`) ;
           - la **note la plus basse** (`note_min`) et la **plus haute** (`note_max`).
         criteria: "Une ligne, 4 colonnes : nb_avis, note_moyenne (2 décimales), note_min, note_max."
         hints:
-          - "Toutes les valeurs viennent de la table avis, sans GROUP BY."
-          - "Utilise COUNT(*), ROUND(AVG(note), 2), MIN(note) et MAX(note)."
+          - "Tout vient de la table avis."
+          - "COUNT(*), ROUND(AVG(note), 2), MIN(note) et MAX(note)."
           - "`SELECT COUNT(*) AS nb_avis, ROUND(AVG(note), 2) AS note_moyenne, MIN(note) AS note_min, MAX(note) AS note_max FROM avis;`"
         solution: |
           SELECT COUNT(*)            AS nb_avis,
@@ -226,26 +591,24 @@ lessons:
                  MIN(note)           AS note_min,
                  MAX(note)           AS note_max
           FROM avis;
-        explanation: |
-          Chaque fonction d'agrégat parcourt toutes les lignes de `avis` et produit une valeur. Comme il n'y a
-          pas de GROUP BY, la table entière forme un seul groupe : une seule ligne en résultat.
+        explanation: "Chaque fonction parcourt la table avis et donne une valeur : le résultat tient en une ligne."
         xp: 15
         payload:
           mode: READ
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 4
   - slug: sql-group-by
     title: "Regrouper les lignes avec GROUP BY"
     duration: 12
-    objective: "Calculer un agrégat par catégorie, par client, par mois… et respecter la règle d'or du GROUP BY."
-    prerequisites: "Fonctions d'agrégat."
+    objective: "Obtenir un résultat par catégorie, par client, par ville… et respecter la règle d'or du GROUP BY."
+    prerequisites: "Leçon « La base calcule pour toi : SUM et AVG »."
     skills: [sql-agregation]
     xp: 12
     memo: |
       - `GROUP BY col` forme **un groupe par valeur** de col ; les agrégats sont calculés **par groupe**.
       - Règle d'or : toute colonne du SELECT est **soit dans le GROUP BY, soit dans un agrégat**.
       - Les NULL forment **un groupe à part**.
-      - On peut grouper sur plusieurs colonnes ou sur une expression (`EXTRACT(YEAR FROM date)`).
+      - On peut trier les groupes avec ORDER BY, par exemple du plus grand nombre au plus petit.
     commonMistakes: |
       - `SELECT nom, categorie_id, COUNT(*) ... GROUP BY categorie_id` : `nom` n'est ni groupé ni agrégé → erreur 42803.
       - Oublier le groupe NULL dans l'analyse du résultat.
@@ -308,18 +671,20 @@ lessons:
         ref: sql-c3l2-q2
       - type: code
         language: sql
-        title: "Regrouper par une expression"
+        title: "Regrouper, puis trier les groupes"
         code: |
-          SELECT EXTRACT(YEAR FROM date_commande) AS annee,
-                 COUNT(*) AS nb_commandes
-          FROM commandes
-          GROUP BY EXTRACT(YEAR FROM date_commande)
-          ORDER BY annee;
+          SELECT ville, COUNT(*) AS nb_clients
+          FROM clients
+          WHERE ville IS NOT NULL
+          GROUP BY ville
+          ORDER BY nb_clients DESC, ville;
         lines:
-          - n: 1
-            note: "L'année de la commande, extraite de la date."
+          - n: 3
+            note: "WHERE écarte d'abord les clients sans ville."
           - n: 4
-            note: "On regroupe sur la même expression. PostgreSQL accepte aussi `GROUP BY annee` (l'alias) ou `GROUP BY 1` (1ʳᵉ colonne)."
+            note: "Un groupe par ville ; COUNT(*) compte les clients de chaque groupe."
+          - n: 5
+            note: "Les villes qui ont le plus de clients en premier ; à égalité, par ordre alphabétique."
       - type: question
         ref: sql-c3l2-q3
       - type: exercise
@@ -513,12 +878,12 @@ lessons:
           mode: READ
           ordered: true
 
-  # ===================================================================== LEÇON 3
+  # ===================================================================== LEÇON 5
   - slug: sql-having
     title: "Filtrer des groupes avec HAVING"
     duration: 10
     objective: "Distinguer WHERE (filtre des lignes) et HAVING (filtre des groupes) et connaître l'ordre d'exécution d'une requête."
-    prerequisites: "GROUP BY."
+    prerequisites: "Leçon « Regrouper les lignes avec GROUP BY »."
     skills: [sql-agregation]
     xp: 12
     memo: |

@@ -106,7 +106,7 @@ lessons:
             why: "Type exact : pas d'erreur d'arrondi sur les centimes."
           - label: "`REAL`"
             correct: false
-            why: "Nombre à virgule flottante : 0.1 + 0.2 n'y vaut pas exactement 0.3."
+            why: "Nombre approché : les centimes peuvent être mal enregistrés."
           - label: "`VARCHAR(10)`"
             correct: false
             why: "Un texte ne permet ni calcul fiable ni tri numérique."
@@ -472,28 +472,34 @@ lessons:
 
   # ===================================================================== LEÇON 3
   - slug: sql-index-vues
-    title: "Index, vues et ALTER TABLE"
-    duration: 12
-    objective: "Accélérer les recherches avec un index, enregistrer une requête dans une vue et faire évoluer une table."
-    prerequisites: "CREATE TABLE et contraintes."
-    skills: [sql-avance, sql-ddl]
-    xp: 15
+    title: "Accélérer les recherches : les index"
+    duration: 10
+    objective: "Comprendre à quoi sert un index, en créer un avec CREATE INDEX et lire un plan avec EXPLAIN."
+    prerequisites: "Leçon « Contraintes et clés étrangères »."
+    skills: [sql-avance]
+    xp: 12
     memo: |
-      - Un **index** accélère les recherches (WHERE, JOIN, ORDER BY) au prix d'écritures un peu plus lentes.
-      - Les clés primaires et UNIQUE ont un index automatique ; pas les clés étrangères.
-      - `EXPLAIN` montre le plan d'exécution (Seq Scan = parcours complet, Index Scan = via un index).
-      - Une **vue** (`CREATE VIEW`) enregistre une requête et s'interroge comme une table.
-      - `ALTER TABLE` ajoute, modifie ou supprime colonnes et contraintes.
+      - Un **index** accélère les recherches (WHERE, JOIN, ORDER BY) sur une colonne.
+      - En échange, les écritures (INSERT, UPDATE, DELETE) sont un peu plus lentes et l'index prend de la place.
+      - `CREATE INDEX nom_index ON table (colonne);`
+      - Les clés primaires et UNIQUE ont déjà un index ; pas les clés étrangères.
+      - `EXPLAIN` montre comment PostgreSQL va lire la table (Seq Scan = tout lire, Index Scan = via l'index).
     commonMistakes: |
-      - Indexer toutes les colonnes : chaque index ralentit les INSERT/UPDATE et occupe de la place.
-      - Oublier d'indexer les clés étrangères utilisées dans les jointures fréquentes.
+      - Indexer toutes les colonnes : chaque index ralentit les écritures.
+      - Oublier d'indexer les clés étrangères utilisées dans les jointures.
     blocks:
       - type: text
         md: |
           Sur 30 produits, PostgreSQL lit toute la table en un instant. Sur 30 millions, chercher un e-mail
-          ligne par ligne prendrait des secondes. Un **index** fonctionne comme l'index d'un livre : il indique
-          directement où se trouvent les lignes recherchées.
+          ligne par ligne prendrait des secondes. Un **index** règle ce problème.
+      - type: definition
+        id: def-index
+        term: "Index"
+        md: |
+          L'**index à la fin d'un livre** : au lieu de lire toutes les pages pour trouver « jointure », tu
+          regardes l'index qui te donne directement la bonne page.
       - type: code
+        id: code-index
         language: sql
         title: "Créer un index et observer le plan"
         code: |
@@ -503,14 +509,14 @@ lessons:
           SELECT * FROM commandes_copie WHERE client_id = 7;
         lines:
           - n: 1
-            note: "Dans le laboratoire, seules tes propres tables peuvent recevoir un index : on crée donc une copie de `commandes` (CREATE TABLE ... AS SELECT)."
+            note: "Dans le laboratoire, on ne peut indexer que ses propres tables : on crée donc une copie de `commandes`."
           - n: 2
-            note: "Index sur la clé étrangère client_id : il accélère la recherche des commandes d'un client et les jointures clients ↔ commandes."
+            note: "Un index sur client_id : il accélère la recherche des commandes d'un client."
           - n: 3
             note: "`EXPLAIN` n'exécute pas la requête : il affiche le **plan** choisi par PostgreSQL."
       - type: demo
-        title: "Démonstration"
-        md: "Sur une si petite table, PostgreSQL peut préférer un parcours complet (Seq Scan) : il estime que c'est plus rapide. Sur de gros volumes, l'index serait utilisé."
+        title: "Essaie"
+        md: "Sur une si petite table, PostgreSQL peut préférer tout lire (Seq Scan) : c'est plus rapide pour lui. Sur de gros volumes, il utiliserait l'index."
         language: sql
         code: |
           CREATE TABLE commandes_copie AS SELECT * FROM commandes;
@@ -518,12 +524,183 @@ lessons:
           EXPLAIN
           SELECT * FROM commandes_copie WHERE client_id = 7;
       - type: question
+        ref: sqlq-index-1
+        review: def-index
+      - type: question
         ref: sql-c7l3-q1
+        review: def-index
+      - type: text
+        md: "Exercice guidé : complète la création de l'index."
+      - type: exercise
+        ref: sql-ex-index-guide
+      - type: text
+        md: "Remets dans l'ordre la démarche pour vérifier un index."
+      - type: exercise
+        ref: sql-ex-index-ordre
+      - type: quiz
+        items:
+          - ref: sqlq-index-3
+            review: code-index
+          - ref: sql-c7l3-q4
+            review: def-index
+          - ref: sql-p23-q5
+            review: code-index
+    questions:
+      - code: sqlq-index-1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-avance
+        prompt: À quoi sert un index ?
+        choices:
+          - label: À accélérer les recherches sur une colonne
+            correct: true
+            why: "Oui : comme l'index d'un livre."
+          - label: À empêcher les doublons dans tous les cas
+            correct: false
+            why: Seul un index UNIQUE fait cela.
+          - label: À sauvegarder la table
+            correct: false
+            why: Un index n'est pas une sauvegarde.
+        explanation: Index = lectures plus rapides, écritures un peu plus lentes.
+      - code: sql-c7l3-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: "Quel est l'inconvénient principal d'un index ?"
+        choices:
+          - label: "Il ralentit un peu les écritures (INSERT, UPDATE, DELETE) et prend de la place"
+            correct: true
+            why: "Chaque modification de la table doit aussi mettre l'index à jour."
+          - label: "Il ralentit les SELECT"
+            correct: false
+            why: "C'est l'inverse : il les accélère."
+          - label: "Il interdit les doublons"
+            correct: false
+            why: "Seul un index UNIQUE interdit les doublons."
+        explanation: "On indexe les colonnes souvent utilisées dans WHERE, JOIN et ORDER BY, pas toutes."
+      - code: sqlq-index-3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-avance
+        prompt: '`EXPLAIN` montre le plan choisi par PostgreSQL pour exécuter une requête.'
+        choices:
+          - label: Vrai
+            correct: true
+            why: 'Oui : on y voit par exemple Seq Scan ou Index Scan.'
+          - label: Faux
+            correct: false
+            why: C'est précisément son rôle.
+        explanation: EXPLAIN aide à vérifier qu'un index est bien utilisé.
+      - code: sql-c7l3-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: "Quelles colonnes PostgreSQL indexe-t-il **automatiquement** ?"
+        choices:
+          - label: "Les clés primaires et les colonnes UNIQUE"
+            correct: true
+            why: "Ces contraintes reposent sur un index créé automatiquement."
+          - label: "Toutes les clés étrangères"
+            correct: false
+            why: "Les clés étrangères ne sont pas indexées automatiquement : c'est à toi de le faire."
+          - label: "Toutes les colonnes NOT NULL"
+            correct: false
+            why: "NOT NULL n'a pas besoin d'index."
+        explanation: "Bonne pratique : indexer les clés étrangères utilisées dans les jointures."
+      - code: sql-p23-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: "Dans un plan, que signifie « Seq Scan on commandes » ?"
+        choices:
+          - label: "PostgreSQL lit toute la table, ligne par ligne"
+            correct: true
+            why: "Seq Scan = lecture complète, sans index."
+          - label: "PostgreSQL utilise un index"
+            correct: false
+            why: "Ce serait « Index Scan »."
+          - label: "La requête a échoué"
+            correct: false
+            why: "C'est seulement la façon de lire choisie."
+        explanation: "Un Seq Scan sur une grosse table filtrée est souvent le signe d'un index manquant."
+    exercises:
+      - slug: sql-ex-index-guide
+        kind: COMPLETER
+        title: "Compléter la création de l'index"
+        difficulty: FACILE
+        skill: sql-avance
+        statement: "Complète pour créer un index sur la colonne `email` de ta table `contacts`."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Créer un index : CREATE INDEX."
+          - "Le nom de la table vient après ON."
+          - "CREATE, INDEX, ON."
+        solution: '["CREATE", "INDEX", "ON"]'
+        explanation: "`CREATE INDEX ix_contacts_email ON contacts (email);`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            [[1]] [[2]] ix_contacts_email [[3]] contacts (email);
+          blanks:
+            - ["CREATE"]
+            - ["INDEX"]
+            - ["ON"]
+      - slug: sql-ex-index-ordre
+        kind: REMETTRE_ORDRE
+        title: "Vérifier qu'un index sert"
+        difficulty: FACILE
+        skill: sql-avance
+        statement: "Remets ces lignes dans l'ordre : créer une copie, l'indexer, puis afficher le plan d'une recherche."
+        criteria: "La table existe avant l'index, et EXPLAIN précède la requête observée."
+        hints:
+          - "On ne peut pas indexer une table qui n'existe pas encore."
+          - "EXPLAIN se place juste avant le SELECT qu'il observe."
+          - "CREATE TABLE, CREATE INDEX, EXPLAIN, SELECT."
+        solution: |
+          CREATE TABLE clients_copie AS SELECT * FROM clients;
+          CREATE INDEX ix_copie_ville ON clients_copie (ville);
+          EXPLAIN
+          SELECT * FROM clients_copie WHERE ville = 'Lyon';
+        explanation: "La table d'abord, l'index ensuite, puis EXPLAIN pour voir si PostgreSQL l'utilise."
+        xp: 10
+        payload:
+          language: sql
+          lines:
+            - "CREATE TABLE clients_copie AS SELECT * FROM clients;"
+            - "CREATE INDEX ix_copie_ville ON clients_copie (ville);"
+            - "EXPLAIN"
+            - "SELECT * FROM clients_copie WHERE ville = 'Lyon';"
+
+  # ===================================================================== LEÇON 4
+  - slug: sql-vues
+    title: "Enregistrer une requête : les vues"
+    duration: 10
+    objective: "Enregistrer une requête sous un nom avec CREATE VIEW, puis l'interroger comme une table."
+    prerequisites: "Leçon « Accélérer les recherches : les index »."
+    skills: [sql-avance]
+    xp: 12
+    memo: |
+      - `CREATE VIEW nom AS SELECT ...;` enregistre une requête sous un nom.
+      - On l'interroge comme une table : `SELECT * FROM nom;`
+      - Une vue ne stocke pas de données : elle relance sa requête à chaque fois, donc elle est toujours à jour.
+      - Pratique pour simplifier une requête longue ou cacher des colonnes sensibles.
+    commonMistakes: |
+      - Croire qu'une vue est une copie des données.
+      - Confondre une vue (enregistrée dans la base) et une CTE (qui ne dure que le temps d'une requête).
+    blocks:
+      - type: text
+        md: |
+          Une requête longue que tu relances tous les jours ? Au lieu de la réécrire, tu l'**enregistres**
+          sous un nom : c'est une **vue**.
       - type: definition
         id: def-vue
         term: "Vue"
-        md: "Requête enregistrée sous un nom. Elle ne stocke pas de données (sauf vue matérialisée) : chaque interrogation réexécute la requête. Idéal pour simplifier l'accès ou masquer des colonnes sensibles."
+        md: |
+          Un **raccourci sur ton bureau** : il ne contient pas le fichier, il te mène au bon endroit. Une vue
+          ne contient pas les données, elle relance la requête enregistrée.
       - type: code
+        id: code-vue
         language: sql
         title: "Une vue « catalogue public »"
         code: |
@@ -537,11 +714,12 @@ lessons:
           - n: 1
             note: "On enregistre la requête qui suit sous le nom `catalogue`."
           - n: 5
-            note: "Seuls les produits disponibles apparaissent ; le stock exact, lui, n'est pas exposé."
+            note: "Seuls les produits disponibles apparaissent ; le stock exact n'est pas montré."
           - n: 6
             note: "On interroge la vue exactement comme une table."
       - type: demo
-        title: "Démonstration"
+        title: "Essaie"
+        md: "Exécute, puis remplace la dernière ligne par `SELECT * FROM catalogue WHERE categorie = 'Livres';`."
         language: sql
         code: |
           CREATE VIEW catalogue AS
@@ -551,105 +729,31 @@ lessons:
           WHERE p.stock > 0;
           SELECT * FROM catalogue ORDER BY prix LIMIT 5;
       - type: question
-        ref: sql-c7l3-q2
-      - type: code
-        language: sql
-        title: "Faire évoluer une table"
-        code: |
-          ALTER TABLE clients ADD COLUMN telephone VARCHAR(20);
-          ALTER TABLE clients ADD CONSTRAINT ck_clients_email CHECK (email LIKE '%@%');
-        lines:
-          - n: 1
-            note: "Ajoute une colonne facultative : les lignes existantes reçoivent NULL."
-          - n: 2
-            note: "Ajoute une contrainte nommée ; PostgreSQL vérifie aussitôt que les lignes existantes la respectent. (Dans le laboratoire, ALTER TABLE ne fonctionne que sur les tables que tu crées.)"
+        ref: sqlq-index-2
+        review: def-vue
       - type: question
-        ref: sql-c7l3-q3
+        ref: sql-p24-q2
+        review: code-vue
+      - type: text
+        md: "Exercice guidé : complète la vue."
+      - type: exercise
+        ref: sql-ex-vue-guide
+      - type: text
+        md: "En autonomie : une vue des ventes par produit."
       - type: exercise
         ref: sql-ex-vue-ventes
-      - type: question
-        ref: sql-c7l3-q4
       - type: quiz
         items:
-          - ref: sqlq-index-1
-          - ref: sqlq-index-2
+          - ref: sql-c7l3-q2
             review: def-vue
-          - ref: sqlq-index-3
+          - ref: sql-p24-q4
+            review: def-vue
+          - ref: sql-p24-q5
+            review: code-vue
     questions:
-      - code: sql-c7l3-q1
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: sql-avance
-        prompt: "Quel est l'inconvénient principal d'un index ?"
-        choices:
-          - label: "Il ralentit les écritures (INSERT, UPDATE, DELETE) et occupe de l'espace"
-            correct: true
-            why: "Chaque modification de la table doit aussi mettre l'index à jour."
-          - label: "Il ralentit les SELECT"
-            correct: false
-            why: "C'est l'inverse : il les accélère quand il est utilisable."
-          - label: "Il interdit les doublons"
-            correct: false
-            why: "Seul un index UNIQUE interdit les doublons."
-        explanation: "On indexe les colonnes souvent utilisées dans WHERE, JOIN et ORDER BY, pas toutes les colonnes."
-      - code: sql-c7l3-q2
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: sql-avance
-        prompt: "Une vue classique stocke une copie des données au moment de sa création."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "Une vue réexécute sa requête à chaque interrogation : elle est toujours à jour."
-          - label: "Faux"
-            correct: true
-            why: "Seule une vue **matérialisée** stocke un résultat, à rafraîchir avec REFRESH MATERIALIZED VIEW."
-        explanation: "Vue = requête enregistrée ; vue matérialisée = résultat enregistré."
-      - code: sql-c7l3-q3
-        kind: COMPLETER_CODE
-        difficulty: 2
-        skill: sql-ddl
-        prompt: "Complète pour ajouter une colonne `newsletter` à la table clients."
-        snippet: |
-          ____ clients ADD COLUMN newsletter BOOLEAN NOT NULL DEFAULT FALSE;
-        language: sql
-        answers: ["ALTER TABLE"]
-        explanation: "`ALTER TABLE ... ADD COLUMN` fait évoluer une table existante. En production, ces évolutions passent par des migrations versionnées (Flyway)."
-      - code: sql-c7l3-q4
-        kind: CHOIX_UNIQUE
-        difficulty: 3
-        skill: sql-avance
-        prompt: "Quelles colonnes PostgreSQL indexe-t-il **automatiquement** ?"
-        choices:
-          - label: "Les clés primaires et les colonnes UNIQUE"
-            correct: true
-            why: "Ces contraintes reposent sur un index unique créé automatiquement."
-          - label: "Toutes les clés étrangères"
-            correct: false
-            why: "Les clés étrangères ne sont pas indexées automatiquement : c'est à toi de le faire."
-          - label: "Toutes les colonnes NOT NULL"
-            correct: false
-            why: "NOT NULL n'a pas besoin d'index."
-        explanation: "Bonne pratique : indexer les clés étrangères utilisées dans les jointures (comme dans le schéma de Code en Clair Academy)."
-      - code: sqlq-index-1
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: sql-avance
-        prompt: À quoi sert un index ?
-        choices:
-          - label: À accélérer les recherches sur une colonne
-            correct: true
-            why: "Oui : comme l'index d'un livre."
-          - label: À empêcher les doublons dans tous les cas
-            correct: false
-            why: Seul un index UNIQUE fait cela.
-          - label: À sauvegarder la table
-            correct: false
-            why: Un index n'est pas une sauvegarde.
-        explanation: Index = lectures plus rapides, écritures un peu plus lentes et place disque en plus.
       - code: sqlq-index-2
         kind: CHOIX_UNIQUE
-        difficulty: 2
+        difficulty: 1
         skill: sql-avance
         prompt: Quel est l'intérêt d'une vue ?
         choices:
@@ -658,25 +762,95 @@ lessons:
             why: "Oui : on l'interroge comme une table."
           - label: Copier les données pour les sauvegarder
             correct: false
-            why: Une vue classique ne stocke pas de données.
+            why: Une vue ne stocke pas de données.
           - label: Accélérer toutes les requêtes
             correct: false
-            why: Elle ne rend pas la requête plus rapide par elle-même.
-        explanation: Une vue simplifie, masque des colonnes sensibles et centralise une logique.
-      - code: sqlq-index-3
+            why: "Pour la vitesse, ce sont les index."
+        explanation: Une vue simplifie, cache des colonnes sensibles et évite de répéter une requête.
+      - code: sql-p24-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-avance
+        prompt: "Comment lire la vue `catalogue` ?"
+        choices:
+          - label: "`SELECT * FROM catalogue;`"
+            correct: true
+            why: "Une vue se lit comme une table."
+          - label: "`OPEN VIEW catalogue;`"
+            correct: false
+            why: "Cette instruction n'existe pas."
+          - label: "`RUN catalogue;`"
+            correct: false
+            why: "Cette instruction n'existe pas."
+        explanation: "Pour la personne qui l'utilise, une vue ressemble à une table."
+      - code: sql-c7l3-q2
         kind: VRAI_FAUX
         difficulty: 2
         skill: sql-avance
-        prompt: '`EXPLAIN` montre le plan choisi par PostgreSQL pour exécuter une requête.'
+        prompt: "Une vue stocke une copie des données au moment de sa création."
         choices:
-          - label: Vrai
-            correct: true
-            why: 'Oui : on y voit par exemple Seq Scan ou Index Scan.'
-          - label: Faux
+          - label: "Vrai"
             correct: false
-            why: C'est précisément son rôle.
-        explanation: EXPLAIN (ANALYZE) aide à vérifier qu'un index est bien utilisé.
+            why: "Une vue relance sa requête à chaque lecture : elle est toujours à jour."
+          - label: "Faux"
+            correct: true
+            why: "Seule une vue « matérialisée » garde un résultat enregistré."
+        explanation: "Vue = requête enregistrée, pas données enregistrées."
+      - code: sql-p24-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-avance
+        prompt: "Quelle différence entre une vue et une CTE (WITH) ?"
+        choices:
+          - label: "La vue reste enregistrée dans la base ; la CTE ne dure que le temps d'une requête"
+            correct: true
+            why: "La vue se réutilise demain ; la CTE disparaît après la requête."
+          - label: "Aucune"
+            correct: false
+            why: "Leur durée de vie est différente."
+          - label: "La CTE est plus rapide"
+            correct: false
+            why: "La différence porte sur la durée de vie, pas la vitesse."
+        explanation: "Vue = enregistrée ; CTE = brouillon d'une seule requête."
+      - code: sql-p24-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-avance
+        prompt: "Si on ajoute un produit en stock, il apparaît automatiquement dans la vue `catalogue`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "La vue relance sa requête à chaque lecture."
+          - label: "Faux"
+            correct: false
+            why: "Une vue est toujours à jour."
+        explanation: "C'est un avantage de la vue : aucune mise à jour à faire."
     exercises:
+      - slug: sql-ex-vue-guide
+        kind: COMPLETER
+        title: "Compléter la vue"
+        difficulty: FACILE
+        skill: sql-avance
+        statement: "Complète pour enregistrer la liste des clients lyonnais dans une vue `clients_lyon`."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Créer une vue : CREATE VIEW."
+          - "Après le nom : AS, puis la requête."
+          - "CREATE, VIEW, AS."
+        solution: '["CREATE", "VIEW", "AS"]'
+        explanation: "`CREATE VIEW clients_lyon AS SELECT ...;`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            [[1]] [[2]] clients_lyon [[3]]
+            SELECT prenom, nom
+            FROM clients
+            WHERE ville = 'Lyon';
+          blanks:
+            - ["CREATE"]
+            - ["VIEW"]
+            - ["AS"]
       - slug: sql-ex-vue-ventes
         kind: SQL
         title: "Vue des ventes par produit"
@@ -686,10 +860,10 @@ lessons:
           Crée une vue `ventes_par_produit` qui affiche, pour chaque produit **déjà vendu** dans une commande
           **non annulée** :
           - `produit` : le nom du produit ;
-          - `quantite_vendue` : la somme des quantités (calculée par `SUM`).
+          - `quantite_vendue` : le total des quantités (c'est `SUM` qui le calcule).
 
-          Puis, dans la même exécution, interroge la vue pour afficher ses lignes triées par
-          `quantite_vendue` décroissante, puis par `produit`.
+          Puis, dans la même exécution, lis la vue et range ses lignes par `quantite_vendue` décroissante,
+          puis par `produit`.
         criteria: "Une vue ventes_par_produit ; la requête finale affiche 2 colonnes triées par quantité vendue décroissante puis par produit."
         hints:
           - "`CREATE VIEW ventes_par_produit AS SELECT ...` avec deux jointures (lignes_commande → produits, lignes_commande → commandes)."
@@ -706,12 +880,207 @@ lessons:
           GROUP BY p.id, p.nom;
           SELECT * FROM ventes_par_produit ORDER BY quantite_vendue DESC, produit;
         explanation: |
-          La vue encapsule une requête d'analyse : n'importe quel tableau de bord peut ensuite l'interroger
-          simplement, sans répéter les jointures ni les règles (« on exclut les commandes annulées »).
+          La vue range une requête d'analyse sous un nom : un tableau de bord peut ensuite la lire simplement,
+          sans répéter les jointures ni la règle « on exclut les commandes annulées ».
         xp: 30
         payload:
           mode: WRITE
           ordered: true
+
+  # ===================================================================== LEÇON 5
+  - slug: sql-alter-drop
+    title: "Faire évoluer une table : ALTER TABLE et DROP"
+    duration: 10
+    objective: "Ajouter une colonne ou une contrainte avec ALTER TABLE, et supprimer un objet avec DROP."
+    prerequisites: "Leçon « Enregistrer une requête : les vues »."
+    skills: [sql-ddl]
+    xp: 12
+    memo: |
+      - `ALTER TABLE clients ADD COLUMN telephone VARCHAR(20);` ajoute une colonne (les lignes existantes reçoivent NULL).
+      - `ALTER TABLE ... ADD CONSTRAINT ...` ajoute une règle.
+      - `DROP TABLE nom;` supprime la table **et** ses données ; `DROP VIEW nom;` supprime une vue.
+      - DELETE vide des lignes ; DROP supprime l'objet entier.
+    commonMistakes: |
+      - Confondre `DELETE FROM` (les lignes) et `DROP TABLE` (la table entière).
+      - Ajouter une colonne NOT NULL sans valeur par défaut sur une table déjà remplie : erreur.
+    blocks:
+      - type: text
+        md: |
+          Une application évolue : il faut un numéro de téléphone pour les clients, une ancienne table ne
+          sert plus… On ne recrée pas tout : on **modifie** la structure avec `ALTER TABLE`, et on supprime
+          avec `DROP`.
+      - type: definition
+        id: def-alter-drop
+        term: "ALTER TABLE et DROP"
+        md: |
+          `ALTER TABLE`, c'est **ajouter une pièce à une maison** déjà habitée. `DROP`, c'est **démolir** le
+          bâtiment entier, meubles compris.
+      - type: code
+        id: code-alter
+        language: sql
+        title: "Faire évoluer une table"
+        code: |
+          ALTER TABLE clients ADD COLUMN telephone VARCHAR(20);
+          ALTER TABLE clients ADD CONSTRAINT ck_clients_email CHECK (email LIKE '%@%');
+        lines:
+          - n: 1
+            note: "Ajoute une colonne facultative : les lignes existantes reçoivent NULL."
+          - n: 2
+            note: "Ajoute une contrainte nommée ; PostgreSQL vérifie aussitôt que les lignes existantes la respectent. (Dans le laboratoire, ALTER TABLE ne marche que sur tes propres tables.)"
+      - type: code
+        id: code-drop
+        language: sql
+        title: "Supprimer ce qui ne sert plus"
+        code: |
+          DROP VIEW catalogue;
+          DROP TABLE commandes_copie;
+        lines:
+          - n: 1
+            note: "Supprime la vue (les tables qu'elle lisait ne sont pas touchées)."
+          - n: 2
+            note: "Supprime la table **et toutes ses lignes**. Aucune annulation possible hors transaction."
+      - type: question
+        ref: sql-c7l3-q3
+        review: code-alter
+      - type: question
+        ref: sql-c7-b5
+        review: code-drop
+      - type: text
+        md: "Exercice guidé : complète l'évolution de la table."
+      - type: exercise
+        ref: sql-ex-alter-guide
+      - type: text
+        md: "Remets dans l'ordre la vie d'une table de test."
+      - type: exercise
+        ref: sql-ex-alter-ordre
+      - type: quiz
+        items:
+          - ref: sql-p25-q3
+            review: def-alter-drop
+          - ref: sql-p25-q4
+            review: code-alter
+          - ref: sql-p25-q5
+            review: def-alter-drop
+    questions:
+      - code: sql-c7l3-q3
+        kind: COMPLETER_CODE
+        difficulty: 1
+        skill: sql-ddl
+        prompt: "Complète pour ajouter une colonne `newsletter` à la table clients."
+        snippet: |
+          ____ clients ADD COLUMN newsletter BOOLEAN NOT NULL DEFAULT FALSE;
+        language: sql
+        answers: ["ALTER TABLE"]
+        explanation: "`ALTER TABLE ... ADD COLUMN` fait évoluer une table. En entreprise, ces évolutions passent par des migrations (Flyway)."
+      - code: sql-c7-b5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-ddl
+        prompt: "Quelle instruction supprime une table **et** ses données ?"
+        choices:
+          - label: "`DROP TABLE nom;`"
+            correct: true
+            why: "DROP supprime l'objet entier."
+          - label: "`DELETE FROM nom;`"
+            correct: false
+            why: "Supprime les lignes, la table reste."
+          - label: "`ALTER TABLE nom DROP;`"
+            correct: false
+            why: "Cette écriture n'existe pas ; `ALTER TABLE ... DROP COLUMN` supprime une colonne."
+        explanation: "Dans le laboratoire, tu ne peux supprimer que les tables que tu as créées toi-même."
+      - code: sql-p25-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: sql-ddl
+        prompt: "Quand on ajoute une colonne facultative avec ALTER TABLE, les lignes existantes y reçoivent NULL."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "La case est vide tant qu'on n'y met rien."
+          - label: "Faux"
+            correct: false
+            why: "Sans valeur par défaut, c'est NULL."
+        explanation: "Avec `DEFAULT valeur`, les lignes existantes reçoivent cette valeur à la place."
+      - code: sql-p25-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: sql-ddl
+        prompt: "Quelle instruction ajoute une colonne `pays` à la table `clients` ?"
+        choices:
+          - label: "`ALTER TABLE clients ADD COLUMN pays VARCHAR(50);`"
+            correct: true
+            why: "ALTER TABLE, la table, ADD COLUMN, le nom et le type."
+          - label: "`UPDATE clients ADD pays VARCHAR(50);`"
+            correct: false
+            why: "UPDATE modifie des données, pas la structure."
+          - label: "`INSERT INTO clients COLUMN pays;`"
+            correct: false
+            why: "INSERT ajoute des lignes, pas des colonnes."
+        explanation: "Structure → ALTER TABLE ; données → INSERT, UPDATE, DELETE."
+      - code: sql-p25-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: sql-ddl
+        prompt: "Tu supprimes la vue `catalogue` avec `DROP VIEW catalogue;`. Que deviennent les produits ?"
+        choices:
+          - label: "Ils sont intacts : seule la requête enregistrée disparaît"
+            correct: true
+            why: "Une vue ne contient pas de données."
+          - label: "Ils sont supprimés"
+            correct: false
+            why: "La vue ne faisait que lire la table produits."
+          - label: "Ils sont cachés"
+            correct: false
+            why: "La table produits n'est pas touchée."
+        explanation: "Supprimer le raccourci ne supprime pas le fichier."
+    exercises:
+      - slug: sql-ex-alter-guide
+        kind: COMPLETER
+        title: "Compléter l'évolution"
+        difficulty: FACILE
+        skill: sql-ddl
+        statement: "Complète pour ajouter une colonne `telephone` à ta table `contacts`, puis supprimer la table `contacts_ancien`."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Modifier la structure : ALTER TABLE, puis ADD COLUMN."
+          - "Supprimer une table entière : DROP TABLE."
+          - "ALTER, ADD, DROP, TABLE."
+        solution: '["ALTER", "ADD", "DROP", "TABLE"]'
+        explanation: "`ALTER TABLE contacts ADD COLUMN telephone VARCHAR(20);` puis `DROP TABLE contacts_ancien;`"
+        xp: 10
+        payload:
+          language: sql
+          template: |
+            [[1]] TABLE contacts [[2]] COLUMN telephone VARCHAR(20);
+            [[3]] [[4]] contacts_ancien;
+          blanks:
+            - ["ALTER"]
+            - ["ADD"]
+            - ["DROP"]
+            - ["TABLE"]
+      - slug: sql-ex-alter-ordre
+        kind: REMETTRE_ORDRE
+        title: "La vie d'une table de test"
+        difficulty: FACILE
+        skill: sql-ddl
+        statement: "Remets ces instructions dans l'ordre : créer la table, lui ajouter une colonne, puis la supprimer."
+        criteria: "La table est créée avant d'être modifiée, et supprimée en dernier."
+        hints:
+          - "On ne peut pas modifier une table qui n'existe pas."
+          - "DROP en dernier : après, la table n'existe plus."
+          - "CREATE TABLE, ALTER TABLE, DROP TABLE."
+        solution: |
+          CREATE TABLE essais (id INTEGER PRIMARY KEY, titre VARCHAR(100));
+          ALTER TABLE essais ADD COLUMN termine BOOLEAN DEFAULT FALSE;
+          DROP TABLE essais;
+        explanation: "Créer, faire évoluer, supprimer : le cycle de vie d'une table."
+        xp: 10
+        payload:
+          language: sql
+          lines:
+            - "CREATE TABLE essais (id INTEGER PRIMARY KEY, titre VARCHAR(100));"
+            - "ALTER TABLE essais ADD COLUMN termine BOOLEAN DEFAULT FALSE;"
+            - "DROP TABLE essais;"
 
 bank:
   - code: sql-c7-b1
@@ -774,22 +1143,6 @@ bank:
     language: sql
     answers: ["EXPLAIN"]
     explanation: "`EXPLAIN ANALYZE` exécute en plus la requête et affiche les temps réels."
-  - code: sql-c7-b5
-    kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: sql-ddl
-    prompt: "Quelle instruction supprime une table **et** ses données ?"
-    choices:
-      - label: "`DROP TABLE nom;`"
-        correct: true
-        why: "DROP supprime l'objet entier."
-      - label: "`DELETE FROM nom;`"
-        correct: false
-        why: "Supprime les lignes, la table reste."
-      - label: "`ALTER TABLE nom DROP;`"
-        correct: false
-        why: "Syntaxe invalide ; ALTER TABLE ... DROP COLUMN supprime une colonne."
-    explanation: "Dans le laboratoire, tu ne peux supprimer que les tables que tu as créées toi-même."
   - code: sql-c7-b6
     kind: CHOIX_MULTIPLE
     difficulty: 3
