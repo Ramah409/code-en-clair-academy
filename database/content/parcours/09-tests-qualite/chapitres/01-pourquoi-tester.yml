@@ -109,7 +109,7 @@ lessons:
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: tests-strategie
-        prompt: "Dans un test, `assertEquals(10, total)` correspond à quelle étape ?"
+        prompt: "Dans un test, `assertEquals(\"Bonjour Awa\", message)` correspond à quelle étape ?"
         choices:
           - label: "Vérifier"
             correct: true
@@ -154,18 +154,18 @@ lessons:
         kind: CHOIX_MULTIPLE
         difficulty: 2
         skill: tests-strategie
-        prompt: "Quels cas faut-il tester pour une méthode de retrait d'argent ? (plusieurs réponses)"
+        prompt: "Quels cas faut-il tester pour une méthode d'inscription ? (plusieurs réponses)"
         choices:
-          - label: "Un retrait normal"
+          - label: "Une inscription normale"
             correct: true
             why: "Le chemin heureux."
-          - label: "Un montant supérieur au solde"
+          - label: "Un e-mail déjà utilisé"
             correct: true
             why: "Cas d'erreur métier."
-          - label: "Un montant négatif ou nul"
+          - label: "Un e-mail vide ou sans @"
             correct: true
             why: "Valeur limite invalide."
-          - label: "La couleur du bouton « Retirer »"
+          - label: "La couleur du bouton « S'inscrire »"
             correct: false
             why: "Ce n'est pas la logique de la méthode."
         explanation: "Chemin heureux, erreurs et valeurs limites."
@@ -188,7 +188,7 @@ lessons:
           language: text
           caseSensitive: false
           template: |
-            Tester calculerTotal() avec un faux repository      : test [[1]]
+            Tester inscrire() avec un faux repository           : test [[1]]
             Tester le repository sur un vrai PostgreSQL          : test d'[[2]]
             Un robot clique dans le site complet                 : test de [[3]] en bout
             La cliente vérifie que le besoin est couvert          : test de [[4]]
@@ -240,7 +240,7 @@ lessons:
     skills: [java-tests, tests-strategie]
     xp: 25
     memo: |
-      - `@Test` : cette méthode est un test. Nom lisible : `refuseUnMontantNegatif()`.
+      - `@Test` : cette méthode est un test. Nom lisible : `refuseUnInviteEnDouble()`.
       - `assertEquals(attendu, obtenu)` : **l'attendu d'abord**.
       - `assertTrue`, `assertFalse`, `assertNull`, `assertThrows(Exception.class, () -> …)`.
       - `@BeforeEach` : exécuté avant chaque test, pour repartir d'un état propre.
@@ -258,42 +258,42 @@ lessons:
       - type: code
         id: code-junit
         language: java
-        title: "CompteTest.java"
+        title: "ListeInvitesTest.java"
         code: |
-          class CompteTest {
+          class ListeInvitesTest {
 
-              private Compte compte;
+              private ListeInvites liste;
 
               @BeforeEach
               void preparer() {
-                  compte = new Compte(100);
+                  liste = new ListeInvites();
               }
 
               @Test
-              void retireUnMontantDisponible() {
-                  compte.retirer(30);
-                  assertEquals(70, compte.getSolde());
+              void ajouteUnInvite() {
+                  liste.ajouter("Awa");
+                  assertTrue(liste.contient("Awa"));
               }
 
               @Test
-              void refuseUnRetraitSuperieurAuSolde() {
-                  assertThrows(SoldeInsuffisantException.class, () -> compte.retirer(150));
-                  assertEquals(100, compte.getSolde());
+              void refuseUnInviteEnDouble() {
+                  liste.ajouter("Awa");
+                  assertThrows(InviteDejaPresentException.class, () -> liste.ajouter("Awa"));
               }
           }
         lines:
           - n: 5
-            note: "`@BeforeEach` : un compte neuf de 100 € avant **chaque** test."
+            note: "`@BeforeEach` : une liste neuve et vide avant **chaque** test."
           - n: 10
             note: "`@Test` : JUnit exécutera cette méthode."
           - n: 11
             note: "Le nom dit ce qu'on vérifie, comme une phrase."
           - n: 13
-            note: "`assertEquals(attendu, obtenu)` : 70 est attendu."
+            note: "`assertTrue(...)` : on vérifie qu'Awa est bien dans la liste."
           - n: 18
-            note: "On vérifie que l'exception est bien lancée…"
+            note: "On prépare la situation : Awa est déjà invitée…"
           - n: 19
-            note: "… et que le solde n'a pas bougé."
+            note: "… et on vérifie que l'ajouter une deuxième fois lance bien l'exception."
       - type: question
         ref: tst-ju-q1
         review: code-junit
@@ -333,15 +333,15 @@ lessons:
       - type: exercise
         ref: tst-ex-junit-guide
       - type: text
-        md: "En autonomie : teste une méthode de remise."
+        md: "En autonomie : teste une méthode qui fabrique des initiales."
       - type: exercise
         ref: tst-ex-junit
       - type: jury
         items:
           - q: "Comment nommez-vous vos tests ?"
-            a: "Par une phrase qui décrit le comportement attendu, par exemple refuseUnRetraitSuperieurAuSolde, éventuellement avec @DisplayName. En cas d'échec, le rapport dit tout de suite quelle règle est cassée."
+            a: "Par une phrase qui décrit le comportement attendu, par exemple refuseUnInviteEnDouble, éventuellement avec @DisplayName. En cas d'échec, le rapport dit tout de suite quelle règle est cassée."
           - q: "Que sont les valeurs limites ?"
-            a: "Les valeurs juste avant, pile sur et juste après une frontière : 17, 18 et 19 pour la majorité, 0 pour une quantité. C'est là que se cachent la plupart des bugs, comme un < au lieu de <=. Je les teste avec des tests paramétrés."
+            a: "Les valeurs juste avant, pile sur et juste après une frontière : 17, 18 et 19 ans pour la majorité, un texte vide pour un champ obligatoire. C'est là que se cachent la plupart des bugs, comme un < au lieu de <=. Je les teste avec des tests paramétrés."
       - type: quiz
         items:
           - ref: tst-ju-q3
@@ -371,15 +371,15 @@ lessons:
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: java-tests
-        prompt: "Pour une règle « gratuit dès 50 € d'achat », quelles valeurs tester en priorité ?"
+        prompt: "Pour une règle « accès réservé aux personnes majeures (18 ans) », quels âges tester en priorité ?"
         choices:
-          - label: "49,99 € ; 50 € ; 50,01 €"
+          - label: "17 ans ; 18 ans ; 19 ans"
             correct: true
             why: "Autour de la limite."
-          - label: "10 € ; 200 € ; 1 000 €"
+          - label: "5 ans ; 40 ans ; 90 ans"
             correct: false
             why: "Loin de la frontière : on raterait un < au lieu de <=."
-          - label: "Seulement 50 €"
+          - label: "Seulement 18 ans"
             correct: false
             why: "Il faut aussi juste avant et juste après."
         explanation: "Les bugs aiment les frontières."
@@ -387,7 +387,7 @@ lessons:
         kind: VRAI_FAUX
         difficulty: 2
         skill: java-tests
-        prompt: "Grâce à `@BeforeEach`, chaque test part d'un compte neuf à 100 €."
+        prompt: "Grâce à `@BeforeEach`, chaque test part d'une liste d'invités neuve et vide."
         choices:
           - label: "Vrai"
             correct: true
@@ -441,14 +441,14 @@ lessons:
             void preparer() { panier = new Panier(); }
 
             @[[2]]
-            void calculeLeTotal() {
-                panier.ajouter(new Article("Café", 3));
-                [[3]](3, panier.total());
+            void garderLeNomDeLArticle() {
+                panier.ajouter("Café");
+                [[3]]("Café", panier.premierArticle());
             }
 
             @Test
-            void refuseUneQuantiteNegative() {
-                [[4]](IllegalArgumentException.class, () -> panier.ajouter(new Article("Thé", -1)));
+            void refuseUnArticleSansNom() {
+                [[4]](IllegalArgumentException.class, () -> panier.ajouter(""));
             }
           blanks:
             - ["BeforeEach"]
@@ -457,57 +457,58 @@ lessons:
             - ["assertThrows"]
       - slug: tst-ex-junit
         kind: CODE_LIBRE
-        title: "Tester une remise"
+        title: "Tester des initiales"
         difficulty: INTERMEDIAIRE
         skill: java-tests
         statement: |
-          La méthode statique `Remise.calculer(double montant)` renvoie **10 %** de remise à partir de **100 €**
-          (inclus), sinon 0. Elle lance `IllegalArgumentException` si le montant est négatif.
+          La méthode statique `Initiales.de(String nomComplet)` renvoie les initiales en majuscules :
+          `"Awa Diallo"` donne `"AD"`, `"Léo"` donne `"L"`. Elle lance `IllegalArgumentException` si le
+          texte est vide.
 
-          Écris la classe `RemiseTest` avec **trois** tests :
-          - `aucuneRemiseSousCentEuros` : 99.99 → 0 ;
-          - `dixPourcentDesCentEuros` : 100 → 10 ;
-          - `refuseUnMontantNegatif` : -5 → exception.
+          Écris la classe `InitialesTest` avec **trois** tests :
+          - `prenomEtNom` : `"Awa Diallo"` → `"AD"` ;
+          - `prenomSeul` : `"Léo"` → `"L"` ;
+          - `refuseUnTexteVide` : `""` → exception.
         criteria: "Trois méthodes @Test, deux assertEquals avec l'attendu en premier, un assertThrows."
         hints:
-          - "`@Test void aucuneRemiseSousCentEuros() { assertEquals(0, Remise.calculer(99.99)); }`"
-          - "`assertEquals(10, Remise.calculer(100));`"
-          - "`assertThrows(IllegalArgumentException.class, () -> Remise.calculer(-5));`"
+          - "`@Test void prenomEtNom() { assertEquals(\"AD\", Initiales.de(\"Awa Diallo\")); }`"
+          - "`assertEquals(\"L\", Initiales.de(\"Léo\"));`"
+          - "`assertThrows(IllegalArgumentException.class, () -> Initiales.de(\"\"));`"
         solution: |
-          class RemiseTest {
+          class InitialesTest {
 
               @Test
-              void aucuneRemiseSousCentEuros() {
-                  assertEquals(0, Remise.calculer(99.99));
+              void prenomEtNom() {
+                  assertEquals("AD", Initiales.de("Awa Diallo"));
               }
 
               @Test
-              void dixPourcentDesCentEuros() {
-                  assertEquals(10, Remise.calculer(100));
+              void prenomSeul() {
+                  assertEquals("L", Initiales.de("Léo"));
               }
 
               @Test
-              void refuseUnMontantNegatif() {
-                  assertThrows(IllegalArgumentException.class, () -> Remise.calculer(-5));
+              void refuseUnTexteVide() {
+                  assertThrows(IllegalArgumentException.class, () -> Initiales.de(""));
               }
           }
-        explanation: "Juste sous la limite, pile sur la limite, et une valeur interdite : trois tests qui protègent la règle."
+        explanation: "Le cas normal, un cas limite (un seul mot) et une valeur interdite (texte vide) : trois tests qui protègent la règle."
         xp: 25
         payload:
           language: java
           starter: |
-            class RemiseTest {
+            class InitialesTest {
 
             }
           checks:
             - pattern: '\A(?>[\s\S]*?@Test\b){3}'
               message: "Écris trois méthodes annotées `@Test`."
-            - pattern: 'void\s+aucuneRemiseSousCentEuros\s*\(\s*\)[^}]*assertEquals\s*\(\s*0(?:\.0+)?\s*,\s*Remise\.calculer\s*\(\s*99\.99\s*\)'
-              message: "`aucuneRemiseSousCentEuros` : `assertEquals(0, Remise.calculer(99.99))`."
-            - pattern: 'void\s+dixPourcentDesCentEuros\s*\(\s*\)[^}]*assertEquals\s*\(\s*10(?:\.0+)?\s*,\s*Remise\.calculer\s*\(\s*100(?:\.0+)?\s*\)'
-              message: "`dixPourcentDesCentEuros` : `assertEquals(10, Remise.calculer(100))`."
-            - pattern: 'void\s+refuseUnMontantNegatif\s*\(\s*\)[^}]*assertThrows\s*\(\s*IllegalArgumentException\.class\s*,\s*\(\s*\)\s*->\s*Remise\.calculer\s*\(\s*-\s*5(?:\.0+)?\s*\)'
-              message: "`refuseUnMontantNegatif` : `assertThrows(IllegalArgumentException.class, () -> Remise.calculer(-5))`."
+            - pattern: 'void\s+prenomEtNom\s*\(\s*\)[^}]*assertEquals\s*\(\s*"AD"\s*,\s*Initiales\.de\s*\(\s*"Awa Diallo"\s*\)'
+              message: "`prenomEtNom` : `assertEquals(\"AD\", Initiales.de(\"Awa Diallo\"))` (l'attendu d'abord)."
+            - pattern: 'void\s+prenomSeul\s*\(\s*\)[^}]*assertEquals\s*\(\s*"L"\s*,\s*Initiales\.de\s*\(\s*"Léo"\s*\)'
+              message: "`prenomSeul` : `assertEquals(\"L\", Initiales.de(\"Léo\"))`."
+            - pattern: 'void\s+refuseUnTexteVide\s*\(\s*\)[^}]*assertThrows\s*\(\s*IllegalArgumentException\.class\s*,\s*\(\s*\)\s*->\s*Initiales\.de\s*\(\s*""\s*\)'
+              message: "`refuseUnTexteVide` : `assertThrows(IllegalArgumentException.class, () -> Initiales.de(\"\"))`."
 
 bank:
   - code: tst-c1-b1

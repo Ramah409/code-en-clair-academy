@@ -289,13 +289,13 @@ lessons:
           destination (refactoriser).
       - type: steps
         id: etapes-tdd
-        title: "Un tour de TDD pour « la livraison est gratuite dès 50 € »"
+        title: "Un tour de TDD pour « un pseudo ne peut pas être vide »"
         items:
-          - "**Rouge** : `assertEquals(0, Livraison.frais(50))` → ne compile pas ou échoue, la méthode n'existe pas."
-          - "**Vert** : `return montant >= 50 ? 0 : 4.9;` → le test passe."
-          - "**Rouge** : `assertEquals(4.9, Livraison.frais(49.99))` → on ajoute le cas suivant."
+          - "**Rouge** : `assertFalse(Pseudo.estValide(\"\"))` → ne compile pas ou échoue, la méthode n'existe pas."
+          - "**Vert** : `return !pseudo.isBlank();` → le test passe."
+          - "**Rouge** : `assertTrue(Pseudo.estValide(\"awa\"))` → on ajoute le cas suivant."
           - "**Vert** : il passe déjà ? Parfait, la règle est bien écrite."
-          - "**Refactoriser** : remplacer `50` et `4.9` par des constantes nommées, relancer les tests."
+          - "**Refactoriser** : donner un nom clair aux messages d'erreur, relancer les tests."
       - type: question
         ref: tst-tdd-q1
         review: etapes-tdd
@@ -436,56 +436,51 @@ lessons:
         difficulty: INTERMEDIAIRE
         skill: java-tests
         statement: |
-          Ces tests sont rouges. Écris la classe `Livraison` avec la méthode statique
-          `double frais(double montant)` qui les fait passer :
+          Ces tests sont rouges. Écris la classe `Pseudo` avec la méthode statique
+          `boolean estValide(String pseudo)` qui les fait passer :
 
           ```java
-          assertEquals(4.9, Livraison.frais(49.99));
-          assertEquals(0, Livraison.frais(50));
-          assertThrows(IllegalArgumentException.class, () -> Livraison.frais(-1));
+          assertTrue(Pseudo.estValide("awa"));
+          assertFalse(Pseudo.estValide("   "));
+          assertThrows(IllegalArgumentException.class, () -> Pseudo.estValide(null));
           ```
 
-          Utilise deux constantes : `SEUIL_GRATUITE = 50` et `FRAIS_STANDARD = 4.9`.
-        criteria: "Méthode statique, exception si montant négatif, comparaison >= au seuil, constantes nommées."
+          Un pseudo est valide s'il n'est pas vide (`isBlank()` répond `true` pour un texte vide ou fait
+          seulement d'espaces). Le message de l'exception est rangé dans une constante `MESSAGE_ABSENT`.
+        criteria: "Méthode statique, exception si le pseudo est null, test isBlank, constante nommée pour le message."
         hints:
-          - "`private static final double SEUIL_GRATUITE = 50;`"
-          - "`if (montant < 0) throw new IllegalArgumentException(\"Montant négatif\");`"
-          - "`return montant >= SEUIL_GRATUITE ? 0 : FRAIS_STANDARD;`"
+          - "`private static final String MESSAGE_ABSENT = \"Pseudo absent\";`"
+          - "`if (pseudo == null) throw new IllegalArgumentException(MESSAGE_ABSENT);`"
+          - "`return !pseudo.isBlank();`"
         solution: |
-          public class Livraison {
+          public class Pseudo {
 
-              private static final double SEUIL_GRATUITE = 50;
-              private static final double FRAIS_STANDARD = 4.9;
+              private static final String MESSAGE_ABSENT = "Pseudo absent";
 
-              public static double frais(double montant) {
-                  if (montant < 0) {
-                      throw new IllegalArgumentException("Montant négatif");
+              public static boolean estValide(String pseudo) {
+                  if (pseudo == null) {
+                      throw new IllegalArgumentException(MESSAGE_ABSENT);
                   }
-                  return montant >= SEUIL_GRATUITE ? 0 : FRAIS_STANDARD;
+                  return !pseudo.isBlank();
               }
           }
-        explanation: "Le code minimal qui satisfait les trois tests, avec des noms à la place des nombres magiques."
+        explanation: "Le code minimal qui satisfait les trois tests, avec un nom clair à la place d'un texte écrit en dur."
         xp: 20
         payload:
           language: java
           starter: |
-            public class Livraison {
+            public class Pseudo {
 
             }
           checks:
-            - pattern: 'static\s+final\s+double\s+SEUIL_GRATUITE\s*=\s*50(?:\.0+)?\s*;'
-              message: "Déclare la constante `SEUIL_GRATUITE = 50`."
-            - pattern: 'static\s+final\s+double\s+FRAIS_STANDARD\s*=\s*4\.9\s*;'
-              message: "Déclare la constante `FRAIS_STANDARD = 4.9`."
-            - pattern: 'public\s+static\s+double\s+frais\s*\(\s*double\s+montant\s*\)'
-              message: "Écris `public static double frais(double montant)`."
-            - pattern: 'if\s*\(\s*montant\s*<\s*0(?:\.0+)?\s*\)\s*\{?\s*throw\s+new\s+IllegalArgumentException'
-              message: "Lance une `IllegalArgumentException` si le montant est négatif."
-            - pattern: 'montant\s*>=\s*SEUIL_GRATUITE|SEUIL_GRATUITE\s*<=\s*montant|montant\s*<\s*SEUIL_GRATUITE'
-              message: "Compare le montant au seuil avec `>=` (50 € doit être gratuit)."
-            - pattern: 'return[^;]*\b(?:50|4\.9)\b'
-              absent: true
-              message: "Utilise les constantes au lieu d'écrire 50 ou 4.9 dans le return."
+            - pattern: 'static\s+final\s+String\s+MESSAGE_ABSENT\s*=\s*"[^"]+"\s*;'
+              message: "Déclare la constante `MESSAGE_ABSENT`."
+            - pattern: 'public\s+static\s+boolean\s+estValide\s*\(\s*String\s+pseudo\s*\)'
+              message: "Écris `public static boolean estValide(String pseudo)`."
+            - pattern: 'if\s*\(\s*pseudo\s*==\s*null\s*\)\s*\{?\s*throw\s+new\s+IllegalArgumentException\s*\(\s*MESSAGE_ABSENT\s*\)'
+              message: "Lance une `IllegalArgumentException(MESSAGE_ABSENT)` si le pseudo est null."
+            - pattern: 'return\s*!\s*pseudo\.isBlank\s*\(\s*\)|return\s+pseudo\.isBlank\s*\(\s*\)\s*==\s*false'
+              message: "Renvoie `!pseudo.isBlank()` : valide s'il n'est pas vide."
 
 bank:
   - code: tst-c2-b1

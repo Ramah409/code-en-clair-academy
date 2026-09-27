@@ -18,7 +18,7 @@ lessons:
       - **TypeScript** = JavaScript + **types**. Le navigateur exécute ensuite du JavaScript normal.
       - Types de base : `string` (texte), `number` (nombre), `boolean` (vrai/faux), `string[]` (liste de textes).
       - `interface` : la **forme** d'un objet (ses champs et leurs types). `?` = champ facultatif.
-      - Fonction typée : `function total(prix: number, qte: number): number { … }`.
+      - Fonction typée : `function saluer(prenom: string): string { … }`.
       - Les erreurs de type sont signalées **avant** l'exécution, dans l'éditeur.
     commonMistakes: |
       - Écrire `String` ou `Number` avec une majuscule au lieu de `string` et `number`.
@@ -87,19 +87,19 @@ lessons:
             enStock?: boolean;
           }
 
-          function prixTTC(produit: Produit): number {
-            return produit.prix * 1.2;
+          function etiquette(produit: Produit): string {
+            return `${produit.nom} : ${produit.prix} €`;
           }
 
           const cafe: Produit = { id: 1, nom: "Café", prix: 2.5 };
-          console.log(prixTTC(cafe)); // 3
+          console.log(etiquette(cafe)); // Café : 2.5 €
         lines:
           - n: 1
             note: "`interface Produit` : le plan de tout objet « produit »."
           - n: 5
             note: "`enStock?` : champ facultatif, on peut ne pas le donner."
           - n: 8
-            note: "Le paramètre doit être un `Produit`, et la fonction renvoie un `number`."
+            note: "Le paramètre doit être un `Produit`, et la fonction renvoie un texte (`string`)."
           - n: 12
             note: "Si on oublie `nom` ou si on écrit `prix: \"2.5\"`, TypeScript refuse."
       - type: question

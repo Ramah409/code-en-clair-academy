@@ -15,7 +15,7 @@ lessons:
     skills: [poo, tests-strategie]
     xp: 25
     memo: |
-      - **Noms** : dire l'intention (`calculerTotalTtc`, `estMajeur`), pas le type (`liste2`, `tmp`).
+      - **Noms** : dire l'intention (`envoyerEmailBienvenue`, `estMajeur`), pas le type (`liste2`, `tmp`).
       - **Fonctions courtes** qui font **une seule chose**.
       - **DRY** (Don't Repeat Yourself) : une règle écrite à un seul endroit.
       - **Nombres magiques** → constantes nommées.
@@ -40,21 +40,21 @@ lessons:
         left:
           title: "Difficile à lire"
           code: |
-            double c(List<Double> l, int t) {
-                double r = 0;
-                for (double x : l) r += x;
-                if (t == 1) r = r * 1.2;
+            String f(String p, boolean b) {
+                String r = "";
+                if (b == true) r = "Bonjour " + p;
+                else r = "Au revoir " + p;
                 return r;
             }
           language: java
         right:
           title: "Propre"
           code: |
-            private static final double TVA = 0.20;
+            private static final String BONJOUR = "Bonjour ";
+            private static final String AU_REVOIR = "Au revoir ";
 
-            double totalTtc(List<Double> prixHt) {
-                double totalHt = somme(prixHt);
-                return totalHt * (1 + TVA);
+            String salutation(String prenom, boolean arrivee) {
+                return (arrivee ? BONJOUR : AU_REVOIR) + prenom;
             }
           language: java
       - type: question
@@ -65,7 +65,7 @@ lessons:
         term: "Responsabilité unique (le S de SOLID)"
         md: |
           Un **couteau suisse** fait tout… mal. Un **économe** épluche très bien. Une classe qui envoie des
-          e-mails, calcule des prix **et** écrit en base a trois raisons de changer : on la découpe.
+          e-mails, génère des PDF **et** écrit en base a trois raisons de changer : on la découpe.
       - type: question
         ref: tst-cp-q2
         review: def-solid
@@ -98,7 +98,7 @@ lessons:
         skill: poo
         prompt: "Quel nom de méthode est le plus clair ?"
         choices:
-          - label: "calculerFraisDeLivraison(commande)"
+          - label: "envoyerEmailConfirmation(commande)"
             correct: true
             why: "Il dit exactement ce qu'elle fait."
           - label: "calc(c)"
@@ -112,7 +112,7 @@ lessons:
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: poo
-        prompt: "`CommandeService` calcule les prix, envoie les e-mails et génère les PDF. Quel principe est violé ?"
+        prompt: "`CommandeService` enregistre les commandes, envoie les e-mails et génère les PDF. Quel principe est violé ?"
         choices:
           - label: "La responsabilité unique"
             correct: true
@@ -196,47 +196,47 @@ lessons:
         skill: poo
         statement: |
           Cette méthode fonctionne, mais elle est illisible. Refactorise-la **sans changer son comportement** :
-          - renomme-la `prixApresRemise(double prix, boolean fidele)` ;
-          - remplace `0.1` par une constante `REMISE_FIDELITE` ;
-          - supprime la variable `r` inutile : renvoie directement le calcul.
-        criteria: "Nouveau nom et paramètres clairs, constante REMISE_FIDELITE, plus de 0.1 dans la méthode, plus de variable r."
+          - renomme-la `salutation(String prenom, boolean matin)` ;
+          - range le texte `"Bonjour "` dans une constante `BONJOUR` et `"Bonsoir "` dans une constante `BONSOIR` ;
+          - supprime la variable `r` inutile : renvoie directement le message.
+        criteria: "Nouveau nom et paramètres clairs, constantes BONJOUR et BONSOIR, plus de variable r."
         hints:
-          - "`private static final double REMISE_FIDELITE = 0.1;`"
-          - "`double prixApresRemise(double prix, boolean fidele) {`"
-          - "`return fidele ? prix * (1 - REMISE_FIDELITE) : prix;`"
+          - "`private static final String BONJOUR = \"Bonjour \";` (et de même pour BONSOIR)."
+          - "`String salutation(String prenom, boolean matin) {`"
+          - "`return (matin ? BONJOUR : BONSOIR) + prenom;`"
         solution: |
-          private static final double REMISE_FIDELITE = 0.1;
+          private static final String BONJOUR = "Bonjour ";
+          private static final String BONSOIR = "Bonsoir ";
 
-          double prixApresRemise(double prix, boolean fidele) {
-              return fidele ? prix * (1 - REMISE_FIDELITE) : prix;
+          String salutation(String prenom, boolean matin) {
+              return (matin ? BONJOUR : BONSOIR) + prenom;
           }
-        explanation: "Même résultat, mais la règle se lit en une ligne."
+        explanation: "Même résultat, mais la règle se lit en une ligne et les textes ont un nom."
         xp: 20
         payload:
           language: java
           starter: |
-            double pr(double p, boolean f) {
-                double r;
-                if (f == true) {
-                    r = p - p * 0.1;
+            String sl(String p, boolean m) {
+                String r;
+                if (m == true) {
+                    r = "Bonjour " + p;
                 } else {
-                    r = p;
+                    r = "Bonsoir " + p;
                 }
                 return r;
             }
           checks:
-            - pattern: 'double\s+prixApresRemise\s*\(\s*double\s+prix\s*,\s*boolean\s+fidele\s*\)'
-              message: "Renomme en `prixApresRemise(double prix, boolean fidele)`."
-            - pattern: 'static\s+final\s+double\s+REMISE_FIDELITE\s*=\s*0\.1\s*;'
-              message: "Déclare `private static final double REMISE_FIDELITE = 0.1;`."
-            - pattern: 'prixApresRemise[^}]*0\.1'
+            - pattern: 'String\s+salutation\s*\(\s*String\s+prenom\s*,\s*boolean\s+matin\s*\)'
+              message: "Renomme en `salutation(String prenom, boolean matin)`."
+            - pattern: 'static\s+final\s+String\s+BONJOUR\s*=\s*"Bonjour "\s*;'
+              message: "Déclare `private static final String BONJOUR = \"Bonjour \";`."
+            - pattern: 'static\s+final\s+String\s+BONSOIR\s*=\s*"Bonsoir "\s*;'
+              message: "Déclare `private static final String BONSOIR = \"Bonsoir \";`."
+            - pattern: '\bString\s+r\s*[;=]'
               absent: true
-              message: "Utilise `REMISE_FIDELITE` au lieu de 0.1 dans la méthode."
-            - pattern: '\bdouble\s+r\s*[;=]'
-              absent: true
-              message: "Supprime la variable `r` : renvoie directement le résultat."
-            - pattern: 'REMISE_FIDELITE[\s\S]*prixApresRemise[\s\S]*REMISE_FIDELITE'
-              message: "Utilise `REMISE_FIDELITE` dans le calcul."
+              message: "Supprime la variable `r` : renvoie directement le message."
+            - pattern: 'salutation[\s\S]*\bBONJOUR\b[\s\S]*\bBONSOIR\b|salutation[\s\S]*\bBONSOIR\b[\s\S]*\bBONJOUR\b'
+              message: "Utilise les constantes BONJOUR et BONSOIR dans la méthode."
 
   # ===================================================================== LEÇON 2
   - slug: tst-git-ci
@@ -480,17 +480,17 @@ lessons:
           sous la forme `git commit -m "…"`. Chaque message commence par un **verbe au présent** (Ajoute,
           Corrige, Supprime, Renomme, Refactorise…) et fait au moins 20 caractères :
           1. tu as ajouté la validation de l'e-mail à l'inscription ;
-          2. tu as corrigé le calcul du total quand le panier est vide ;
-          3. tu as extrait le calcul des frais de livraison dans un service.
+          2. tu as corrigé l'affichage du panier quand il est vide ;
+          3. tu as extrait l'envoi des e-mails de bienvenue dans un service.
         criteria: "Trois commandes git commit -m, chaque message commence par un verbe d'action et est explicite."
         hints:
           - "`git commit -m \"Ajoute la validation de l'e-mail à l'inscription\"`"
-          - "`git commit -m \"Corrige le total d'un panier vide\"`"
-          - "`git commit -m \"Extrait le calcul des frais de livraison dans LivraisonService\"`"
+          - "`git commit -m \"Corrige l'affichage d'un panier vide\"`"
+          - "`git commit -m \"Extrait l'envoi des e-mails de bienvenue dans EmailService\"`"
         solution: |
           git commit -m "Ajoute la validation du format de l'e-mail à l'inscription"
-          git commit -m "Corrige le calcul du total quand le panier est vide"
-          git commit -m "Extrait le calcul des frais de livraison dans LivraisonService"
+          git commit -m "Corrige l'affichage du panier quand il est vide"
+          git commit -m "Extrait l'envoi des e-mails de bienvenue dans EmailService"
         explanation: "Dans six mois, `git log` racontera clairement l'histoire du projet."
         xp: 20
         payload:
@@ -502,10 +502,10 @@ lessons:
               message: "Écris trois `git commit -m \"…\"` qui commencent par un verbe (Ajoute, Corrige, Extrait…) avec au moins 20 caractères."
             - pattern: '(?i)git\s+commit\s+-m\s+"[^"]*(?:e-?mail|inscription)[^"]*"'
               message: "Le premier commit doit parler de l'e-mail ou de l'inscription."
-            - pattern: '(?i)git\s+commit\s+-m\s+"[^"]*(?:total|panier)[^"]*"'
-              message: "Le deuxième commit doit parler du total ou du panier."
-            - pattern: '(?i)git\s+commit\s+-m\s+"[^"]*(?:livraison|frais)[^"]*"'
-              message: "Le troisième commit doit parler des frais de livraison."
+            - pattern: '(?i)git\s+commit\s+-m\s+"[^"]*panier[^"]*"'
+              message: "Le deuxième commit doit parler du panier."
+            - pattern: '(?i)git\s+commit\s+-m\s+"[^"]*(?:e-?mail|bienvenue)[^"]*"'
+              message: "Le troisième commit doit parler de l'envoi des e-mails."
             - pattern: '(?i)git\s+commit\s+-m\s+"\s*(?:modif|fix|wip|test|update|maj|ok)?\s*"'
               absent: true
               message: "Évite les messages vides ou du type « modif », « fix », « wip »."

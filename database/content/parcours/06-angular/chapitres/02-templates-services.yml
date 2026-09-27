@@ -287,7 +287,7 @@ lessons:
       - `input()` : une donnée reçue du **parent** (`<app-carte [produit]="p" />`).
       - `output()` : un événement envoyé au **parent** (`<app-carte (ajout)="ajouter($event)" />`).
     commonMistakes: |
-      - Oublier les parenthèses pour lire un signal : `{{ total }}` au lieu de `{{ total() }}`.
+      - Oublier les parenthèses pour lire un signal : `{{ resume }}` au lieu de `{{ resume() }}`.
       - Modifier un tableau dans un signal sans créer un nouveau tableau (`push`) : l'écran ne se met pas à jour.
       - Vouloir modifier un `input()` depuis l'enfant : il appartient au parent.
     blocks:
@@ -311,27 +311,27 @@ lessons:
           @Component({
             selector: 'app-panier',
             template: `
-              <p>{{ articles().length }} article(s) – total {{ total() }} €</p>
-              <button (click)="ajouter(3)">Ajouter un café</button>
+              <p>Dans ton panier : {{ resume() }}</p>
+              <button (click)="ajouter('café')">Ajouter un café</button>
             `,
           })
           export class PanierComponent {
-            articles = signal<number[]>([]);
-            total = computed(() => this.articles().reduce((s, prix) => s + prix, 0));
+            articles = signal<string[]>([]);
+            resume = computed(() => this.articles().join(', ') || 'rien pour l\'instant');
 
-            ajouter(prix: number) {
-              this.articles.update(liste => [...liste, prix]);
+            ajouter(nom: string) {
+              this.articles.update(liste => [...liste, nom]);
             }
           }
         lines:
           - n: 6
-            note: "On lit un signal en l'appelant : `articles()`, `total()`."
+            note: "On lit un signal en l'appelant : `resume()`."
           - n: 11
-            note: "`signal<number[]>([])` : une boîte qui contient une liste de prix, vide au départ."
+            note: "`signal<string[]>([])` : une boîte qui contient une liste de noms d'articles, vide au départ."
           - n: 12
-            note: "`computed` : le total se recalcule tout seul quand `articles` change."
+            note: "`computed` : le résumé (« café, thé ») se reconstruit tout seul quand `articles` change."
           - n: 15
-            note: "`update` crée une **nouvelle** liste avec `[...liste, prix]` : l'ancienne plus le nouveau prix."
+            note: "`update` crée une **nouvelle** liste avec `[...liste, nom]` : l'ancienne plus le nouvel article."
       - type: question
         ref: ng-sg-q1
         review: code-signal
@@ -371,7 +371,7 @@ lessons:
         ref: ng-sg-q2
         review: def-input-output
       - type: text
-        md: "Exercice guidé : complète ce compteur à signaux."
+        md: "Exercice guidé : complète ce message à signaux."
       - type: exercise
         ref: ng-ex-signal-guide
       - type: text
@@ -429,17 +429,17 @@ lessons:
         kind: RESULTAT_CODE
         difficulty: 2
         skill: angular-composants
-        prompt: "Que vaut `double()` à la fin ?"
+        prompt: "Que vaut `salutation()` à la fin ?"
         snippet: |
-          const n = signal(2);
-          const double = computed(() => n() * 2);
-          n.set(5);
+          const prenom = signal('Awa');
+          const salutation = computed(() => `Bonjour ${prenom()}`);
+          prenom.set('Léo');
         language: typescript
         choices:
-          - label: "10"
+          - label: "Bonjour Léo"
             correct: true
-            why: "computed se recalcule avec la nouvelle valeur 5."
-          - label: "4"
+            why: "computed se reconstruit avec la nouvelle valeur « Léo »."
+          - label: "Bonjour Awa"
             correct: false
             why: "computed n'est pas figé à la première valeur."
           - label: "Une erreur"
@@ -478,33 +478,33 @@ lessons:
     exercises:
       - slug: ng-ex-signal-guide
         kind: COMPLETER
-        title: "Un compteur à signaux"
+        title: "Un message à signaux"
         difficulty: FACILE
         skill: angular-composants
-        statement: "Complète : créer le signal, calculer le double, augmenter de 1."
+        statement: "Complète : créer le signal, fabriquer un message dérivé, changer le prénom."
         criteria: "Les quatre trous sont corrects."
         hints:
-          - "On crée une boîte avec signal(0)."
-          - "Une valeur dérivée : computed."
-          - "signal, computed, update, compteur."
-        solution: '["signal", "computed", "update", "compteur"]'
-        explanation: "signal pour stocker, computed pour dériver, update pour changer à partir de l'ancienne valeur."
+          - "On crée une boîte avec signal('Awa')."
+          - "Une valeur dérivée : computed. Remplacer la valeur : set."
+          - "signal, computed, set, message."
+        solution: '["signal", "computed", "set", "message"]'
+        explanation: "signal pour stocker, computed pour dériver, set pour remplacer la valeur."
         xp: 10
         payload:
           language: typescript
           template: |
-            compteur = [[1]](0);
-            double = [[2]](() => this.compteur() * 2);
+            prenom = [[1]]('Awa');
+            message = [[2]](() => `Bienvenue ${this.prenom()} !`);
 
-            plusUn() {
-              this.compteur.[[3]](v => v + 1);
+            changer(nouveau: string) {
+              this.prenom.[[3]](nouveau);
             }
             // template : <p>{{ [[4]]() }}</p>
           blanks:
             - ["signal"]
             - ["computed"]
-            - ["update"]
-            - ["compteur"]
+            - ["set"]
+            - ["message"]
       - slug: ng-ex-input-output
         kind: CODE_LIBRE
         title: "Une carte de tâche"
@@ -706,7 +706,7 @@ lessons:
           - label: "Le HTML de la page"
             correct: false
             why: "Il va dans le template du composant."
-          - label: "Les règles de calcul (total, remise)"
+          - label: "Les règles métier (un article déjà dans le panier, un compte désactivé)"
             correct: true
             why: "Logique réutilisable et testable."
         explanation: "Le composant affiche, le service sait faire."
