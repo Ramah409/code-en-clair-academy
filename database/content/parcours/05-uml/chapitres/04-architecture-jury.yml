@@ -2,27 +2,26 @@ slug: uml-architecture-jury
 position: 4
 level: EXAMEN
 title: "Architecture et conception devant le jury"
-summary: "Décrire l'architecture d'une application (trois tiers, couches, déploiement) et répondre aux questions de conception du jury."
-quizQuestionCount: 10
+summary: "Décrire l'architecture d'une application (trois tiers, couches, MVC ou REST, déploiement), reconnaître les patrons de conception et répondre aux questions du jury. Une seule notion par leçon."
+quizQuestionCount: 14
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: uml-architecture-couches
-    title: "Architecture en couches et déploiement"
-    duration: 13
-    objective: "Expliquer l'architecture trois tiers, les couches du backend, la différence MVC / API REST et dessiner un diagramme de déploiement."
+    title: "Trois tiers et couches"
+    duration: 11
+    objective: "Expliquer l'architecture trois tiers et l'ordre des couches du backend : contrôleur, service, repository."
     prerequisites: "Chapitre « Séquences et activités »."
     skills: [uml-architecture]
-    xp: 25
+    xp: 15
     memo: |
       - **Trois tiers** : présentation (Angular), logique métier (API Spring Boot), données (PostgreSQL).
-      - **Couches du backend** : contrôleur → service → repository ; chaque couche n'appelle que la suivante.
-      - **MVC** : Modèle, Vue, Contrôleur dans la même application ; une **API REST** renvoie du JSON, la vue est dans le frontend.
-      - **Diagramme de déploiement** : où tourne chaque partie (navigateur, serveur, conteneur, base).
+      - **Couches du backend** : contrôleur → service → repository ; chaque couche n'appelle que la **suivante**.
+      - Le **contrôleur** reçoit la requête, le **service** applique les règles, le **repository** parle à la base.
+      - Seule l'API accède à la base : jamais le navigateur.
     commonMistakes: |
-      - Dire « MVC » pour une API REST + Angular sans nuancer.
       - Dessiner un appel direct du frontend vers la base.
-      - Oublier les éléments de déploiement (conteneurs, variables d'environnement, HTTPS).
+      - Faire appeler le repository directement par le contrôleur : on saute la couche des règles.
     blocks:
       - type: text
         md: |
@@ -32,69 +31,64 @@ lessons:
         id: def-trois-tiers
         term: "Architecture trois tiers"
         md: |
-          Trois **étages** séparés : la **présentation** (ce que voit l'utilisatrice), la **logique métier**
-          (les règles), les **données** (le stockage). Comme un restaurant : salle, cuisine, garde-manger.
-          Chaque étage peut évoluer ou être remplacé sans toucher aux autres.
+          Trois **étages** séparés, comme un restaurant : la **salle** (présentation : ce que voit
+          l'utilisatrice), la **cuisine** (logique métier : les règles), le **garde-manger** (données : le
+          stockage). Chaque étage peut évoluer sans toucher aux autres.
       - type: definition
-        id: def-mvc-rest
-        term: "MVC ou API REST ?"
+        id: def-couches
+        term: "Couches du backend"
         md: |
-          Dans une application **MVC** classique, le serveur fabrique les **pages HTML** (la Vue). Dans une
-          architecture **API REST + Angular**, le serveur renvoie des **données JSON** et c'est Angular qui
-          construit l'interface. On peut dire qu'Angular s'organise lui-même en composants (vue) et services.
+          Dans la cuisine aussi, chacun son poste : le **serveur** prend la commande (contrôleur), le **chef**
+          décide comment la préparer (service), le **commis** va chercher les ingrédients (repository). Le
+          serveur ne va jamais lui-même au garde-manger.
       - type: code
-        id: code-deploiement
+        id: code-couches
         language: text
-        title: "Diagramme de déploiement en PlantUML"
+        title: "Le voyage d'une requête à travers les couches"
         code: |
-          @startuml
-          node "Navigateur" {
-            [Application Angular]
-          }
-          node "Serveur (Docker)" {
-            [API Spring Boot]
-          }
-          database "PostgreSQL" as bdd
-          [Application Angular] --> [API Spring Boot] : HTTPS / JSON
-          [API Spring Boot] --> bdd : JDBC
-          @enduml
+          Angular -> LivreController : GET /api/livres
+          LivreController -> LivreService : listerLivres()
+          LivreService -> LivreRepository : findAll()
+          LivreRepository -> PostgreSQL : SELECT * FROM livres
         lines:
+          - n: 1
+            note: "Présentation → API : le contrôleur reçoit la requête."
           - n: 2
-            note: "`node` : une machine ou un environnement d'exécution."
+            note: "Le contrôleur délègue au service, qui porte les règles."
           - n: 3
-            note: "`[...]` : un composant logiciel."
-          - n: 9
-            note: "Le frontend ne parle qu'à l'API, en HTTPS avec du JSON."
-          - n: 10
-            note: "Seule l'API accède à la base, par JDBC (le pilote Java de PostgreSQL)."
+            note: "Le service demande les données au repository."
+          - n: 4
+            note: "Seul le repository parle à la base."
       - type: question
         ref: uml-ar-q1
         review: def-trois-tiers
       - type: question
-        ref: uml-ar-q2
-        review: def-mvc-rest
+        ref: uml-tt-q2
+        review: def-couches
       - type: text
-        md: "Exercice guidé : complète le diagramme de déploiement."
+        md: "**Exercice 1 (guidé)** : nomme les trois tiers."
       - type: exercise
-        ref: uml-ex-deploiement-guide
+        ref: uml-ex-tiers-guide
       - type: text
-        md: "En autonomie : décris en quelques lignes l'architecture de ton projet."
+        md: "**Exercice 2 (en autonomie)** : remets les couches dans l'ordre."
       - type: exercise
-        ref: uml-ex-architecture
+        ref: uml-ex-couches-ordre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une couche sautée."
+      - type: exercise
+        ref: uml-ex-couches-bug
       - type: jury
         items:
           - q: "Décrivez l'architecture de votre application."
-            a: "Trois tiers : un frontend Angular dans le navigateur, une API REST Spring Boot organisée en couches (contrôleur, service, repository), et une base PostgreSQL. Le frontend appelle l'API en HTTPS avec du JSON ; seule l'API accède à la base."
-          - q: "Votre application suit-elle le modèle MVC ?"
-            a: "Le backend est une API REST en couches : il ne produit pas de vues. La vue est dans Angular. On retrouve l'idée de séparation des responsabilités du MVC, répartie entre le frontend et le backend."
+            a: "Trois tiers : un frontend Angular dans le navigateur, une API REST Spring Boot organisée en couches (contrôleur, service, repository), et une base PostgreSQL. Seule l'API accède à la base."
       - type: quiz
         items:
           - ref: uml-ar-q3
-            review: code-deploiement
-          - ref: uml-ar-q4
             review: def-trois-tiers
-          - ref: uml-ar-q5
-            review: code-deploiement
+          - ref: uml-ar-q4
+            review: def-couches
+          - ref: uml-tt-q5
+            review: code-couches
     questions:
       - code: uml-ar-q1
         kind: CHOIX_UNIQUE
@@ -112,22 +106,22 @@ lessons:
             correct: false
             why: "Ce sont des environnements."
         explanation: "Trois tiers = trois responsabilités séparées."
-      - code: uml-ar-q2
+      - code: uml-tt-q2
         kind: CHOIX_UNIQUE
-        difficulty: 2
+        difficulty: 1
         skill: uml-architecture
-        prompt: "Qu'est-ce qui distingue une API REST d'une application MVC classique ?"
+        prompt: "Quelle couche du backend porte les règles métier ?"
         choices:
-          - label: "L'API renvoie des données (JSON) au lieu de pages HTML"
+          - label: "Le service"
             correct: true
-            why: "La vue est construite par le frontend."
-          - label: "L'API n'a pas de base de données"
+            why: "Le chef décide."
+          - label: "Le contrôleur"
             correct: false
-            why: "Elle en a une, en général."
-          - label: "Il n'y a aucune différence"
+            why: "Il reçoit la requête et délègue."
+          - label: "Le repository"
             correct: false
-            why: "La vue n'est pas au même endroit."
-        explanation: "REST : données ; MVC : pages."
+            why: "Il accède aux données."
+        explanation: "Contrôleur : recevoir ; service : décider ; repository : stocker."
       - code: uml-ar-q3
         kind: VRAI_FAUX
         difficulty: 1
@@ -157,6 +151,409 @@ lessons:
             correct: false
             why: "C'est souvent l'inverse."
         explanation: "Maintenabilité et testabilité."
+      - code: uml-tt-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Qui appelle le repository ?"
+        choices:
+          - label: "Le service"
+            correct: true
+            why: "Chaque couche n'appelle que la suivante."
+          - label: "Le contrôleur"
+            correct: false
+            why: "Il sauterait la couche des règles."
+          - label: "Angular"
+            correct: false
+            why: "Le navigateur ne parle qu'au contrôleur."
+        explanation: "Contrôleur → service → repository."
+    exercises:
+      - slug: uml-ex-tiers-guide
+        kind: COMPLETER
+        title: "Nommer les trois tiers"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Complète avec : présentation, métier, données."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Ce que voit l'utilisatrice : la présentation."
+          - "Les règles : la logique métier."
+          - "présentation, métier, données."
+        solution: '["présentation", "métier", "données"]'
+        explanation: "Salle, cuisine, garde-manger."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Angular (dans le navigateur) : tier [[1]]
+            API Spring Boot : tier logique [[2]]
+            PostgreSQL : tier [[3]]
+          blanks:
+            - ["présentation", "presentation"]
+            - ["métier", "metier"]
+            - ["données", "donnees"]
+      - slug: uml-ex-couches-ordre
+        kind: REMETTRE_ORDRE
+        title: "Remettre les couches dans l'ordre"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Remets dans l'ordre le voyage d'une requête, du navigateur jusqu'à la base."
+        criteria: "Angular, contrôleur, service, repository, base."
+        hints:
+          - "Tout part du navigateur."
+          - "Le contrôleur reçoit, le service décide."
+          - "Angular, contrôleur, service, repository, PostgreSQL."
+        solution: |
+          Angular (navigateur)
+          SalleController (reçoit la requête)
+          SalleService (applique les règles)
+          SalleRepository (accède aux données)
+          PostgreSQL (stocke)
+        explanation: "Chaque couche n'appelle que la suivante."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Angular (navigateur)"
+            - "SalleController (reçoit la requête)"
+            - "SalleService (applique les règles)"
+            - "SalleRepository (accède aux données)"
+            - "PostgreSQL (stocke)"
+      - slug: uml-ex-couches-bug
+        kind: CORRIGER_ERREUR
+        title: "Une couche sautée"
+        difficulty: INTERMEDIAIRE
+        skill: uml-architecture
+        statement: |
+          Ici, le contrôleur appelle directement le repository : la couche des règles est sautée. Fais passer
+          l'appel par `LivreService` (le contrôleur appelle le service, qui appelle le repository).
+        criteria: "Contrôleur → service → repository, sans appel direct contrôleur → repository."
+        hints:
+          - "Chaque couche n'appelle que la suivante."
+          - "Ajoute une ligne : le service appelle le repository."
+          - "`LivreController -> LivreService : listerLivres()` puis `LivreService -> LivreRepository : findAll()`."
+        solution: |
+          Angular -> LivreController : GET /api/livres
+          LivreController -> LivreService : listerLivres()
+          LivreService -> LivreRepository : findAll()
+        explanation: "Le service est la seule porte vers le repository."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Angular -> LivreController : GET /api/livres
+            LivreController -> LivreRepository : findAll()
+          checks:
+            - pattern: 'LivreController\s*->\s*LivreRepository'
+              absent: true
+              message: "Le contrôleur ne doit pas appeler le repository directement."
+            - pattern: 'LivreController\s*->\s*LivreService\s*:'
+              message: "Le contrôleur appelle le service : LivreController -> LivreService : listerLivres()."
+            - pattern: 'LivreService\s*->\s*LivreRepository\s*:'
+              message: "Le service appelle le repository : LivreService -> LivreRepository : findAll()."
+
+  # ===================================================================== LEÇON 2
+  - slug: uml-mvc-rest
+    title: "MVC ou API REST ?"
+    duration: 9
+    objective: "Expliquer la différence entre une application MVC classique et une API REST utilisée par Angular."
+    prerequisites: "Leçon « Trois tiers et couches »."
+    skills: [uml-architecture]
+    xp: 15
+    memo: |
+      - **MVC** (Modèle, Vue, Contrôleur) : le serveur fabrique les **pages HTML** (la Vue).
+      - **API REST** : le serveur renvoie des **données JSON** ; c'est **Angular** qui construit l'interface.
+      - On retrouve l'idée du MVC (séparer les responsabilités), mais répartie entre frontend et backend.
+    commonMistakes: |
+      - Dire « MVC » pour une API REST + Angular sans nuancer.
+      - Dire qu'une API REST renvoie des pages HTML.
+    blocks:
+      - type: definition
+        id: def-mvc-rest
+        term: "MVC ou API REST ?"
+        md: |
+          - **MVC** : un restaurant qui **sert l'assiette dressée** (la page HTML toute prête).
+          - **API REST** : un traiteur qui **livre les ingrédients préparés** (le JSON) ; c'est toi (Angular) qui
+            dresses l'assiette.
+      - type: compare
+        left:
+          title: "MVC classique : le serveur renvoie du HTML"
+          language: text
+          code: |
+            <h1>Livres</h1>
+            <ul><li>Le Petit Prince</li></ul>
+        right:
+          title: "API REST : le serveur renvoie du JSON"
+          language: text
+          code: |
+            [ { "id": 1, "titre": "Le Petit Prince" } ]
+      - type: question
+        ref: uml-ar-q2
+        review: def-mvc-rest
+      - type: question
+        ref: uml-mv-q2
+        review: def-mvc-rest
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la comparaison."
+      - type: exercise
+        ref: uml-ex-mvc-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : explique-le avec tes mots."
+      - type: exercise
+        ref: uml-ex-mvc-rest
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une phrase fausse."
+      - type: exercise
+        ref: uml-ex-mvc-bug
+      - type: jury
+        items:
+          - q: "Votre application suit-elle le modèle MVC ?"
+            a: "Le backend est une API REST en couches : il ne produit pas de vues. La vue est dans Angular. On retrouve l'idée de séparation des responsabilités du MVC, répartie entre le frontend et le backend."
+      - type: quiz
+        items:
+          - ref: uml-mv-q3
+            review: def-mvc-rest
+          - ref: uml-mv-q4
+            review: def-mvc-rest
+          - ref: uml-mv-q5
+            review: def-mvc-rest
+    questions:
+      - code: uml-ar-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Qu'est-ce qui distingue une API REST d'une application MVC classique ?"
+        choices:
+          - label: "L'API renvoie des données (JSON) au lieu de pages HTML"
+            correct: true
+            why: "La vue est construite par le frontend."
+          - label: "L'API n'a pas de base de données"
+            correct: false
+            why: "Elle en a une, en général."
+          - label: "Il n'y a aucune différence"
+            correct: false
+            why: "La vue n'est pas au même endroit."
+        explanation: "REST : données ; MVC : pages."
+      - code: uml-mv-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Dans une application Angular + API REST, qui construit l'interface ?"
+        choices:
+          - label: "Angular, dans le navigateur"
+            correct: true
+            why: "L'API ne livre que les données."
+          - label: "Spring Boot"
+            correct: false
+            why: "Il renvoie du JSON."
+          - label: "PostgreSQL"
+            correct: false
+            why: "La base stocke les données."
+        explanation: "La Vue a déménagé dans le frontend."
+      - code: uml-mv-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Que veut dire MVC ?"
+        choices:
+          - label: "Modèle, Vue, Contrôleur"
+            correct: true
+            why: "Les trois responsabilités."
+          - label: "Méthode, Variable, Classe"
+            correct: false
+            why: "Ce sont des notions de code."
+          - label: "Mise en Veille Contrôlée"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Données, affichage, chef d'orchestre."
+      - code: uml-mv-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Une API REST renvoie en général du JSON."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Des données, pas une page."
+          - label: "Faux"
+            correct: false
+            why: "Le JSON est le format courant."
+        explanation: "REST → JSON."
+      - code: uml-mv-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Quelle réponse est la plus juste à « Votre projet est-il MVC ? »"
+        choices:
+          - label: "« Le backend est une API REST ; la vue est dans Angular, mais l'idée de séparation reste la même »"
+            correct: true
+            why: "Réponse nuancée et exacte."
+          - label: "« Oui, exactement »"
+            correct: false
+            why: "Le serveur ne produit pas de vues."
+          - label: "« Je ne sais pas »"
+            correct: false
+            why: "Le jury attend une explication."
+        explanation: "Nuancer montre que tu as compris."
+    exercises:
+      - slug: uml-ex-mvc-guide
+        kind: COMPLETER
+        title: "Compléter la comparaison"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Complète avec : HTML, JSON, Angular."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le MVC renvoie des pages."
+          - "L'API renvoie des données."
+          - "HTML, JSON, Angular."
+        solution: '["HTML", "JSON", "Angular"]'
+        explanation: "Pages contre données."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            MVC classique : le serveur renvoie des pages [[1]].
+            API REST : le serveur renvoie des données [[2]].
+            Avec une API REST, c'est [[3]] qui construit l'interface.
+          blanks:
+            - ["HTML"]
+            - ["JSON"]
+            - ["Angular"]
+      - slug: uml-ex-mvc-rest
+        kind: CODE_LIBRE
+        title: "Expliquer avec ses mots"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: |
+          En deux ou trois phrases, explique la différence entre MVC et API REST. Mentionne **HTML**, **JSON**
+          et **Angular**.
+        criteria: "Les trois mots sont présents dans une explication."
+        hints:
+          - "Commence par ce que renvoie un serveur MVC."
+          - "Puis ce que renvoie une API REST."
+          - "Termine par qui construit l'interface."
+        solution: |
+          Un serveur MVC fabrique lui-même les pages HTML.
+          Une API REST renvoie seulement des données en JSON.
+          C'est Angular qui construit l'interface à partir de ces données.
+        explanation: "Une réponse courte, que tu peux dire à l'oral."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Un serveur MVC
+          checks:
+            - pattern: '(?i)\bhtml\b'
+              message: "Parle des pages HTML du MVC."
+            - pattern: '(?i)\bjson\b'
+              message: "Parle du JSON de l'API REST."
+            - pattern: '(?i)\bangular\b'
+              message: "Dis qui construit l'interface : Angular."
+      - slug: uml-ex-mvc-bug
+        kind: CORRIGER_ERREUR
+        title: "Une phrase fausse"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          Cette phrase contient une erreur : une API REST ne renvoie pas de pages HTML. Corrige-la.
+        criteria: "L'API renvoie du JSON."
+        hints:
+          - "Que renvoie une API REST ?"
+          - "Des données, pas des pages."
+          - "Remplace « des pages HTML » par « des données JSON »."
+        solution: |
+          Mon API REST Spring Boot renvoie des données JSON à Angular.
+        explanation: "Les pages sont construites par Angular."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Mon API REST Spring Boot renvoie des pages HTML à Angular.
+          checks:
+            - pattern: '(?i)\bhtml\b'
+              absent: true
+              message: "Une API REST ne renvoie pas de HTML."
+            - pattern: '(?i)\bjson\b'
+              message: "Écris que l'API renvoie des données JSON."
+
+  # ===================================================================== LEÇON 3
+  - slug: uml-deploiement
+    title: "Le diagramme de déploiement"
+    duration: 10
+    objective: "Dessiner où tourne chaque partie de l'application : navigateur, serveur, base."
+    prerequisites: "Leçon « MVC ou API REST ? »."
+    skills: [uml-architecture]
+    xp: 15
+    memo: |
+      - Le **diagramme de déploiement** montre **où tourne** chaque partie et comment elles communiquent.
+      - `node "Nom" { ... }` : une machine ou un environnement (navigateur, serveur Docker).
+      - `[Composant]` : un logiciel ; `database "PostgreSQL" as bdd` : la base.
+      - Les liens portent le protocole : `HTTPS / JSON` entre Angular et l'API, `JDBC` entre l'API et la base.
+    commonMistakes: |
+      - Relier Angular directement à la base.
+      - Oublier le protocole sur les liens.
+    blocks:
+      - type: definition
+        id: def-deploiement
+        term: "Diagramme de déploiement"
+        md: |
+          Un **plan d'implantation** : quel logiciel est installé sur quelle machine, et par quels câbles elles
+          sont reliées.
+      - type: code
+        id: code-deploiement
+        language: text
+        title: "Diagramme de déploiement en PlantUML"
+        code: |
+          @startuml
+          node "Navigateur" {
+            [Application Angular]
+          }
+          node "Serveur (Docker)" {
+            [API Spring Boot]
+          }
+          database "PostgreSQL" as bdd
+          [Application Angular] --> [API Spring Boot] : HTTPS / JSON
+          [API Spring Boot] --> bdd : JDBC
+          @enduml
+        lines:
+          - n: 2
+            note: "`node` : une machine ou un environnement d'exécution."
+          - n: 3
+            note: "`[...]` : un composant logiciel."
+          - n: 9
+            note: "Le frontend ne parle qu'à l'API, en HTTPS avec du JSON."
+          - n: 10
+            note: "Seule l'API accède à la base, par JDBC (le pilote Java de PostgreSQL)."
+      - type: question
+        ref: uml-ar-q5
+        review: def-deploiement
+      - type: question
+        ref: uml-de-q2
+        review: code-deploiement
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le diagramme."
+      - type: exercise
+        ref: uml-ex-deploiement-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : le déploiement d'une application de réservation."
+      - type: exercise
+        ref: uml-ex-deploiement-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un lien interdit."
+      - type: exercise
+        ref: uml-ex-deploiement-bug
+      - type: quiz
+        items:
+          - ref: uml-de-q3
+            review: code-deploiement
+          - ref: uml-de-q4
+            review: def-deploiement
+          - ref: uml-de-q5
+            review: code-deploiement
+    questions:
       - code: uml-ar-q5
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -173,6 +570,67 @@ lessons:
             correct: false
             why: "C'est le diagramme de classes."
         explanation: "Vue physique de l'application."
+      - code: uml-de-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Quel mot PlantUML représente une machine ou un environnement ?"
+        choices:
+          - label: "`node`"
+            correct: true
+            why: "Un nœud d'exécution."
+          - label: "`participant`"
+            correct: false
+            why: "C'est pour la séquence."
+          - label: "`actor`"
+            correct: false
+            why: "C'est une personne."
+        explanation: "node = machine ; [ ] = logiciel."
+      - code: uml-de-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Quel protocole relie Angular à l'API ?"
+        choices:
+          - label: "HTTPS (avec du JSON)"
+            correct: true
+            why: "Le navigateur appelle l'API sur le web."
+          - label: "JDBC"
+            correct: false
+            why: "JDBC relie l'API à la base."
+          - label: "Aucun"
+            correct: false
+            why: "Ils communiquent par le réseau."
+        explanation: "Navigateur ↔ API : HTTPS ; API ↔ base : JDBC."
+      - code: uml-de-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Dans un diagramme de déploiement, Angular peut être relié directement à la base."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : tout passe par l'API."
+          - label: "Faux"
+            correct: true
+            why: "Exact : seule l'API accède à la base."
+        explanation: "Le diagramme doit refléter la sécurité réelle."
+      - code: uml-de-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Comment s'écrit un composant logiciel dans un diagramme de déploiement ?"
+        choices:
+          - label: "Entre crochets : `[API Spring Boot]`"
+            correct: true
+            why: "Les crochets dessinent un composant."
+          - label: "Entre parenthèses : `(API Spring Boot)`"
+            correct: false
+            why: "C'est un cas d'utilisation."
+          - label: "Entre deux-points : `:API Spring Boot;`"
+            correct: false
+            why: "C'est une action d'activité."
+        explanation: "Chaque symbole a son diagramme."
     exercises:
       - slug: uml-ex-deploiement-guide
         kind: COMPLETER
@@ -200,119 +658,166 @@ lessons:
             - ["node"]
             - ["database"]
             - ["HTTPS"]
-      - slug: uml-ex-architecture
+      - slug: uml-ex-deploiement-libre
         kind: CODE_LIBRE
-        title: "Décrire son architecture"
+        title: "Le déploiement d'une application de réservation"
         difficulty: INTERMEDIAIRE
-        skill: oral-cda
+        skill: uml-architecture
         statement: |
-          Écris, en quatre à six phrases, la description de l'architecture d'une application Angular +
-          Spring Boot + PostgreSQL. Tu dois mentionner : les **trois tiers**, les **couches** du backend
-          (contrôleur, service, repository), le format d'échange (**JSON**), le protocole (**HTTP** ou HTTPS) et
-          le fait que **seule l'API** accède à la base.
-        criteria: "Les notions demandées sont citées dans un texte structuré."
+          Écris le diagramme de déploiement PlantUML :
+          - un `node "Navigateur"` contenant `[Application Angular]` ;
+          - un `node "Serveur"` contenant `[API Reservation]` ;
+          - `database "PostgreSQL" as bdd` ;
+          - un lien `HTTPS / JSON` d'Angular vers l'API, et un lien `JDBC` de l'API vers la base.
+        criteria: "Deux nœuds, une base et deux liens avec leur protocole."
         hints:
-          - "Commence par : « L'application suit une architecture trois tiers… »."
-          - "Décris les couches : contrôleur, service, repository."
-          - "Termine par la communication : HTTPS, JSON, et l'accès exclusif de l'API à la base."
+          - "`node \"Navigateur\" { [Application Angular] }`"
+          - "`database \"PostgreSQL\" as bdd`"
+          - "`[Application Angular] --> [API Reservation] : HTTPS / JSON` puis `[API Reservation] --> bdd : JDBC`."
         solution: |
-          L'application suit une architecture trois tiers.
-          Le frontend Angular s'exécute dans le navigateur et appelle l'API en HTTPS en échangeant du JSON.
-          L'API Spring Boot est organisée en couches : contrôleur, service et repository.
-          Seule l'API accède à la base PostgreSQL, par l'intermédiaire des repositories.
-          Chaque couche a une responsabilité unique, ce qui facilite les tests et l'évolution.
-        explanation: "Une description courte, structurée du général au particulier, que tu peux dire à l'oral en 40 secondes."
+          @startuml
+          node "Navigateur" {
+            [Application Angular]
+          }
+          node "Serveur" {
+            [API Reservation]
+          }
+          database "PostgreSQL" as bdd
+          [Application Angular] --> [API Reservation] : HTTPS / JSON
+          [API Reservation] --> bdd : JDBC
+          @enduml
+        explanation: "Le navigateur parle à l'API, l'API parle à la base."
         xp: 20
         payload:
           language: text
           starter: |
-            L'application suit une architecture
-          checks:
-            - pattern: '(?i)trois\s+tiers|3\s+tiers'
-              message: "Mentionne l'architecture trois tiers."
-            - pattern: '(?i)contr[ôo]leur'
-              message: "Cite la couche contrôleur."
-            - pattern: '(?i)service'
-              message: "Cite la couche service."
-            - pattern: '(?i)repository|repositories'
-              message: "Cite la couche repository."
-            - pattern: '(?i)\bjson\b'
-              message: "Précise le format d'échange : JSON."
-            - pattern: '(?i)\bhttps?\b'
-              message: "Précise le protocole : HTTP ou HTTPS."
-            - pattern: '(?i)seule?\s+l.api|uniquement\s+l.api|l.api\s+seule'
-              message: "Dis que seule l'API accède à la base."
+            @startuml
 
-  # ===================================================================== LEÇON 2
-  - slug: uml-questions-jury
-    title: "Les questions de conception du jury"
-    duration: 12
-    objective: "Justifier ses choix de conception et répondre simplement aux questions sur les diagrammes UML et les patrons de conception."
-    prerequisites: "Leçon « Architecture en couches et déploiement »."
-    skills: [uml-architecture, oral-cda]
-    xp: 25
+            @enduml
+          checks:
+            - pattern: 'node\s+"Navigateur"\s*\{\s*\[Application Angular\]'
+              message: "Place [Application Angular] dans node \"Navigateur\"."
+            - pattern: 'node\s+"Serveur"\s*\{\s*\[API Reservation\]'
+              message: "Place [API Reservation] dans node \"Serveur\"."
+            - pattern: 'database\s+"PostgreSQL"\s+as\s+bdd'
+              message: "Déclare database \"PostgreSQL\" as bdd."
+            - pattern: '\[Application Angular\]\s*-->\s*\[API Reservation\]\s*:\s*HTTPS'
+              message: "Relie Angular à l'API : [Application Angular] --> [API Reservation] : HTTPS / JSON."
+            - pattern: '\[API Reservation\]\s*-->\s*bdd\s*:\s*JDBC'
+              message: "Relie l'API à la base : [API Reservation] --> bdd : JDBC."
+            - pattern: '\[Application Angular\]\s*-->\s*bdd'
+              absent: true
+              message: "Angular ne doit pas être relié à la base."
+      - slug: uml-ex-deploiement-bug
+        kind: CORRIGER_ERREUR
+        title: "Un lien interdit"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          Ce diagramme relie Angular directement à la base : c'est faux et dangereux. Remplace ce lien par
+          `[API Spring Boot] --> bdd : JDBC`.
+        criteria: "Seule l'API est reliée à la base."
+        hints:
+          - "Qui a le droit de parler à la base ?"
+          - "Seule l'API."
+          - "`[API Spring Boot] --> bdd : JDBC`"
+        solution: |
+          [Application Angular] --> [API Spring Boot] : HTTPS / JSON
+          [API Spring Boot] --> bdd : JDBC
+        explanation: "Le navigateur ne voit jamais la base."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            [Application Angular] --> [API Spring Boot] : HTTPS / JSON
+            [Application Angular] --> bdd : JDBC
+          checks:
+            - pattern: '\[Application Angular\]\s*-->\s*bdd'
+              absent: true
+              message: "Supprime le lien direct entre Angular et la base."
+            - pattern: '\[API Spring Boot\]\s*-->\s*bdd\s*:\s*JDBC'
+              message: "Écris [API Spring Boot] --> bdd : JDBC."
+
+  # ===================================================================== LEÇON 4
+  - slug: uml-patrons
+    title: "Les patrons de conception"
+    duration: 10
+    objective: "Reconnaître quelques patrons de conception courants et dire où ils se trouvent dans un projet."
+    prerequisites: "Leçon « Le diagramme de déploiement »."
+    skills: [uml-architecture]
+    xp: 15
     memo: |
-      - Justifier un choix : **besoin** → **option retenue** → **alternative écartée** → **pourquoi**.
-      - Patrons (design patterns) courants : **Singleton** (une seule instance, comme les beans Spring), **DTO**, **Repository**, **Observer** (les Observables d'Angular), **Injection de dépendances**.
-      - Chaque diagramme a son rôle : cas d'utilisation (besoin), classes (structure), séquence (déroulement), activité (processus), déploiement (infrastructure).
+      - Un **patron de conception** (design pattern) : une solution éprouvée et **nommée** à un problème fréquent.
+      - **Repository** : l'accès aux données est rangé derrière une interface.
+      - **DTO** : un objet qui ne transporte que les données échangées par l'API.
+      - **Observer** : des abonnés sont prévenus quand une valeur arrive (les Observables d'Angular).
+      - **Singleton** : une seule instance (les services Spring, par défaut).
     commonMistakes: |
-      - Présenter un diagramme sans dire à quoi il sert.
       - Citer des patrons sans pouvoir montrer où ils sont dans son code.
-      - Justifier un choix par « c'est ce qu'on m'a appris ».
     blocks:
-      - type: text
-        md: |
-          Le jury ne vérifie pas seulement que tes diagrammes existent : il veut savoir **pourquoi** tu as fait
-          ces choix.
       - type: definition
         id: def-pattern
         term: "Patron de conception (design pattern)"
         md: |
-          Une **solution éprouvée** à un problème fréquent, avec un nom connu de tous, comme une **recette de
-          base** en cuisine (la pâte brisée). Dire « c'est un Repository » suffit à se faire comprendre.
+          Une **recette de base** en cuisine (la pâte brisée) : une solution éprouvée, avec un nom connu de tous.
+          Dire « c'est un Repository » suffit à se faire comprendre.
       - type: steps
-        id: etapes-justifier
-        title: "Justifier un choix en quatre temps"
+        id: etapes-patrons
+        title: "Quatre patrons à reconnaître"
         items:
-          - "**Besoin** : « Il fallait que plusieurs composants partagent l'état de connexion. »"
-          - "**Choix** : « J'ai créé un service Angular injecté partout. »"
-          - "**Alternative écartée** : « Plutôt que de passer l'information de composant en composant. »"
-          - "**Raison** : « Un seul endroit à maintenir et à tester. »"
+          - "**Repository** : `interface LivreRepository extends JpaRepository<Livre, Long>`."
+          - "**DTO** : `record LivreDto(Long id, String titre)` renvoyé par l'API."
+          - "**Observer** : `this.livres$.subscribe(...)` dans Angular."
+          - "**Singleton** : un seul `LivreService` partagé par toute l'application Spring."
+      - type: question
+        ref: uml-jq-q5
+        review: def-pattern
       - type: question
         ref: uml-jq-q1
-        review: def-pattern
+        review: etapes-patrons
+      - type: text
+        md: "**Exercice 1 (guidé)** : nomme les patrons."
+      - type: exercise
+        ref: uml-ex-patrons-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : où sont-ils dans ton projet ?"
+      - type: exercise
+        ref: uml-ex-patrons-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un patron mal nommé."
+      - type: exercise
+        ref: uml-ex-patrons-bug
       - type: jury
-        id: jury-conception
-        title: "Questions de conception"
         items:
-          - q: "Quels diagrammes UML avez-vous réalisés et pourquoi ?"
-            a: "Cas d'utilisation pour valider le périmètre avec le client, classes pour structurer le code, séquence pour expliquer les échanges d'un scénario clé (connexion), déploiement pour l'infrastructure."
           - q: "Citez un design pattern utilisé dans votre projet."
             a: "Le pattern Repository avec Spring Data : l'accès aux données est isolé derrière une interface. Et l'injection de dépendances : Spring fournit les services aux contrôleurs."
           - q: "Qu'est-ce qu'un DTO et pourquoi l'utiliser ?"
             a: "Un objet de transfert qui ne contient que les données échangées par l'API ; il protège les champs sensibles de l'entité et découple l'API du modèle de base."
-          - q: "Qu'est-ce que le couplage faible ?"
-            a: "Des composants qui dépendent le moins possible les uns des autres, souvent via des interfaces : on peut en modifier un sans casser les autres."
-      - type: question
-        ref: uml-jq-q2
-        review: etapes-justifier
-      - type: text
-        md: "Exercice guidé : associe chaque diagramme à son rôle."
-      - type: exercise
-        ref: uml-ex-roles-guide
-      - type: text
-        md: "En autonomie : justifie un choix de conception en quatre temps."
-      - type: exercise
-        ref: uml-ex-justifier
       - type: quiz
         items:
-          - ref: uml-jq-q3
-            review: jury-conception
           - ref: uml-jq-q4
-            review: jury-conception
-          - ref: uml-jq-q5
-            review: def-pattern
+            review: etapes-patrons
+          - ref: uml-c4-b1
+            review: etapes-patrons
+          - ref: uml-pa-q5
+            review: etapes-patrons
     questions:
+      - code: uml-jq-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Qu'est-ce qu'un patron de conception ?"
+        choices:
+          - label: "Une solution réutilisable et nommée à un problème fréquent de conception"
+            correct: true
+            why: "Un vocabulaire commun entre développeurs."
+          - label: "Un modèle de page HTML"
+            correct: false
+            why: "Aucun rapport."
+          - label: "Une bibliothèque à installer"
+            correct: false
+            why: "C'est une idée, pas un logiciel."
+        explanation: "Singleton, Repository, DTO, Observer, Factory…"
       - code: uml-jq-q1
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -329,6 +834,198 @@ lessons:
             correct: false
             why: "Builder construit des objets complexes étape par étape."
         explanation: "Repository : une collection d'objets vue par le code métier."
+      - code: uml-jq-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Les Observables d'Angular (RxJS) reposent sur le patron Observer."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "On s'abonne à un flux et on est notifié."
+          - label: "Faux"
+            correct: false
+            why: "C'est l'exemple classique de ce patron."
+        explanation: "Observer : des abonnés sont prévenus quand une valeur arrive."
+      - code: uml-c4-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Par défaut, combien d'instances d'un `@Service` Spring existe-t-il ?"
+        choices:
+          - label: "Une seule (singleton)"
+            correct: true
+            why: "Portée singleton par défaut."
+          - label: "Une par requête HTTP"
+            correct: false
+            why: "Ce serait la portée request."
+          - label: "Une par utilisateur"
+            correct: false
+            why: "Ce serait la portée session."
+        explanation: "Les beans Spring sont des singletons par défaut : ils ne doivent donc pas garder d'état propre à une utilisatrice."
+      - code: uml-pa-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "À quoi sert un DTO ?"
+        choices:
+          - label: "À ne transporter que les données utiles, sans les champs sensibles"
+            correct: true
+            why: "Le hash du mot de passe ne sort jamais."
+          - label: "À stocker les données dans la base"
+            correct: false
+            why: "C'est le rôle de l'entité et du repository."
+          - label: "À dessiner l'interface"
+            correct: false
+            why: "C'est le rôle d'Angular."
+        explanation: "DTO = objet de transfert."
+    exercises:
+      - slug: uml-ex-patrons-guide
+        kind: COMPLETER
+        title: "Nommer les patrons"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Complète avec : Repository, DTO, Observer."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "L'interface qui accède aux données : Repository."
+          - "S'abonner à un flux : Observer."
+          - "Repository, DTO, Observer."
+        solution: '["Repository", "DTO", "Observer"]'
+        explanation: "Accès aux données, transport, abonnement."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            interface SalleRepository extends JpaRepository<Salle, Long> : patron [[1]]
+            record SalleDto(Long id, String nom) : patron [[2]]
+            this.salles$.subscribe(...) : patron [[3]]
+          blanks:
+            - ["Repository"]
+            - ["DTO"]
+            - ["Observer"]
+      - slug: uml-ex-patrons-libre
+        kind: CODE_LIBRE
+        title: "Où sont-ils dans ton projet ?"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Écris trois lignes commençant par `Repository :`, `DTO :` et `Observer :`. Pour chacune, dis en une
+          phrase où ce patron apparaît dans une application Angular + Spring Boot.
+        criteria: "Les trois lignes sont présentes avec une vraie phrase."
+        hints:
+          - "Repository : l'interface Spring Data qui accède à la base."
+          - "DTO : ce que l'API renvoie à la place de l'entité."
+          - "Observer : les Observables auxquels Angular s'abonne."
+        solution: |
+          Repository : l'interface LivreRepository qui étend JpaRepository et accède à la base.
+          DTO : le record LivreDto renvoyé par l'API à la place de l'entité.
+          Observer : les Observables du HttpClient auxquels les composants Angular s'abonnent.
+        explanation: "Montrer le patron dans le code prouve qu'on l'a compris."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Repository :
+            DTO :
+            Observer :
+          checks:
+            - pattern: '(?im)^\s*Repository\s*:\s*\S.{10,}'
+              message: "Complète la ligne Repository."
+            - pattern: '(?im)^\s*DTO\s*:\s*\S.{10,}'
+              message: "Complète la ligne DTO."
+            - pattern: '(?im)^\s*Observer\s*:\s*\S.{10,}'
+              message: "Complète la ligne Observer."
+      - slug: uml-ex-patrons-bug
+        kind: CORRIGER_ERREUR
+        title: "Un patron mal nommé"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          L'interface `LivreRepository` a été classée sous le mauvais patron. Corrige le nom du patron.
+        criteria: "LivreRepository est associé au patron Repository."
+        hints:
+          - "Observer parle d'abonnements."
+          - "Cette interface accède aux données."
+          - "Remplace Observer par Repository."
+        solution: |
+          Repository : interface LivreRepository extends JpaRepository<Livre, Long>
+        explanation: "Accès aux données → Repository."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Observer : interface LivreRepository extends JpaRepository<Livre, Long>
+          checks:
+            - pattern: '(?i)^\s*Observer\s*:'
+              absent: true
+              message: "Ce n'est pas un Observer."
+            - pattern: '(?i)^\s*Repository\s*:\s*interface\s+LivreRepository'
+              message: "Écris Repository : interface LivreRepository ..."
+
+  # ===================================================================== LEÇON 5
+  - slug: uml-questions-jury
+    title: "Justifier ses choix devant le jury"
+    duration: 11
+    objective: "Justifier un choix de conception en quatre temps et dire à quoi sert chaque diagramme."
+    prerequisites: "Leçon « Les patrons de conception »."
+    skills: [uml-architecture, oral-cda]
+    xp: 20
+    memo: |
+      - Justifier un choix : **besoin** → **option retenue** → **alternative écartée** → **pourquoi**.
+      - Chaque diagramme a son rôle : cas d'utilisation (besoin), classes (structure), séquence (déroulement), activité (processus), déploiement (infrastructure).
+    commonMistakes: |
+      - Présenter un diagramme sans dire à quoi il sert.
+      - Justifier un choix par « c'est ce qu'on m'a appris ».
+    blocks:
+      - type: text
+        md: |
+          Le jury ne vérifie pas seulement que tes diagrammes existent : il veut savoir **pourquoi** tu as fait
+          ces choix.
+      - type: steps
+        id: etapes-justifier
+        title: "Justifier un choix en quatre temps"
+        items:
+          - "**Besoin** : « Il fallait que plusieurs composants partagent l'état de connexion. »"
+          - "**Choix** : « J'ai créé un service Angular injecté partout. »"
+          - "**Alternative écartée** : « Plutôt que de passer l'information de composant en composant. »"
+          - "**Raison** : « Un seul endroit à maintenir et à tester. »"
+      - type: question
+        ref: uml-jq-q2
+        review: etapes-justifier
+      - type: jury
+        id: jury-conception
+        title: "Questions de conception"
+        items:
+          - q: "Quels diagrammes UML avez-vous réalisés et pourquoi ?"
+            a: "Cas d'utilisation pour valider le périmètre avec le client, classes pour structurer le code, séquence pour expliquer les échanges d'un scénario clé (connexion), déploiement pour l'infrastructure."
+          - q: "Qu'est-ce que le couplage faible ?"
+            a: "Des composants qui dépendent le moins possible les uns des autres, souvent via des interfaces : on peut en modifier un sans casser les autres."
+      - type: question
+        ref: uml-jq-q3
+        review: jury-conception
+      - type: text
+        md: "**Exercice 1 (guidé)** : associe chaque diagramme à son rôle."
+      - type: exercise
+        ref: uml-ex-roles-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : justifie un choix en quatre temps."
+      - type: exercise
+        ref: uml-ex-justifier
+      - type: text
+        md: "**Exercice 3 (synthèse)** : décris l'architecture de ton projet."
+      - type: exercise
+        ref: uml-ex-architecture
+      - type: quiz
+        items:
+          - ref: uml-c4-b2
+            review: jury-conception
+          - ref: uml-qj-q4
+            review: etapes-justifier
+          - ref: uml-qj-q5
+            review: jury-conception
+    questions:
       - code: uml-jq-q2
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -361,35 +1058,54 @@ lessons:
             correct: false
             why: "Il détaille un scénario technique."
         explanation: "Chaque diagramme répond à une question différente."
-      - code: uml-jq-q4
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: uml-architecture
-        prompt: "Les Observables d'Angular (RxJS) reposent sur le patron Observer."
-        choices:
-          - label: "Vrai"
-            correct: true
-            why: "On s'abonne à un flux et on est notifié."
-          - label: "Faux"
-            correct: false
-            why: "C'est l'exemple classique de ce patron."
-        explanation: "Observer : des abonnés sont prévenus quand une valeur arrive."
-      - code: uml-jq-q5
+      - code: uml-c4-b2
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: uml-architecture
-        prompt: "Qu'est-ce qu'un patron de conception ?"
+        prompt: "Qu'est-ce que le couplage faible ?"
         choices:
-          - label: "Une solution réutilisable et nommée à un problème fréquent de conception"
+          - label: "Des composants qui dépendent peu les uns des autres, souvent via des interfaces"
             correct: true
-            why: "Un vocabulaire commun entre développeurs."
-          - label: "Un modèle de page HTML"
+            why: "On peut en changer un sans casser les autres."
+          - label: "Un réseau lent"
             correct: false
             why: "Aucun rapport."
-          - label: "Une bibliothèque à installer"
+          - label: "Une base de données sans clé étrangère"
             correct: false
-            why: "C'est une idée, pas un logiciel."
-        explanation: "Singleton, Repository, DTO, Observer, Factory…"
+            why: "Aucun rapport."
+        explanation: "Couplage faible + cohésion forte : les deux qualités d'une bonne conception."
+      - code: uml-qj-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Dans une justification en quatre temps, que vient-il juste après le besoin ?"
+        choices:
+          - label: "Le choix retenu"
+            correct: true
+            why: "Besoin, choix, alternative, raison."
+          - label: "La raison"
+            correct: false
+            why: "Elle vient en dernier."
+          - label: "La conclusion du projet"
+            correct: false
+            why: "Ce n'est pas l'une des quatre étapes."
+        explanation: "Besoin → choix → alternative → raison."
+      - code: uml-qj-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Pour expliquer au jury ce qui se passe quand on clique sur « Se connecter », quel diagramme montrer ?"
+        choices:
+          - label: "Le diagramme de séquence"
+            correct: true
+            why: "Il montre les échanges dans l'ordre."
+          - label: "Le diagramme de classes"
+            correct: false
+            why: "Il montre la structure, pas le déroulement."
+          - label: "Le diagramme de déploiement"
+            correct: false
+            why: "Il montre les machines."
+        explanation: "Déroulement d'un scénario → séquence."
     exercises:
       - slug: uml-ex-roles-guide
         kind: COMPLETER
@@ -458,37 +1174,63 @@ lessons:
               message: "Parle des DTO."
             - pattern: '(?i)entit[ée]'
               message: "Compare avec l'entité (l'alternative)."
+      - slug: uml-ex-architecture
+        kind: CODE_LIBRE
+        title: "Décrire son architecture"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Écris, en quatre à six phrases, la description de l'architecture d'une application Angular +
+          Spring Boot + PostgreSQL. Tu dois mentionner : les **trois tiers**, les **couches** du backend
+          (contrôleur, service, repository), le format d'échange (**JSON**), le protocole (**HTTP** ou HTTPS) et
+          le fait que **seule l'API** accède à la base.
+        criteria: "Les notions demandées sont citées dans un texte structuré."
+        hints:
+          - "Commence par : « L'application suit une architecture trois tiers… »."
+          - "Décris les couches : contrôleur, service, repository."
+          - "Termine par la communication : HTTPS, JSON, et l'accès exclusif de l'API à la base."
+        solution: |
+          L'application suit une architecture trois tiers.
+          Le frontend Angular s'exécute dans le navigateur et appelle l'API en HTTPS en échangeant du JSON.
+          L'API Spring Boot est organisée en couches : contrôleur, service et repository.
+          Seule l'API accède à la base PostgreSQL, par l'intermédiaire des repositories.
+          Chaque couche a une responsabilité unique, ce qui facilite les tests et l'évolution.
+        explanation: "Une description courte, structurée du général au particulier, que tu peux dire à l'oral en 40 secondes."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            L'application suit une architecture
+          checks:
+            - pattern: '(?i)trois\s+tiers|3\s+tiers'
+              message: "Mentionne l'architecture trois tiers."
+            - pattern: '(?i)contr[ôo]leur'
+              message: "Cite la couche contrôleur."
+            - pattern: '(?i)service'
+              message: "Cite la couche service."
+            - pattern: '(?i)repository|repositories'
+              message: "Cite la couche repository."
+            - pattern: '(?i)\bjson\b'
+              message: "Précise le format d'échange : JSON."
+            - pattern: '(?i)\bhttps?\b'
+              message: "Précise le protocole : HTTP ou HTTPS."
+            - pattern: '(?i)seule?\s+l.api|uniquement\s+l.api|l.api\s+seule'
+              message: "Dis que seule l'API accède à la base."
 
 bank:
-  - code: uml-c4-b1
+  - code: uml-c4-b3
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: uml-architecture
-    prompt: "Par défaut, combien d'instances d'un `@Service` Spring existe-t-il ?"
+    prompt: "Pourquoi le navigateur ne doit-il jamais se connecter directement à la base ?"
     choices:
-      - label: "Une seule (singleton)"
+      - label: "Parce que les identifiants de la base seraient exposés à tout le monde"
         correct: true
-        why: "Portée singleton par défaut."
-      - label: "Une par requête HTTP"
+        why: "Seule l'API, côté serveur, connaît ces identifiants."
+      - label: "Parce que ce serait trop lent"
         correct: false
-        why: "Ce serait la portée request."
-      - label: "Une par utilisateur"
+        why: "Le problème principal est la sécurité."
+      - label: "Parce que PostgreSQL ne fonctionne pas sur internet"
         correct: false
-        why: "Ce serait la portée session."
-    explanation: "Les beans Spring sont des singletons par défaut : ils ne doivent donc pas garder d'état propre à une utilisatrice."
-  - code: uml-c4-b2
-    kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: uml-architecture
-    prompt: "Qu'est-ce que le couplage faible ?"
-    choices:
-      - label: "Des composants qui dépendent peu les uns des autres, souvent via des interfaces"
-        correct: true
-        why: "On peut en changer un sans casser les autres."
-      - label: "Un réseau lent"
-        correct: false
-        why: "Aucun rapport."
-      - label: "Une base de données sans clé étrangère"
-        correct: false
-        why: "Aucun rapport."
-    explanation: "Couplage faible + cohésion forte : les deux qualités d'une bonne conception."
+        why: "Il le pourrait, mais ce serait dangereux."
+    explanation: "Sécurité : la base reste cachée derrière l'API."

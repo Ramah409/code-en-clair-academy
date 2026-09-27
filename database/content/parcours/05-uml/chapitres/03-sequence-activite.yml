@@ -2,28 +2,27 @@ slug: uml-sequence-activite
 position: 3
 level: AVANCE
 title: "Séquences et activités"
-summary: "Montrer l'ordre des échanges entre les composants avec le diagramme de séquence, et un processus métier avec le diagramme d'activité."
-quizQuestionCount: 10
+summary: "Montrer l'ordre des échanges entre les composants avec le diagramme de séquence, puis un processus métier avec le diagramme d'activité. Une seule notion par leçon."
+quizQuestionCount: 14
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: uml-sequence
-    title: "Le diagramme de séquence"
-    duration: 14
-    objective: "Dessiner le déroulement d'une requête (Angular → API → service → base) avec messages, réponses et alternatives."
+    title: "Le diagramme de séquence : messages et réponses"
+    duration: 11
+    objective: "Dessiner une séquence simple : des participants, des appels (->) et des réponses (-->)."
     prerequisites: "Chapitre « Le diagramme de classes »."
     skills: [uml-architecture, full-stack]
-    xp: 25
+    xp: 15
     memo: |
       - Le diagramme de séquence montre **qui parle à qui, dans quel ordre**, pour un scénario.
       - Les **participants** sont en colonnes ; le temps descend de haut en bas.
-      - Message : flèche pleine `->` ; réponse : flèche pointillée `-->`.
-      - `alt … else … end` : deux chemins possibles (succès / erreur).
-      - Idéal pour expliquer au jury le voyage d'une requête dans une architecture en couches.
+      - Appel : flèche pleine `->` ; réponse : flèche pointillée `-->`.
+      - `database` dessine la base de données (un cylindre).
     commonMistakes: |
+      - Oublier les réponses.
       - Mélanger plusieurs scénarios dans un seul diagramme.
-      - Oublier les réponses et les cas d'erreur.
-      - Dessiner des participants qui ne correspondent à aucune classe réelle.
+      - Faire parler Angular directement à la base.
     blocks:
       - type: text
         md: |
@@ -38,37 +37,30 @@ lessons:
       - type: code
         id: code-sequence
         language: text
-        title: "La connexion, en PlantUML"
+        title: "Afficher la liste des livres, en PlantUML"
         code: |
           @startuml
-          actor Utilisatrice
           participant Angular
-          participant AuthController
-          participant AuthService
+          participant LivreController
+          participant LivreService
           database PostgreSQL
 
-          Utilisatrice -> Angular : saisit e-mail et mot de passe
-          Angular -> AuthController : POST /api/auth/login
-          AuthController -> AuthService : login(requete)
-          AuthService -> PostgreSQL : SELECT ... WHERE email = ?
-          PostgreSQL --> AuthService : utilisatrice
-          alt mot de passe correct
-            AuthService --> AuthController : jeton JWT
-            AuthController --> Angular : 200 + jeton
-          else mot de passe incorrect
-            AuthService --> AuthController : InvalidCredentialsException
-            AuthController --> Angular : 401
-          end
+          Angular -> LivreController : GET /api/livres
+          LivreController -> LivreService : listerLivres()
+          LivreService -> PostgreSQL : SELECT * FROM livres
+          PostgreSQL --> LivreService : lignes
+          LivreService --> LivreController : liste de livres
+          LivreController --> Angular : 200 + liste
           @enduml
         lines:
           - n: 2
-            note: "Les participants, de gauche à droite dans l'ordre du voyage. `database` dessine un cylindre."
-          - n: 8
-            note: "Flèche pleine `->` : un message (un appel)."
-          - n: 12
-            note: "Flèche pointillée `-->` : une réponse."
-          - n: 13
-            note: "`alt` : deux chemins selon une condition ; `else` pour l'autre cas ; `end` pour fermer."
+            note: "Les participants, de gauche à droite dans l'ordre du voyage."
+          - n: 5
+            note: "`database` dessine un cylindre : la base de données."
+          - n: 7
+            note: "Flèche pleine `->` : un appel."
+          - n: 10
+            note: "Flèche pointillée `-->` : une réponse, qui remonte."
       - type: question
         ref: uml-seq-q1
         review: def-sequence
@@ -76,24 +68,24 @@ lessons:
         ref: uml-seq-q2
         review: code-sequence
       - type: text
-        md: "Exercice guidé : complète les flèches."
+        md: "**Exercice 1 (guidé)** : complète les flèches."
       - type: exercise
         ref: uml-ex-sequence-guide
       - type: text
-        md: "En autonomie : écris la séquence de l'inscription."
+        md: "**Exercice 2 (en autonomie)** : afficher le détail d'un livre."
       - type: exercise
-        ref: uml-ex-sequence
-      - type: jury
-        items:
-          - q: "Expliquez-nous un diagramme de séquence de votre application."
-            a: "Je montre par exemple la connexion : Angular appelle le contrôleur, qui délègue au service, qui interroge la base ; selon le mot de passe, le service renvoie un jeton ou une erreur 401. Chaque colonne correspond à une vraie classe de mon code."
+        ref: uml-ex-sequence-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une réponse dessinée comme un appel."
+      - type: exercise
+        ref: uml-ex-sequence-bug
       - type: quiz
         items:
-          - ref: uml-seq-q3
-            review: code-sequence
           - ref: uml-seq-q4
             review: def-sequence
           - ref: uml-seq-q5
+            review: code-sequence
+          - ref: uml-sq-q5
             review: code-sequence
     questions:
       - code: uml-seq-q1
@@ -128,6 +120,241 @@ lessons:
             correct: false
             why: "L'appel est `->`."
         explanation: "`->` appel, `-->` réponse."
+      - code: uml-seq-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Un diagramme de séquence décrit un seul scénario à la fois."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "On fait un diagramme par scénario important."
+          - label: "Faux"
+            correct: false
+            why: "Mélanger les scénarios le rend illisible."
+        explanation: "Un scénario, un diagramme."
+      - code: uml-seq-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: full-stack
+        prompt: "Dans la séquence des livres, qui interroge la base de données ?"
+        choices:
+          - label: "LivreService"
+            correct: true
+            why: "Le contrôleur délègue au service."
+          - label: "Angular"
+            correct: false
+            why: "Le navigateur ne parle jamais à la base."
+          - label: "LivreController directement"
+            correct: false
+            why: "Le contrôleur ne touche pas la base."
+        explanation: "Architecture en couches : contrôleur → service → base."
+      - code: uml-sq-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Quel mot PlantUML dessine la base de données en cylindre ?"
+        choices:
+          - label: "`database`"
+            correct: true
+            why: "Le mot anglais pour base de données."
+          - label: "`actor`"
+            correct: false
+            why: "Il dessine un bonhomme."
+          - label: "`class`"
+            correct: false
+            why: "C'est pour le diagramme de classes."
+        explanation: "`participant` pour un composant, `database` pour la base, `actor` pour une personne."
+    exercises:
+      - slug: uml-ex-sequence-guide
+        kind: COMPLETER
+        title: "Compléter les flèches"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Complète avec `->` (appel) ou `-->` (réponse)."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Angular demande quelque chose : c'est un appel."
+          - "Ce qui remonte vers celui qui a demandé est une réponse."
+          - "->, -->, -->."
+        solution: '["->", "-->", "-->"]'
+        explanation: "Appel en trait plein, réponses en pointillés."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            Angular [[1]] SalleController : GET /api/salles
+            SalleController -> SalleService : listerSalles()
+            SalleService [[2]] SalleController : liste de salles
+            SalleController [[3]] Angular : 200 + liste
+          blanks:
+            - ["->"]
+            - ["-->"]
+            - ["-->"]
+      - slug: uml-ex-sequence-libre
+        kind: CODE_LIBRE
+        title: "Afficher le détail d'un livre"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          Écris la séquence PlantUML avec `participant Angular`, `participant LivreController`,
+          `participant LivreService` :
+          1. Angular appelle `GET /api/livres/1` sur le contrôleur ;
+          2. le contrôleur appelle `trouverLivre(1)` sur le service ;
+          3. le service répond `livre` au contrôleur ;
+          4. le contrôleur répond `200 + livre` à Angular.
+        criteria: "Trois participants, deux appels (->) et deux réponses (-->)."
+        hints:
+          - "Déclare d'abord les trois participants."
+          - "Les appels : `Angular -> LivreController : GET /api/livres/1`."
+          - "Les réponses remontent : `LivreService --> LivreController : livre`."
+        solution: |
+          @startuml
+          participant Angular
+          participant LivreController
+          participant LivreService
+          Angular -> LivreController : GET /api/livres/1
+          LivreController -> LivreService : trouverLivre(1)
+          LivreService --> LivreController : livre
+          LivreController --> Angular : 200 + livre
+          @enduml
+        explanation: "Deux appels qui descendent, deux réponses qui remontent."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            @startuml
+
+            @enduml
+          checks:
+            - pattern: 'participant\s+Angular'
+              message: "Déclare participant Angular."
+            - pattern: 'participant\s+LivreController'
+              message: "Déclare participant LivreController."
+            - pattern: 'participant\s+LivreService'
+              message: "Déclare participant LivreService."
+            - pattern: 'Angular\s*->\s*LivreController\s*:\s*GET\s+/api/livres/1'
+              message: "Angular -> LivreController : GET /api/livres/1"
+            - pattern: 'LivreController\s*->\s*LivreService\s*:'
+              message: "LivreController -> LivreService : trouverLivre(1)"
+            - pattern: 'LivreService\s*-->\s*LivreController\s*:'
+              message: "La réponse du service : LivreService --> LivreController : livre"
+            - pattern: 'LivreController\s*-->\s*Angular\s*:'
+              message: "La réponse du contrôleur : LivreController --> Angular : 200 + livre"
+      - slug: uml-ex-sequence-bug
+        kind: CORRIGER_ERREUR
+        title: "Une réponse dessinée comme un appel"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          La base renvoie les lignes au service, mais la flèche est pleine (`->`) : on dirait que la base appelle
+          le service. Corrige-la en réponse.
+        criteria: "PostgreSQL --> SalleService."
+        hints:
+          - "Ce qui remonte est une réponse."
+          - "Une réponse est en pointillés."
+          - "`PostgreSQL --> SalleService : lignes`"
+        solution: |
+          SalleService -> PostgreSQL : SELECT * FROM salles
+          PostgreSQL --> SalleService : lignes
+        explanation: "La base ne prend jamais l'initiative : elle répond."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            SalleService -> PostgreSQL : SELECT * FROM salles
+            PostgreSQL -> SalleService : lignes
+          checks:
+            - pattern: 'PostgreSQL\s*->\s*SalleService'
+              absent: true
+              message: "La base répond : utilise une flèche pointillée."
+            - pattern: 'PostgreSQL\s*-->\s*SalleService'
+              message: "Écris PostgreSQL --> SalleService : lignes."
+
+  # ===================================================================== LEÇON 2
+  - slug: uml-sequence-alt
+    title: "Deux chemins possibles : le bloc alt"
+    duration: 11
+    objective: "Montrer un succès et une erreur dans une même séquence avec alt, else et end."
+    prerequisites: "Leçon « Le diagramme de séquence : messages et réponses »."
+    skills: [uml-architecture, full-stack]
+    xp: 15
+    memo: |
+      - `alt condition` ouvre le premier chemin ; `else autre cas` ouvre le second ; `end` ferme le bloc.
+      - C'est l'équivalent du `if / else` dans un diagramme de séquence.
+      - On s'en sert pour montrer le **succès** et l'**erreur** (200 ou 401, 201 ou 409).
+    commonMistakes: |
+      - Oublier le `end`.
+      - Oublier le cas d'erreur : le diagramme ne montre que le chemin heureux.
+    blocks:
+      - type: text
+        md: |
+          Une connexion peut réussir… ou échouer. Plutôt que deux diagrammes, on montre les **deux chemins**
+          dans le même, avec un bloc `alt`.
+      - type: definition
+        id: def-alt
+        term: "Bloc alt"
+        md: |
+          Un **aiguillage de train** : selon la condition, le scénario part sur une voie (`alt`) ou sur l'autre
+          (`else`). `end` marque l'endroit où les voies se rejoignent.
+      - type: code
+        id: code-alt
+        language: text
+        title: "La connexion, avec succès et échec"
+        code: |
+          @startuml
+          participant Angular
+          participant AuthController
+          participant AuthService
+
+          Angular -> AuthController : POST /api/auth/login
+          AuthController -> AuthService : login(requete)
+          alt mot de passe correct
+            AuthService --> AuthController : jeton JWT
+            AuthController --> Angular : 200 + jeton
+          else mot de passe incorrect
+            AuthService --> AuthController : erreur
+            AuthController --> Angular : 401
+          end
+          @enduml
+        lines:
+          - n: 8
+            note: "`alt` : le premier chemin, avec sa condition."
+          - n: 11
+            note: "`else` : l'autre chemin."
+          - n: 14
+            note: "`end` ferme le bloc."
+      - type: question
+        ref: uml-seq-q3
+        review: def-alt
+      - type: question
+        ref: uml-alt-q2
+        review: code-alt
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le bloc."
+      - type: exercise
+        ref: uml-ex-sequence-alt-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : la séquence de l'inscription."
+      - type: exercise
+        ref: uml-ex-sequence
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un bloc jamais fermé."
+      - type: exercise
+        ref: uml-ex-sequence-alt-bug
+      - type: jury
+        items:
+          - q: "Expliquez-nous un diagramme de séquence de votre application."
+            a: "Je montre par exemple la connexion : Angular appelle le contrôleur, qui délègue au service ; selon le mot de passe, le service renvoie un jeton ou une erreur, et le contrôleur répond 200 ou 401. Chaque colonne correspond à une vraie classe de mon code."
+      - type: quiz
+        items:
+          - ref: uml-alt-q3
+            review: code-alt
+          - ref: uml-alt-q4
+            review: def-alt
+          - ref: uml-c3-b1
+            review: def-alt
+    questions:
       - code: uml-seq-q3
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -144,63 +371,95 @@ lessons:
             correct: false
             why: "Un commentaire, c'est `note`."
         explanation: "alt = alternative (if/else)."
-      - code: uml-seq-q4
-        kind: VRAI_FAUX
-        difficulty: 2
+      - code: uml-alt-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: full-stack
+        prompt: "Dans l'exemple, que reçoit Angular si le mot de passe est incorrect ?"
+        choices:
+          - label: "401"
+            correct: true
+            why: "C'est le chemin `else`."
+          - label: "200 + jeton"
+            correct: false
+            why: "C'est le chemin du succès."
+          - label: "Rien du tout"
+            correct: false
+            why: "Le contrôleur répond toujours."
+        explanation: "Chaque chemin a sa propre réponse."
+      - code: uml-alt-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
         skill: uml-architecture
-        prompt: "Un diagramme de séquence décrit un seul scénario à la fois."
+        prompt: "Quel mot ferme un bloc `alt` ?"
+        choices:
+          - label: "`end`"
+            correct: true
+            why: "Il marque la fin de l'alternative."
+          - label: "`endif`"
+            correct: false
+            why: "C'est pour le diagramme d'activité."
+          - label: "`stop`"
+            correct: false
+            why: "C'est la fin d'un diagramme d'activité."
+        explanation: "alt … else … end."
+      - code: uml-alt-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Un bon diagramme de séquence montre aussi le cas d'erreur, pas seulement le succès."
         choices:
           - label: "Vrai"
             correct: true
-            why: "On fait un diagramme par scénario important."
+            why: "Le jury veut voir que les erreurs sont prévues."
           - label: "Faux"
             correct: false
-            why: "Mélanger les scénarios le rend illisible."
-        explanation: "Un scénario, un diagramme (avec éventuellement des alternatives)."
-      - code: uml-seq-q5
+            why: "Oublier l'erreur donne une vision incomplète."
+        explanation: "alt pour le succès, else pour l'erreur."
+      - code: uml-c3-b1
         kind: CHOIX_UNIQUE
         difficulty: 2
-        skill: full-stack
-        prompt: "Dans la séquence de connexion, qui interroge la base de données ?"
+        skill: uml-architecture
+        prompt: "Quel bloc PlantUML représente une répétition dans un diagramme de séquence ?"
         choices:
-          - label: "AuthService (via le repository)"
+          - label: "`loop ... end`"
             correct: true
-            why: "Le contrôleur délègue au service."
-          - label: "Angular"
+            why: "Répétition."
+          - label: "`alt ... end`"
             correct: false
-            why: "Le navigateur ne parle jamais à la base."
-          - label: "AuthController directement"
+            why: "Alternative."
+          - label: "`note ... end note`"
             correct: false
-            why: "Le contrôleur ne touche pas la base."
-        explanation: "Architecture en couches : contrôleur → service → repository → base."
+            why: "Commentaire."
+        explanation: "loop pour répéter, alt pour choisir, opt pour une partie facultative."
     exercises:
-      - slug: uml-ex-sequence-guide
+      - slug: uml-ex-sequence-alt-guide
         kind: COMPLETER
-        title: "Compléter une séquence"
+        title: "Compléter le bloc alt"
         difficulty: FACILE
         skill: uml-architecture
-        statement: "Complète avec -> (appel) ou --> (réponse), et le mot-clé de l'alternative."
+        statement: "Complète les trois mots du bloc."
         criteria: "Les trois trous sont corrects."
         hints:
-          - "Angular appelle l'API : c'est un appel."
-          - "L'API renvoie 200 : c'est une réponse."
-          - "->, -->, alt."
-        solution: '["->", "-->", "alt"]'
-        explanation: "Appel en trait plein, réponse en pointillés, alt pour les cas."
+          - "Le mot qui ouvre le bloc."
+          - "Le mot qui ouvre l'autre chemin, puis celui qui ferme."
+          - "alt, else, end."
+        solution: '["alt", "else", "end"]'
+        explanation: "alt ouvre, else sépare, end ferme."
         xp: 10
         payload:
           language: text
           template: |
-            Angular [[1]] ProduitController : GET /api/produits
-            [[3]] produits trouvés
-              ProduitController [[2]] Angular : 200 + liste
-            else erreur serveur
-              ProduitController --> Angular : 500
-            end
+            Angular -> SalleController : GET /api/salles/3
+            [[1]] salle trouvée
+              SalleController --> Angular : 200 + salle
+            [[2]] salle inconnue
+              SalleController --> Angular : 404
+            [[3]]
           blanks:
-            - ["->"]
-            - ["-->"]
             - ["alt"]
+            - ["else"]
+            - ["end"]
       - slug: uml-ex-sequence
         kind: CODE_LIBRE
         title: "La séquence de l'inscription"
@@ -238,7 +497,7 @@ lessons:
             AuthController --> Angular : 409
           end
           @enduml
-        explanation: "Le diagramme reprend exactement l'architecture en couches et les deux issues prévues dans la fiche de cas."
+        explanation: "Le diagramme reprend l'architecture en couches et les deux issues prévues dans la fiche de cas."
         xp: 25
         payload:
           language: text
@@ -263,49 +522,77 @@ lessons:
               message: "Le service interroge la base : AuthService -> PostgreSQL : ..."
             - pattern: '\balt\b[\s\S]*-->\s*Angular\s*:\s*201[\s\S]*\belse\b[\s\S]*-->\s*Angular\s*:\s*409[\s\S]*\bend\b'
               message: "Ajoute un bloc alt : 201 si l'e-mail est libre, else 409, puis end."
+      - slug: uml-ex-sequence-alt-bug
+        kind: CORRIGER_ERREUR
+        title: "Un bloc jamais fermé"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          Ce bloc `alt` n'est jamais fermé : PlantUML refuse de dessiner le diagramme. Ajoute la ligne qui manque
+          à la fin.
+        criteria: "Le bloc se termine par end."
+        hints:
+          - "Chaque alt doit être fermé."
+          - "Le mot de fermeture tient en trois lettres."
+          - "Ajoute `end` sur la dernière ligne."
+        solution: |
+          alt livre disponible
+            LivreController --> Angular : 200
+          else livre déjà emprunté
+            LivreController --> Angular : 409
+          end
+        explanation: "alt … else … end : sans end, le bloc reste ouvert."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            alt livre disponible
+              LivreController --> Angular : 200
+            else livre déjà emprunté
+              LivreController --> Angular : 409
+          checks:
+            - pattern: '(?m)^\s*end\s*$'
+              message: "Ferme le bloc avec end."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 3
   - slug: uml-activite
-    title: "Le diagramme d'activité"
-    duration: 12
-    objective: "Représenter un processus métier avec actions, décisions et fin, par exemple la validation d'une commande."
-    prerequisites: "Leçon « Le diagramme de séquence »."
+    title: "Le diagramme d'activité : début, actions, fin"
+    duration: 9
+    objective: "Décrire un processus simple avec start, des actions et stop."
+    prerequisites: "Leçon « Deux chemins possibles : le bloc alt »."
     skills: [uml-architecture]
-    xp: 20
+    xp: 15
     memo: |
-      - Le diagramme d'activité décrit un **processus** : une suite d'actions et de décisions, comme un organigramme.
-      - Début `start`, actions `:Action;`, décision `if (condition ?) then (oui) ... else (non) ... endif`, fin `stop`.
+      - Le diagramme d'activité décrit un **processus** : une suite d'étapes, comme un organigramme.
+      - `start` : le point de départ ; `stop` : la fin.
+      - Une action s'écrit entre deux-points et point-virgule : `:Choisir une salle;`.
       - Il est compréhensible par le client : idéal pour valider une règle métier.
     commonMistakes: |
-      - Oublier une branche d'une décision.
+      - Oublier le point-virgule à la fin d'une action.
       - Mettre des détails techniques (requêtes SQL) dans un processus métier.
       - Plusieurs points de départ.
     blocks:
       - type: text
         md: |
-          Pour expliquer **un processus** à un client (« que se passe-t-il quand une commande est validée ? »),
-          rien ne vaut un **organigramme** : c'est le diagramme d'activité.
+          Pour expliquer **un processus** à un client (« comment se passe une réservation ? »), rien ne vaut un
+          **organigramme** : c'est le diagramme d'activité.
       - type: definition
         id: def-activite
         term: "Diagramme d'activité"
         md: |
-          Un **schéma de parcours**, comme un plan d'évacuation : un point de départ, des étapes, des
-          carrefours (décisions) et une sortie. Chaque étape est une **action**.
+          Une **recette de cuisine** dessinée : un début, des étapes les unes après les autres, et une fin.
+          Chaque étape est une **action**.
       - type: code
         id: code-activite
         language: text
-        title: "La validation d'une commande"
+        title: "Réserver une salle (sans décision)"
         code: |
           @startuml
           start
-          :Vérifier le panier;
-          if (Stock suffisant ?) then (oui)
-            :Enregistrer la commande;
-            :Diminuer le stock;
-            :Envoyer la confirmation;
-          else (non)
-            :Afficher « stock insuffisant »;
-          endif
+          :Choisir une salle;
+          :Choisir une date;
+          :Enregistrer la réservation;
+          :Envoyer la confirmation;
           stop
           @enduml
         lines:
@@ -313,38 +600,34 @@ lessons:
             note: "`start` : le point de départ (disque noir)."
           - n: 3
             note: "Une action, entre deux-points et point-virgule."
-          - n: 4
-            note: "Une décision : une question, avec la branche « oui »."
-          - n: 8
-            note: "La branche « non »."
-          - n: 11
+          - n: 7
             note: "`stop` : la fin du processus."
       - type: question
         ref: uml-act-q1
         review: def-activite
       - type: question
-        ref: uml-act-q2
+        ref: uml-act-q3
         review: code-activite
       - type: text
-        md: "Exercice guidé : remets le processus dans l'ordre."
+        md: "**Exercice 1 (guidé)** : remets le processus dans l'ordre."
       - type: exercise
-        ref: uml-ex-activite-ordre
+        ref: uml-ex-activite-simple-ordre
       - type: text
-        md: "En autonomie : écris le diagramme d'activité d'un retrait au distributeur."
+        md: "**Exercice 2 (en autonomie)** : emprunter un livre."
       - type: exercise
-        ref: uml-ex-activite
-      - type: jury
-        items:
-          - q: "Quand utilisez-vous un diagramme d'activité plutôt qu'un diagramme de séquence ?"
-            a: "Le diagramme d'activité décrit un processus métier (étapes et décisions), compréhensible par le client ; le diagramme de séquence montre les échanges techniques entre composants pour un scénario."
+        ref: uml-ex-activite-simple
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un point-virgule oublié."
+      - type: exercise
+        ref: uml-ex-activite-simple-bug
       - type: quiz
         items:
-          - ref: uml-act-q3
-            review: code-activite
           - ref: uml-act-q4
             review: def-activite
-          - ref: uml-act-q5
+          - ref: uml-ac-q4
             review: code-activite
+          - ref: uml-ac-q5
+            review: def-activite
     questions:
       - code: uml-act-q1
         kind: CHOIX_UNIQUE
@@ -352,32 +635,16 @@ lessons:
         skill: uml-architecture
         prompt: "À quoi ressemble un diagramme d'activité ?"
         choices:
-          - label: "À un organigramme : actions et décisions"
+          - label: "À un organigramme : des étapes du début à la fin"
             correct: true
-            why: "Un parcours avec des carrefours."
+            why: "Un parcours d'étapes."
           - label: "À un tableau de données"
             correct: false
             why: "C'est un schéma de processus."
           - label: "À une liste de classes"
             correct: false
             why: "C'est le diagramme de classes."
-        explanation: "Départ, actions, décisions, fin."
-      - code: uml-act-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: uml-architecture
-        prompt: "Dans l'exemple, que se passe-t-il si le stock est insuffisant ?"
-        choices:
-          - label: "Le message « stock insuffisant » s'affiche, puis le processus se termine"
-            correct: true
-            why: "Branche « non »."
-          - label: "La commande est enregistrée quand même"
-            correct: false
-            why: "Seulement dans la branche « oui »."
-          - label: "Le processus recommence au début"
-            correct: false
-            why: "Aucune boucle n'est dessinée."
-        explanation: "Chaque branche d'une décision est suivie jusqu'à la fin."
+        explanation: "Départ, actions, fin."
       - code: uml-act-q3
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -407,6 +674,235 @@ lessons:
             correct: false
             why: "C'est l'un de ses principaux usages."
         explanation: "Langage commun entre équipe et client."
+      - code: uml-ac-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Quel mot termine un diagramme d'activité ?"
+        choices:
+          - label: "`stop`"
+            correct: true
+            why: "La fin du processus."
+          - label: "`end`"
+            correct: false
+            why: "end ferme un bloc alt."
+          - label: "`@startuml`"
+            correct: false
+            why: "C'est le début du fichier."
+        explanation: "start … stop."
+      - code: uml-ac-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Laquelle est une bonne action pour un processus métier ?"
+        choices:
+          - label: "`:Envoyer la confirmation;`"
+            correct: true
+            why: "Une étape que le client comprend."
+          - label: "`:Exécuter INSERT INTO reservations;`"
+            correct: false
+            why: "Trop technique pour un processus métier."
+          - label: "`:Appeler le repository;`"
+            correct: false
+            why: "Détail de code : il a sa place dans la séquence."
+        explanation: "Le diagramme d'activité parle la langue du métier."
+    exercises:
+      - slug: uml-ex-activite-simple-ordre
+        kind: REMETTRE_ORDRE
+        title: "Ordonner un processus"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Remets dans l'ordre le processus d'inscription à un atelier."
+        criteria: "start, les actions dans l'ordre logique, stop."
+        hints:
+          - "start en premier, stop en dernier."
+          - "On choisit l'atelier avant de s'inscrire."
+          - "start, choisir, saisir, enregistrer, envoyer, stop."
+        solution: |
+          start
+          :Choisir un atelier;
+          :Saisir son nom;
+          :Enregistrer l'inscription;
+          :Envoyer un e-mail de confirmation;
+          stop
+        explanation: "Un processus suit l'ordre réel des étapes."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "start"
+            - ":Choisir un atelier;"
+            - ":Saisir son nom;"
+            - ":Enregistrer l'inscription;"
+            - ":Envoyer un e-mail de confirmation;"
+            - "stop"
+      - slug: uml-ex-activite-simple
+        kind: CODE_LIBRE
+        title: "Emprunter un livre"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          Écris le diagramme d'activité PlantUML de l'emprunt d'un livre :
+          `start`, puis les actions `:Chercher le livre;`, `:Cliquer sur Emprunter;`, `:Enregistrer l'emprunt;`,
+          puis `stop`.
+        criteria: "start, trois actions dans l'ordre, stop."
+        hints:
+          - "Entre @startuml et @enduml."
+          - "Chaque action : `:texte;`."
+          - "start, les trois actions, stop."
+        solution: |
+          @startuml
+          start
+          :Chercher le livre;
+          :Cliquer sur Emprunter;
+          :Enregistrer l'emprunt;
+          stop
+          @enduml
+        explanation: "Un processus linéaire, sans décision."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            @startuml
+
+            @enduml
+          checks:
+            - pattern: '(?m)^\s*start\s*$'
+              message: "Commence par start."
+            - pattern: ':\s*Chercher le livre\s*;[\s\S]*:\s*Cliquer sur Emprunter\s*;[\s\S]*:\s*Enregistrer l.emprunt\s*;'
+              message: "Écris les trois actions dans l'ordre : chercher, cliquer, enregistrer."
+            - pattern: '(?m)^\s*stop\s*$'
+              message: "Termine par stop."
+      - slug: uml-ex-activite-simple-bug
+        kind: CORRIGER_ERREUR
+        title: "Un point-virgule oublié"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          L'action « Envoyer la confirmation » n'a pas son point-virgule : PlantUML ne sait pas où elle s'arrête.
+          Corrige-la.
+        criteria: "Chaque action se termine par un point-virgule."
+        hints:
+          - "Regarde la fin de chaque action."
+          - "Une action : deux-points au début, point-virgule à la fin."
+          - "`:Envoyer la confirmation;`"
+        solution: |
+          start
+          :Enregistrer la réservation;
+          :Envoyer la confirmation;
+          stop
+        explanation: "`:texte;` : le point-virgule ferme l'action."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            start
+            :Enregistrer la réservation;
+            :Envoyer la confirmation
+            stop
+          checks:
+            - pattern: '(?m):Envoyer la confirmation\s*$'
+              absent: true
+              message: "Il manque le point-virgule après « Envoyer la confirmation »."
+            - pattern: ':\s*Envoyer la confirmation\s*;'
+              message: "Écris :Envoyer la confirmation;"
+
+  # ===================================================================== LEÇON 4
+  - slug: uml-activite-decision
+    title: "Les décisions dans un diagramme d'activité"
+    duration: 11
+    objective: "Ajouter une décision (if / else / endif) à un processus, avec ses deux branches."
+    prerequisites: "Leçon « Le diagramme d'activité : début, actions, fin »."
+    skills: [uml-architecture]
+    xp: 15
+    memo: |
+      - Une décision est un **carrefour** : `if (Salle libre ?) then (oui) ... else (non) ... endif`.
+      - Chaque branche contient ses actions ; `endif` referme le carrefour.
+      - Une décision peut être placée **dans** une autre : chaque `if` a alors son propre `endif`.
+    commonMistakes: |
+      - Oublier une branche d'une décision.
+      - Oublier le `endif`.
+      - Confondre `endif` (activité) et `end` (bloc alt de séquence).
+    blocks:
+      - type: text
+        md: |
+          Un processus réel a souvent un **carrefour** : si la salle est libre, on réserve ; sinon, on prévient.
+      - type: definition
+        id: def-decision
+        term: "Décision"
+        md: |
+          Un **panneau de bifurcation** sur un sentier : une question, deux chemins (oui / non), puis les
+          chemins se rejoignent (`endif`).
+      - type: code
+        id: code-decision
+        language: text
+        title: "Réserver une salle, avec une décision"
+        code: |
+          @startuml
+          start
+          :Choisir une salle;
+          if (Salle libre ?) then (oui)
+            :Enregistrer la réservation;
+            :Envoyer la confirmation;
+          else (non)
+            :Afficher « salle déjà prise »;
+          endif
+          stop
+          @enduml
+        lines:
+          - n: 4
+            note: "Une décision : une question, avec la branche « oui »."
+          - n: 7
+            note: "La branche « non »."
+          - n: 9
+            note: "`endif` referme la décision."
+      - type: question
+        ref: uml-act-q2
+        review: code-decision
+      - type: question
+        ref: uml-act-q5
+        review: def-decision
+      - type: text
+        md: "**Exercice 1 (guidé)** : remets le processus dans l'ordre."
+      - type: exercise
+        ref: uml-ex-activite-ordre
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une réservation avec deux décisions."
+      - type: exercise
+        ref: uml-ex-activite
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une décision jamais refermée."
+      - type: exercise
+        ref: uml-ex-decision-bug
+      - type: jury
+        items:
+          - q: "Quand utilisez-vous un diagramme d'activité plutôt qu'un diagramme de séquence ?"
+            a: "Le diagramme d'activité décrit un processus métier (étapes et décisions), compréhensible par le client ; le diagramme de séquence montre les échanges techniques entre composants pour un scénario."
+      - type: quiz
+        items:
+          - ref: uml-ad-q3
+            review: code-decision
+          - ref: uml-ad-q4
+            review: def-decision
+          - ref: uml-c3-b2
+            review: def-decision
+    questions:
+      - code: uml-act-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Dans l'exemple, que se passe-t-il si la salle est déjà prise ?"
+        choices:
+          - label: "Le message « salle déjà prise » s'affiche, puis le processus se termine"
+            correct: true
+            why: "Branche « non »."
+          - label: "La réservation est enregistrée quand même"
+            correct: false
+            why: "Seulement dans la branche « oui »."
+          - label: "Le processus recommence au début"
+            correct: false
+            why: "Aucune boucle n'est dessinée."
+        explanation: "Chaque branche d'une décision est suivie jusqu'à la fin."
       - code: uml-act-q5
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -423,10 +919,55 @@ lessons:
             correct: false
             why: "stop termine tout le processus."
         explanation: "if / then / else / endif."
+      - code: uml-ad-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Combien de branches a une décision `if … else … endif` ?"
+        choices:
+          - label: "Deux : oui et non"
+            correct: true
+            why: "Une par réponse à la question."
+          - label: "Une seule"
+            correct: false
+            why: "Le else ajoute la seconde."
+          - label: "Aucune"
+            correct: false
+            why: "Une décision crée justement des branches."
+        explanation: "Question, branche oui, branche non."
+      - code: uml-ad-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Si on place une décision dans une autre, chaque `if` doit avoir son propre `endif`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Chaque carrefour se referme."
+          - label: "Faux"
+            correct: false
+            why: "Un endif manquant empêche le dessin."
+        explanation: "Autant de endif que de if."
+      - code: uml-c3-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Quels sont les trois diagrammes UML les plus attendus au dossier CDA ?"
+        choices:
+          - label: "Cas d'utilisation, classes, séquence"
+            correct: true
+            why: "Le besoin, la structure, le déroulement."
+          - label: "Composants, paquets, objets"
+            correct: false
+            why: "Utiles, mais moins attendus."
+          - label: "Activité, états, temps"
+            correct: false
+            why: "Complémentaires."
+        explanation: "Besoin → structure → comportement."
     exercises:
       - slug: uml-ex-activite-ordre
         kind: REMETTRE_ORDRE
-        title: "Ordonner un processus"
+        title: "Ordonner un processus avec décision"
         difficulty: FACILE
         skill: uml-architecture
         statement: "Remets les lignes du diagramme d'activité dans l'ordre."
@@ -437,9 +978,9 @@ lessons:
           - "start, action, if, action, else, action, endif, stop."
         solution: |
           start
-          :Saisir le code promo;
+          :Saisir le code d'accès;
           if (Code valide ?) then (oui)
-            :Appliquer la réduction;
+            :Ouvrir la porte;
           else (non)
             :Afficher « code invalide »;
           endif
@@ -450,25 +991,25 @@ lessons:
           language: text
           lines:
             - "start"
-            - ":Saisir le code promo;"
+            - ":Saisir le code d'accès;"
             - "if (Code valide ?) then (oui)"
-            - "  :Appliquer la réduction;"
+            - "  :Ouvrir la porte;"
             - "else (non)"
             - "  :Afficher « code invalide »;"
             - "endif"
             - "stop"
       - slug: uml-ex-activite
         kind: CODE_LIBRE
-        title: "Retrait au distributeur"
+        title: "Une réservation avec deux décisions"
         difficulty: INTERMEDIAIRE
         skill: uml-architecture
         statement: |
-          Écris le diagramme d'activité PlantUML d'un retrait :
+          Écris le diagramme d'activité PlantUML d'une réservation :
           1. `start` ;
-          2. `:Saisir le code;` ;
-          3. décision `if (Code correct ?) then (oui)` : `:Saisir le montant;` puis une seconde décision
-             `if (Solde suffisant ?)` avec `:Distribuer les billets;` (oui) ou `:Refuser le retrait;` (non) ;
-          4. sinon (code incorrect) : `:Afficher « code incorrect »;` ;
+          2. `:Se connecter;` ;
+          3. décision `if (Compte valide ?) then (oui)` : `:Choisir une salle;` puis une seconde décision
+             `if (Salle libre ?)` avec `:Enregistrer la réservation;` (oui) ou `:Proposer une autre salle;` (non) ;
+          4. sinon (compte invalide) : `:Afficher « compte invalide »;` ;
           5. `stop`.
         criteria: "start, stop, deux décisions imbriquées et les actions demandées."
         hints:
@@ -478,16 +1019,16 @@ lessons:
         solution: |
           @startuml
           start
-          :Saisir le code;
-          if (Code correct ?) then (oui)
-            :Saisir le montant;
-            if (Solde suffisant ?) then (oui)
-              :Distribuer les billets;
+          :Se connecter;
+          if (Compte valide ?) then (oui)
+            :Choisir une salle;
+            if (Salle libre ?) then (oui)
+              :Enregistrer la réservation;
             else (non)
-              :Refuser le retrait;
+              :Proposer une autre salle;
             endif
           else (non)
-            :Afficher « code incorrect »;
+            :Afficher « compte invalide »;
           endif
           stop
           @enduml
@@ -504,49 +1045,67 @@ lessons:
               message: "Commence par start."
             - pattern: '(?m)^\s*stop\s*$'
               message: "Termine par stop."
-            - pattern: ':\s*Saisir le code\s*;'
-              message: "Action :Saisir le code;"
-            - pattern: 'if\s*\(\s*Code correct\s*\?\s*\)\s*then'
-              message: "Décision if (Code correct ?) then (oui)."
-            - pattern: 'if\s*\(\s*Solde suffisant\s*\?\s*\)\s*then'
-              message: "Seconde décision if (Solde suffisant ?) then (oui)."
-            - pattern: ':\s*Distribuer les billets\s*;'
-              message: "Action :Distribuer les billets;"
-            - pattern: ':\s*Refuser le retrait\s*;'
-              message: "Action :Refuser le retrait;"
+            - pattern: ':\s*Se connecter\s*;'
+              message: "Action :Se connecter;"
+            - pattern: 'if\s*\(\s*Compte valide\s*\?\s*\)\s*then'
+              message: "Décision if (Compte valide ?) then (oui)."
+            - pattern: 'if\s*\(\s*Salle libre\s*\?\s*\)\s*then'
+              message: "Seconde décision if (Salle libre ?) then (oui)."
+            - pattern: ':\s*Enregistrer la réservation\s*;'
+              message: "Action :Enregistrer la réservation;"
+            - pattern: ':\s*Proposer une autre salle\s*;'
+              message: "Action :Proposer une autre salle;"
             - pattern: '\A(?>[\s\S]*?\bendif\b){2}'
               message: "Chaque décision se ferme par endif (deux au total)."
+      - slug: uml-ex-decision-bug
+        kind: CORRIGER_ERREUR
+        title: "Une décision jamais refermée"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          La décision « Livre disponible ? » n'est jamais refermée. Ajoute le mot qui manque avant `stop`.
+        criteria: "La décision se termine par endif."
+        hints:
+          - "Chaque if doit être refermé."
+          - "Ce n'est pas `end` (réservé à la séquence)."
+          - "Ajoute `endif` avant stop."
+        solution: |
+          start
+          if (Livre disponible ?) then (oui)
+            :Enregistrer l'emprunt;
+          else (non)
+            :Proposer une réservation;
+          endif
+          stop
+        explanation: "if … else … endif, puis stop."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            start
+            if (Livre disponible ?) then (oui)
+              :Enregistrer l'emprunt;
+            else (non)
+              :Proposer une réservation;
+            stop
+          checks:
+            - pattern: '\bendif\b[\s\S]*\bstop\b'
+              message: "Ajoute endif avant stop."
 
 bank:
-  - code: uml-c3-b1
+  - code: uml-c3-b3
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: uml-architecture
-    prompt: "Quel bloc PlantUML représente une répétition dans un diagramme de séquence ?"
+    prompt: "Pour montrer au client comment se passe une réservation, étape par étape, quel diagramme choisir ?"
     choices:
-      - label: "`loop ... end`"
+      - label: "Le diagramme d'activité"
         correct: true
-        why: "Répétition."
-      - label: "`alt ... end`"
+        why: "Un processus métier lisible par tous."
+      - label: "Le diagramme de classes"
         correct: false
-        why: "Alternative."
-      - label: "`note ... end note`"
+        why: "Il montre la structure du code."
+      - label: "Le diagramme de déploiement"
         correct: false
-        why: "Commentaire."
-    explanation: "loop pour répéter, alt pour choisir, opt pour une partie facultative."
-  - code: uml-c3-b2
-    kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: uml-architecture
-    prompt: "Quels sont les trois diagrammes UML les plus attendus au dossier CDA ?"
-    choices:
-      - label: "Cas d'utilisation, classes, séquence"
-        correct: true
-        why: "Le besoin, la structure, le déroulement."
-      - label: "Composants, paquets, objets"
-        correct: false
-        why: "Utiles, mais moins attendus."
-      - label: "Activité, états, temps"
-        correct: false
-        why: "Complémentaires."
-    explanation: "Besoin → structure → comportement."
+        why: "Il montre les serveurs."
+    explanation: "Processus métier → activité ; échanges techniques → séquence."

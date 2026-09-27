@@ -2,99 +2,97 @@ slug: uml-classes
 position: 2
 level: INTERMEDIAIRE
 title: "Le diagramme de classes"
-summary: "Représenter les classes avec leurs attributs, méthodes et visibilités, puis les relations : association, multiplicité, composition et héritage."
-quizQuestionCount: 10
+summary: "Dessiner une classe UML, ajouter la visibilité, puis relier les classes : association et multiplicités, composition et agrégation, héritage. Une seule notion par leçon."
+quizQuestionCount: 14
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: uml-classe-simple
-    title: "Classes, attributs, méthodes et visibilité"
-    duration: 12
-    objective: "Dessiner une classe UML complète et faire le lien avec le code Java."
+    title: "Une classe UML : nom, attributs, méthodes"
+    duration: 10
+    objective: "Dessiner une classe UML en trois cases, avec des attributs et des méthodes typés."
     prerequisites: "Chapitre « Les cas d'utilisation » ; parcours Java conseillé."
     skills: [uml-architecture, poo]
-    xp: 20
+    xp: 15
     memo: |
-      - Une classe UML : un rectangle en trois cases — **nom**, **attributs**, **méthodes**.
-      - Visibilité : `-` privé, `+` public, `#` protégé.
-      - Attribut : `- email : String` ; méthode : `+ prixTTC() : double`.
-      - Le diagramme de classes correspond directement aux classes Java (entités, services…).
+      - Une classe UML est un rectangle en **trois cases** : le **nom**, les **attributs**, les **méthodes**.
+      - Attribut : `titre : String` (nom, deux-points, type).
+      - Méthode : `estDisponible() : boolean` (nom, parenthèses, deux-points, type du résultat).
+      - Le diagramme de classes est le **plan du code** : chaque classe UML devient une classe Java.
     commonMistakes: |
       - Oublier les types.
-      - Mettre tous les attributs en public (`+`) : contraire à l'encapsulation.
-      - Recopier le MCD sans les méthodes : le diagramme de classes montre aussi le comportement.
+      - Oublier les parenthèses d'une méthode : elle ressemble alors à un attribut.
     blocks:
       - type: text
         md: |
-          Le diagramme de classes est le **plan du code** : il montre les classes de l'application, leurs
-          données et ce qu'elles savent faire.
+          Le diagramme de classes est le **plan du code** : il montre les classes de l'application, leurs données
+          et ce qu'elles savent faire.
       - type: definition
         id: def-classe-uml
         term: "Classe UML"
         md: |
-          Un rectangle en **trois étages** : le nom en haut, les attributs au milieu, les méthodes en bas.
-          Chaque membre est précédé de sa **visibilité** : `-` (privé), `+` (public), `#` (protégé).
+          Une **fiche en trois étages** : le nom en haut, les attributs (ce que l'objet sait) au milieu, les
+          méthodes (ce que l'objet sait faire) en bas.
       - type: code
         id: code-classe-uml
         language: text
-        title: "La classe Produit en PlantUML"
+        title: "La classe Livre en PlantUML"
         code: |
           @startuml
-          class Produit {
-            - id : Long
-            - nom : String
-            - prix : BigDecimal
-            + Produit(nom : String, prix : BigDecimal)
-            + getNom() : String
-            + prixTTC() : BigDecimal
+          class Livre {
+            titre : String
+            auteur : String
+            disponible : boolean
+            estDisponible() : boolean
+            fiche() : String
           }
           @enduml
         lines:
+          - n: 2
+            note: "`class` et le nom de la classe."
           - n: 3
-            note: "`-` : attribut privé, suivi de son type après les deux-points."
+            note: "Un attribut : son nom, puis son type après les deux-points."
           - n: 6
-            note: "Le constructeur."
-          - n: 8
-            note: "`+` : méthode publique ; le type de retour vient après les deux-points."
+            note: "Une méthode : parenthèses, puis le type du résultat après les deux-points."
       - type: compare
         left:
           title: "UML"
-          code: |
-            - prix : BigDecimal
-            + prixTTC() : BigDecimal
           language: text
+          code: |
+            titre : String
+            fiche() : String
         right:
           title: "Java"
-          code: |
-            private BigDecimal prix;
-            public BigDecimal prixTTC() { ... }
           language: java
+          code: |
+            String titre;
+            String fiche() { ... }
       - type: question
         ref: uml-cl-q1
         review: def-classe-uml
       - type: question
-        ref: uml-cl-q2
+        ref: uml-cs-q2
         review: code-classe-uml
       - type: text
-        md: "Exercice guidé : complète la classe."
+        md: "**Exercice 1 (guidé)** : complète la classe."
       - type: exercise
-        ref: uml-ex-classe-guide
+        ref: uml-ex-classe-simple-guide
       - type: text
-        md: "En autonomie : écris la classe Utilisateur en PlantUML."
+        md: "**Exercice 2 (en autonomie)** : la classe Salle."
       - type: exercise
-        ref: uml-ex-classe
-      - type: jury
-        items:
-          - q: "Que représentent les symboles + et - dans un diagramme de classes ?"
-            a: "La visibilité : + public, - privé, # protégé. Les attributs sont en général privés et accessibles par des méthodes publiques (encapsulation)."
+        ref: uml-ex-classe-simple-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une méthode sans parenthèses."
+      - type: exercise
+        ref: uml-ex-classe-simple-bug
       - type: quiz
         items:
-          - ref: uml-cl-q3
-            review: code-classe-uml
           - ref: uml-cl-q4
             review: def-classe-uml
-          - ref: uml-cl-q5
+          - ref: uml-cs-q4
             review: code-classe-uml
+          - ref: uml-cs-q5
+            review: def-classe-uml
     questions:
       - code: uml-cl-q1
         kind: CHOIX_UNIQUE
@@ -112,6 +110,241 @@ lessons:
             correct: false
             why: "Il est en haut."
         explanation: "Trois étages : nom, attributs, méthodes."
+      - code: uml-cs-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Que signifie `fiche() : String` ?"
+        choices:
+          - label: "Une méthode fiche qui renvoie un texte"
+            correct: true
+            why: "Parenthèses = méthode ; après les deux-points = type du résultat."
+          - label: "Un attribut fiche de type String"
+            correct: false
+            why: "Les parenthèses indiquent une méthode."
+          - label: "Une classe fiche"
+            correct: false
+            why: "Une classe commence par le mot class."
+        explanation: "Méthode : nom(), puis type du résultat."
+      - code: uml-cl-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Le diagramme de classes montre les méthodes, contrairement au MCD."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Il décrit aussi le comportement."
+          - label: "Faux"
+            correct: false
+            why: "Le MCD ne montre que les données."
+        explanation: "Classes = données + comportements."
+      - code: uml-cs-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Comment écrire en UML un attribut `ville` de type texte ?"
+        choices:
+          - label: "`ville : String`"
+            correct: true
+            why: "Nom, deux-points, type."
+          - label: "`String ville`"
+            correct: false
+            why: "C'est l'écriture Java."
+          - label: "`ville()`"
+            correct: false
+            why: "Avec des parenthèses, ce serait une méthode."
+        explanation: "En UML, le type vient après les deux-points."
+      - code: uml-cs-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "À quoi sert le diagramme de classes ?"
+        choices:
+          - label: "À dessiner le plan du code : classes, données et comportements"
+            correct: true
+            why: "Chaque classe UML devient une classe Java."
+          - label: "À montrer qui utilise l'application"
+            correct: false
+            why: "C'est le diagramme de cas d'utilisation."
+          - label: "À dessiner les écrans"
+            correct: false
+            why: "C'est le rôle des maquettes."
+        explanation: "Structure du code."
+    exercises:
+      - slug: uml-ex-classe-simple-guide
+        kind: COMPLETER
+        title: "Compléter une classe"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Complète la classe Film : un attribut texte, et une méthode qui renvoie vrai ou faux."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot qui déclare une classe."
+          - "Un texte : String. Vrai/faux : boolean."
+          - "class, String, boolean."
+        solution: '["class", "String", "boolean"]'
+        explanation: "`class Film { titre : String ; estSorti() : boolean }`"
+        xp: 10
+        payload:
+          language: text
+          template: |
+            [[1]] Film {
+              titre : [[2]]
+              estSorti() : [[3]]
+            }
+          blanks:
+            - ["class"]
+            - ["String"]
+            - ["boolean"]
+      - slug: uml-ex-classe-simple-libre
+        kind: CODE_LIBRE
+        title: "La classe Salle"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          Écris en PlantUML la classe `Salle` avec :
+          - les attributs `nom : String` et `reservee : boolean` ;
+          - la méthode `reserver() : void`.
+        criteria: "Une classe Salle avec deux attributs typés et une méthode typée."
+        hints:
+          - "`class Salle { ... }` entre @startuml et @enduml."
+          - "Un attribut par ligne : `nom : String`."
+          - "`reserver() : void`"
+        solution: |
+          @startuml
+          class Salle {
+            nom : String
+            reservee : boolean
+            reserver() : void
+          }
+          @enduml
+        explanation: "Deux données, un comportement."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            @startuml
+
+            @enduml
+          checks:
+            - pattern: 'class\s+Salle\s*\{'
+              message: "Déclare class Salle { ... }."
+            - pattern: '\bnom\s*:\s*String'
+              message: "Attribut nom : String."
+            - pattern: '\breservee\s*:\s*boolean'
+              message: "Attribut reservee : boolean."
+            - pattern: '\breserver\s*\(\s*\)\s*:\s*void'
+              message: "Méthode reserver() : void."
+      - slug: uml-ex-classe-simple-bug
+        kind: CORRIGER_ERREUR
+        title: "Une méthode sans parenthèses"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          Dans la classe `Commande`, la méthode `valider` a été écrite sans parenthèses : on dirait un attribut.
+          Corrige-la : `valider() : void`.
+        criteria: "valider s'écrit avec des parenthèses."
+        hints:
+          - "Une méthode a toujours des parenthèses."
+          - "Le type du résultat vient après."
+          - "valider() : void"
+        solution: |
+          class Commande {
+            date : Date
+            valider() : void
+          }
+        explanation: "Les parenthèses distinguent une méthode d'un attribut."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            class Commande {
+              date : Date
+              valider : void
+            }
+          checks:
+            - pattern: '\bvalider\s*:\s*void'
+              absent: true
+              message: "Ajoute les parenthèses à la méthode valider."
+            - pattern: '\bvalider\s*\(\s*\)\s*:\s*void'
+              message: "Écris valider() : void."
+
+  # ===================================================================== LEÇON 2
+  - slug: uml-visibilite
+    title: "La visibilité : -, + et #"
+    duration: 9
+    objective: "Indiquer la visibilité des attributs et des méthodes avec -, + et #, en respectant l'encapsulation."
+    prerequisites: "Leçon « Une classe UML : nom, attributs, méthodes »."
+    skills: [uml-architecture, poo]
+    xp: 10
+    memo: |
+      - `-` : **privé** (`private`) ; `+` : **public** (`public`) ; `#` : **protégé** (`protected`).
+      - Bonne pratique (encapsulation) : attributs en `-`, méthodes utiles aux autres en `+`.
+      - On écrit le symbole devant : `- titre : String`, `+ fiche() : String`.
+    commonMistakes: |
+      - Mettre tous les attributs en public (`+`) : contraire à l'encapsulation.
+      - Oublier le symbole : la visibilité n'est plus précisée.
+    blocks:
+      - type: text
+        md: |
+          En Java, tu as protégé les attributs avec `private`. En UML, on l'indique avec un **petit symbole**
+          devant chaque membre.
+      - type: definition
+        id: def-visibilite
+        term: "Visibilité"
+        md: |
+          Des **panneaux d'accès** : `-` « réservé au personnel » (privé), `+` « ouvert au public » (public),
+          `#` « réservé à la famille » (protégé : la classe et ses enfants).
+      - type: code
+        id: code-visibilite
+        language: text
+        title: "La classe Livre avec ses visibilités"
+        code: |
+          @startuml
+          class Livre {
+            - titre : String
+            - disponible : boolean
+            + estDisponible() : boolean
+            + emprunter() : void
+          }
+          @enduml
+        lines:
+          - n: 3
+            note: "`-` : attribut privé, comme `private String titre;` en Java."
+          - n: 5
+            note: "`+` : méthode publique, utilisable par les autres classes."
+      - type: question
+        ref: uml-cl-q2
+        review: code-visibilite
+      - type: question
+        ref: uml-cl-q5
+        review: def-visibilite
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les visibilités."
+      - type: exercise
+        ref: uml-ex-classe-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : la classe Utilisateur."
+      - type: exercise
+        ref: uml-ex-classe
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un mot de passe public."
+      - type: exercise
+        ref: uml-ex-visibilite-bug
+      - type: jury
+        items:
+          - q: "Que représentent les symboles + et - dans un diagramme de classes ?"
+            a: "La visibilité : + public, - privé, # protégé. Les attributs sont en général privés et accessibles par des méthodes publiques (encapsulation)."
+      - type: quiz
+        items:
+          - ref: uml-cl-q3
+            review: code-visibilite
+          - ref: uml-vi-q4
+            review: def-visibilite
+          - ref: uml-vi-q5
+            review: code-visibilite
+    questions:
       - code: uml-cl-q2
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -128,35 +361,6 @@ lessons:
             correct: false
             why: "Le - indique la visibilité."
         explanation: "Visibilité, nom, deux-points, type."
-      - code: uml-cl-q3
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: uml-architecture
-        prompt: "Comment s'écrit en UML une méthode publique `total` qui renvoie un BigDecimal ?"
-        choices:
-          - label: "`+ total() : BigDecimal`"
-            correct: true
-            why: "Visibilité, nom, parenthèses, type de retour."
-          - label: "`- total : BigDecimal`"
-            correct: false
-            why: "C'est un attribut privé."
-          - label: "`BigDecimal total()`"
-            correct: false
-            why: "C'est l'écriture Java, sans visibilité UML."
-        explanation: "En UML, le type de retour suit les deux-points."
-      - code: uml-cl-q4
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: uml-architecture
-        prompt: "Le diagramme de classes montre les méthodes, contrairement au MCD."
-        choices:
-          - label: "Vrai"
-            correct: true
-            why: "Il décrit aussi le comportement."
-          - label: "Faux"
-            correct: false
-            why: "Le MCD ne montre que les données."
-        explanation: "Classes = données + comportements."
       - code: uml-cl-q5
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -172,14 +376,59 @@ lessons:
           - label: "`*`"
             correct: false
             why: "Ce n'est pas un symbole de visibilité."
-        explanation: "+ public, - privé, # protégé, ~ paquet."
+        explanation: "+ public, - privé, # protégé."
+      - code: uml-cl-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Comment s'écrit en UML une méthode publique `fiche` qui renvoie un String ?"
+        choices:
+          - label: "`+ fiche() : String`"
+            correct: true
+            why: "Visibilité, nom, parenthèses, type du résultat."
+          - label: "`- fiche : String`"
+            correct: false
+            why: "C'est un attribut privé."
+          - label: "`String fiche()`"
+            correct: false
+            why: "C'est l'écriture Java, sans visibilité UML."
+        explanation: "En UML, le type du résultat suit les deux-points."
+      - code: uml-vi-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "En général, les attributs d'une classe sont privés (`-`)."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "C'est l'encapsulation."
+          - label: "Faux"
+            correct: false
+            why: "On protège les données, on ouvre les méthodes utiles."
+        explanation: "Attributs `-`, méthodes utiles `+`."
+      - code: uml-vi-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Quel est l'équivalent Java de `- titre : String` ?"
+        choices:
+          - label: "`private String titre;`"
+            correct: true
+            why: "- = private."
+          - label: "`public String titre;`"
+            correct: false
+            why: "Ce serait +."
+          - label: "`String titre();`"
+            correct: false
+            why: "C'est une méthode, sans visibilité."
+        explanation: "UML et Java disent la même chose, autrement."
     exercises:
       - slug: uml-ex-classe-guide
         kind: COMPLETER
-        title: "Compléter une classe UML"
+        title: "Compléter les visibilités"
         difficulty: FACILE
         skill: uml-architecture
-        statement: "Complète les visibilités et le type de retour."
+        statement: "Complète les visibilités et le type du résultat."
         criteria: "Les trois trous sont corrects."
         hints:
           - "Un attribut est privé."
@@ -191,9 +440,9 @@ lessons:
         payload:
           language: text
           template: |
-            class Compte {
-              [[1]] solde : double
-              [[2]] peutRetirer(montant : double) : [[3]]
+            class Salle {
+              [[1]] reservee : boolean
+              [[2]] estLibre() : [[3]]
             }
           blanks:
             - ["-"]
@@ -250,111 +499,126 @@ lessons:
             - pattern: '\+\s*motDePasseHash'
               absent: true
               message: "Le hash du mot de passe ne doit pas être public."
+      - slug: uml-ex-visibilite-bug
+        kind: CORRIGER_ERREUR
+        title: "Un mot de passe public"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          Dans la classe `Compte`, l'attribut `motDePasseHash` est public (`+`) : n'importe quelle classe
+          pourrait le lire. Rends-le privé.
+        criteria: "motDePasseHash est privé (-)."
+        hints:
+          - "Un attribut sensible doit être protégé."
+          - "Privé s'écrit avec un tiret."
+          - "- motDePasseHash : String"
+        solution: |
+          class Compte {
+            - email : String
+            - motDePasseHash : String
+            + getEmail() : String
+          }
+        explanation: "Le hash reste enfermé dans la classe."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            class Compte {
+              - email : String
+              + motDePasseHash : String
+              + getEmail() : String
+            }
+          checks:
+            - pattern: '\+\s*motDePasseHash'
+              absent: true
+              message: "motDePasseHash ne doit pas être public."
+            - pattern: '-\s*motDePasseHash\s*:\s*String'
+              message: "Écris - motDePasseHash : String."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 3
   - slug: uml-relations
-    title: "Les relations entre classes"
-    duration: 13
-    objective: "Représenter association, multiplicités, composition et héritage, et les traduire en Java."
-    prerequisites: "Leçon « Classes, attributs, méthodes et visibilité »."
+    title: "L'association et ses multiplicités"
+    duration: 11
+    objective: "Relier deux classes par une association et écrire les multiplicités (1, 0..1, *, 1..*)."
+    prerequisites: "Leçon « La visibilité »."
     skills: [uml-architecture, poo]
-    xp: 25
+    xp: 15
     memo: |
-      - **Association** : un trait entre deux classes, avec des **multiplicités** (`1`, `0..1`, `*`, `1..*`).
-      - **Composition** (losange plein, `*--`) : la partie n'existe pas sans le tout (une ligne de commande sans commande).
-      - **Agrégation** (losange vide, `o--`) : lien plus faible, la partie peut exister seule.
-      - **Héritage** (flèche à triangle, `<|--`) : « est un ».
-      - Multiplicités UML ≈ cardinalités Merise, mais placées **de l'autre côté**.
+      - **Association** : un trait entre deux classes : `Client "1" -- "*" Commande`.
+      - **Multiplicité** : combien d'objets à l'autre bout : `1` (exactement un), `0..1` (zéro ou un), `*` (plusieurs), `1..*` (au moins un).
+      - On lit la multiplicité **près de la classe comptée** : « un client a plusieurs (`*`) commandes ».
+      - Attention : c'est **l'inverse** de la place des cardinalités Merise.
+      - En Java : `1` → un attribut simple ; `*` → une `List`.
     commonMistakes: |
-      - Placer les multiplicités comme des cardinalités Merise (elles sont inversées).
-      - Mettre de l'héritage là où il y a seulement « a un ».
-      - Confondre composition et agrégation.
+      - Placer les multiplicités comme des cardinalités Merise.
+      - Oublier les multiplicités.
     blocks:
       - type: text
         md: |
-          Les classes ne vivent pas seules : une commande appartient à une cliente, contient des lignes, un
-          administrateur est un utilisateur. Le diagramme montre ces **relations**.
+          Les classes ne vivent pas seules : une commande appartient à une cliente, une cliente a des commandes.
+          Le diagramme montre ces **relations**.
       - type: definition
         id: def-multiplicite
         term: "Multiplicité"
         md: |
-          Le nombre d'objets possibles **à l'autre bout** du lien : `1` (exactement un), `0..1` (zéro ou un),
-          `*` (plusieurs), `1..*` (au moins un). Attention : en UML, on lit la multiplicité **près de la
-          classe comptée**, alors qu'en Merise la cardinalité est près de l'entité qui « compte ».
+          Le **nombre de places** à l'autre bout du lien : `1`, `0..1`, `*`, `1..*`. En UML, on écrit ce nombre
+          **près de la classe qu'on compte** : près de Commande, on écrit combien de commandes a un client.
       - type: code
-        id: code-relations
+        id: code-association
         language: text
-        title: "Relations de la boutique"
+        title: "Une cliente et ses commandes"
         code: |
           @startuml
           class Client
           class Commande
-          class LigneCommande
-          class Produit
-          class Utilisateur
-          class Admin
-
           Client "1" -- "*" Commande : passe >
-          Commande "1" *-- "1..*" LigneCommande
-          LigneCommande "*" -- "1" Produit
-          Utilisateur <|-- Admin
           @enduml
         lines:
-          - n: 9
-            note: "Un client passe plusieurs (`*`) commandes ; une commande a un (`1`) client."
-          - n: 10
-            note: "Composition (losange plein côté Commande) : les lignes n'existent pas sans leur commande ; une commande a au moins une ligne."
-          - n: 11
-            note: "Chaque ligne concerne un seul produit."
-          - n: 12
-            note: "Héritage : un Admin est un Utilisateur (triangle côté parent)."
+          - n: 4
+            note: "Près de Commande : `*` (un client a plusieurs commandes). Près de Client : `1` (une commande a un client)."
       - type: code
-        id: code-relations-java
+        id: code-association-java
         language: java
         title: "La traduction en Java"
         code: |
-          public class Commande {
-              private Client client;
-              private List<LigneCommande> lignes = new ArrayList<>();
+          public class Client {
+              private List<Commande> commandes = new ArrayList<>();
           }
 
-          public class Admin extends Utilisateur {
+          public class Commande {
+              private Client client;
           }
         lines:
           - n: 2
-            note: "Multiplicité `1` : un attribut simple."
-          - n: 3
-            note: "Multiplicité `1..*` : une liste."
+            note: "Multiplicité `*` : une liste."
           - n: 6
-            note: "Héritage : `extends`."
+            note: "Multiplicité `1` : un attribut simple."
       - type: question
         ref: uml-rel-q1
         review: def-multiplicite
       - type: question
-        ref: uml-rel-q2
-        review: code-relations
+        ref: uml-rel-q4
+        review: code-association-java
       - type: text
-        md: "Exercice guidé : complète les relations."
+        md: "**Exercice 1 (guidé)** : complète les multiplicités."
       - type: exercise
-        ref: uml-ex-relations-guide
+        ref: uml-ex-multiplicite-guide
       - type: text
-        md: "En autonomie : écris le diagramme de classes d'une école."
+        md: "**Exercice 2 (en autonomie)** : une classe et ses élèves."
       - type: exercise
-        ref: uml-ex-relations
-      - type: jury
-        items:
-          - q: "Quelle différence entre composition et agrégation ?"
-            a: "Dans une composition, la partie n'existe pas sans le tout et disparaît avec lui (une ligne de commande) ; dans une agrégation, la partie peut exister indépendamment (un joueur dans une équipe)."
-          - q: "Quel lien entre votre diagramme de classes et votre MCD ?"
-            a: "Le MCD décrit les données pour la base ; le diagramme de classes décrit les objets du code. Les entités JPA en sont souvent la traduction, avec les relations @ManyToOne et @OneToMany."
+        ref: uml-ex-multiplicite-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des multiplicités inversées."
+      - type: exercise
+        ref: uml-ex-multiplicite-bug
       - type: quiz
         items:
-          - ref: uml-rel-q3
-            review: code-relations
-          - ref: uml-rel-q4
-            review: code-relations-java
           - ref: uml-rel-q5
             review: def-multiplicite
+          - ref: uml-mu-q4
+            review: code-association
+          - ref: uml-c2-b2
+            review: code-association-java
     questions:
       - code: uml-rel-q1
         kind: CHOIX_UNIQUE
@@ -372,38 +636,6 @@ lessons:
             correct: false
             why: "Ce serait `1`."
         explanation: "`1`, `0..1`, `*`, `1..*`."
-      - code: uml-rel-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: uml-architecture
-        prompt: "Quelle notation PlantUML représente un héritage (Admin est un Utilisateur) ?"
-        choices:
-          - label: "`Utilisateur <|-- Admin`"
-            correct: true
-            why: "Le triangle pointe vers le parent."
-          - label: "`Utilisateur *-- Admin`"
-            correct: false
-            why: "C'est une composition."
-          - label: "`Utilisateur -- Admin`"
-            correct: false
-            why: "C'est une simple association."
-        explanation: "Triangle vide vers la classe parente."
-      - code: uml-rel-q3
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: uml-architecture
-        prompt: "Pourquoi une composition entre Commande et LigneCommande ?"
-        choices:
-          - label: "Parce qu'une ligne n'existe pas sans sa commande"
-            correct: true
-            why: "Si on supprime la commande, ses lignes disparaissent."
-          - label: "Parce que le produit appartient à la commande"
-            correct: false
-            why: "Le produit existe indépendamment."
-          - label: "Par habitude"
-            correct: false
-            why: "Le choix exprime une règle."
-        explanation: "Composition = cycle de vie commun."
       - code: uml-rel-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -432,32 +664,502 @@ lessons:
           - label: "Faux"
             correct: true
             why: "Exact : c'est une source d'erreur fréquente."
-        explanation: "Merise : cardinalité près de l'entité qui participe. UML : multiplicité près de la classe comptée."
+        explanation: "Merise : près de l'entité qui participe. UML : près de la classe comptée."
+      - code: uml-mu-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Dans `Client \"1\" -- \"*\" Commande`, combien de clients pour une commande ?"
+        choices:
+          - label: "Un"
+            correct: true
+            why: "Le 1 est écrit près de Client."
+          - label: "Plusieurs"
+            correct: false
+            why: "Le * compte les commandes."
+          - label: "Zéro ou un"
+            correct: false
+            why: "Ce serait 0..1."
+        explanation: "On lit le nombre près de la classe comptée."
+      - code: uml-c2-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Quelle annotation JPA traduit « plusieurs commandes pour un client » côté Commande ?"
+        choices:
+          - label: "`@ManyToOne`"
+            correct: true
+            why: "Plusieurs commandes vers un client."
+          - label: "`@OneToOne`"
+            correct: false
+            why: "Un client a plusieurs commandes."
+          - label: "`@Id`"
+            correct: false
+            why: "Marque la clé primaire."
+        explanation: "Tu verras ces annotations dans le parcours Spring Boot."
+    exercises:
+      - slug: uml-ex-multiplicite-guide
+        kind: COMPLETER
+        title: "Compléter les multiplicités"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Une autrice écrit plusieurs livres ; un livre a au moins une autrice. Complète."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Près de Autrice : combien d'autrices pour un livre ? Au moins une."
+          - "Près de Livre : combien de livres pour une autrice ? Plusieurs."
+          - "1..*, *."
+        solution: '["1..*", "*"]'
+        explanation: "Chaque nombre se lit près de la classe comptée."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            Autrice "[[1]]" -- "[[2]]" Livre : écrit >
+          blanks:
+            - ["1..*"]
+            - ["*", "0..*", "1..*"]
+      - slug: uml-ex-multiplicite-libre
+        kind: CODE_LIBRE
+        title: "Une classe et ses élèves"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          Écris l'association PlantUML : une `Classe` regroupe **plusieurs** élèves ; un `Eleve` est dans
+          **une** classe.
+        criteria: "Classe \"1\" -- \"*\" Eleve."
+        hints:
+          - "Près de Eleve : plusieurs → *."
+          - "Près de Classe : une → 1."
+          - "`Classe \"1\" -- \"*\" Eleve`"
+        solution: |
+          Classe "1" -- "*" Eleve
+        explanation: "Une classe a plusieurs élèves ; un élève a une classe."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Classe "?" -- "?" Eleve
+          checks:
+            - pattern: 'Classe\s*"1"\s*--\s*"(\*|0\.\.\*)"\s*Eleve|Eleve\s*"(\*|0\.\.\*)"\s*--\s*"1"\s*Classe'
+              message: "Écris Classe \"1\" -- \"*\" Eleve."
+      - slug: uml-ex-multiplicite-bug
+        kind: CORRIGER_ERREUR
+        title: "Des multiplicités inversées"
+        difficulty: INTERMEDIAIRE
+        skill: uml-architecture
+        statement: |
+          « Un service compte plusieurs salariés ; un salarié appartient à un seul service. » Les multiplicités
+          ont été placées à la mode Merise, du mauvais côté. Corrige-les.
+        criteria: "Service \"1\" -- \"*\" Salarie."
+        hints:
+          - "En UML, on écrit le nombre près de la classe comptée."
+          - "Combien de salariés par service ? Plusieurs : `*` près de Salarie."
+          - "`Service \"1\" -- \"*\" Salarie`"
+        solution: |
+          Service "1" -- "*" Salarie
+        explanation: "UML : le nombre se lit près de la classe comptée."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Service "*" -- "1" Salarie
+          checks:
+            - pattern: 'Service\s*"1"\s*--\s*"(\*|1\.\.\*)"\s*Salarie|Salarie\s*"(\*|1\.\.\*)"\s*--\s*"1"\s*Service'
+              message: "Écris Service \"1\" -- \"*\" Salarie."
+
+  # ===================================================================== LEÇON 4
+  - slug: uml-composition
+    title: "Composition et agrégation"
+    duration: 10
+    objective: "Distinguer la composition (la partie meurt avec le tout) de l'agrégation (la partie peut vivre seule)."
+    prerequisites: "Leçon « L'association et ses multiplicités »."
+    skills: [uml-architecture]
+    xp: 15
+    memo: |
+      - **Composition** (losange **plein**, `*--`) : la partie **n'existe pas sans** le tout (une ligne de commande sans commande).
+      - **Agrégation** (losange **vide**, `o--`) : lien plus faible, la partie **peut exister seule** (un joueur sans équipe).
+      - Le losange se place **côté du tout**.
+    commonMistakes: |
+      - Confondre composition et agrégation.
+      - Mettre le losange du côté de la partie.
+    blocks:
+      - type: text
+        md: |
+          Certains liens sont plus forts que d'autres : une ligne de commande n'a aucun sens sans sa commande.
+          UML le dit avec un **losange**.
+      - type: definition
+        id: def-composition
+        term: "Composition et agrégation"
+        md: |
+          - **Composition** : les **pièces d'une maison** — démolir la maison fait disparaître ses pièces.
+          - **Agrégation** : les **joueurs d'une équipe** — dissoudre l'équipe ne fait pas disparaître les joueurs.
+      - type: code
+        id: code-composition
+        language: text
+        title: "Losange plein et losange vide"
+        code: |
+          @startuml
+          Commande "1" *-- "1..*" LigneCommande
+          Equipe "0..1" o-- "*" Joueur
+          @enduml
+        lines:
+          - n: 2
+            note: "Composition (losange plein côté Commande) : les lignes n'existent pas sans leur commande."
+          - n: 3
+            note: "Agrégation (losange vide côté Equipe) : un joueur peut exister sans équipe."
+      - type: question
+        ref: uml-rel-q3
+        review: def-composition
+      - type: question
+        ref: uml-c2-b1
+        review: code-composition
+      - type: text
+        md: "**Exercice 1 (guidé)** : composition ou agrégation ?"
+      - type: exercise
+        ref: uml-ex-composition-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un livre et ses chapitres."
+      - type: exercise
+        ref: uml-ex-composition-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une composition de trop."
+      - type: exercise
+        ref: uml-ex-composition-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre composition et agrégation ?"
+            a: "Dans une composition, la partie n'existe pas sans le tout et disparaît avec lui (une ligne de commande) ; dans une agrégation, la partie peut exister indépendamment (un joueur dans une équipe)."
+      - type: quiz
+        items:
+          - ref: uml-co-q3
+            review: def-composition
+          - ref: uml-co-q4
+            review: code-composition
+          - ref: uml-co-q5
+            review: def-composition
+    questions:
+      - code: uml-rel-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Pourquoi une composition entre Commande et LigneCommande ?"
+        choices:
+          - label: "Parce qu'une ligne n'existe pas sans sa commande"
+            correct: true
+            why: "Si on supprime la commande, ses lignes disparaissent."
+          - label: "Parce que le produit appartient à la commande"
+            correct: false
+            why: "Le produit existe indépendamment."
+          - label: "Par habitude"
+            correct: false
+            why: "Le choix exprime une règle."
+        explanation: "Composition = même cycle de vie."
+      - code: uml-c2-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Quelle relation UML pour « une équipe regroupe des joueurs qui peuvent changer d'équipe » ?"
+        choices:
+          - label: "Agrégation (losange vide)"
+            correct: true
+            why: "Le joueur existe sans l'équipe."
+          - label: "Composition"
+            correct: false
+            why: "Le joueur ne disparaît pas avec l'équipe."
+          - label: "Aucune relation"
+            correct: false
+            why: "Il y a bien un lien « contient »."
+        explanation: "Agrégation : lien « contient » faible."
+      - code: uml-co-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Quel losange représente une composition ?"
+        choices:
+          - label: "Le losange plein (`*--`)"
+            correct: true
+            why: "Plein = lien fort."
+          - label: "Le losange vide (`o--`)"
+            correct: false
+            why: "C'est l'agrégation."
+          - label: "Aucun losange"
+            correct: false
+            why: "Sans losange, c'est une simple association."
+        explanation: "Plein = composition ; vide = agrégation."
+      - code: uml-co-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Le losange se place du côté du tout (Commande, Equipe)."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le losange « tient » les parties."
+          - label: "Faux"
+            correct: false
+            why: "Il est bien côté du tout."
+        explanation: "Losange côté conteneur."
+      - code: uml-co-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Une facture et ses lignes de facture : quelle relation ?"
+        choices:
+          - label: "Composition"
+            correct: true
+            why: "Une ligne de facture n'existe pas sans sa facture."
+          - label: "Agrégation"
+            correct: false
+            why: "La ligne ne peut pas vivre seule."
+          - label: "Héritage"
+            correct: false
+            why: "Une ligne n'est pas une facture."
+        explanation: "Même cycle de vie → composition."
+    exercises:
+      - slug: uml-ex-composition-guide
+        kind: COMPLETER
+        title: "Composition ou agrégation ?"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: "Complète chaque lien avec `*--` (composition) ou `o--` (agrégation)."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Une pièce n'existe pas sans sa maison."
+          - "Un livre existe sans la bibliothèque."
+          - "*--, o--."
+        solution: '["*--", "o--"]'
+        explanation: "Maison/pièces : composition ; bibliothèque/livres : agrégation."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            Maison "1" [[1]] "*" Piece
+            Bibliotheque "0..1" [[2]] "*" Livre
+          blanks:
+            - ["*--"]
+            - ["o--"]
+      - slug: uml-ex-composition-libre
+        kind: CODE_LIBRE
+        title: "Un livre et ses chapitres"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          Écris le lien PlantUML : un `Livre` contient **au moins un** `Chapitre`, et un chapitre n'existe pas
+          sans son livre (composition).
+        criteria: "Livre \"1\" *-- \"1..*\" Chapitre."
+        hints:
+          - "Composition : losange plein *--, côté Livre."
+          - "Près de Chapitre : au moins un → 1..*."
+          - "`Livre \"1\" *-- \"1..*\" Chapitre`"
+        solution: |
+          Livre "1" *-- "1..*" Chapitre
+        explanation: "Un chapitre disparaît avec son livre."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Livre "1" ?? "1..*" Chapitre
+          checks:
+            - pattern: 'Livre\s*"1"\s*\*--\s*"1\.\.\*"\s*Chapitre'
+              message: "Écris Livre \"1\" *-- \"1..*\" Chapitre."
+      - slug: uml-ex-composition-bug
+        kind: CORRIGER_ERREUR
+        title: "Une composition de trop"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          Un `Etudiant` peut exister sans `Promotion` (il change de promotion chaque année). Le lien a été dessiné
+          en composition. Remplace-le par une agrégation.
+        criteria: "Promotion o-- Etudiant."
+        hints:
+          - "L'étudiant peut vivre sans la promotion."
+          - "Lien faible : losange vide."
+          - "`Promotion \"0..1\" o-- \"*\" Etudiant`"
+        solution: |
+          Promotion "0..1" o-- "*" Etudiant
+        explanation: "La partie vit sans le tout : agrégation."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Promotion "0..1" *-- "*" Etudiant
+          checks:
+            - pattern: '\*--'
+              absent: true
+              message: "Pas de composition ici."
+            - pattern: 'Promotion\s*"0\.\.1"\s*o--\s*"\*"\s*Etudiant'
+              message: "Écris Promotion \"0..1\" o-- \"*\" Etudiant."
+
+  # ===================================================================== LEÇON 5
+  - slug: uml-heritage
+    title: "L'héritage en UML"
+    duration: 9
+    objective: "Dessiner un héritage avec la flèche à triangle vide, et le traduire en Java avec extends."
+    prerequisites: "Leçon « Composition et agrégation »."
+    skills: [uml-architecture, poo]
+    xp: 15
+    memo: |
+      - **Héritage** : une flèche à **triangle vide**, pointée vers la classe **parente** : `Utilisateur <|-- Admin`.
+      - On l'utilise seulement si la phrase « un X **est un** Y » est vraie.
+      - En Java : `class Admin extends Utilisateur`.
+    commonMistakes: |
+      - Mettre le triangle du côté de l'enfant.
+      - Utiliser l'héritage pour « a un » (c'est une association).
+    blocks:
+      - type: text
+        md: |
+          Tu as vu l'héritage en Java. UML le dessine avec une flèche spéciale.
+      - type: definition
+        id: def-heritage-uml
+        term: "Héritage (généralisation)"
+        md: |
+          Un **arbre généalogique** : la flèche part de l'enfant et pointe vers le parent, avec une pointe en
+          triangle vide.
+      - type: code
+        id: code-heritage-uml
+        language: text
+        title: "Un admin est un utilisateur"
+        code: |
+          @startuml
+          class Utilisateur
+          class Admin
+          Utilisateur <|-- Admin
+          @enduml
+        lines:
+          - n: 4
+            note: "Le triangle `<|` est côté parent (Utilisateur). En Java : `class Admin extends Utilisateur`."
+      - type: question
+        ref: uml-rel-q2
+        review: code-heritage-uml
+      - type: question
+        ref: uml-he-q2
+        review: def-heritage-uml
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les flèches."
+      - type: exercise
+        ref: uml-ex-relations-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : le diagramme de classes d'une école."
+      - type: exercise
+        ref: uml-ex-relations
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un héritage à l'envers."
+      - type: exercise
+        ref: uml-ex-heritage-bug
+      - type: jury
+        items:
+          - q: "Quel lien entre votre diagramme de classes et votre MCD ?"
+            a: "Le MCD décrit les données pour la base ; le diagramme de classes décrit les objets du code. Les entités JPA en sont souvent la traduction, avec les relations @ManyToOne et @OneToMany."
+      - type: quiz
+        items:
+          - ref: uml-he-q3
+            review: def-heritage-uml
+          - ref: uml-he-q4
+            review: code-heritage-uml
+          - ref: uml-he-q5
+            review: def-heritage-uml
+    questions:
+      - code: uml-rel-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Quelle notation PlantUML représente un héritage (Admin est un Utilisateur) ?"
+        choices:
+          - label: "`Utilisateur <|-- Admin`"
+            correct: true
+            why: "Le triangle pointe vers le parent."
+          - label: "`Utilisateur *-- Admin`"
+            correct: false
+            why: "C'est une composition."
+          - label: "`Utilisateur -- Admin`"
+            correct: false
+            why: "C'est une simple association."
+        explanation: "Triangle vide vers la classe parente."
+      - code: uml-he-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Quelle phrase justifie un héritage ?"
+        choices:
+          - label: "« Un chat est un animal »"
+            correct: true
+            why: "La relation « est un » est vraie."
+          - label: "« Une voiture a un moteur »"
+            correct: false
+            why: "« a un » : c'est une association."
+          - label: "« Une commande contient des lignes »"
+            correct: false
+            why: "C'est une composition."
+        explanation: "Héritage = « est un »."
+      - code: uml-he-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: uml-architecture
+        prompt: "Dans `Utilisateur <|-- Admin`, le triangle est du côté de la classe parente."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Il pointe vers Utilisateur."
+          - label: "Faux"
+            correct: false
+            why: "Le triangle est bien côté parent."
+        explanation: "La flèche va de l'enfant vers le parent."
+      - code: uml-he-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Comment traduire `Vehicule <|-- Velo` en Java ?"
+        choices:
+          - label: "`class Velo extends Vehicule`"
+            correct: true
+            why: "Velo hérite de Vehicule."
+          - label: "`class Vehicule extends Velo`"
+            correct: false
+            why: "C'est l'inverse."
+          - label: "`class Velo implements Vehicule`"
+            correct: false
+            why: "implements sert aux interfaces."
+        explanation: "Triangle vers le parent → extends vers le parent."
+      - code: uml-he-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: uml-architecture
+        prompt: "Quelle flèche PlantUML utiliser pour « un Livre est un Produit » ?"
+        choices:
+          - label: "`Produit <|-- Livre`"
+            correct: true
+            why: "Triangle côté parent (Produit)."
+          - label: "`Livre <|-- Produit`"
+            correct: false
+            why: "Cela dirait qu'un Produit est un Livre."
+          - label: "`Produit o-- Livre`"
+            correct: false
+            why: "C'est une agrégation."
+        explanation: "Parent <|-- Enfant."
     exercises:
       - slug: uml-ex-relations-guide
         kind: COMPLETER
-        title: "Compléter les relations"
+        title: "Compléter les flèches"
         difficulty: FACILE
         skill: uml-architecture
-        statement: "Complète avec la bonne flèche PlantUML ou la bonne multiplicité."
-        criteria: "Les trois trous sont corrects."
+        statement: "Complète avec la bonne flèche PlantUML."
+        criteria: "Les deux trous sont corrects."
         hints:
           - "Héritage : triangle vide <|--."
           - "Composition : losange plein *--."
-          - "<|--, *--, *."
-        solution: '["<|--", "*--", "*"]'
-        explanation: "Un Livre est un Produit ; un chapitre n'existe pas sans son livre ; une autrice écrit plusieurs livres."
+          - "<|--, *--."
+        solution: '["<|--", "*--"]'
+        explanation: "Un Livre est un Produit ; un chapitre n'existe pas sans son livre."
         xp: 10
         payload:
           language: text
           template: |
             Produit [[1]] Livre
             Livre "1" [[2]] "1..*" Chapitre
-            Autrice "1..*" -- "[[3]]" Livre : écrit >
           blanks:
             - ["<|--"]
             - ["*--"]
-            - ["*", "0..*", "1..*"]
       - slug: uml-ex-relations
         kind: CODE_LIBRE
         title: "Le diagramme de classes d'une école"
@@ -484,7 +1186,7 @@ lessons:
           Classe "1" -- "*" Eleve
           Professeur "1..*" -- "*" Classe
           @enduml
-        explanation: "Chaque multiplicité se lit du côté de la classe comptée : « une classe a plusieurs (*) élèves »."
+        explanation: "Chaque multiplicité se lit du côté de la classe comptée."
         xp: 25
         payload:
           language: text
@@ -501,37 +1203,64 @@ lessons:
               message: "Une classe a plusieurs élèves, un élève est dans une classe : Classe \"1\" -- \"*\" Eleve."
             - pattern: 'Professeur\s*"1\.\.\*"\s*--\s*"(\*|0\.\.\*|1\.\.\*)"\s*Classe|Classe\s*"(\*|0\.\.\*|1\.\.\*)"\s*--\s*"1\.\.\*"\s*Professeur'
               message: "Une classe a au moins un professeur : Professeur \"1..*\" -- \"*\" Classe."
+      - slug: uml-ex-heritage-bug
+        kind: CORRIGER_ERREUR
+        title: "Un héritage à l'envers"
+        difficulty: FACILE
+        skill: uml-architecture
+        statement: |
+          « Un Chien est un Animal. » La flèche a été dessinée à l'envers : elle dit qu'un Animal est un Chien.
+          Corrige-la.
+        criteria: "Animal <|-- Chien."
+        hints:
+          - "Le triangle pointe vers le parent."
+          - "Le parent, c'est Animal."
+          - "`Animal <|-- Chien`"
+        solution: |
+          Animal <|-- Chien
+        explanation: "Parent <|-- Enfant."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Chien <|-- Animal
+          checks:
+            - pattern: 'Chien\s*<\|--\s*Animal'
+              absent: true
+              message: "La flèche est à l'envers."
+            - pattern: 'Animal\s*<\|--\s*Chien|Chien\s*--\|>\s*Animal'
+              message: "Écris Animal <|-- Chien."
 
 bank:
-  - code: uml-c2-b1
+  - code: uml-c2-b3
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: uml-architecture
-    prompt: "Quelle relation UML pour « une équipe regroupe des joueurs qui peuvent changer d'équipe » ?"
+    prompt: "Quel lien UML pour « une commande appartient à une cliente » ?"
     choices:
-      - label: "Agrégation (losange vide)"
+      - label: "Une association avec des multiplicités"
         correct: true
-        why: "Le joueur existe sans l'équipe."
-      - label: "Composition"
+        why: "`Client \"1\" -- \"*\" Commande`."
+      - label: "Un héritage"
         correct: false
-        why: "Le joueur ne disparaît pas avec l'équipe."
-      - label: "Héritage"
+        why: "Une commande n'est pas une cliente."
+      - label: "Une composition"
         correct: false
-        why: "Un joueur n'est pas une équipe."
-    explanation: "Agrégation : lien « contient » faible."
-  - code: uml-c2-b2
+        why: "La cliente existe sans ses commandes, et inversement il s'agit d'appartenance simple."
+    explanation: "« a un » / « appartient à » → association."
+  - code: uml-c2-b4
     kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: spring-jpa
-    prompt: "Quelle annotation JPA traduit « plusieurs commandes pour un client » côté Commande ?"
+    difficulty: 1
+    skill: uml-architecture
+    prompt: "Que signifie la multiplicité `*` ?"
     choices:
-      - label: "`@ManyToOne`"
+      - label: "Plusieurs (zéro ou plus)"
         correct: true
-        why: "Plusieurs commandes vers un client."
-      - label: "`@OneToOne`"
+        why: "Aucune limite fixée."
+      - label: "Exactement un"
         correct: false
-        why: "Un client a plusieurs commandes."
-      - label: "`@Id`"
+        why: "Ce serait 1."
+      - label: "Une erreur"
         correct: false
-        why: "Marque la clé primaire."
-    explanation: "Côté Client : `@OneToMany(mappedBy = \"client\")`."
+        why: "C'est une multiplicité normale."
+    explanation: "`*` = `0..*`."
