@@ -2,143 +2,714 @@ slug: java-collections-exceptions
 position: 3
 level: AVANCE
 title: "Collections et exceptions"
-summary: "Manipuler des listes et des dictionnaires (List, Map), les transformer avec les streams, et gérer proprement les erreurs avec les exceptions."
-quizQuestionCount: 10
+summary: "Ranger des éléments dans une List, associer des clés et des valeurs dans une Map, filtrer avec les streams, puis gérer les erreurs avec les exceptions. Une seule notion par leçon."
+quizQuestionCount: 15
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: java-collections
-    title: "List, Map et streams"
-    duration: 14
-    objective: "Utiliser ArrayList et HashMap, et filtrer ou transformer une liste avec les streams."
-    prerequisites: "Chapitre « La programmation orientée objet »."
+    title: "Une liste qui grandit : List et ArrayList"
+    duration: 11
+    objective: "Créer une List, y ajouter des éléments, lire un élément, connaître sa taille et la parcourir."
+    prerequisites: "Chapitre « Penser en objets »."
     skills: [java-collections]
-    xp: 25
+    xp: 15
     memo: |
-      - `List<String> noms = new ArrayList<>();` — une liste ordonnée, qui grandit : `add`, `get(i)`, `size()`.
-      - `Map<String, Integer> stock = new HashMap<>();` — un dictionnaire clé → valeur : `put`, `get`, `containsKey`.
-      - Les `< >` (génériques) précisent le type des éléments.
-      - Streams : `liste.stream().filter(...).map(...).toList()` — comme filter/map en JavaScript.
-      - Parcourir : `for (String nom : noms) { ... }`.
+      - `List<String> cours = new ArrayList<>();` : une liste de textes, **vide** au départ, qui grandit.
+      - `add("Java")` ajoute à la fin ; `get(0)` lit la case 0 ; `size()` donne le nombre d'éléments.
+      - Les `< >` précisent le type des éléments (on dit « générique »).
+      - Parcourir : `for (String c : cours) { ... }` (comme un tableau).
+      - Pour des nombres : `List<Integer>` (et non `List<int>`).
     commonMistakes: |
-      - Mettre un type primitif dans les génériques : `List<int>` ne compile pas, il faut `List<Integer>`.
-      - Lire `map.get(cle)` sans vérifier : `null` si la clé n'existe pas.
-      - Modifier une liste pendant qu'on la parcourt avec `for` : `ConcurrentModificationException`.
+      - Écrire `List<int>` : il faut `List<Integer>`.
+      - Confondre `size()` (List), `length` (tableau) et `length()` (String).
     blocks:
       - type: text
         md: |
-          Les tableaux Java ont une taille fixe. Au quotidien, on utilise plutôt des **collections**, qui
-          grandissent toutes seules.
+          Un tableau Java a une taille fixe. Au quotidien, on préfère une **liste** qui grandit toute seule :
+          `List`.
       - type: definition
         id: def-list
         term: "List"
         md: |
-          Une **liste ordonnée** d'éléments, comme la file d'attente d'un guichet : chacun a sa place
-          (indice 0, 1, 2…), et on peut en ajouter autant qu'on veut. `ArrayList` est la version la plus
-          utilisée.
-      - type: definition
-        id: def-map
-        term: "Map"
-        md: |
-          Un **dictionnaire** : on retrouve une **valeur** à partir d'une **clé**, comme on retrouve la
-          définition d'un mot. Chaque clé est unique. `HashMap` est la version la plus utilisée.
+          Une **file d'attente** : chacun a sa place (0, 1, 2…), et de nouvelles personnes peuvent toujours
+          arriver au bout. `ArrayList` est la liste la plus utilisée.
       - type: code
-        id: code-collections
+        id: code-list
         language: java
-        title: "Une liste et un dictionnaire"
+        title: "Une liste de cours"
         code: |
-          List<String> cours = new ArrayList<>();
-          cours.add("Java");
-          cours.add("SQL");
-          System.out.println(cours.get(0) + " / " + cours.size());
+          import java.util.ArrayList;
+          import java.util.List;
 
-          Map<String, Integer> stock = new HashMap<>();
-          stock.put("alarme", 12);
-          stock.put("coque", 0);
-          System.out.println(stock.get("alarme"));
-          System.out.println(stock.getOrDefault("sac", 0));
+          public class Programme {
+              public static void main(String[] args) {
+                  List<String> cours = new ArrayList<>();
+                  cours.add("Java");
+                  cours.add("SQL");
+                  cours.add("Angular");
+                  System.out.println(cours.get(0));
+                  System.out.println(cours.size());
+                  for (String c : cours) {
+                      System.out.println("Cours : " + c);
+                  }
+              }
+          }
         lines:
           - n: 1
-            note: "`List<String>` : une liste de textes. `<>` à droite reprend le type annoncé à gauche."
-          - n: 4
-            note: "`get(0)` : premier élément ; `size()` : nombre d'éléments. Affiche « Java / 2 »."
+            note: "`import` : on indique où Java doit chercher ArrayList et List (dans java.util)."
           - n: 6
-            note: "`Map<String, Integer>` : des clés texte, des valeurs entières (Integer, l'objet qui enveloppe int)."
-          - n: 9
-            note: "Affiche 12."
+            note: "Une liste de textes, vide. Les `<>` à droite reprennent le type annoncé à gauche."
+          - n: 7
+            note: "`add` ajoute à la fin."
           - n: 10
-            note: "`getOrDefault` : 0 si la clé n'existe pas, au lieu de null."
+            note: "`get(0)` : le premier élément, Java."
+          - n: 11
+            note: "`size()` : le nombre d'éléments."
       - type: question
-        ref: java-col-q1
-        review: def-map
-      - type: definition
-        id: def-stream
-        term: "Stream"
-        md: |
-          Un **tapis roulant** sur lequel passent les éléments d'une collection : on y installe des postes
-          (filtrer, transformer, trier) et on récupère le résultat au bout. Rien n'est modifié dans la liste
-          d'origine.
-      - type: code
-        id: code-stream
-        language: java
-        title: "Filtrer et transformer avec un stream"
-        code: |
-          List<Produit> produits = catalogue();
-          List<String> abordables = produits.stream()
-                  .filter(p -> p.getPrix() <= 15)
-                  .map(Produit::getNom)
-                  .toList();
-        lines:
-          - n: 2
-            note: "`stream()` ouvre le tapis roulant."
-          - n: 3
-            note: "`filter` garde les produits à 15 € ou moins. `p -> ...` est une **lambda** : une petite fonction, comme `p => ...` en JavaScript."
-          - n: 4
-            note: "`map(Produit::getNom)` transforme chaque produit en son nom (référence de méthode)."
-          - n: 5
-            note: "`toList()` récupère le résultat dans une nouvelle liste."
+        ref: java-col-q5
+        review: code-list
       - type: question
-        ref: java-col-q2
-        review: def-stream
+        ref: java-col-q3
+        review: def-list
       - type: text
-        md: "Exercice guidé : complète le code des collections."
+        md: "**Exercice 1 (guidé)** : complète la liste."
       - type: exercise
-        ref: java-ex-collections-guide
+        ref: java-ex-list-guide
       - type: text
-        md: "En autonomie : écris un stream qui calcule les e-mails des comptes actifs."
+        md: "**Exercice 2 (en autonomie)** : une liste de villes."
       - type: exercise
-        ref: java-ex-stream
+        ref: java-ex-list-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un length au lieu de size."
+      - type: exercise
+        ref: java-ex-list-bug
       - type: jury
         items:
-          - q: "Quelle différence entre une List et une Map ?"
-            a: "Une List est une suite ordonnée d'éléments accessibles par leur position ; une Map associe des clés uniques à des valeurs."
           - q: "À quoi servent les génériques (List<String>) ?"
             a: "À préciser le type des éléments : le compilateur vérifie qu'on n'y met que des String et on n'a pas besoin de conversion à la lecture."
       - type: quiz
         items:
-          - ref: java-col-q3
-            review: code-collections
-          - ref: java-col-q4
-            review: code-stream
-          - ref: java-col-q5
+          - ref: java-li-q3
             review: def-list
+          - ref: java-li-q4
+            review: code-list
+          - ref: java-li-q5
+            review: def-list
+    questions:
+      - code: java-col-q5
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: java-collections
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          List<String> l = new ArrayList<>();
+          l.add("a");
+          l.add("b");
+          l.add("c");
+          System.out.println(l.get(2));
+        language: java
+        choices:
+          - label: "c"
+            correct: true
+            why: "Case 0 : a, case 1 : b, case 2 : c."
+          - label: "b"
+            correct: false
+            why: "b est dans la case 1."
+          - label: "Une erreur"
+            correct: false
+            why: "La case 2 existe."
+        explanation: "Comme pour les tableaux, les cases commencent à 0."
+      - code: java-col-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-collections
+        prompt: "Pourquoi `List<int>` ne compile-t-il pas ?"
+        choices:
+          - label: "Les génériques n'acceptent que des objets : il faut `List<Integer>`"
+            correct: true
+            why: "Integer est la version objet de int."
+          - label: "Parce que les listes ne peuvent contenir que du texte"
+            correct: false
+            why: "Elles contiennent n'importe quel type d'objet."
+          - label: "Parce qu'il manque new"
+            correct: false
+            why: "Le problème est le type entre chevrons."
+        explanation: "int → Integer, double → Double, boolean → Boolean."
+      - code: java-li-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-collections
+        prompt: "Quelle est la grande différence entre une List et un tableau ?"
+        choices:
+          - label: "La List grandit quand on ajoute des éléments"
+            correct: true
+            why: "Un tableau a une taille fixe."
+          - label: "La List ne peut contenir que des textes"
+            correct: false
+            why: "Elle peut contenir tout type d'objet."
+          - label: "Aucune"
+            correct: false
+            why: "La taille fixe du tableau fait toute la différence."
+        explanation: "Tableau : taille fixe ; List : taille qui s'adapte."
+      - code: java-li-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-collections
+        prompt: "Comment ajouter « Docker » à la liste `cours` ?"
+        choices:
+          - label: "`cours.add(\"Docker\");`"
+            correct: true
+            why: "add ajoute à la fin."
+          - label: "`cours.push(\"Docker\");`"
+            correct: false
+            why: "push, c'est JavaScript."
+          - label: "`cours[3] = \"Docker\";`"
+            correct: false
+            why: "Les crochets ne marchent pas avec une List."
+        explanation: "List : add, get, size."
+      - code: java-li-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-collections
+        prompt: "Quelle taille pour quoi ?"
+        choices:
+          - label: "List : `size()` ; tableau : `length` ; String : `length()`"
+            correct: true
+            why: "Trois écritures à ne pas mélanger."
+          - label: "Tout : `size()`"
+            correct: false
+            why: "size() ne sert qu'aux collections."
+          - label: "Tout : `length`"
+            correct: false
+            why: "Chaque type a son écriture."
+        explanation: "Petit piège classique de Java."
+    exercises:
+      - slug: java-ex-list-guide
+        kind: COMPLETER
+        title: "Compléter la liste"
+        difficulty: FACILE
+        skill: java-collections
+        statement: "Complète : crée une liste de textes, ajoute Nantes, affiche sa taille."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La liste la plus utilisée : ArrayList."
+          - "Ajouter : add. La taille : size."
+          - "ArrayList, add, size."
+        solution: '["ArrayList", "add", "size"]'
+        explanation: "`new ArrayList<>()`, `villes.add(\"Nantes\")`, `villes.size()`."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            List<String> villes = new [[1]]<>();
+            villes.[[2]]("Nantes");
+            System.out.println(villes.[[3]]());
+          blanks:
+            - ["ArrayList"]
+            - ["add"]
+            - ["size"]
+      - slug: java-ex-list-libre
+        kind: CODE_LIBRE
+        title: "Une liste de villes"
+        difficulty: FACILE
+        skill: java-collections
+        statement: |
+          Dans le `main` de la classe `Voyages` :
+          1. crée une `List<String>` nommée `villes` avec `new ArrayList<>()` ;
+          2. ajoute `"Dakar"`, `"Lyon"` et `"Lille"` ;
+          3. affiche chaque ville avec une boucle for-each, puis la taille de la liste.
+        criteria: "List<String> + ArrayList, trois add, un for-each, size()."
+        hints:
+          - "`List<String> villes = new ArrayList<>();`"
+          - "`villes.add(\"Dakar\");` (et les deux autres)"
+          - "`for (String v : villes) { ... }` puis `System.out.println(villes.size());`"
+        solution: |
+          import java.util.ArrayList;
+          import java.util.List;
+
+          public class Voyages {
+              public static void main(String[] args) {
+                  List<String> villes = new ArrayList<>();
+                  villes.add("Dakar");
+                  villes.add("Lyon");
+                  villes.add("Lille");
+                  for (String v : villes) {
+                      System.out.println(v);
+                  }
+                  System.out.println(villes.size());
+              }
+          }
+        explanation: "La liste grandit à chaque add."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            import java.util.ArrayList;
+            import java.util.List;
+
+            public class Voyages {
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'List\s*<\s*String\s*>\s+villes\s*=\s*new\s+ArrayList\s*<\s*>\s*\(\s*\)'
+              message: "Crée List<String> villes = new ArrayList<>();"
+            - pattern: '\A(?>[\s\S]*?villes\.add\s*\(){3}'
+              message: "Ajoute trois villes avec villes.add(...)."
+            - pattern: 'for\s*\(\s*String\s+\w+\s*:\s*villes\s*\)'
+              message: "Parcours avec for (String v : villes)."
+            - pattern: 'villes\.size\s*\(\s*\)'
+              message: "Affiche la taille : villes.size()."
+          output: |
+            Dakar
+            Lyon
+            Lille
+            3
+      - slug: java-ex-list-bug
+        kind: CORRIGER_ERREUR
+        title: "Un length au lieu de size"
+        difficulty: FACILE
+        skill: java-collections
+        statement: |
+          Le compilateur refuse `taches.length` : une List ne connaît pas `length`. Corrige pour afficher
+          le nombre de tâches.
+        criteria: "La taille d'une List se lit avec size()."
+        hints:
+          - "length, c'est pour les tableaux."
+          - "Pour une List : size()."
+          - "`taches.size()`"
+        solution: |
+          import java.util.ArrayList;
+          import java.util.List;
+
+          public class Taches {
+              public static void main(String[] args) {
+                  List<String> taches = new ArrayList<>();
+                  taches.add("Réviser SQL");
+                  taches.add("Coder");
+                  System.out.println(taches.size());
+              }
+          }
+        explanation: "List : size()."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            import java.util.ArrayList;
+            import java.util.List;
+
+            public class Taches {
+                public static void main(String[] args) {
+                    List<String> taches = new ArrayList<>();
+                    taches.add("Réviser SQL");
+                    taches.add("Coder");
+                    System.out.println(taches.length);
+                }
+            }
+          checks:
+            - pattern: 'taches\.length'
+              absent: true
+              message: "Une List n'a pas de length."
+            - pattern: 'taches\.size\s*\(\s*\)'
+              message: "Utilise taches.size()."
+          output: "2"
+
+  # ===================================================================== LEÇON 2
+  - slug: java-map
+    title: "Un dictionnaire : Map et HashMap"
+    duration: 10
+    objective: "Associer des clés à des valeurs avec une Map, et retrouver une valeur à partir de sa clé."
+    prerequisites: "Leçon « Une liste qui grandit : List et ArrayList »."
+    skills: [java-collections]
+    xp: 15
+    memo: |
+      - `Map<String, String> capitales = new HashMap<>();` : des **clés** texte, des **valeurs** texte.
+      - `put("Sénégal", "Dakar")` range ; `get("Sénégal")` retrouve `"Dakar"`.
+      - `containsKey("Mali")` répond `true` ou `false`.
+      - Une clé n'existe qu'une fois : un nouveau `put` sur la même clé **remplace** la valeur.
+      - `get` d'une clé absente renvoie `null` ; `getOrDefault(cle, "?")` renvoie une valeur de secours.
+    commonMistakes: |
+      - Lire `get(cle)` sans vérifier : `null` si la clé n'existe pas.
+      - Croire qu'une Map garde l'ordre d'ajout : une HashMap ne le garantit pas.
+    blocks:
+      - type: text
+        md: |
+          Retrouver la capitale d'un pays, le rôle d'une utilisatrice à partir de son e-mail… Pour retrouver une
+          valeur à partir d'une **clé**, on utilise une `Map`.
+      - type: definition
+        id: def-map
+        term: "Map"
+        md: |
+          Un **dictionnaire** : on retrouve une définition (la valeur) à partir d'un mot (la clé). Chaque mot
+          n'a qu'une entrée. `HashMap` est la version la plus utilisée.
+      - type: code
+        id: code-map
+        language: java
+        title: "Des pays et leurs capitales"
+        code: |
+          import java.util.HashMap;
+          import java.util.Map;
+
+          public class Atlas {
+              public static void main(String[] args) {
+                  Map<String, String> capitales = new HashMap<>();
+                  capitales.put("Sénégal", "Dakar");
+                  capitales.put("Mali", "Bamako");
+                  System.out.println(capitales.get("Sénégal"));
+                  System.out.println(capitales.containsKey("Maroc"));
+                  System.out.println(capitales.getOrDefault("Maroc", "inconnue"));
+              }
+          }
+        lines:
+          - n: 6
+            note: "Des clés texte (les pays), des valeurs texte (les capitales)."
+          - n: 7
+            note: "`put` range une association clé → valeur."
+          - n: 9
+            note: "`get` retrouve la valeur de la clé : Dakar."
+          - n: 10
+            note: "`containsKey` : le Maroc n'y est pas, false."
+          - n: 11
+            note: "`getOrDefault` : « inconnue » au lieu de null."
+      - type: question
+        ref: java-col-q1
+        review: def-map
+      - type: question
+        ref: java-mp-q2
+        review: code-map
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la Map."
+      - type: exercise
+        ref: java-ex-collections-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : les rôles des utilisatrices."
+      - type: exercise
+        ref: java-ex-map-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un add sur une Map."
+      - type: exercise
+        ref: java-ex-map-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre une List et une Map ?"
+            a: "Une List est une suite ordonnée d'éléments accessibles par leur position ; une Map associe des clés uniques à des valeurs."
+      - type: quiz
+        items:
+          - ref: java-mp-q3
+            review: def-map
+          - ref: java-mp-q4
+            review: code-map
+          - ref: java-mp-q5
+            review: def-map
     questions:
       - code: java-col-q1
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: java-collections
-        prompt: "Pour retrouver le stock d'un produit à partir de son nom, quelle collection choisir ?"
+        prompt: "Pour retrouver le rôle d'une utilisatrice à partir de son e-mail, quelle collection choisir ?"
         choices:
-          - label: "Une `Map<String, Integer>`"
+          - label: "Une `Map<String, String>`"
             correct: true
-            why: "Clé = nom, valeur = stock."
-          - label: "Une `List<Integer>`"
+            why: "Clé = e-mail, valeur = rôle."
+          - label: "Une `List<String>`"
             correct: false
-            why: "Il faudrait connaître la position de chaque produit."
+            why: "Il faudrait connaître la position de chaque utilisatrice."
           - label: "Un `String`"
             correct: false
             why: "Un texte ne range pas des associations."
         explanation: "Map : recherche directe par clé."
+      - code: java-mp-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: java-collections
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          Map<String, String> couleurs = new HashMap<>();
+          couleurs.put("ciel", "bleu");
+          couleurs.put("ciel", "gris");
+          System.out.println(couleurs.get("ciel"));
+        language: java
+        choices:
+          - label: "gris"
+            correct: true
+            why: "Une clé n'existe qu'une fois : le deuxième put remplace la valeur."
+          - label: "bleu"
+            correct: false
+            why: "La valeur a été remplacée."
+          - label: "bleu gris"
+            correct: false
+            why: "Une clé n'a qu'une seule valeur."
+        explanation: "put sur une clé existante = remplacer."
+      - code: java-mp-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-collections
+        prompt: "Que renvoie `get` pour une clé qui n'existe pas ?"
+        choices:
+          - label: "`null`"
+            correct: true
+            why: "Rien n'est associé à cette clé."
+          - label: "Une erreur"
+            correct: false
+            why: "get ne plante pas : il renvoie null."
+          - label: "La première valeur de la Map"
+            correct: false
+            why: "Il n'y a pas de « première » valeur."
+        explanation: "D'où l'intérêt de getOrDefault."
+      - code: java-mp-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-collections
+        prompt: "Quelle méthode range une association dans une Map ?"
+        choices:
+          - label: "`put`"
+            correct: true
+            why: "put(cle, valeur)."
+          - label: "`add`"
+            correct: false
+            why: "add sert aux List."
+          - label: "`push`"
+            correct: false
+            why: "push, c'est JavaScript."
+        explanation: "Map : put, get, containsKey."
+      - code: java-mp-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-collections
+        prompt: "Dans une Map, une même clé peut apparaître deux fois avec deux valeurs."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Une clé est unique."
+          - label: "Faux"
+            correct: true
+            why: "Exact : un nouveau put remplace l'ancienne valeur."
+        explanation: "Comme un mot dans un dictionnaire : une seule entrée."
+    exercises:
+      - slug: java-ex-collections-guide
+        kind: COMPLETER
+        title: "Compléter la Map"
+        difficulty: FACILE
+        skill: java-collections
+        statement: "Complète : range la capitale de la France, puis retrouve-la."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La Map la plus utilisée : HashMap."
+          - "Ranger : put. Retrouver : get."
+          - "HashMap, put, get."
+        solution: '["HashMap", "put", "get"]'
+        explanation: "`new HashMap<>()`, `put(\"France\", \"Paris\")`, `get(\"France\")`."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            Map<String, String> capitales = new [[1]]<>();
+            capitales.[[2]]("France", "Paris");
+            System.out.println(capitales.[[3]]("France"));
+          blanks:
+            - ["HashMap"]
+            - ["put"]
+            - ["get"]
+      - slug: java-ex-map-libre
+        kind: CODE_LIBRE
+        title: "Les rôles des utilisatrices"
+        difficulty: FACILE
+        skill: java-collections
+        statement: |
+          Dans le `main` de la classe `Roles` :
+          1. crée une `Map<String, String>` nommée `roles` ;
+          2. range `"awa@exemple.fr"` → `"ADMIN"` et `"leo@exemple.fr"` → `"APPRENANT"` ;
+          3. affiche le rôle de `awa@exemple.fr`, puis si la Map contient `zoe@exemple.fr`.
+        criteria: "Une Map, deux put, un get, un containsKey."
+        hints:
+          - "`Map<String, String> roles = new HashMap<>();`"
+          - "`roles.put(\"awa@exemple.fr\", \"ADMIN\");`"
+          - "`roles.get(\"awa@exemple.fr\")` et `roles.containsKey(\"zoe@exemple.fr\")`"
+        solution: |
+          import java.util.HashMap;
+          import java.util.Map;
+
+          public class Roles {
+              public static void main(String[] args) {
+                  Map<String, String> roles = new HashMap<>();
+                  roles.put("awa@exemple.fr", "ADMIN");
+                  roles.put("leo@exemple.fr", "APPRENANT");
+                  System.out.println(roles.get("awa@exemple.fr"));
+                  System.out.println(roles.containsKey("zoe@exemple.fr"));
+              }
+          }
+        explanation: "Recherche directe par e-mail : c'est l'usage typique d'une Map."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            import java.util.HashMap;
+            import java.util.Map;
+
+            public class Roles {
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'Map\s*<\s*String\s*,\s*String\s*>\s+roles\s*=\s*new\s+HashMap\s*<\s*>\s*\(\s*\)'
+              message: "Crée Map<String, String> roles = new HashMap<>();"
+            - pattern: 'roles\.put\s*\(\s*"awa@exemple\.fr"\s*,\s*"ADMIN"\s*\)'
+              message: "Range roles.put(\"awa@exemple.fr\", \"ADMIN\");"
+            - pattern: 'roles\.get\s*\(\s*"awa@exemple\.fr"\s*\)'
+              message: "Affiche roles.get(\"awa@exemple.fr\")."
+            - pattern: 'roles\.containsKey\s*\(\s*"zoe@exemple\.fr"\s*\)'
+              message: "Affiche roles.containsKey(\"zoe@exemple.fr\")."
+          output: |
+            ADMIN
+            false
+      - slug: java-ex-map-bug
+        kind: CORRIGER_ERREUR
+        title: "Un add sur une Map"
+        difficulty: FACILE
+        skill: java-collections
+        statement: |
+          Le compilateur refuse `stock.add(...)` : une Map n'a pas de méthode `add`. Corrige pour ranger
+          l'association.
+        criteria: "L'association est rangée avec put."
+        hints:
+          - "add, c'est pour les List."
+          - "Pour une Map : put(cle, valeur)."
+          - "`langues.put(\"Sénégal\", \"wolof\");`"
+        solution: |
+          import java.util.HashMap;
+          import java.util.Map;
+
+          public class Langues {
+              public static void main(String[] args) {
+                  Map<String, String> langues = new HashMap<>();
+                  langues.put("Sénégal", "wolof");
+                  System.out.println(langues.get("Sénégal"));
+              }
+          }
+        explanation: "Map : put pour ranger."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            import java.util.HashMap;
+            import java.util.Map;
+
+            public class Langues {
+                public static void main(String[] args) {
+                    Map<String, String> langues = new HashMap<>();
+                    langues.add("Sénégal", "wolof");
+                    System.out.println(langues.get("Sénégal"));
+                }
+            }
+          checks:
+            - pattern: 'langues\.add'
+              absent: true
+              message: "Une Map n'a pas de add."
+            - pattern: 'langues\.put\s*\(\s*"Sénégal"\s*,\s*"wolof"\s*\)'
+              message: "Utilise langues.put(\"Sénégal\", \"wolof\");"
+          output: "wolof"
+
+  # ===================================================================== LEÇON 3
+  - slug: java-streams
+    title: "Filtrer et transformer : les streams et les lambdas"
+    duration: 12
+    objective: "Filtrer et transformer une liste avec stream, filter, map et toList, en écrivant de petites lambdas."
+    prerequisites: "Leçon « Un dictionnaire : Map et HashMap »."
+    skills: [java-collections]
+    xp: 20
+    memo: |
+      - `liste.stream().filter(...).map(...).toList()` : l'équivalent de filter et map en JavaScript.
+      - Une **lambda** `p -> p.isDisponible()` : une petite fonction (comme `p => ...` en JavaScript, avec une flèche `->`).
+      - `Livre::getTitre` : une **référence de méthode**, raccourci pour `l -> l.getTitre()`.
+      - La liste d'origine n'est pas modifiée : on récupère une nouvelle liste.
+    commonMistakes: |
+      - Écrire `=>` : en Java, la flèche est `->`.
+      - Oublier `toList()` : on n'obtient pas de liste.
+    blocks:
+      - type: text
+        md: |
+          Tu connais filter et map en JavaScript. Java a les mêmes, sur un **stream** (un flux d'éléments).
+      - type: definition
+        id: def-stream
+        term: "Stream et lambda"
+        md: |
+          Un **tapis roulant** sur lequel passent les éléments d'une liste : on y installe des postes (filtrer,
+          transformer) et on récupère le résultat au bout. Chaque poste reçoit une **lambda**, une petite
+          fonction écrite avec `->`.
+      - type: code
+        id: code-stream
+        language: java
+        title: "Les titres des livres disponibles"
+        code: |
+          import java.util.List;
+
+          public class Catalogue {
+              public static void main(String[] args) {
+                  List<Livre> livres = List.of(
+                          new Livre("Dune", true),
+                          new Livre("Kirikou", false),
+                          new Livre("Une si longue lettre", true));
+                  List<String> disponibles = livres.stream()
+                          .filter(l -> l.isDisponible())
+                          .map(Livre::getTitre)
+                          .toList();
+                  System.out.println(disponibles);
+              }
+          }
+
+          class Livre {
+              private String titre;
+              private boolean disponible;
+
+              public Livre(String titre, boolean disponible) {
+                  this.titre = titre;
+                  this.disponible = disponible;
+              }
+
+              public String getTitre() { return titre; }
+              public boolean isDisponible() { return disponible; }
+          }
+        lines:
+          - n: 5
+            note: "`List.of(...)` fabrique directement une petite liste (qu'on ne pourra plus modifier)."
+          - n: 9
+            note: "`stream()` ouvre le tapis roulant."
+          - n: 10
+            note: "`filter` garde les livres disponibles. `l -> l.isDisponible()` est une lambda."
+          - n: 11
+            note: "`map(Livre::getTitre)` transforme chaque livre en son titre."
+          - n: 12
+            note: "`toList()` récupère le résultat : [Dune, Une si longue lettre]."
+      - type: question
+        ref: java-col-q2
+        review: def-stream
+      - type: question
+        ref: java-col-q4
+        review: code-stream
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le stream."
+      - type: exercise
+        ref: java-ex-stream-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : les e-mails des comptes actifs."
+      - type: exercise
+        ref: java-ex-stream
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une flèche à la mode JavaScript."
+      - type: exercise
+        ref: java-ex-stream-bug
+      - type: quiz
+        items:
+          - ref: java-st-q3
+            review: def-stream
+          - ref: java-st-q4
+            review: code-stream
+          - ref: java-st-q5
+            review: def-stream
+    questions:
       - code: java-col-q2
         kind: VRAI_FAUX
         difficulty: 2
@@ -152,91 +723,97 @@ lessons:
             correct: true
             why: "Exact : l'origine reste intacte."
         explanation: "Comme filter/map en JavaScript."
-      - code: java-col-q3
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: java-collections
-        prompt: "Pourquoi `List<int>` ne compile-t-il pas ?"
-        choices:
-          - label: "Les génériques n'acceptent que des objets : il faut `List<Integer>`"
-            correct: true
-            why: "Integer enveloppe int."
-          - label: "Parce que les listes ne peuvent contenir que du texte"
-            correct: false
-            why: "Elles contiennent n'importe quel type d'objet."
-          - label: "Parce qu'il manque new"
-            correct: false
-            why: "Le problème est le type entre chevrons."
-        explanation: "int → Integer, double → Double, boolean → Boolean."
       - code: java-col-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: java-collections
-        prompt: "Dans `filter(p -> p.getPrix() <= 15)`, que représente `p -> ...` ?"
+        prompt: "Dans `filter(l -> l.isDisponible())`, que représente `l -> ...` ?"
         choices:
-          - label: "Une lambda : une petite fonction qui reçoit un produit p"
+          - label: "Une lambda : une petite fonction qui reçoit un livre l"
             correct: true
             why: "Comme une fonction fléchée en JavaScript."
-          - label: "Une comparaison entre p et 15"
+          - label: "Une comparaison entre l et isDisponible"
             correct: false
-            why: "La comparaison est à l'intérieur de la lambda."
+            why: "C'est une fonction."
           - label: "Une nouvelle variable globale"
             correct: false
-            why: "p n'existe que dans la lambda."
+            why: "l n'existe que dans la lambda."
         explanation: "Lambda : paramètre -> expression."
-      - code: java-col-q5
-        kind: RESULTAT_CODE
+      - code: java-st-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-collections
+        prompt: "Quelle est la flèche d'une lambda Java ?"
+        choices:
+          - label: "`->`"
+            correct: true
+            why: "Un tiret et un plus grand que."
+          - label: "`=>`"
+            correct: false
+            why: "C'est la flèche JavaScript."
+          - label: "`>=`"
+            correct: false
+            why: "C'est « plus grand ou égal »."
+        explanation: "Java : `->` ; JavaScript : `=>`."
+      - code: java-st-q4
+        kind: CHOIX_UNIQUE
         difficulty: 2
         skill: java-collections
-        prompt: "Qu'affiche ce code ?"
-        snippet: |
-          List<String> l = new ArrayList<>();
-          l.add("a");
-          l.add("b");
-          l.add("c");
-          System.out.println(l.get(2) + l.size());
-        language: java
+        prompt: "Que veut dire `Livre::getTitre` ?"
         choices:
-          - label: "c3"
+          - label: "Un raccourci pour `l -> l.getTitre()`"
             correct: true
-            why: "get(2) vaut c, size() vaut 3, concaténés."
-          - label: "b3"
+            why: "C'est une référence de méthode."
+          - label: "Appeler getTitre sur la classe"
             correct: false
-            why: "L'indice 2 est le troisième élément."
-          - label: "c2"
+            why: "C'est appliqué à chaque livre du stream."
+          - label: "Une erreur de syntaxe"
             correct: false
-            why: "Il y a trois éléments."
-        explanation: "Indices à partir de 0 ; size() compte les éléments."
+            why: "C'est une écriture valide."
+        explanation: "`Classe::methode` = « applique cette méthode à chaque élément »."
+      - code: java-st-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-collections
+        prompt: "À quoi sert `toList()` à la fin d'un stream ?"
+        choices:
+          - label: "À récupérer le résultat dans une nouvelle liste"
+            correct: true
+            why: "Le bout du tapis roulant."
+          - label: "À trier la liste"
+            correct: false
+            why: "toList ne trie pas."
+          - label: "À vider la liste"
+            correct: false
+            why: "Il ne vide rien."
+        explanation: "stream → postes → toList."
     exercises:
-      - slug: java-ex-collections-guide
+      - slug: java-ex-stream-guide
         kind: COMPLETER
-        title: "Compléter List et Map"
+        title: "Compléter le stream"
         difficulty: FACILE
         skill: java-collections
-        statement: "Complète les méthodes des collections."
+        statement: "Complète pour garder les prénoms de plus de 3 lettres, en majuscules."
         criteria: "Les quatre trous sont corrects."
         hints:
-          - "Ajouter à une liste : add."
-          - "Ranger dans une Map : put."
-          - "add, size, put, get."
-        solution: '["add", "size", "put", "get"]'
-        explanation: "List : add / size ; Map : put / get."
+          - "Ouvrir le tapis roulant : stream."
+          - "Garder : filter. Transformer : map."
+          - "stream, filter, map, toList."
+        solution: '["stream", "filter", "map", "toList"]'
+        explanation: "`prenoms.stream().filter(...).map(...).toList()`"
         xp: 10
         payload:
           language: java
           template: |
-            List<String> villes = new ArrayList<>();
-            villes.[[1]]("Nantes");
-            System.out.println(villes.[[2]]());
-
-            Map<String, String> capitales = new HashMap<>();
-            capitales.[[3]]("France", "Paris");
-            System.out.println(capitales.[[4]]("France"));
+            List<String> resultat = prenoms.[[1]]()
+                    .[[2]](p -> p.length() > 3)
+                    .[[3]](p -> p.toUpperCase())
+                    .[[4]]();
           blanks:
-            - ["add"]
-            - ["size"]
-            - ["put"]
-            - ["get"]
+            - ["stream"]
+            - ["filter"]
+            - ["map"]
+            - ["toList"]
       - slug: java-ex-stream
         kind: CODE_LIBRE
         title: "Les e-mails des comptes actifs"
@@ -278,117 +855,446 @@ lessons:
               message: "Termine par .toList()."
             - pattern: 'return\s+\w+\.stream'
               message: "Renvoie le résultat du stream."
+      - slug: java-ex-stream-bug
+        kind: CORRIGER_ERREUR
+        title: "Une flèche à la mode JavaScript"
+        difficulty: FACILE
+        skill: java-collections
+        statement: |
+          Le compilateur refuse `v => v.length() > 4` : en Java, la flèche d'une lambda s'écrit autrement.
+          Corrige-la.
+        criteria: "La lambda utilise ->."
+        hints:
+          - "=> est la flèche JavaScript."
+          - "En Java : un tiret et un plus grand que."
+          - "`v -> v.length() > 4`"
+        solution: |
+          import java.util.List;
 
-  # ===================================================================== LEÇON 2
+          public class Villes {
+              public static void main(String[] args) {
+                  List<String> villes = List.of("Lyon", "Toulouse", "Nice", "Bordeaux");
+                  List<String> longues = villes.stream()
+                          .filter(v -> v.length() > 4)
+                          .toList();
+                  System.out.println(longues);
+              }
+          }
+        explanation: "Java : `->`."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            import java.util.List;
+
+            public class Villes {
+                public static void main(String[] args) {
+                    List<String> villes = List.of("Lyon", "Toulouse", "Nice", "Bordeaux");
+                    List<String> longues = villes.stream()
+                            .filter(v => v.length() > 4)
+                            .toList();
+                    System.out.println(longues);
+                }
+            }
+          checks:
+            - pattern: '=>'
+              absent: true
+              message: "=> n'existe pas en Java."
+            - pattern: 'filter\s*\(\s*v\s*->\s*v\.length\s*\(\s*\)\s*>\s*4\s*\)'
+              message: "Écris filter(v -> v.length() > 4)."
+          output: "[Toulouse, Bordeaux]"
+
+  # ===================================================================== LEÇON 4
   - slug: java-exceptions
-    title: "Les exceptions en Java"
-    duration: 13
-    objective: "Lever, attraper et créer des exceptions, et distinguer exceptions vérifiées et non vérifiées."
-    prerequisites: "Leçon « List, Map et streams »."
+    title: "Lever et attraper une exception : throw, try, catch"
+    duration: 11
+    objective: "Lever une exception avec throw quand une règle n'est pas respectée, et l'attraper avec try / catch."
+    prerequisites: "Leçon « Filtrer et transformer : les streams »."
     skills: [java-exceptions]
-    xp: 25
+    xp: 15
     memo: |
-      - `throw new IllegalArgumentException("message")` lève une exception.
-      - `try { ... } catch (TypeException e) { ... } finally { ... }` : `finally` s'exécute toujours.
-      - **Vérifiées** (checked, ex. `IOException`) : le compilateur oblige à les traiter ou à les déclarer (`throws`).
-      - **Non vérifiées** (`RuntimeException` et ses enfants) : pas d'obligation ; elles signalent souvent une erreur de programmation ou une règle métier.
-      - Exception personnalisée : `class DoublonException extends RuntimeException`.
-      - Dans Spring, un `@RestControllerAdvice` transforme les exceptions en réponses HTTP.
+      - `throw new IllegalArgumentException("message")` **lève** une exception : la méthode s'arrête là.
+      - `try { ... } catch (IllegalArgumentException e) { ... }` : on essaie, et on **attrape** un type d'exception précis.
+      - `e.getMessage()` donne le texte de l'exception.
+      - Comme en JavaScript, mais le `catch` précise **quel type** d'exception il attrape.
     commonMistakes: |
-      - Attraper `Exception` partout : on masque des bugs.
-      - `catch` vide ou seulement `e.printStackTrace()`.
-      - Utiliser les exceptions pour un déroulement normal (par exemple sortir d'une boucle).
+      - Oublier `new` : `throw IllegalArgumentException(...)` ne compile pas.
+      - Un catch vide : l'erreur est cachée.
     blocks:
       - type: text
         md: |
-          Tu as vu les erreurs en JavaScript. Java va plus loin : il **classe** les erreurs et oblige parfois à
-          les prévoir.
+          Tu as vu throw / try / catch en JavaScript. Java fait pareil, avec une précision : on dit **quel
+          type** d'exception on attrape.
       - type: definition
         id: def-exception-java
         term: "Exception"
         md: |
-          Un **objet** qui décrit un problème, lancé (`throw`) là où le problème survient et attrapé
-          (`catch`) là où l'on sait quoi faire. Comme un **signalement** envoyé au service compétent.
+          Un **signalement** : lancé (`throw`) là où le problème survient, et reçu (`catch`) par le service qui
+          sait quoi en faire. Chaque signalement a un type, comme un formulaire différent selon le problème.
       - type: code
         id: code-exception-java
         language: java
-        title: "Lever et attraper"
+        title: "Refuser un pseudo vide"
         code: |
-          public static int age(String saisie) {
-              try {
-                  return Integer.parseInt(saisie);
-              } catch (NumberFormatException e) {
-                  throw new IllegalArgumentException("L'âge doit être un nombre : " + saisie);
-              } finally {
-                  System.out.println("Vérification terminée");
+          public class Inscription {
+              static String creerPseudo(String saisie) {
+                  if (saisie.isBlank()) {
+                      throw new IllegalArgumentException("Le pseudo ne peut pas être vide");
+                  }
+                  return saisie.trim();
+              }
+
+              public static void main(String[] args) {
+                  try {
+                      System.out.println(creerPseudo("   "));
+                  } catch (IllegalArgumentException e) {
+                      System.out.println("Refusé : " + e.getMessage());
+                  }
               }
           }
         lines:
           - n: 3
-            note: "`parseInt` transforme un texte en entier ; il lève `NumberFormatException` si le texte n'est pas un nombre."
+            note: "`isBlank()` : le texte est vide ou fait seulement d'espaces."
           - n: 4
-            note: "On attrape une exception **précise**, pas toutes les exceptions."
-          - n: 5
-            note: "On la traduit en une exception plus parlante pour l'appelant."
-          - n: 6
-            note: "`finally` s'exécute dans tous les cas (réussite ou erreur) : idéal pour fermer une ressource."
+            note: "`throw` lève l'exception : la méthode s'arrête ici."
+          - n: 12
+            note: "`catch` attrape ce type précis d'exception."
+          - n: 13
+            note: "`getMessage()` : le texte de l'exception."
       - type: question
-        ref: java-exc-q1
+        ref: java-ex2-q1
+        review: def-exception-java
+      - type: question
+        ref: java-ex2-q2
         review: code-exception-java
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète throw, try et catch."
+      - type: exercise
+        ref: java-ex-exceptions-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : refuser un e-mail sans @."
+      - type: exercise
+        ref: java-ex-exceptions-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un new oublié."
+      - type: exercise
+        ref: java-ex-exceptions-bug
+      - type: quiz
+        items:
+          - ref: java-exc-q5
+            review: def-exception-java
+          - ref: java-c3-b2
+            review: def-exception-java
+          - ref: java-ex2-q5
+            review: code-exception-java
+    questions:
+      - code: java-ex2-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-exceptions
+        prompt: "Que fait `throw new IllegalArgumentException(\"...\")` ?"
+        choices:
+          - label: "Il lève une exception et arrête la méthode"
+            correct: true
+            why: "Le signalement part."
+          - label: "Il affiche un message et continue"
+            correct: false
+            why: "La méthode s'arrête."
+          - label: "Il attrape une exception"
+            correct: false
+            why: "Attraper, c'est catch."
+        explanation: "throw = lever ; catch = attraper."
+      - code: java-ex2-q2
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: java-exceptions
+        prompt: "Dans l'exemple, qu'affiche le programme ?"
+        snippet: |
+          try {
+              System.out.println(creerPseudo("   "));
+          } catch (IllegalArgumentException e) {
+              System.out.println("Refusé : " + e.getMessage());
+          }
+        language: java
+        choices:
+          - label: "Refusé : Le pseudo ne peut pas être vide"
+            correct: true
+            why: "La saisie est vide : l'exception est levée puis attrapée."
+          - label: "Rien"
+            correct: false
+            why: "Le catch affiche le message."
+          - label: "Le programme plante"
+            correct: false
+            why: "L'exception est attrapée."
+        explanation: "throw → catch → getMessage()."
+      - code: java-exc-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: java-exceptions
+        prompt: "Attraper systématiquement `Exception` dans chaque méthode est une bonne pratique."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : on masque des bugs et on traite mal des problèmes différents."
+          - label: "Faux"
+            correct: true
+            why: "Exact : on attrape les exceptions précises qu'on sait gérer."
+        explanation: "Attraper ce qu'on sait traiter, laisser remonter le reste."
+      - code: java-c3-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-exceptions
+        prompt: "Quelle exception obtient-on en appelant une méthode sur une variable qui vaut null ?"
+        choices:
+          - label: "NullPointerException"
+            correct: true
+            why: "L'erreur la plus célèbre de Java."
+          - label: "IllegalArgumentException"
+            correct: false
+            why: "Celle-ci est levée volontairement, pour refuser un argument."
+          - label: "Aucune"
+            correct: false
+            why: "On ne peut pas appeler de méthode sur null."
+        explanation: "Vérifier null avant d'appeler une méthode évite cette erreur."
+      - code: java-ex2-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-exceptions
+        prompt: "Que précise le catch en Java, contrairement à JavaScript ?"
+        choices:
+          - label: "Le type d'exception qu'il attrape"
+            correct: true
+            why: "`catch (IllegalArgumentException e)`."
+          - label: "La ligne de l'erreur"
+            correct: false
+            why: "Il précise le type."
+          - label: "Rien de plus"
+            correct: false
+            why: "Le type est obligatoire en Java."
+        explanation: "Chaque catch vise un type d'exception."
+    exercises:
+      - slug: java-ex-exceptions-guide
+        kind: COMPLETER
+        title: "throw, try, catch"
+        difficulty: FACILE
+        skill: java-exceptions
+        statement: "Complète les mots-clés."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Lever : throw, suivi de new."
+          - "Essayer : try. Attraper : catch."
+          - "throw, new, try, catch."
+        solution: '["throw", "new", "try", "catch"]'
+        explanation: "throw new … lève ; try / catch attrape."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            static void verifier(String ville) {
+                if (ville.isBlank()) {
+                    [[1]] [[2]] IllegalArgumentException("Ville obligatoire");
+                }
+            }
+
+            [[3]] {
+                verifier("");
+            } [[4]] (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+          blanks:
+            - ["throw"]
+            - ["new"]
+            - ["try"]
+            - ["catch"]
+      - slug: java-ex-exceptions-libre
+        kind: CODE_LIBRE
+        title: "Refuser un e-mail sans @"
+        difficulty: INTERMEDIAIRE
+        skill: java-exceptions
+        statement: |
+          Dans la classe `Contact` :
+          1. écris `static String verifierEmail(String email)` qui lève une `IllegalArgumentException` avec
+             le message `"E-mail invalide"` si l'e-mail ne contient pas `"@"` (outil `contains`), sinon
+             renvoie l'e-mail ;
+          2. dans le `main`, appelle-la avec `"awa.exemple.fr"` dans un `try`, et affiche `e.getMessage()`
+             dans le `catch`.
+        criteria: "throw avec le bon message, try / catch, affichage de getMessage()."
+        hints:
+          - "`if (!email.contains(\"@\")) { throw new IllegalArgumentException(\"E-mail invalide\"); }`"
+          - "`return email;`"
+          - "`try { ... } catch (IllegalArgumentException e) { System.out.println(e.getMessage()); }`"
+        solution: |
+          public class Contact {
+              static String verifierEmail(String email) {
+                  if (!email.contains("@")) {
+                      throw new IllegalArgumentException("E-mail invalide");
+                  }
+                  return email;
+              }
+
+              public static void main(String[] args) {
+                  try {
+                      System.out.println(verifierEmail("awa.exemple.fr"));
+                  } catch (IllegalArgumentException e) {
+                      System.out.println(e.getMessage());
+                  }
+              }
+          }
+        explanation: "La règle est levée dans la méthode, et gérée proprement dans main."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            public class Contact {
+
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'static\s+String\s+verifierEmail\s*\(\s*String\s+email\s*\)'
+              message: "Écris static String verifierEmail(String email)."
+            - pattern: 'throw\s+new\s+IllegalArgumentException\s*\(\s*"E-mail invalide"\s*\)'
+              message: "Lève new IllegalArgumentException(\"E-mail invalide\")."
+            - pattern: 'try\s*\{[\s\S]*verifierEmail\s*\(\s*"awa\.exemple\.fr"\s*\)[\s\S]*\}\s*catch\s*\(\s*IllegalArgumentException\s+(\w+)\s*\)\s*\{[\s\S]*\1\.getMessage\s*\(\s*\)'
+              message: "Appelle la méthode dans un try, attrape IllegalArgumentException et affiche e.getMessage()."
+          output: "E-mail invalide"
+      - slug: java-ex-exceptions-bug
+        kind: CORRIGER_ERREUR
+        title: "Un new oublié"
+        difficulty: FACILE
+        skill: java-exceptions
+        statement: |
+          Le compilateur refuse la ligne du `throw` : une exception est un objet, il faut la fabriquer.
+          Corrige.
+        criteria: "L'exception est créée avec new."
+        hints:
+          - "Une exception est un objet."
+          - "Un objet se fabrique avec new."
+          - "`throw new IllegalArgumentException(\"Titre obligatoire\");`"
+        solution: |
+          public class Films {
+              static void ajouter(String titre) {
+                  if (titre.isBlank()) {
+                      throw new IllegalArgumentException("Titre obligatoire");
+                  }
+                  System.out.println("Ajouté : " + titre);
+              }
+
+              public static void main(String[] args) {
+                  ajouter("Atlantique");
+              }
+          }
+        explanation: "`throw new …` : on fabrique l'exception, puis on la lance."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Films {
+                static void ajouter(String titre) {
+                    if (titre.isBlank()) {
+                        throw IllegalArgumentException("Titre obligatoire");
+                    }
+                    System.out.println("Ajouté : " + titre);
+                }
+
+                public static void main(String[] args) {
+                    ajouter("Atlantique");
+                }
+            }
+          checks:
+            - pattern: 'throw\s+new\s+IllegalArgumentException\s*\('
+              message: "Écris throw new IllegalArgumentException(...)."
+          output: "Ajouté : Atlantique"
+
+  # ===================================================================== LEÇON 5
+  - slug: java-finally
+    title: "finally et les exceptions vérifiées"
+    duration: 11
+    objective: "Utiliser finally pour toujours exécuter du code, et distinguer les exceptions vérifiées (throws) des non vérifiées."
+    prerequisites: "Leçon « Lever et attraper une exception »."
+    skills: [java-exceptions]
+    xp: 15
+    memo: |
+      - `finally { ... }` s'exécute **toujours**, qu'il y ait une exception ou non (idéal pour fermer un fichier).
+      - **Vérifiée** (checked, ex. `IOException`) : un problème extérieur prévisible. Le compilateur **oblige** à l'attraper ou à la déclarer avec `throws`.
+      - **Non vérifiée** (`RuntimeException` et ses enfants, ex. `IllegalArgumentException`) : pas d'obligation.
+    commonMistakes: |
+      - Oublier de traiter une exception vérifiée : erreur de compilation.
+      - Mettre dans finally du code qui ne doit s'exécuter qu'en cas de réussite.
+    blocks:
+      - type: text
+        md: |
+          Java va plus loin que JavaScript : il **classe** les exceptions, et oblige parfois à les prévoir.
       - type: definition
         id: def-checked
         term: "Vérifiée ou non vérifiée"
         md: |
-          - **Vérifiée** (checked) : un problème **extérieur** et prévisible (fichier absent, réseau). Le
-            compilateur t'oblige à la gérer, comme un contrôle obligatoire avant un vol.
-          - **Non vérifiée** (`RuntimeException`) : une erreur de logique ou une règle métier non respectée
-            (argument invalide, doublon). Pas d'obligation de la déclarer.
+          - **Vérifiée** : comme un **contrôle obligatoire avant un vol** — un problème extérieur (fichier absent,
+            réseau) que le compilateur t'oblige à prévoir.
+          - **Non vérifiée** : une erreur de logique ou une règle métier non respectée. Pas d'obligation.
+          - `finally` : la **porte qu'on referme toujours** en partant, que la journée se soit bien passée ou non.
       - type: code
-        id: code-exception-perso
+        id: code-finally
         language: java
-        title: "Une exception métier personnalisée"
+        title: "Lire un fichier et toujours conclure"
         code: |
-          public class EmailDejaUtiliseException extends RuntimeException {
-              public EmailDejaUtiliseException(String email) {
-                  super("L'adresse " + email + " est déjà utilisée");
+          import java.io.IOException;
+          import java.nio.file.Files;
+          import java.nio.file.Path;
+
+          public class Lecture {
+              static String lire(String chemin) throws IOException {
+                  return Files.readString(Path.of(chemin));
+              }
+
+              public static void main(String[] args) {
+                  try {
+                      System.out.println(lire("notes-absentes.txt"));
+                  } catch (IOException e) {
+                      System.out.println("Fichier introuvable");
+                  } finally {
+                      System.out.println("Lecture terminée");
+                  }
               }
           }
-
-          if (repository.existsByEmail(email)) {
-              throw new EmailDejaUtiliseException(email);
-          }
         lines:
-          - n: 1
-            note: "On hérite de `RuntimeException` : non vérifiée, adaptée à une règle métier."
-          - n: 3
-            note: "`super(message)` : le message sera lisible avec `getMessage()`."
-          - n: 8
-            note: "Dans un service Spring, un gestionnaire d'erreurs la transformera en réponse 409."
+          - n: 6
+            note: "`throws IOException` : la méthode prévient qu'elle peut lever cette exception vérifiée."
+          - n: 13
+            note: "L'appelant doit l'attraper (ou la déclarer à son tour)."
+          - n: 15
+            note: "`finally` s'exécute dans tous les cas : Lecture terminée."
+      - type: question
+        ref: java-exc-q1
+        review: def-checked
       - type: question
         ref: java-exc-q2
         review: def-checked
       - type: text
-        md: "Exercice guidé : complète le try / catch / finally."
+        md: "**Exercice 1 (guidé)** : try, catch, finally."
       - type: exercise
-        ref: java-ex-exceptions-guide
+        ref: java-ex-finally-guide
       - type: text
-        md: "En autonomie : crée une exception métier et utilise-la."
+        md: "**Exercice 2 (en autonomie)** : toujours dire au revoir."
       - type: exercise
-        ref: java-ex-exception-perso
+        ref: java-ex-finally-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une exception vérifiée pas déclarée."
+      - type: exercise
+        ref: java-ex-finally-bug
       - type: jury
         items:
           - q: "Quelle différence entre une exception vérifiée et non vérifiée ?"
             a: "Une exception vérifiée (checked) doit être attrapée ou déclarée avec throws, le compilateur l'exige ; une RuntimeException n'impose rien et signale souvent une erreur de programmation ou une règle métier."
-          - q: "Comment gérez-vous les erreurs dans votre API Spring ?"
-            a: "Le service lève des exceptions métier ; un @RestControllerAdvice les attrape et renvoie le bon code HTTP avec un message clair, sans détails techniques."
       - type: quiz
         items:
+          - ref: java-fn-q3
+            review: def-checked
           - ref: java-exc-q3
-            review: code-exception-java
-          - ref: java-exc-q4
-            review: code-exception-perso
-          - ref: java-exc-q5
-            review: def-exception-java
+            review: code-finally
+          - ref: java-fn-q5
+            review: def-checked
     questions:
       - code: java-exc-q1
         kind: CHOIX_UNIQUE
@@ -422,24 +1328,296 @@ lessons:
             correct: false
             why: "Elle s'attrape avec catch."
         explanation: "Checked : le compilateur exige un traitement."
+      - code: java-fn-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-exceptions
+        prompt: "À quoi sert `throws IOException` dans la déclaration d'une méthode ?"
+        choices:
+          - label: "À prévenir que la méthode peut lever cette exception"
+            correct: true
+            why: "L'appelant devra s'en occuper."
+          - label: "À lever l'exception tout de suite"
+            correct: false
+            why: "Lever, c'est throw (sans s)."
+          - label: "À l'attraper"
+            correct: false
+            why: "Attraper, c'est catch."
+        explanation: "throw (lever) ≠ throws (prévenir)."
       - code: java-exc-q3
         kind: RESULTAT_CODE
-        difficulty: 3
+        difficulty: 2
         skill: java-exceptions
-        prompt: "Que se passe-t-il avec `age(\"vingt\")` ?"
-        snippet: 'age("vingt")'
+        prompt: "Dans l'exemple, le fichier n'existe pas. Qu'affiche le programme ?"
+        snippet: |
+          try {
+              System.out.println(lire("notes-absentes.txt"));
+          } catch (IOException e) {
+              System.out.println("Fichier introuvable");
+          } finally {
+              System.out.println("Lecture terminée");
+          }
         language: java
         choices:
-          - label: "« Vérification terminée » s'affiche, puis une IllegalArgumentException est levée"
+          - label: "Fichier introuvable, puis Lecture terminée"
             correct: true
-            why: "finally s'exécute avant que l'exception ne remonte."
-          - label: "La méthode renvoie 0"
+            why: "catch s'occupe de l'erreur, puis finally s'exécute."
+          - label: "Lecture terminée seulement"
             correct: false
-            why: "Aucun return dans le catch : une exception est levée."
-          - label: "Rien ne s'affiche"
+            why: "Le catch affiche d'abord son message."
+          - label: "Fichier introuvable seulement"
             correct: false
             why: "finally s'exécute toujours."
-        explanation: "catch traduit l'exception, finally s'exécute, puis l'exception remonte à l'appelant."
+        explanation: "catch, puis finally."
+      - code: java-fn-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-exceptions
+        prompt: "`IllegalArgumentException` oblige à écrire `throws` dans la déclaration."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Elle est non vérifiée : aucune obligation."
+          - label: "Faux"
+            correct: true
+            why: "Exact : c'est une RuntimeException."
+        explanation: "Seules les exceptions vérifiées imposent throws."
+    exercises:
+      - slug: java-ex-finally-guide
+        kind: COMPLETER
+        title: "try, catch, finally"
+        difficulty: FACILE
+        skill: java-exceptions
+        statement: "Complète : la méthode prévient qu'elle peut échouer, et on ferme toujours la connexion."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Prévenir dans la déclaration : throws."
+          - "Toujours exécuté : finally."
+          - "throws, finally."
+        solution: '["throws", "finally"]'
+        explanation: "`throws IOException` dans la déclaration ; `finally` pour fermer."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            static String telecharger(String adresse) [[1]] IOException {
+                ...
+            }
+
+            try {
+                telecharger("https://exemple.fr/cours.pdf");
+            } catch (IOException e) {
+                System.out.println("Téléchargement impossible");
+            } [[2]] {
+                fermerConnexion();
+            }
+          blanks:
+            - ["throws"]
+            - ["finally"]
+      - slug: java-ex-finally-libre
+        kind: CODE_LIBRE
+        title: "Toujours dire au revoir"
+        difficulty: FACILE
+        skill: java-exceptions
+        statement: |
+          Dans le `main` de la classe `Session` : dans un `try`, lève une
+          `IllegalStateException("Session expirée")` ; dans le `catch`, affiche le message ; dans un
+          `finally`, affiche `Au revoir`.
+        criteria: "try qui lève, catch qui affiche getMessage(), finally qui affiche Au revoir."
+        hints:
+          - "`try { throw new IllegalStateException(\"Session expirée\"); }`"
+          - "`catch (IllegalStateException e) { System.out.println(e.getMessage()); }`"
+          - "`finally { System.out.println(\"Au revoir\"); }`"
+        solution: |
+          public class Session {
+              public static void main(String[] args) {
+                  try {
+                      throw new IllegalStateException("Session expirée");
+                  } catch (IllegalStateException e) {
+                      System.out.println(e.getMessage());
+                  } finally {
+                      System.out.println("Au revoir");
+                  }
+              }
+          }
+        explanation: "Le finally s'exécute après le catch, dans tous les cas."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Session {
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'throw\s+new\s+IllegalStateException\s*\(\s*"Session expirée"\s*\)'
+              message: "Dans le try : throw new IllegalStateException(\"Session expirée\");"
+            - pattern: 'catch\s*\(\s*IllegalStateException\s+(\w+)\s*\)\s*\{\s*System\.out\.println\s*\(\s*\1\.getMessage\s*\(\s*\)\s*\)'
+              message: "Dans le catch, affiche e.getMessage()."
+            - pattern: 'finally\s*\{\s*System\.out\.println\s*\(\s*"Au revoir"\s*\)'
+              message: "Dans le finally, affiche \"Au revoir\"."
+          output: |
+            Session expirée
+            Au revoir
+      - slug: java-ex-finally-bug
+        kind: CORRIGER_ERREUR
+        title: "Une exception vérifiée pas déclarée"
+        difficulty: INTERMEDIAIRE
+        skill: java-exceptions
+        statement: |
+          Le compilateur refuse la méthode `lire` : « unreported exception IOException ; must be caught or
+          declared to be thrown ». Déclare l'exception dans la signature avec `throws`.
+        criteria: "La méthode lire déclare throws IOException."
+        hints:
+          - "Files.readString peut lever une IOException, qui est vérifiée."
+          - "Il faut la déclarer dans la signature."
+          - "`static String lire(String chemin) throws IOException`"
+        solution: |
+          import java.io.IOException;
+          import java.nio.file.Files;
+          import java.nio.file.Path;
+
+          public class Carnet {
+              static String lire(String chemin) throws IOException {
+                  return Files.readString(Path.of(chemin));
+              }
+
+              public static void main(String[] args) {
+                  try {
+                      System.out.println(lire("absent.txt"));
+                  } catch (IOException e) {
+                      System.out.println("Fichier introuvable");
+                  }
+              }
+          }
+        explanation: "Une exception vérifiée doit être déclarée (throws) ou attrapée (catch)."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            import java.io.IOException;
+            import java.nio.file.Files;
+            import java.nio.file.Path;
+
+            public class Carnet {
+                static String lire(String chemin) {
+                    return Files.readString(Path.of(chemin));
+                }
+
+                public static void main(String[] args) {
+                    try {
+                        System.out.println(lire("absent.txt"));
+                    } catch (IOException e) {
+                        System.out.println("Fichier introuvable");
+                    }
+                }
+            }
+          checks:
+            - pattern: 'static\s+String\s+lire\s*\(\s*String\s+chemin\s*\)\s*throws\s+IOException'
+              message: "Déclare l'exception : static String lire(String chemin) throws IOException"
+          output: "Fichier introuvable"
+
+  # ===================================================================== LEÇON 6
+  - slug: java-exceptions-perso
+    title: "Créer sa propre exception"
+    duration: 11
+    objective: "Créer une exception métier qui hérite de RuntimeException, avec un message clair, et la lever."
+    prerequisites: "Leçon « finally et les exceptions vérifiées »."
+    skills: [java-exceptions]
+    xp: 20
+    memo: |
+      - Une exception est une **classe** : on peut créer la nôtre, avec un nom métier clair.
+      - `class EmailDejaUtiliseException extends RuntimeException` : non vérifiée, adaptée à une règle métier.
+      - Son constructeur appelle `super(message)` : le message sera lisible avec `getMessage()`.
+      - Dans Spring, un gestionnaire d'erreurs (`@RestControllerAdvice`) la transformera en réponse HTTP.
+    commonMistakes: |
+      - Hériter d'`Exception` : elle devient vérifiée, il faudrait `throws` partout.
+      - Un nom vague (`MonErreur`) : le nom doit dire ce qui s'est passé.
+    blocks:
+      - type: text
+        md: |
+          `IllegalArgumentException` est très générale. Pour une règle métier (« cet e-mail est déjà pris »),
+          on crée une exception **au nom parlant**.
+      - type: definition
+        id: def-exception-perso
+        term: "Exception personnalisée"
+        md: |
+          Un **formulaire de signalement sur mesure** : au lieu d'un « problème divers », on remplit
+          « e-mail déjà utilisé ». Tout le monde comprend tout de suite ce qui s'est passé.
+      - type: code
+        id: code-exception-perso
+        language: java
+        title: "Une exception métier"
+        code: |
+          import java.util.HashSet;
+          import java.util.Set;
+
+          public class Inscriptions {
+              static Set<String> emails = new HashSet<>();
+
+              static void inscrire(String email) {
+                  if (emails.contains(email)) {
+                      throw new EmailDejaUtiliseException(email);
+                  }
+                  emails.add(email);
+              }
+
+              public static void main(String[] args) {
+                  inscrire("awa@exemple.fr");
+                  try {
+                      inscrire("awa@exemple.fr");
+                  } catch (EmailDejaUtiliseException e) {
+                      System.out.println(e.getMessage());
+                  }
+              }
+          }
+
+          class EmailDejaUtiliseException extends RuntimeException {
+              public EmailDejaUtiliseException(String email) {
+                  super("L'adresse " + email + " est déjà utilisée");
+              }
+          }
+        lines:
+          - n: 5
+            note: "Un `Set` : comme une List, mais sans doublon possible (`contains`, `add`)."
+          - n: 9
+            note: "On lève notre propre exception, au nom parlant."
+          - n: 24
+            note: "Elle hérite de RuntimeException : non vérifiée."
+          - n: 26
+            note: "`super(message)` : le texte lu par getMessage()."
+      - type: question
+        ref: java-exc-q4
+        review: def-exception-perso
+      - type: question
+        ref: java-c3-b1
+        review: code-exception-perso
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète l'exception."
+      - type: exercise
+        ref: java-ex-exception-perso-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une exception EmailDejaUtilise."
+      - type: exercise
+        ref: java-ex-exception-perso
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une exception qui oblige à throws partout."
+      - type: exercise
+        ref: java-ex-exception-perso-bug
+      - type: jury
+        items:
+          - q: "Comment gérez-vous les erreurs dans votre API Spring ?"
+            a: "Le service lève des exceptions métier ; un @RestControllerAdvice les attrape et renvoie le bon code HTTP avec un message clair, sans détails techniques."
+      - type: quiz
+        items:
+          - ref: java-ep-q3
+            review: def-exception-perso
+          - ref: java-exc-q4b
+            review: code-exception-perso
+          - ref: java-ep-q5
+            review: def-exception-perso
+    questions:
       - code: java-exc-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -456,49 +1634,101 @@ lessons:
             correct: false
             why: "Error est réservée aux problèmes graves de la JVM."
         explanation: "C'est la pratique habituelle dans les applications Spring."
-      - code: java-exc-q5
-        kind: VRAI_FAUX
+      - code: java-c3-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-collections
+        prompt: "Quelle collection garantit qu'aucun élément n'apparaît deux fois ?"
+        choices:
+          - label: "`Set` (par exemple HashSet)"
+            correct: true
+            why: "Un ensemble n'accepte pas les doublons."
+          - label: "`List`"
+            correct: false
+            why: "Une liste accepte les doublons."
+          - label: "`ArrayList`"
+            correct: false
+            why: "C'est une List."
+        explanation: "List (ordonnée, doublons permis), Set (sans doublons), Map (clé → valeur)."
+      - code: java-ep-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-exceptions
+        prompt: "Pourquoi créer `EmailDejaUtiliseException` plutôt qu'utiliser `IllegalArgumentException` ?"
+        choices:
+          - label: "Parce que son nom dit exactement ce qui s'est passé"
+            correct: true
+            why: "Un signalement sur mesure."
+          - label: "Parce que c'est plus rapide"
+            correct: false
+            why: "Aucune différence de vitesse."
+          - label: "Parce que Java l'impose"
+            correct: false
+            why: "C'est un choix de clarté."
+        explanation: "Un nom métier rend le code et les erreurs plus lisibles."
+      - code: java-exc-q4b
+        kind: RESULTAT_CODE
         difficulty: 2
         skill: java-exceptions
-        prompt: "Attraper systématiquement `Exception` dans chaque méthode est une bonne pratique."
+        prompt: "Dans l'exemple, qu'affiche le programme ?"
+        snippet: |
+          inscrire("awa@exemple.fr");
+          try {
+              inscrire("awa@exemple.fr");
+          } catch (EmailDejaUtiliseException e) {
+              System.out.println(e.getMessage());
+          }
+        language: java
+        choices:
+          - label: "L'adresse awa@exemple.fr est déjà utilisée"
+            correct: true
+            why: "Le deuxième appel lève l'exception, attrapée par le catch."
+          - label: "Rien"
+            correct: false
+            why: "Le catch affiche le message."
+          - label: "awa@exemple.fr"
+            correct: false
+            why: "Le message complet vient du constructeur de l'exception."
+        explanation: "super(message) fournit le texte de getMessage()."
+      - code: java-ep-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-exceptions
+        prompt: "Une exception personnalisée est une classe comme une autre, qui hérite d'une exception existante."
         choices:
           - label: "Vrai"
-            correct: false
-            why: "Non : on masque des bugs et on traite mal des problèmes différents."
-          - label: "Faux"
             correct: true
-            why: "Exact : on attrape les exceptions précises qu'on sait gérer."
-        explanation: "Précision : attraper ce qu'on sait traiter, laisser remonter le reste vers un gestionnaire central."
+            why: "extends RuntimeException."
+          - label: "Faux"
+            correct: false
+            why: "C'est bien une classe qui hérite."
+        explanation: "L'héritage sert aussi pour les exceptions."
     exercises:
-      - slug: java-ex-exceptions-guide
+      - slug: java-ex-exception-perso-guide
         kind: COMPLETER
-        title: "try, catch, finally"
+        title: "Compléter l'exception"
         difficulty: FACILE
         skill: java-exceptions
-        statement: "Complète les mots-clés."
-        criteria: "Les quatre trous sont corrects."
+        statement: "Complète l'exception StockEpuiseException."
+        criteria: "Les deux trous sont corrects."
         hints:
-          - "Essayer : try. Attraper : catch."
-          - "Toujours exécuté : finally. Lever : throw."
-          - "try, catch, throw, finally."
-        solution: '["try", "catch", "throw", "finally"]'
-        explanation: "try / catch / finally structurent la gestion ; throw lève une nouvelle exception."
+          - "Une exception non vérifiée hérite de RuntimeException."
+          - "Le message est donné au parent."
+          - "RuntimeException, super."
+        solution: '["RuntimeException", "super"]'
+        explanation: "`extends RuntimeException` et `super(\"...\")`."
         xp: 10
         payload:
           language: java
           template: |
-            [[1]] {
-                lireFichier("notes.csv");
-            } [[2]] (IOException e) {
-                [[3]] new IllegalStateException("Fichier illisible", e);
-            } [[4]] {
-                fermerConnexion();
+            class StockEpuiseException extends [[1]] {
+                public StockEpuiseException(String produit) {
+                    [[2]]("Plus de " + produit + " en stock");
+                }
             }
           blanks:
-            - ["try"]
-            - ["catch"]
-            - ["throw"]
-            - ["finally"]
+            - ["RuntimeException"]
+            - ["super"]
       - slug: java-ex-exception-perso
         kind: CODE_LIBRE
         title: "Une exception EmailDejaUtilise"
@@ -511,11 +1741,11 @@ lessons:
              l'e-mail est déjà dans l'ensemble (`contains`), sinon l'ajoute avec `add`.
         criteria: "Exception personnalisée, contrôle de l'e-mail, levée de l'exception, ajout."
         hints:
-          - "`public class EmailDejaUtiliseException extends RuntimeException { ... }`"
+          - "`class EmailDejaUtiliseException extends RuntimeException { ... }`"
           - "`if (emails.contains(email)) { throw new EmailDejaUtiliseException(email); }`"
           - "Sinon : `emails.add(email);`"
         solution: |
-          public class EmailDejaUtiliseException extends RuntimeException {
+          class EmailDejaUtiliseException extends RuntimeException {
               public EmailDejaUtiliseException(String email) {
                   super("E-mail déjà utilisé : " + email);
               }
@@ -527,7 +1757,7 @@ lessons:
               }
               emails.add(email);
           }
-        explanation: "L'exception porte un nom métier clair : l'appelant (ou le gestionnaire d'erreurs) sait exactement ce qui s'est passé, et l'API pourra répondre 409."
+        explanation: "L'exception porte un nom métier clair : l'API pourra répondre 409 (conflit)."
         xp: 25
         payload:
           language: java
@@ -547,37 +1777,96 @@ lessons:
               message: "Lève EmailDejaUtiliseException quand l'e-mail est déjà utilisé."
             - pattern: '\w+\.add\s*\(\s*\w+\s*\)'
               message: "Sinon, ajoute l'e-mail : emails.add(email)."
+      - slug: java-ex-exception-perso-bug
+        kind: CORRIGER_ERREUR
+        title: "Une exception qui oblige à throws partout"
+        difficulty: FACILE
+        skill: java-exceptions
+        statement: |
+          Le compilateur refuse la méthode `reserver` : `PlaceIndisponibleException` hérite d'`Exception`,
+          elle est donc vérifiée. Pour une règle métier, fais-la hériter de `RuntimeException`.
+        criteria: "L'exception hérite de RuntimeException."
+        hints:
+          - "Exception = vérifiée ; RuntimeException = non vérifiée."
+          - "Change le parent de l'exception."
+          - "`class PlaceIndisponibleException extends RuntimeException`"
+        solution: |
+          public class Reservation {
+              static void reserver(boolean placeLibre) {
+                  if (!placeLibre) {
+                      throw new PlaceIndisponibleException();
+                  }
+                  System.out.println("Place réservée");
+              }
+
+              public static void main(String[] args) {
+                  reserver(true);
+              }
+          }
+
+          class PlaceIndisponibleException extends RuntimeException {
+              public PlaceIndisponibleException() {
+                  super("Plus de place disponible");
+              }
+          }
+        explanation: "Non vérifiée : pas besoin de throws à chaque étage."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Reservation {
+                static void reserver(boolean placeLibre) {
+                    if (!placeLibre) {
+                        throw new PlaceIndisponibleException();
+                    }
+                    System.out.println("Place réservée");
+                }
+
+                public static void main(String[] args) {
+                    reserver(true);
+                }
+            }
+
+            class PlaceIndisponibleException extends Exception {
+                public PlaceIndisponibleException() {
+                    super("Plus de place disponible");
+                }
+            }
+          checks:
+            - pattern: 'PlaceIndisponibleException\s+extends\s+RuntimeException'
+              message: "Fais hériter l'exception de RuntimeException."
+          output: "Place réservée"
 
 bank:
-  - code: java-c3-b1
+  - code: java-c3-b3
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: java-collections
-    prompt: "Quelle collection garantit qu'aucun élément n'apparaît deux fois ?"
+    prompt: "Quelle collection choisir pour ranger des e-mails sans jamais de doublon ?"
     choices:
-      - label: "`Set` (par exemple HashSet)"
+      - label: "`Set<String>`"
         correct: true
-        why: "Un ensemble n'accepte pas les doublons."
-      - label: "`List`"
+        why: "Un ensemble refuse les doublons."
+      - label: "`List<String>`"
         correct: false
         why: "Une liste accepte les doublons."
-      - label: "`ArrayList`"
+      - label: "`String[]`"
         correct: false
-        why: "C'est une List."
-    explanation: "List (ordonnée, doublons permis), Set (sans doublons), Map (clé → valeur)."
-  - code: java-c3-b2
+        why: "Un tableau accepte les doublons et a une taille fixe."
+    explanation: "Set = sans doublon."
+  - code: java-c3-b4
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: java-exceptions
-    prompt: "Quelle exception obtient-on en appelant une méthode sur une variable qui vaut null ?"
+    prompt: "Quelle est la différence entre `throw` et `throws` ?"
     choices:
-      - label: "NullPointerException"
+      - label: "throw lève une exception ; throws prévient qu'une méthode peut en lever une"
         correct: true
-        why: "L'erreur la plus célèbre de Java."
-      - label: "IOException"
-        correct: false
-        why: "Elle concerne les entrées/sorties."
+        why: "Un s de différence, deux rôles différents."
       - label: "Aucune"
         correct: false
-        why: "On ne peut pas appeler de méthode sur null."
-    explanation: "`Optional` et les contrôles de null servent à l'éviter."
+        why: "Ils n'ont pas le même rôle."
+      - label: "throws attrape une exception"
+        correct: false
+        why: "Attraper, c'est catch."
+    explanation: "throw (dans le code) ≠ throws (dans la déclaration)."

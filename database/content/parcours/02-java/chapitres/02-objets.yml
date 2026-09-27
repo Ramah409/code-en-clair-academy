@@ -1,145 +1,107 @@
 slug: java-poo
 position: 2
 level: INTERMEDIAIRE
-title: "La programmation orientée objet"
-summary: "Créer des classes et des objets, protéger leurs données (encapsulation), puis utiliser l'héritage et les interfaces."
-quizQuestionCount: 10
+title: "Penser en objets"
+summary: "Décrire une chose avec une classe, la fabriquer avec new, l'initialiser avec un constructeur, lui donner des méthodes, protéger ses données, puis réutiliser avec l'héritage et les interfaces. Une seule notion par leçon."
+quizQuestionCount: 15
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: java-classes-objets
-    title: "Classes, objets et encapsulation"
-    duration: 14
-    objective: "Écrire une classe avec des attributs privés, un constructeur, des getters et une méthode, puis créer des objets."
+    title: "Classe et objet : décrire puis fabriquer"
+    duration: 10
+    objective: "Écrire une classe avec des attributs, fabriquer des objets avec new et lire ou modifier leurs attributs."
     prerequisites: "Chapitre « Les bases de Java »."
     skills: [poo, java-bases]
-    xp: 20
+    xp: 15
     memo: |
-      - Une **classe** est un **plan** ; un **objet** est une chose fabriquée à partir de ce plan (`new`).
-      - **Attributs** : les données de l'objet ; **méthodes** : ce qu'il sait faire.
-      - Le **constructeur** (même nom que la classe) initialise l'objet : `new Produit("Sac", 20.0)`.
-      - **Encapsulation** : attributs `private`, accès contrôlé par des méthodes `public` (getters, règles).
-      - `this.nom` désigne l'attribut de l'objet en cours.
+      - Une **classe** est un **plan** : elle décrit les informations (les **attributs**) qu'aura chaque objet.
+      - Un **objet** est une chose fabriquée à partir de ce plan avec `new` : `Livre livre = new Livre();`
+      - On lit ou modifie un attribut avec un point : `livre.titre = "Dune";`
+      - Chaque objet a **ses propres** valeurs.
     commonMistakes: |
-      - Laisser des attributs `public` : n'importe quel code peut y mettre une valeur absurde (prix négatif).
-      - Oublier `this.` quand le paramètre a le même nom que l'attribut : l'attribut reste vide.
-      - Confondre la classe (le plan) et l'objet (la maison construite).
+      - Oublier `new` : la variable ne désigne alors aucun objet.
+      - Confondre la classe (le plan) et l'objet (la chose construite).
     blocks:
       - type: text
         md: |
-          Dans une boutique, il y a **des** produits : chacun a un nom et un prix. Plutôt que de gérer des
-          variables éparpillées, Java propose de décrire une fois pour toutes ce qu'est **un** produit.
+          Dans une bibliothèque, il y a **des** livres : chacun a un titre et une autrice. Plutôt que de gérer
+          des variables éparpillées, Java permet de décrire une fois pour toutes ce qu'est **un** livre.
       - type: definition
         id: def-classe
         term: "Classe et objet"
         md: |
           Une **classe** est un **plan d'architecte** ; un **objet** est une **maison construite** avec ce
-          plan. Avec un seul plan, on construit autant de maisons qu'on veut, chacune avec sa propre adresse
-          et ses propres meubles.
+          plan. Avec un seul plan, on construit autant de maisons qu'on veut, chacune avec ses propres
+          meubles.
       - type: code
-        id: code-classe-produit
+        id: code-classe-livre
         language: java
-        title: "La classe Produit"
+        title: "Une classe Livre et deux objets"
         code: |
-          public class Produit {
-              private String nom;
-              private double prix;
+          public class Bibliotheque {
+              public static void main(String[] args) {
+                  Livre premier = new Livre();
+                  premier.titre = "Une si longue lettre";
+                  premier.autrice = "Mariama Bâ";
 
-              public Produit(String nom, double prix) {
-                  this.nom = nom;
-                  this.prix = prix;
-              }
+                  Livre second = new Livre();
+                  second.titre = "Dune";
 
-              public String getNom() {
-                  return nom;
-              }
-
-              public String etiquette() {
-                  return nom + " : " + prix + " €";
+                  System.out.println(premier.titre);
+                  System.out.println(second.titre);
               }
           }
+
+          class Livre {
+              String titre;
+              String autrice;
+          }
         lines:
-          - n: 2
-            note: "Un **attribut** privé : seule la classe peut le modifier directement."
-          - n: 5
-            note: "Le **constructeur** : même nom que la classe, pas de type de retour. Il est appelé par `new`."
-          - n: 6
-            note: "`this.nom` = l'attribut de l'objet ; `nom` seul = le paramètre reçu."
-          - n: 10
-            note: "Un **getter** : il permet de lire le nom sans pouvoir le modifier."
-          - n: 14
-            note: "Une **méthode** : un comportement de l'objet."
-      - type: code
-        id: code-new
-        language: java
-        title: "Fabriquer et utiliser des objets"
-        code: |
-          Produit alarme = new Produit("Alarme", 15.0);
-          Produit sac = new Produit("Sac antivol", 20.0);
-          System.out.println(alarme.getNom());
-          System.out.println(sac.etiquette());
-        lines:
-          - n: 1
-            note: "`new` construit un objet à partir du plan, en appelant le constructeur."
-          - n: 2
-            note: "Un deuxième objet, indépendant du premier."
+          - n: 3
+            note: "`new Livre()` fabrique un objet à partir du plan `Livre`."
           - n: 4
-            note: "Affiche « Sac antivol : 20.0 € »."
+            note: "On remplit l'attribut titre **de cet objet-là**."
+          - n: 7
+            note: "Un deuxième objet, indépendant du premier."
+          - n: 15
+            note: "La classe `Livre` : le plan. Elle décrit deux attributs."
       - type: question
         ref: java-co-q1
         review: def-classe
-      - type: definition
-        id: def-encapsulation
-        term: "Encapsulation"
-        md: |
-          Protéger les données d'un objet en les rendant **privées**, et n'autoriser l'accès que par des
-          méthodes qui appliquent les règles. Comme un **guichet de banque** : on ne se sert pas dans le
-          coffre, on passe par le guichet, qui vérifie que le retrait est possible.
-      - type: code
-        id: code-setter
-        language: java
-        title: "Un setter qui protège une règle"
-        code: |
-          public void setPrix(double prix) {
-              if (prix < 0) {
-                  throw new IllegalArgumentException("Le prix ne peut pas être négatif");
-              }
-              this.prix = prix;
-          }
-        lines:
-          - n: 2
-            note: "La règle métier est appliquée à chaque modification : impossible d'enregistrer un prix négatif."
       - type: question
-        ref: java-co-q2
-        review: def-encapsulation
+        ref: java-cl-q2
+        review: code-classe-livre
       - type: text
-        md: "Exercice guidé : complète la classe Utilisatrice."
+        md: "**Exercice 1 (guidé)** : complète la classe et la fabrication."
       - type: exercise
-        ref: java-ex-classe-guide
+        ref: java-ex-objet-guide
       - type: text
-        md: "En autonomie : écris une classe CompteBancaire qui protège son solde."
+        md: "**Exercice 2 (en autonomie)** : une classe Chat et deux chats."
       - type: exercise
-        ref: java-ex-compte
+        ref: java-ex-objet-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un objet jamais fabriqué."
+      - type: exercise
+        ref: java-ex-objet-bug
       - type: jury
         items:
-          - q: "Qu'est-ce que l'encapsulation ?"
-            a: "Le fait de rendre les attributs privés et de n'y accéder que par des méthodes publiques, qui peuvent vérifier les règles (par exemple refuser un prix négatif)."
           - q: "Quelle différence entre une classe et un objet ?"
             a: "La classe est le modèle (attributs et méthodes) ; l'objet est une instance concrète créée avec `new`, avec ses propres valeurs."
       - type: quiz
         items:
-          - ref: java-co-q3
-            review: code-classe-produit
-          - ref: java-co-q4
-            review: code-new
-          - ref: java-co-q5
-            review: code-classe-produit
+          - ref: java-cl-q3
+            review: def-classe
+          - ref: java-cl-q4
+            review: code-classe-livre
+          - ref: java-cl-q5
+            review: def-classe
     questions:
       - code: java-co-q1
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: poo
-        prompt: "Avec une classe `Produit`, combien d'objets peut-on créer ?"
+        prompt: "Avec une classe `Livre`, combien d'objets peut-on créer ?"
         choices:
           - label: "Autant qu'on veut, chacun avec ses propres valeurs"
             correct: true
@@ -150,14 +112,940 @@ lessons:
           - label: "Aucun : une classe ne sert qu'à ranger du code"
             correct: false
             why: "On crée des objets avec new."
-        explanation: "Chaque `new Produit(...)` crée un objet indépendant."
+        explanation: "Chaque `new Livre()` crée un objet indépendant."
+      - code: java-cl-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: poo
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          Livre a = new Livre();
+          a.titre = "Dune";
+          Livre b = new Livre();
+          b.titre = "Kirikou";
+          System.out.println(a.titre);
+        language: java
+        choices:
+          - label: "Dune"
+            correct: true
+            why: "Chaque objet garde ses propres valeurs."
+          - label: "Kirikou"
+            correct: false
+            why: "b est un autre objet : il ne change pas a."
+          - label: "null"
+            correct: false
+            why: "Le titre de a a bien été rempli."
+        explanation: "Deux objets, deux titres différents."
+      - code: java-cl-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Quel mot fabrique un objet à partir d'une classe ?"
+        choices:
+          - label: "`new`"
+            correct: true
+            why: "`new Livre()`."
+          - label: "`class`"
+            correct: false
+            why: "class sert à écrire le plan."
+          - label: "`return`"
+            correct: false
+            why: "return renvoie un résultat."
+        explanation: "class = le plan ; new = la construction."
+      - code: java-cl-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Comment remplir l'attribut autrice de l'objet `premier` ?"
+        choices:
+          - label: "`premier.autrice = \"Mariama Bâ\";`"
+            correct: true
+            why: "L'objet, un point, l'attribut."
+          - label: "`Livre.autrice = \"Mariama Bâ\";`"
+            correct: false
+            why: "Livre est le plan, pas un objet précis."
+          - label: "`autrice = \"Mariama Bâ\";`"
+            correct: false
+            why: "Il faut préciser de quel objet on parle."
+        explanation: "`objet.attribut`."
+      - code: java-cl-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: poo
+        prompt: "Les attributs d'une classe décrivent les informations que chaque objet contiendra."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le plan liste les cases à remplir."
+          - label: "Faux"
+            correct: false
+            why: "C'est la définition des attributs."
+        explanation: "Attributs = les données de l'objet."
+    exercises:
+      - slug: java-ex-objet-guide
+        kind: COMPLETER
+        title: "Une classe Film"
+        difficulty: FACILE
+        skill: poo
+        statement: "Complète : la classe Film a un titre ; on fabrique un film et on remplit son titre."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot qui déclare le plan : class."
+          - "Le mot qui fabrique l'objet : new."
+          - "class, new, titre."
+        solution: '["class", "new", "titre"]'
+        explanation: "`class Film { String titre; }` puis `Film f = new Film(); f.titre = ...;`"
+        xp: 10
+        payload:
+          language: java
+          template: |
+            [[1]] Film {
+                String titre;
+            }
+
+            Film f = [[2]] Film();
+            f.[[3]] = "Atlantique";
+          blanks:
+            - ["class"]
+            - ["new"]
+            - ["titre"]
+      - slug: java-ex-objet-libre
+        kind: CODE_LIBRE
+        title: "Deux chats"
+        difficulty: FACILE
+        skill: poo
+        statement: |
+          1. écris une classe `Chat` avec deux attributs texte : `nom` et `couleur` ;
+          2. dans le `main` de la classe `Maison`, fabrique deux chats (`Mimi` roux, `Filou` noir) ;
+          3. affiche le nom du premier et la couleur du second.
+        criteria: "Une classe Chat avec deux attributs, deux new Chat(), deux affichages."
+        hints:
+          - "`class Chat { String nom; String couleur; }`"
+          - "`Chat mimi = new Chat(); mimi.nom = \"Mimi\"; mimi.couleur = \"roux\";`"
+          - "`System.out.println(mimi.nom);` puis `System.out.println(filou.couleur);`"
+        solution: |
+          public class Maison {
+              public static void main(String[] args) {
+                  Chat mimi = new Chat();
+                  mimi.nom = "Mimi";
+                  mimi.couleur = "roux";
+                  Chat filou = new Chat();
+                  filou.nom = "Filou";
+                  filou.couleur = "noir";
+                  System.out.println(mimi.nom);
+                  System.out.println(filou.couleur);
+              }
+          }
+
+          class Chat {
+              String nom;
+              String couleur;
+          }
+        explanation: "Un plan, deux objets, chacun avec ses valeurs."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Maison {
+                public static void main(String[] args) {
+
+                }
+            }
+
+            class Chat {
+
+            }
+          checks:
+            - pattern: 'class\s+Chat\s*\{[^}]*String\s+nom\s*;[^}]*String\s+couleur\s*;|class\s+Chat\s*\{[^}]*String\s+couleur\s*;[^}]*String\s+nom\s*;'
+              message: "La classe Chat a deux attributs : String nom; et String couleur;"
+            - pattern: '\A(?>[\s\S]*?new\s+Chat\s*\(\s*\)){2}'
+              message: "Fabrique deux chats avec new Chat()."
+            - pattern: '\.nom\s*=\s*"Mimi"'
+              message: "Le premier chat s'appelle Mimi."
+            - pattern: '\.couleur\s*=\s*"noir"'
+              message: "Le second chat est noir."
+          output: |
+            Mimi
+            noir
+      - slug: java-ex-objet-bug
+        kind: CORRIGER_ERREUR
+        title: "Un objet jamais fabriqué"
+        difficulty: FACILE
+        skill: poo
+        statement: |
+          Le compilateur refuse : « variable plante might not have been initialized ». La variable `plante`
+          ne désigne aucun objet. Fabrique-le avec `new`.
+        criteria: "L'objet est fabriqué avec new Plante()."
+        hints:
+          - "Déclarer une variable ne fabrique pas l'objet."
+          - "Il faut new."
+          - "`Plante plante = new Plante();`"
+        solution: |
+          public class Jardin {
+              public static void main(String[] args) {
+                  Plante plante = new Plante();
+                  plante.nom = "Basilic";
+                  System.out.println(plante.nom);
+              }
+          }
+
+          class Plante {
+              String nom;
+          }
+        explanation: "Sans new, il n'y a pas d'objet où ranger le nom."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Jardin {
+                public static void main(String[] args) {
+                    Plante plante;
+                    plante.nom = "Basilic";
+                    System.out.println(plante.nom);
+                }
+            }
+
+            class Plante {
+                String nom;
+            }
+          checks:
+            - pattern: 'Plante\s+plante\s*=\s*new\s+Plante\s*\(\s*\)\s*;'
+              message: "Fabrique l'objet : Plante plante = new Plante();"
+          output: "Basilic"
+
+  # ===================================================================== LEÇON 2
+  - slug: java-constructeur
+    title: "Le constructeur et this"
+    duration: 10
+    objective: "Écrire un constructeur qui remplit les attributs à la fabrication, en utilisant this."
+    prerequisites: "Leçon « Classe et objet : décrire puis fabriquer »."
+    skills: [poo]
+    xp: 15
+    memo: |
+      - Le **constructeur** a le **même nom que la classe** et **aucun type de retour**.
+      - Il est appelé par `new` : `new Livre("Dune", "Frank Herbert")`.
+      - `this.titre` désigne l'attribut de l'objet ; `titre` seul désigne le paramètre.
+      - Sans constructeur écrit, Java en fournit un vide (celui de la leçon précédente).
+    commonMistakes: |
+      - Écrire `titre = titre;` sans this : l'attribut reste vide (null).
+      - Donner un type de retour au constructeur (`void Livre(...)`) : ce n'est plus un constructeur.
+    blocks:
+      - type: text
+        md: |
+          Remplir chaque attribut à la main après `new`, c'est long et on peut en oublier. Le **constructeur**
+          remplit tout **au moment de la fabrication**.
+      - type: definition
+        id: def-constructeur
+        term: "Constructeur"
+        md: |
+          Le **formulaire de naissance** d'un objet : on donne toutes les informations au moment où il est
+          fabriqué. `this` veut dire « l'objet que je suis en train de fabriquer ».
+      - type: code
+        id: code-constructeur
+        language: java
+        title: "Un livre rempli dès sa fabrication"
+        code: |
+          public class Bibliotheque {
+              public static void main(String[] args) {
+                  Livre livre = new Livre("Dune", "Frank Herbert");
+                  System.out.println(livre.titre);
+                  System.out.println(livre.auteur);
+              }
+          }
+
+          class Livre {
+              String titre;
+              String auteur;
+
+              Livre(String titre, String auteur) {
+                  this.titre = titre;
+                  this.auteur = auteur;
+              }
+          }
+        lines:
+          - n: 3
+            note: "`new` appelle le constructeur avec deux arguments."
+          - n: 13
+            note: "Le constructeur : même nom que la classe, pas de type de retour."
+          - n: 14
+            note: "`this.titre` = l'attribut de l'objet ; `titre` = le paramètre reçu."
+      - type: question
+        ref: java-co-q3
+        review: def-constructeur
+      - type: question
+        ref: java-co-q5
+        review: code-constructeur
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le constructeur."
+      - type: exercise
+        ref: java-ex-constructeur-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un constructeur pour une ville."
+      - type: exercise
+        ref: java-ex-constructeur-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un titre qui reste vide."
+      - type: exercise
+        ref: java-ex-constructeur-bug
+      - type: quiz
+        items:
+          - ref: java-cs-q3
+            review: def-constructeur
+          - ref: java-cs-q4
+            review: code-constructeur
+          - ref: java-cs-q5
+            review: def-constructeur
+    questions:
+      - code: java-co-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Qu'est-ce qui distingue un constructeur d'une méthode ordinaire ?"
+        choices:
+          - label: "Il porte le nom de la classe et n'a pas de type de retour"
+            correct: true
+            why: "`Livre(String titre, ...)`."
+          - label: "Il s'appelle toujours init"
+            correct: false
+            why: "Il porte le nom de la classe."
+          - label: "Il renvoie toujours void"
+            correct: false
+            why: "Il n'a aucun type de retour, même pas void."
+        explanation: "Le constructeur remplit l'objet lors du `new`."
+      - code: java-co-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: poo
+        prompt: "Dans le constructeur, `titre = titre;` (sans this) remplit l'attribut titre."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Non : le paramètre est recopié dans lui-même, l'attribut reste vide (null)."
+          - label: "Faux"
+            correct: true
+            why: "Exact : il faut `this.titre = titre;`."
+        explanation: "`this.` désigne l'attribut de l'objet."
+      - code: java-cs-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Quand le constructeur est-il appelé ?"
+        choices:
+          - label: "À chaque `new`"
+            correct: true
+            why: "C'est la fabrication de l'objet."
+          - label: "À chaque lecture d'un attribut"
+            correct: false
+            why: "Il n'est appelé qu'une fois par objet."
+          - label: "Jamais automatiquement"
+            correct: false
+            why: "new l'appelle toujours."
+        explanation: "new → constructeur → objet prêt."
+      - code: java-cs-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Que désigne `this.auteur` dans le constructeur ?"
+        choices:
+          - label: "L'attribut auteur de l'objet en cours de fabrication"
+            correct: true
+            why: "this = cet objet-ci."
+          - label: "Le paramètre auteur"
+            correct: false
+            why: "Le paramètre s'écrit sans this."
+          - label: "La classe Livre"
+            correct: false
+            why: "this désigne l'objet, pas la classe."
+        explanation: "this.attribut = paramètre."
+      - code: java-cs-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "Avec le constructeur `Livre(String titre, String auteur)`, quelle fabrication compile ?"
+        choices:
+          - label: "`new Livre(\"Dune\", \"Frank Herbert\")`"
+            correct: true
+            why: "Deux textes, dans l'ordre."
+          - label: "`new Livre()`"
+            correct: false
+            why: "Dès qu'on écrit un constructeur, le constructeur vide n'existe plus."
+          - label: "`new Livre(\"Dune\")`"
+            correct: false
+            why: "Il manque l'auteur."
+        explanation: "Les arguments doivent correspondre aux paramètres."
+    exercises:
+      - slug: java-ex-constructeur-guide
+        kind: COMPLETER
+        title: "Compléter le constructeur"
+        difficulty: FACILE
+        skill: poo
+        statement: "Complète le constructeur de la classe Plat."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le constructeur porte le nom de la classe."
+          - "L'attribut se désigne avec this."
+          - "Plat, this, this."
+        solution: '["Plat", "this", "this"]'
+        explanation: "`Plat(String nom, String pays) { this.nom = nom; this.pays = pays; }`"
+        xp: 10
+        payload:
+          language: java
+          template: |
+            class Plat {
+                String nom;
+                String pays;
+
+                [[1]](String nom, String pays) {
+                    [[2]].nom = nom;
+                    [[3]].pays = pays;
+                }
+            }
+          blanks:
+            - ["Plat"]
+            - ["this"]
+            - ["this"]
+      - slug: java-ex-constructeur-libre
+        kind: CODE_LIBRE
+        title: "Un constructeur pour une ville"
+        difficulty: FACILE
+        skill: poo
+        statement: |
+          1. écris une classe `Ville` avec deux attributs texte, `nom` et `pays`, et un constructeur
+             `Ville(String nom, String pays)` qui les remplit avec `this` ;
+          2. dans le `main` de la classe `Voyage`, fabrique `new Ville("Dakar", "Sénégal")` et affiche son nom
+             puis son pays.
+        criteria: "Constructeur avec this, un new avec deux arguments, deux affichages."
+        hints:
+          - "`Ville(String nom, String pays) { this.nom = nom; this.pays = pays; }`"
+          - "`Ville v = new Ville(\"Dakar\", \"Sénégal\");`"
+          - "`System.out.println(v.nom);` puis `System.out.println(v.pays);`"
+        solution: |
+          public class Voyage {
+              public static void main(String[] args) {
+                  Ville v = new Ville("Dakar", "Sénégal");
+                  System.out.println(v.nom);
+                  System.out.println(v.pays);
+              }
+          }
+
+          class Ville {
+              String nom;
+              String pays;
+
+              Ville(String nom, String pays) {
+                  this.nom = nom;
+                  this.pays = pays;
+              }
+          }
+        explanation: "L'objet est complet dès sa fabrication."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Voyage {
+                public static void main(String[] args) {
+
+                }
+            }
+
+            class Ville {
+
+            }
+          checks:
+            - pattern: 'Ville\s*\(\s*String\s+nom\s*,\s*String\s+pays\s*\)\s*\{'
+              message: "Écris le constructeur Ville(String nom, String pays)."
+            - pattern: 'this\.nom\s*=\s*nom\s*;'
+              message: "Remplis l'attribut : this.nom = nom;"
+            - pattern: 'this\.pays\s*=\s*pays\s*;'
+              message: "Remplis l'attribut : this.pays = pays;"
+            - pattern: 'new\s+Ville\s*\(\s*"Dakar"\s*,\s*"Sénégal"\s*\)'
+              message: "Fabrique new Ville(\"Dakar\", \"Sénégal\")."
+          output: |
+            Dakar
+            Sénégal
+      - slug: java-ex-constructeur-bug
+        kind: CORRIGER_ERREUR
+        title: "Un titre qui reste vide"
+        difficulty: FACILE
+        skill: poo
+        statement: |
+          Ce programme affiche `null` au lieu de `Kirikou` : le constructeur recopie le paramètre dans
+          lui-même. Corrige-le avec `this`.
+        criteria: "Le constructeur utilise this.titre = titre;"
+        hints:
+          - "`titre = titre;` ne touche pas l'attribut."
+          - "Pour désigner l'attribut de l'objet : this."
+          - "`this.titre = titre;`"
+        solution: |
+          public class Cinema {
+              public static void main(String[] args) {
+                  Film film = new Film("Kirikou");
+                  System.out.println(film.titre);
+              }
+          }
+
+          class Film {
+              String titre;
+
+              Film(String titre) {
+                  this.titre = titre;
+              }
+          }
+        explanation: "`this.titre` est l'attribut ; `titre` est le paramètre."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Cinema {
+                public static void main(String[] args) {
+                    Film film = new Film("Kirikou");
+                    System.out.println(film.titre);
+                }
+            }
+
+            class Film {
+                String titre;
+
+                Film(String titre) {
+                    titre = titre;
+                }
+            }
+          checks:
+            - pattern: 'this\.titre\s*=\s*titre\s*;'
+              message: "Écris this.titre = titre;"
+          output: "Kirikou"
+
+  # ===================================================================== LEÇON 3
+  - slug: java-methodes-objet
+    title: "Les méthodes d'un objet"
+    duration: 10
+    objective: "Écrire une méthode (sans static) qui utilise les attributs de l'objet, et l'appeler sur un objet."
+    prerequisites: "Leçon « Le constructeur et this »."
+    skills: [poo]
+    xp: 15
+    memo: |
+      - Une méthode **sans** `static` appartient à **chaque objet** : elle utilise **ses** attributs.
+      - On l'appelle sur un objet : `livre.fiche()`.
+      - Dans la méthode, `titre` désigne l'attribut de l'objet sur lequel on l'a appelée.
+      - Attributs = ce que l'objet **sait** ; méthodes = ce que l'objet **sait faire**.
+    commonMistakes: |
+      - Appeler la méthode sur la classe (`Livre.fiche()`) au lieu d'un objet.
+      - Oublier les parenthèses à l'appel.
+    blocks:
+      - type: text
+        md: |
+          Un objet ne fait pas que ranger des informations : il sait aussi **faire des choses** avec elles.
+          Ce sont ses **méthodes**.
+      - type: definition
+        id: def-methode-objet
+        term: "Méthode d'objet"
+        md: |
+          Un **bouton** sur l'objet : « présente-toi ». Chaque objet répond avec **ses propres**
+          informations. Le même bouton sur deux livres donne deux fiches différentes.
+      - type: code
+        id: code-methode-objet
+        language: java
+        title: "Un livre qui se présente"
+        code: |
+          public class Bibliotheque {
+              public static void main(String[] args) {
+                  Livre a = new Livre("Dune", "Frank Herbert");
+                  Livre b = new Livre("Une si longue lettre", "Mariama Bâ");
+                  System.out.println(a.fiche());
+                  System.out.println(b.fiche());
+              }
+          }
+
+          class Livre {
+              String titre;
+              String auteur;
+
+              Livre(String titre, String auteur) {
+                  this.titre = titre;
+                  this.auteur = auteur;
+              }
+
+              String fiche() {
+                  return titre + ", de " + auteur;
+              }
+          }
+        lines:
+          - n: 5
+            note: "On appelle la méthode **sur l'objet** a."
+          - n: 19
+            note: "Pas de static : la méthode utilise les attributs de l'objet appelé."
+          - n: 20
+            note: "Pour a : « Dune, de Frank Herbert » ; pour b : l'autre fiche."
+      - type: question
+        ref: java-co-q4
+        review: code-methode-objet
+      - type: question
+        ref: java-mo-q2
+        review: def-methode-objet
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la méthode."
+      - type: exercise
+        ref: java-ex-methode-objet-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une ville qui se présente."
+      - type: exercise
+        ref: java-ex-methode-objet-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une méthode appelée sur la classe."
+      - type: exercise
+        ref: java-ex-methode-objet-bug
+      - type: quiz
+        items:
+          - ref: java-mo-q3
+            review: def-methode-objet
+          - ref: java-mo-q4
+            review: code-methode-objet
+          - ref: java-mo-q5
+            review: def-methode-objet
+    questions:
+      - code: java-co-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: poo
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          Livre l = new Livre("Kirikou", "Michel Ocelot");
+          System.out.println(l.fiche());
+        language: java
+        choices:
+          - label: "Kirikou, de Michel Ocelot"
+            correct: true
+            why: "fiche() colle le titre, « , de » et l'auteur de cet objet."
+          - label: "Kirikou"
+            correct: false
+            why: "fiche() renvoie aussi l'auteur."
+          - label: "fiche()"
+            correct: false
+            why: "La méthode est appelée : on affiche le texte qu'elle renvoie."
+        explanation: "La méthode utilise les attributs de l'objet sur lequel on l'appelle."
+      - code: java-mo-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Pourquoi la méthode `fiche()` n'a-t-elle pas le mot `static` ?"
+        choices:
+          - label: "Parce qu'elle utilise les attributs d'un objet précis"
+            correct: true
+            why: "Elle appartient à chaque objet."
+          - label: "Parce qu'elle ne renvoie rien"
+            correct: false
+            why: "Elle renvoie un String."
+          - label: "Par oubli"
+            correct: false
+            why: "C'est voulu : sans objet, pas de titre à afficher."
+        explanation: "static = appartient à la classe ; sans static = appartient à l'objet."
+      - code: java-mo-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: poo
+        prompt: "La même méthode appelée sur deux objets différents peut donner deux résultats différents."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Chaque objet a ses propres attributs."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement l'intérêt des objets."
+        explanation: "Même bouton, réponses différentes."
+      - code: java-mo-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Comment appeler la méthode `fiche()` sur l'objet `b` ?"
+        choices:
+          - label: "`b.fiche()`"
+            correct: true
+            why: "L'objet, un point, la méthode avec ses parenthèses."
+          - label: "`fiche(b)`"
+            correct: false
+            why: "On appelle la méthode sur l'objet."
+          - label: "`Livre.fiche()`"
+            correct: false
+            why: "Il faut un objet précis."
+        explanation: "`objet.methode()`."
+      - code: java-mo-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Qu'est-ce qu'une méthode d'un objet ?"
+        choices:
+          - label: "Ce que l'objet sait faire"
+            correct: true
+            why: "Les attributs, c'est ce qu'il sait ; les méthodes, ce qu'il sait faire."
+          - label: "Une information de l'objet"
+            correct: false
+            why: "Ça, c'est un attribut."
+          - label: "Le nom de la classe"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Attributs (données) + méthodes (comportements) = objet."
+    exercises:
+      - slug: java-ex-methode-objet-guide
+        kind: COMPLETER
+        title: "Compléter la méthode"
+        difficulty: FACILE
+        skill: poo
+        statement: "Complète la méthode `presentation()` de la classe Ville et son appel."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La méthode renvoie un texte."
+          - "Le mot qui renvoie le résultat."
+          - "String, return, presentation."
+        solution: '["String", "return", "presentation"]'
+        explanation: "`String presentation() { return nom + \" (\" + pays + \")\"; }` puis `v.presentation()`."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            class Ville {
+                String nom;
+                String pays;
+
+                [[1]] presentation() {
+                    [[2]] nom + " (" + pays + ")";
+                }
+            }
+
+            System.out.println(v.[[3]]());
+          blanks:
+            - ["String"]
+            - ["return"]
+            - ["presentation"]
+      - slug: java-ex-methode-objet-libre
+        kind: CODE_LIBRE
+        title: "Un animal qui parle"
+        difficulty: FACILE
+        skill: poo
+        statement: |
+          1. écris une classe `Animal` avec les attributs `nom` et `cri`, un constructeur, et une méthode
+             `String parler()` qui renvoie `nom + " fait " + cri` ;
+          2. dans le `main` de la classe `Ferme`, fabrique `new Animal("Médor", "wouf")` et affiche
+             `parler()`.
+        criteria: "Constructeur, méthode parler sans static, un appel sur l'objet."
+        hints:
+          - "`Animal(String nom, String cri) { this.nom = nom; this.cri = cri; }`"
+          - "`String parler() { return nom + \" fait \" + cri; }`"
+          - "`System.out.println(chien.parler());`"
+        solution: |
+          public class Ferme {
+              public static void main(String[] args) {
+                  Animal chien = new Animal("Médor", "wouf");
+                  System.out.println(chien.parler());
+              }
+          }
+
+          class Animal {
+              String nom;
+              String cri;
+
+              Animal(String nom, String cri) {
+                  this.nom = nom;
+                  this.cri = cri;
+              }
+
+              String parler() {
+                  return nom + " fait " + cri;
+              }
+          }
+        explanation: "La méthode utilise les attributs de l'objet chien."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Ferme {
+                public static void main(String[] args) {
+
+                }
+            }
+
+            class Animal {
+
+            }
+          checks:
+            - pattern: 'Animal\s*\(\s*String\s+nom\s*,\s*String\s+cri\s*\)'
+              message: "Écris le constructeur Animal(String nom, String cri)."
+            - pattern: '(?<!static\s)String\s+parler\s*\(\s*\)\s*\{\s*return\s+nom\s*\+\s*" fait "\s*\+\s*cri\s*;'
+              message: "Écris String parler() { return nom + \" fait \" + cri; } (sans static)."
+            - pattern: '\w+\.parler\s*\(\s*\)'
+              message: "Appelle parler() sur l'objet."
+          output: "Médor fait wouf"
+      - slug: java-ex-methode-objet-bug
+        kind: CORRIGER_ERREUR
+        title: "Une méthode appelée sur la classe"
+        difficulty: FACILE
+        skill: poo
+        statement: |
+          Le compilateur refuse `Plante.description()` : la méthode n'est pas static, elle doit être
+          appelée **sur un objet**. Corrige l'appel.
+        criteria: "La méthode est appelée sur l'objet basilic."
+        hints:
+          - "Plante est le plan, pas un objet."
+          - "L'objet s'appelle basilic."
+          - "`basilic.description()`"
+        solution: |
+          public class Jardin {
+              public static void main(String[] args) {
+                  Plante basilic = new Plante("Basilic");
+                  System.out.println(basilic.description());
+              }
+          }
+
+          class Plante {
+              String nom;
+
+              Plante(String nom) {
+                  this.nom = nom;
+              }
+
+              String description() {
+                  return "Plante : " + nom;
+              }
+          }
+        explanation: "Une méthode d'objet s'appelle sur un objet."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Jardin {
+                public static void main(String[] args) {
+                    Plante basilic = new Plante("Basilic");
+                    System.out.println(Plante.description());
+                }
+            }
+
+            class Plante {
+                String nom;
+
+                Plante(String nom) {
+                    this.nom = nom;
+                }
+
+                String description() {
+                    return "Plante : " + nom;
+                }
+            }
+          checks:
+            - pattern: 'Plante\.description'
+              absent: true
+              message: "On n'appelle pas la méthode sur la classe."
+            - pattern: 'basilic\.description\s*\(\s*\)'
+              message: "Appelle basilic.description()."
+          output: "Plante : Basilic"
+
+  # ===================================================================== LEÇON 4
+  - slug: java-encapsulation
+    title: "Protéger ses données : private, getters et setters"
+    duration: 12
+    objective: "Rendre les attributs privés et n'y donner accès que par des méthodes publiques qui appliquent les règles."
+    prerequisites: "Leçon « Les méthodes d'un objet »."
+    skills: [poo]
+    xp: 20
+    memo: |
+      - `private` : l'attribut n'est accessible **que dans sa classe**.
+      - **Getter** : méthode publique qui permet de **lire** (`getTitre()`, ou `isDisponible()` pour un booléen).
+      - **Setter** / méthode métier : permet de **modifier en respectant une règle** (`emprunter()` refuse si le livre est déjà sorti).
+      - C'est l'**encapsulation** : on passe par le guichet, jamais directement dans le coffre.
+    commonMistakes: |
+      - Laisser des attributs publics : n'importe quel code peut y mettre une valeur absurde.
+      - Écrire un setter pour chaque attribut sans règle : on perd l'intérêt de la protection.
+    blocks:
+      - type: text
+        md: |
+          Si n'importe quel code peut écrire `livre.disponible = true`, un livre emprunté pourrait être prêté
+          deux fois. Il faut **protéger** les données.
+      - type: definition
+        id: def-encapsulation
+        term: "Encapsulation"
+        md: |
+          Un **guichet de banque** : on ne se sert pas dans le coffre, on passe par le guichet, qui vérifie
+          que l'opération est possible. Les attributs sont `private`, les méthodes `public` font guichet.
+      - type: code
+        id: code-encapsulation
+        language: java
+        title: "Un livre qu'on ne peut pas prêter deux fois"
+        code: |
+          public class Pret {
+              public static void main(String[] args) {
+                  Livre livre = new Livre("Dune");
+                  livre.emprunter();
+                  livre.emprunter();
+                  System.out.println(livre.isDisponible());
+              }
+          }
+
+          class Livre {
+              private String titre;
+              private boolean disponible = true;
+
+              public Livre(String titre) {
+                  this.titre = titre;
+              }
+
+              public boolean isDisponible() {
+                  return disponible;
+              }
+
+              public void emprunter() {
+                  if (!disponible) {
+                      System.out.println(titre + " est déjà emprunté");
+                      return;
+                  }
+                  disponible = false;
+                  System.out.println(titre + " emprunté");
+              }
+          }
+        lines:
+          - n: 11
+            note: "`private` : personne en dehors de la classe ne peut toucher cet attribut."
+          - n: 18
+            note: "Un **getter** : on peut lire la disponibilité, pas la modifier."
+          - n: 22
+            note: "La règle : un livre déjà sorti ne peut pas être emprunté. `return` arrête la méthode."
+          - n: 5
+            note: "Le deuxième emprunt est refusé par la règle."
+      - type: question
+        ref: java-co-q2
+        review: def-encapsulation
+      - type: question
+        ref: java-c2-b1
+        review: code-encapsulation
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la classe Utilisatrice."
+      - type: exercise
+        ref: java-ex-classe-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une salle qu'on ne peut pas réserver deux fois."
+      - type: exercise
+        ref: java-ex-salle-encapsulee
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un attribut laissé public."
+      - type: exercise
+        ref: java-ex-encapsulation-bug
+      - type: jury
+        items:
+          - q: "Qu'est-ce que l'encapsulation ?"
+            a: "Le fait de rendre les attributs privés et de n'y accéder que par des méthodes publiques, qui peuvent vérifier les règles (par exemple refuser un deuxième emprunt)."
+      - type: quiz
+        items:
+          - ref: java-en-q3
+            review: def-encapsulation
+          - ref: java-en-q4
+            review: code-encapsulation
+          - ref: java-en-q5
+            review: def-encapsulation
+    questions:
       - code: java-co-q2
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: poo
-        prompt: "Pourquoi l'attribut `prix` est-il `private` ?"
+        prompt: "Pourquoi l'attribut `disponible` est-il `private` ?"
         choices:
-          - label: "Pour qu'il ne puisse être modifié qu'en respectant les règles de la classe"
+          - label: "Pour qu'il ne puisse changer qu'en respectant les règles de la classe"
             correct: true
             why: "C'est l'encapsulation."
           - label: "Pour qu'il soit plus rapide"
@@ -167,55 +1055,72 @@ lessons:
             correct: false
             why: "C'est un choix de conception, recommandé."
         explanation: "private + méthodes publiques qui vérifient les règles."
-      - code: java-co-q3
+      - code: java-c2-b1
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: poo
-        prompt: "Qu'est-ce qui distingue un constructeur d'une méthode ordinaire ?"
+        prompt: "Quelle visibilité rend un attribut accessible uniquement dans sa classe ?"
         choices:
-          - label: "Il porte le nom de la classe et n'a pas de type de retour"
+          - label: "`private`"
             correct: true
-            why: "`public Produit(...)`."
-          - label: "Il s'appelle toujours init"
+            why: "La plus restrictive."
+          - label: "`public`"
             correct: false
-            why: "Il porte le nom de la classe."
-          - label: "Il renvoie toujours void"
+            why: "Accessible partout."
+          - label: "Aucun mot"
             correct: false
-            why: "Il n'a aucun type de retour, même pas void."
-        explanation: "Le constructeur initialise l'objet lors du `new`."
-      - code: java-co-q4
+            why: "Sans mot, l'attribut est visible dans tout le paquet."
+        explanation: "private = seulement dans la classe."
+      - code: java-en-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "À quoi sert un getter comme `getTitre()` ?"
+        choices:
+          - label: "À lire un attribut privé, sans pouvoir le modifier"
+            correct: true
+            why: "Une fenêtre en lecture seule."
+          - label: "À modifier l'attribut"
+            correct: false
+            why: "Ce serait un setter."
+          - label: "À supprimer l'attribut"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "get = lire ; set = modifier (avec une règle)."
+      - code: java-en-q4
         kind: RESULTAT_CODE
         difficulty: 2
         skill: poo
-        prompt: "Qu'affiche ce code ?"
+        prompt: "Dans l'exemple, qu'affiche le programme ?"
         snippet: |
-          Produit p = new Produit("Coque", 10.0);
-          System.out.println(p.etiquette());
+          livre.emprunter();
+          livre.emprunter();
+          System.out.println(livre.isDisponible());
         language: java
         choices:
-          - label: "Coque : 10.0 €"
+          - label: "Dune emprunté, Dune est déjà emprunté, false"
             correct: true
-            why: "etiquette() colle le nom, « : », le prix et « € »."
-          - label: "Coque"
+            why: "Le deuxième emprunt est refusé ; le livre reste indisponible."
+          - label: "Dune emprunté, Dune emprunté, false"
             correct: false
-            why: "C'est getNom() qui renverrait seulement le nom."
-          - label: "etiquette()"
+            why: "La règle refuse le deuxième emprunt."
+          - label: "true"
             correct: false
-            why: "La méthode est appelée : on affiche le texte qu'elle renvoie."
-        explanation: "La méthode utilise les attributs nom et prix de cet objet."
-      - code: java-co-q5
+            why: "Le premier emprunt a rendu le livre indisponible."
+        explanation: "La méthode fait respecter la règle à chaque appel."
+      - code: java-en-q5
         kind: VRAI_FAUX
-        difficulty: 2
+        difficulty: 1
         skill: poo
-        prompt: "Dans le constructeur, `nom = nom;` (sans this) remplit l'attribut nom."
+        prompt: "Dans la classe Pret, on peut écrire `livre.disponible = true;`."
         choices:
           - label: "Vrai"
             correct: false
-            why: "Non : le paramètre est recopié dans lui-même, l'attribut reste vide (null)."
+            why: "disponible est private : le compilateur refuse."
           - label: "Faux"
             correct: true
-            why: "Exact : il faut `this.nom = nom;`."
-        explanation: "`this.` désigne l'attribut de l'objet."
+            why: "Exact : il faut passer par les méthodes publiques."
+        explanation: "C'est toute la protection de l'encapsulation."
     exercises:
       - slug: java-ex-classe-guide
         kind: COMPLETER
@@ -250,111 +1155,181 @@ lessons:
             - ["Utilisatrice"]
             - ["this"]
             - ["return"]
-      - slug: java-ex-compte
+      - slug: java-ex-salle-encapsulee
         kind: CODE_LIBRE
-        title: "La classe CompteBancaire"
+        title: "Une salle qu'on ne réserve pas deux fois"
         difficulty: INTERMEDIAIRE
         skill: poo
         statement: |
-          Écris la classe `CompteBancaire` :
-          - un attribut **privé** `solde` (`double`), qui démarre à `0` ;
-          - une méthode `deposer(double montant)` qui refuse un montant négatif ou nul
-            (`IllegalArgumentException`) et sinon ajoute le montant ;
-          - une méthode `retirer(double montant)` qui refuse un retrait supérieur au solde
-            (`IllegalStateException`) et sinon le retire ;
-          - un getter `getSolde()`.
-        criteria: "Attribut privé, deux règles protégées par des exceptions, getter."
+          Écris la classe `Salle` :
+          - un attribut **privé** `reservee` (`boolean`), qui démarre à `false` ;
+          - une méthode `public void reserver()` : si la salle est déjà réservée, affiche `Déjà réservée` ;
+            sinon, passe `reservee` à `true` et affiche `Réservation confirmée` ;
+          - un getter `public boolean isReservee()`.
+
+          Dans le `main` de la classe `Planning`, réserve deux fois la même salle.
+        criteria: "Attribut privé, règle dans reserver(), getter."
         hints:
-          - "`private double solde = 0;`"
-          - "`if (montant <= 0) { throw new IllegalArgumentException(\"...\"); }`"
-          - "`if (montant > solde) { throw new IllegalStateException(\"Solde insuffisant\"); } solde -= montant;`"
+          - "`private boolean reservee = false;`"
+          - "`if (reservee) { System.out.println(\"Déjà réservée\"); return; }`"
+          - "`reservee = true; System.out.println(\"Réservation confirmée\");`"
         solution: |
-          public class CompteBancaire {
-              private double solde = 0;
-
-              public void deposer(double montant) {
-                  if (montant <= 0) {
-                      throw new IllegalArgumentException("Le montant doit être positif");
-                  }
-                  solde += montant;
-              }
-
-              public void retirer(double montant) {
-                  if (montant > solde) {
-                      throw new IllegalStateException("Solde insuffisant");
-                  }
-                  solde -= montant;
-              }
-
-              public double getSolde() {
-                  return solde;
+          public class Planning {
+              public static void main(String[] args) {
+                  Salle salle = new Salle();
+                  salle.reserver();
+                  salle.reserver();
               }
           }
-        explanation: |
-          Aucun code extérieur ne peut modifier le solde sans passer par les règles : c'est tout l'intérêt de
-          l'encapsulation. Il n'y a volontairement pas de `setSolde`.
-        xp: 25
+
+          class Salle {
+              private boolean reservee = false;
+
+              public void reserver() {
+                  if (reservee) {
+                      System.out.println("Déjà réservée");
+                      return;
+                  }
+                  reservee = true;
+                  System.out.println("Réservation confirmée");
+              }
+
+              public boolean isReservee() {
+                  return reservee;
+              }
+          }
+        explanation: "Aucun code extérieur ne peut changer `reservee` sans passer par la règle."
+        xp: 20
         payload:
           language: java
           starter: |
-            public class CompteBancaire {
+            public class Planning {
+                public static void main(String[] args) {
+
+                }
+            }
+
+            class Salle {
 
             }
           checks:
-            - pattern: 'private\s+double\s+solde'
-              message: "L'attribut solde doit être privé : private double solde = 0;"
-            - pattern: 'public\s+void\s+deposer\s*\(\s*double\s+\w+\s*\)'
-              message: "Écris public void deposer(double montant)."
-            - pattern: 'if\s*\(\s*\w+\s*<=\s*0\s*\)\s*\{?\s*throw\s+new\s+IllegalArgumentException'
-              message: "Refuse un dépôt négatif ou nul avec IllegalArgumentException."
-            - pattern: 'solde\s*\+=\s*\w+|solde\s*=\s*solde\s*\+'
-              message: "Ajoute le montant au solde."
-            - pattern: 'public\s+void\s+retirer\s*\(\s*double\s+\w+\s*\)'
-              message: "Écris public void retirer(double montant)."
-            - pattern: 'if\s*\(\s*\w+\s*>\s*solde\s*\)\s*\{?\s*throw\s+new\s+IllegalStateException|if\s*\(\s*solde\s*<\s*\w+\s*\)\s*\{?\s*throw\s+new\s+IllegalStateException'
-              message: "Refuse un retrait supérieur au solde avec IllegalStateException."
-            - pattern: 'public\s+double\s+getSolde\s*\(\s*\)'
-              message: "Ajoute le getter public double getSolde()."
-            - pattern: 'public\s+double\s+solde'
-              absent: true
-              message: "Le solde ne doit pas être public."
+            - pattern: 'private\s+boolean\s+reservee'
+              message: "L'attribut doit être privé : private boolean reservee = false;"
+            - pattern: 'public\s+void\s+reserver\s*\(\s*\)'
+              message: "Écris public void reserver()."
+            - pattern: 'if\s*\(\s*reservee(\s*==\s*true)?\s*\)'
+              message: "Teste si la salle est déjà réservée : if (reservee)."
+            - pattern: 'System\.out\.println\s*\(\s*"Déjà réservée"\s*\)'
+              message: "Affiche \"Déjà réservée\" dans ce cas."
+            - pattern: 'reservee\s*=\s*true\s*;'
+              message: "Sinon, passe reservee à true."
+            - pattern: 'public\s+boolean\s+isReservee\s*\(\s*\)'
+              message: "Ajoute le getter public boolean isReservee()."
+          output: |
+            Réservation confirmée
+            Déjà réservée
+      - slug: java-ex-encapsulation-bug
+        kind: CORRIGER_ERREUR
+        title: "Un attribut laissé public"
+        difficulty: FACILE
+        skill: poo
+        statement: |
+          L'attribut `pseudo` est `public` : n'importe quel code peut le vider. Rends-le `private` et ajoute
+          un getter `public String getPseudo()`.
+        criteria: "pseudo est private et un getter existe."
+        hints:
+          - "Remplace public par private devant l'attribut."
+          - "Le getter renvoie l'attribut."
+          - "`public String getPseudo() { return pseudo; }`"
+        solution: |
+          public class Profil {
+              public static void main(String[] args) {
+                  Compte compte = new Compte("awa93");
+                  System.out.println(compte.getPseudo());
+              }
+          }
 
-  # ===================================================================== LEÇON 2
+          class Compte {
+              private String pseudo;
+
+              public Compte(String pseudo) {
+                  this.pseudo = pseudo;
+              }
+
+              public String getPseudo() {
+                  return pseudo;
+              }
+          }
+        explanation: "L'attribut est protégé ; on le lit par le getter."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Profil {
+                public static void main(String[] args) {
+                    Compte compte = new Compte("awa93");
+                    System.out.println(compte.pseudo);
+                }
+            }
+
+            class Compte {
+                public String pseudo;
+
+                public Compte(String pseudo) {
+                    this.pseudo = pseudo;
+                }
+            }
+          checks:
+            - pattern: 'private\s+String\s+pseudo\s*;'
+              message: "Rends l'attribut privé : private String pseudo;"
+            - pattern: 'public\s+String\s+getPseudo\s*\(\s*\)\s*\{\s*return\s+pseudo\s*;'
+              message: "Ajoute public String getPseudo() { return pseudo; }"
+            - pattern: 'compte\.getPseudo\s*\(\s*\)'
+              message: "Dans main, lis le pseudo avec compte.getPseudo()."
+          output: "awa93"
+
+  # ===================================================================== LEÇON 5
   - slug: java-heritage-interfaces
-    title: "Héritage, interfaces et polymorphisme"
-    duration: 14
-    objective: "Réutiliser du code avec extends, définir un contrat avec une interface et comprendre le polymorphisme."
-    prerequisites: "Leçon « Classes, objets et encapsulation »."
+    title: "L'héritage : extends et super"
+    duration: 11
+    objective: "Faire hériter une classe d'une autre avec extends, et appeler le constructeur parent avec super."
+    prerequisites: "Leçon « Protéger ses données »."
     skills: [poo]
-    xp: 20
+    xp: 15
     memo: |
-      - **Héritage** : `class Admin extends Utilisateur` — Admin reçoit les attributs et méthodes d'Utilisateur (relation « est un »).
-      - `super(...)` appelle le constructeur de la classe parente ; `@Override` redéfinit une méthode.
-      - **Interface** : un **contrat** (liste de méthodes à fournir) : `class CarteBancaire implements Paiement`.
-      - **Polymorphisme** : une variable de type `Paiement` peut contenir n'importe quel objet qui respecte le contrat ; la bonne méthode est appelée.
-      - Une classe hérite d'une seule classe, mais peut implémenter plusieurs interfaces.
+      - `class Admin extends Utilisateur` : Admin **reçoit** les attributs et les méthodes d'Utilisateur.
+      - On hérite seulement si la phrase « un X **est un** Y » est vraie.
+      - `super(email)` appelle le constructeur du parent (première ligne du constructeur enfant).
+      - `protected` : visible dans la classe et dans ses enfants.
+      - Une classe n'a qu'**un seul** parent.
     commonMistakes: |
-      - Hériter pour réutiliser du code sans relation « est un » (un Panier n'« est » pas une Liste).
-      - Oublier `@Override` : une faute de frappe crée une nouvelle méthode au lieu de redéfinir l'ancienne.
-      - Oublier d'appeler `super(...)` quand le parent n'a pas de constructeur vide.
+      - Hériter sans relation « est un » (un Panier n'« est » pas une Liste).
+      - Oublier `super(...)` quand le parent n'a pas de constructeur vide.
     blocks:
       - type: text
         md: |
-          Une administratrice **est une** utilisatrice, avec des droits en plus. Plutôt que de tout
-          réécrire, Java permet d'**hériter**.
+          Une administratrice **est une** utilisatrice, avec des droits en plus. Plutôt que de tout réécrire,
+          Java permet d'**hériter**.
       - type: definition
         id: def-heritage
         term: "Héritage"
         md: |
-          Une classe **enfant** reçoit tout ce que possède sa classe **parent**, et peut y ajouter ou modifier
-          des choses. Comme un enfant qui hérite des traits de ses parents et développe ses propres talents.
-          Règle : on hérite seulement si la phrase « un X **est un** Y » est vraie.
+          Un enfant **hérite** des traits de ses parents, puis développe ses propres talents. La classe enfant
+          reçoit tout ce qu'a le parent et y ajoute ce qui lui est propre.
       - type: code
         id: code-heritage
         language: java
         title: "Admin hérite d'Utilisateur"
         code: |
-          public class Utilisateur {
+          public class Equipe {
+              public static void main(String[] args) {
+                  Admin awa = new Admin("awa@exemple.fr");
+                  System.out.println(awa.description());
+                  System.out.println(awa.droits());
+              }
+          }
+
+          class Utilisateur {
               protected String email;
 
               public Utilisateur(String email) {
@@ -362,91 +1337,55 @@ lessons:
               }
 
               public String description() {
-                  return "Utilisateur " + email;
+                  return "Compte " + email;
               }
           }
 
-          public class Admin extends Utilisateur {
+          class Admin extends Utilisateur {
               public Admin(String email) {
                   super(email);
               }
 
-              @Override
-              public String description() {
-                  return "Administratrice " + email;
+              public String droits() {
+                  return "Tous les droits";
               }
           }
         lines:
-          - n: 2
-            note: "`protected` : visible dans la classe et ses enfants."
-          - n: 13
+          - n: 4
+            note: "`description()` n'est pas écrite dans Admin : elle est **héritée** d'Utilisateur."
+          - n: 10
+            note: "`protected` : visible aussi dans les classes enfants."
+          - n: 21
             note: "`extends` : Admin hérite de tout ce qu'a Utilisateur."
-          - n: 15
-            note: "`super(email)` appelle le constructeur du parent."
-          - n: 18
-            note: "`@Override` : on redéfinit une méthode du parent. Le compilateur vérifie qu'elle existe bien chez le parent."
+          - n: 23
+            note: "`super(email)` : on fait remplir l'email par le constructeur du parent."
+          - n: 26
+            note: "Une méthode en plus, propre à Admin."
       - type: question
         ref: java-hi-q1
         review: def-heritage
-      - type: definition
-        id: def-interface-java
-        term: "Interface et polymorphisme"
-        md: |
-          Une **interface** est un **contrat** : « toute classe qui signe s'engage à fournir ces méthodes ».
-          Une prise électrique : n'importe quel appareil qui respecte la norme peut s'y brancher. Le
-          **polymorphisme**, c'est manipuler tous ces appareils de la même façon, chacun réagissant à sa
-          manière.
-      - type: code
-        id: code-interface-java
-        language: java
-        title: "Des moyens de paiement interchangeables"
-        code: |
-          public interface Paiement {
-              boolean payer(double montant);
-          }
-
-          public class CarteBancaire implements Paiement {
-              public boolean payer(double montant) {
-                  System.out.println("Paiement par carte : " + montant);
-                  return true;
-              }
-          }
-
-          Paiement moyen = new CarteBancaire();
-          moyen.payer(49.90);
-        lines:
-          - n: 1
-            note: "Le contrat : une méthode `payer`, sans corps."
-          - n: 5
-            note: "`implements` : la classe signe le contrat et doit fournir `payer`."
-          - n: 12
-            note: "Polymorphisme : la variable est de type `Paiement`. Demain, on pourra y mettre un `Paypal` sans changer le reste du code."
       - type: question
-        ref: java-hi-q2
-        review: def-interface-java
+        ref: java-he-q2
+        review: code-heritage
       - type: text
-        md: "Exercice guidé : complète l'héritage."
+        md: "**Exercice 1 (guidé)** : complète l'héritage."
       - type: exercise
-        ref: java-ex-heritage-guide
+        ref: java-ex-extends-guide
       - type: text
-        md: "En autonomie : écris une interface et deux classes qui l'implémentent."
+        md: "**Exercice 2 (en autonomie)** : un chien est un animal."
       - type: exercise
-        ref: java-ex-interface
-      - type: jury
-        items:
-          - q: "Qu'est-ce que le polymorphisme ?"
-            a: "La possibilité de manipuler des objets de classes différentes à travers un type commun (interface ou classe parente) ; chaque objet exécute sa propre version de la méthode."
-          - q: "Quelle différence entre une classe abstraite et une interface ?"
-            a: "Une interface définit un contrat (méthodes à fournir) et une classe peut en implémenter plusieurs ; une classe abstraite peut contenir des attributs et du code commun, mais on n'hérite que d'une seule classe."
-          - q: "Où utilisez-vous des interfaces dans Spring ?"
-            a: "Les repositories sont des interfaces (`extends JpaRepository`) dont Spring fournit l'implémentation ; on programme contre le contrat, pas contre une classe précise."
+        ref: java-ex-extends-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un super oublié."
+      - type: exercise
+        ref: java-ex-extends-bug
       - type: quiz
         items:
-          - ref: java-hi-q3
+          - ref: java-he-q3
+            review: def-heritage
+          - ref: java-he-q4
             review: code-heritage
-          - ref: java-hi-q4
-            review: code-interface-java
-          - ref: java-hi-q5
+          - ref: java-he-q5
             review: def-heritage
     questions:
       - code: java-hi-q1
@@ -460,27 +1399,360 @@ lessons:
             why: "La relation « est un » est vraie."
           - label: "Une Voiture a un Moteur"
             correct: false
-            why: "« a un » : c'est une composition (un attribut), pas un héritage."
+            why: "« a un » : c'est un attribut, pas un héritage."
           - label: "Une Commande contient des Produits"
             correct: false
             why: "C'est une liste de produits en attribut."
-        explanation: "Héritage = « est un » ; composition = « a un »."
-      - code: java-hi-q2
+        explanation: "Héritage = « est un » ; attribut = « a un »."
+      - code: java-he-q2
         kind: CHOIX_UNIQUE
-        difficulty: 2
+        difficulty: 1
         skill: poo
-        prompt: "Que doit faire une classe qui écrit `implements Paiement` ?"
+        prompt: "Dans l'exemple, pourquoi peut-on appeler `awa.description()` ?"
         choices:
-          - label: "Fournir toutes les méthodes déclarées dans l'interface"
+          - label: "Parce qu'Admin hérite de la méthode d'Utilisateur"
             correct: true
-            why: "Sinon, elle ne compile pas (sauf si elle est abstraite)."
-          - label: "Hériter des attributs de Paiement"
+            why: "extends transmet les méthodes du parent."
+          - label: "Parce que description() est écrite dans Admin"
             correct: false
-            why: "Une interface ne fournit pas d'attributs d'instance."
-          - label: "Rien de particulier"
+            why: "Elle n'y est pas écrite : elle est héritée."
+          - label: "Par erreur : ça ne compile pas"
             correct: false
-            why: "C'est un contrat à respecter."
-        explanation: "implements = signer le contrat."
+            why: "Ça compile, grâce à l'héritage."
+        explanation: "L'enfant a tout ce qu'a le parent, plus ses propres méthodes."
+      - code: java-he-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "À quoi sert `super(email)` dans le constructeur d'Admin ?"
+        choices:
+          - label: "À appeler le constructeur du parent"
+            correct: true
+            why: "Le parent remplit ses propres attributs."
+          - label: "À créer un nouvel Admin"
+            correct: false
+            why: "C'est new qui crée l'objet."
+          - label: "À supprimer l'email"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "super = le parent."
+      - code: java-he-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: poo
+        prompt: "Une classe Java peut hériter de deux classes à la fois."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Java n'autorise qu'un seul parent."
+          - label: "Faux"
+            correct: true
+            why: "Exact : un seul extends."
+        explanation: "Un seul parent (on verra que les interfaces permettent autre chose)."
+      - code: java-he-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Que veut dire `protected` ?"
+        choices:
+          - label: "Visible dans la classe et dans ses enfants"
+            correct: true
+            why: "Entre private et public."
+          - label: "Visible partout"
+            correct: false
+            why: "Ce serait public."
+          - label: "Non modifiable"
+            correct: false
+            why: "Ce serait final."
+        explanation: "private < protected < public."
+    exercises:
+      - slug: java-ex-extends-guide
+        kind: COMPLETER
+        title: "Compléter l'héritage"
+        difficulty: FACILE
+        skill: poo
+        statement: "Un `Etudiant` est une `Personne`. Complète."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Le mot-clé de l'héritage."
+          - "Appeler le constructeur du parent."
+          - "extends, super."
+        solution: '["extends", "super"]'
+        explanation: "`class Etudiant extends Personne` puis `super(nom)`."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            class Etudiant [[1]] Personne {
+                public Etudiant(String nom) {
+                    [[2]](nom);
+                }
+            }
+          blanks:
+            - ["extends"]
+            - ["super"]
+      - slug: java-ex-extends-libre
+        kind: CODE_LIBRE
+        title: "Un chien est un animal"
+        difficulty: INTERMEDIAIRE
+        skill: poo
+        statement: |
+          1. écris la classe `Animal` avec un attribut `protected String nom`, un constructeur, et une méthode
+             `public String presentation()` qui renvoie `"Je m'appelle " + nom` ;
+          2. écris `Chien extends Animal` avec un constructeur qui appelle `super(nom)`, et une méthode
+             `public String aboyer()` qui renvoie `"Wouf !"` ;
+          3. dans le `main` de la classe `Refuge`, fabrique un chien `Médor` et affiche `presentation()` puis
+             `aboyer()`.
+        criteria: "extends, super, une méthode héritée et une méthode propre."
+        hints:
+          - "`class Chien extends Animal { public Chien(String nom) { super(nom); } ... }`"
+          - "`public String aboyer() { return \"Wouf !\"; }`"
+          - "`System.out.println(medor.presentation());` puis `System.out.println(medor.aboyer());`"
+        solution: |
+          public class Refuge {
+              public static void main(String[] args) {
+                  Chien medor = new Chien("Médor");
+                  System.out.println(medor.presentation());
+                  System.out.println(medor.aboyer());
+              }
+          }
+
+          class Animal {
+              protected String nom;
+
+              public Animal(String nom) {
+                  this.nom = nom;
+              }
+
+              public String presentation() {
+                  return "Je m'appelle " + nom;
+              }
+          }
+
+          class Chien extends Animal {
+              public Chien(String nom) {
+                  super(nom);
+              }
+
+              public String aboyer() {
+                  return "Wouf !";
+              }
+          }
+        explanation: "presentation() vient du parent, aboyer() appartient au chien."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            public class Refuge {
+                public static void main(String[] args) {
+
+                }
+            }
+
+            class Animal {
+
+            }
+
+            class Chien {
+
+            }
+          checks:
+            - pattern: 'class\s+Chien\s+extends\s+Animal'
+              message: "Chien hérite d'Animal : class Chien extends Animal."
+            - pattern: 'super\s*\(\s*nom\s*\)\s*;'
+              message: "Le constructeur de Chien appelle super(nom);"
+            - pattern: 'public\s+String\s+presentation\s*\(\s*\)'
+              message: "Animal a une méthode public String presentation()."
+            - pattern: 'public\s+String\s+aboyer\s*\(\s*\)\s*\{\s*return\s+"Wouf !"\s*;'
+              message: "Chien a une méthode aboyer() qui renvoie \"Wouf !\"."
+          output: |
+            Je m'appelle Médor
+            Wouf !
+      - slug: java-ex-extends-bug
+        kind: CORRIGER_ERREUR
+        title: "Un super oublié"
+        difficulty: INTERMEDIAIRE
+        skill: poo
+        statement: |
+          Le compilateur refuse la classe `Formatrice` : son parent `Personne` n'a pas de constructeur vide,
+          il faut donc appeler `super(nom)` au début du constructeur. Ajoute-le.
+        criteria: "Le constructeur de Formatrice commence par super(nom);"
+        hints:
+          - "Le parent doit remplir son attribut nom."
+          - "super(...) se place en première ligne du constructeur."
+          - "`super(nom);`"
+        solution: |
+          public class Ecole {
+              public static void main(String[] args) {
+                  Formatrice f = new Formatrice("Awa", "Java");
+                  System.out.println(f.nom + " enseigne " + f.matiere);
+              }
+          }
+
+          class Personne {
+              protected String nom;
+
+              public Personne(String nom) {
+                  this.nom = nom;
+              }
+          }
+
+          class Formatrice extends Personne {
+              protected String matiere;
+
+              public Formatrice(String nom, String matiere) {
+                  super(nom);
+                  this.matiere = matiere;
+              }
+          }
+        explanation: "L'enfant doit d'abord faire construire la partie parent avec super."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Ecole {
+                public static void main(String[] args) {
+                    Formatrice f = new Formatrice("Awa", "Java");
+                    System.out.println(f.nom + " enseigne " + f.matiere);
+                }
+            }
+
+            class Personne {
+                protected String nom;
+
+                public Personne(String nom) {
+                    this.nom = nom;
+                }
+            }
+
+            class Formatrice extends Personne {
+                protected String matiere;
+
+                public Formatrice(String nom, String matiere) {
+                    this.matiere = matiere;
+                }
+            }
+          checks:
+            - pattern: 'Formatrice\s*\(\s*String\s+nom\s*,\s*String\s+matiere\s*\)\s*\{\s*super\s*\(\s*nom\s*\)\s*;'
+              message: "Commence le constructeur par super(nom);"
+          output: "Awa enseigne Java"
+
+  # ===================================================================== LEÇON 6
+  - slug: java-override
+    title: "Redéfinir une méthode : @Override et polymorphisme"
+    duration: 11
+    objective: "Redéfinir une méthode héritée avec @Override et comprendre que la version de l'objet réel est appelée."
+    prerequisites: "Leçon « L'héritage : extends et super »."
+    skills: [poo]
+    xp: 15
+    memo: |
+      - Un enfant peut **redéfinir** une méthode de son parent : même nom, mêmes paramètres, autre contenu.
+      - `@Override` au-dessus : le compilateur vérifie que la méthode existe bien chez le parent.
+      - **Polymorphisme** : une variable de type `Utilisateur` peut contenir un `Admin` ; c'est la version de l'**objet réel** qui s'exécute.
+    commonMistakes: |
+      - Oublier `@Override` : une faute de frappe crée une nouvelle méthode sans prévenir.
+      - Changer les paramètres : ce n'est plus une redéfinition.
+    blocks:
+      - type: text
+        md: |
+          Une administratrice se présente autrement qu'une simple utilisatrice. On garde le même nom de méthode,
+          mais on change son contenu.
+      - type: definition
+        id: def-override
+        term: "Redéfinir (@Override)"
+        md: |
+          Une **recette de famille adaptée** : même nom de plat, mais chacun la cuisine à sa façon. Quand on
+          commande « le plat », on reçoit la version de la personne qui cuisine vraiment.
+      - type: code
+        id: code-override
+        language: java
+        title: "Deux versions de description()"
+        code: |
+          public class Equipe {
+              public static void main(String[] args) {
+                  Utilisateur u1 = new Utilisateur("leo@exemple.fr");
+                  Utilisateur u2 = new Admin("awa@exemple.fr");
+                  System.out.println(u1.description());
+                  System.out.println(u2.description());
+              }
+          }
+
+          class Utilisateur {
+              protected String email;
+
+              public Utilisateur(String email) {
+                  this.email = email;
+              }
+
+              public String description() {
+                  return "Utilisateur " + email;
+              }
+          }
+
+          class Admin extends Utilisateur {
+              public Admin(String email) {
+                  super(email);
+              }
+
+              @Override
+              public String description() {
+                  return "Administratrice " + email;
+              }
+          }
+        lines:
+          - n: 4
+            note: "La variable est de type Utilisateur, mais l'objet réel est un Admin."
+          - n: 6
+            note: "C'est la version d'Admin qui s'exécute : « Administratrice awa@exemple.fr »."
+          - n: 27
+            note: "`@Override` : on redéfinit la méthode du parent, vérifié par le compilateur."
+      - type: question
+        ref: java-hi-q5
+        review: def-override
+      - type: question
+        ref: java-hi-q3
+        review: code-override
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la redéfinition."
+      - type: exercise
+        ref: java-ex-heritage-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : chaque animal a son cri."
+      - type: exercise
+        ref: java-ex-override-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une redéfinition ratée."
+      - type: exercise
+        ref: java-ex-override-bug
+      - type: jury
+        items:
+          - q: "Qu'est-ce que le polymorphisme ?"
+            a: "La possibilité de manipuler des objets de classes différentes à travers un type commun (classe parente ou interface) ; chaque objet exécute sa propre version de la méthode."
+      - type: quiz
+        items:
+          - ref: java-ov-q3
+            review: def-override
+          - ref: java-ov-q4
+            review: code-override
+          - ref: java-ov-q5
+            review: def-override
+    questions:
+      - code: java-hi-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "À quoi sert `@Override` ?"
+        choices:
+          - label: "À indiquer qu'on redéfinit une méthode du parent (vérifié par le compilateur)"
+            correct: true
+            why: "Une faute de nom est alors détectée."
+          - label: "À rendre une méthode privée"
+            correct: false
+            why: "Aucun rapport avec la visibilité."
+          - label: "À supprimer la méthode du parent"
+            correct: false
+            why: "On la remplace pour cette classe, sans la supprimer."
+        explanation: "@Override protège des redéfinitions ratées."
       - code: java-hi-q3
         kind: RESULTAT_CODE
         difficulty: 2
@@ -499,8 +1771,326 @@ lessons:
             why: "Le type de la variable ne décide pas : c'est l'objet réel."
           - label: "Une erreur de compilation"
             correct: false
-            why: "Un Admin est un Utilisateur : l'affectation est valide."
+            why: "Un Admin est un Utilisateur : c'est permis."
         explanation: "C'est le polymorphisme : la méthode redéfinie de l'objet réel est exécutée."
+      - code: java-ov-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Pour redéfinir une méthode, que doit-on garder identique ?"
+        choices:
+          - label: "Son nom et ses paramètres"
+            correct: true
+            why: "Seul le contenu change."
+          - label: "Son contenu"
+            correct: false
+            why: "C'est justement le contenu qui change."
+          - label: "Rien"
+            correct: false
+            why: "Sinon, ce serait une nouvelle méthode."
+        explanation: "Même signature, autre contenu."
+      - code: java-ov-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: poo
+        prompt: "Une variable de type `Utilisateur` peut contenir un objet `Admin`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Un Admin est un Utilisateur."
+          - label: "Faux"
+            correct: false
+            why: "C'est permis grâce à l'héritage."
+        explanation: "C'est la base du polymorphisme."
+      - code: java-ov-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "Que se passe-t-il si on écrit `@Override` au-dessus de `descripton()` (faute de frappe) ?"
+        choices:
+          - label: "Le compilateur signale que la méthode ne redéfinit rien"
+            correct: true
+            why: "C'est exactement à ça que sert @Override."
+          - label: "Rien, la méthode est ajoutée"
+            correct: false
+            why: "Sans @Override, oui ; avec, le compilateur prévient."
+          - label: "Le programme plante à l'exécution"
+            correct: false
+            why: "L'erreur arrive avant, à la compilation."
+        explanation: "@Override = filet de sécurité contre les fautes de frappe."
+    exercises:
+      - slug: java-ex-heritage-guide
+        kind: COMPLETER
+        title: "Compléter une redéfinition"
+        difficulty: FACILE
+        skill: poo
+        statement: "Un `Livre` est un `Produit`. Complète l'héritage et la redéfinition de etiquette()."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot-clé de l'héritage."
+          - "Appeler le constructeur du parent."
+          - "extends, super, @Override."
+        solution: '["extends", "super", "@Override"]'
+        explanation: "`extends Produit`, `super(nom)`, puis `@Override` sur la méthode redéfinie."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            class Livre [[1]] Produit {
+                public Livre(String nom) {
+                    [[2]](nom);
+                }
+
+                [[3]]
+                public String etiquette() {
+                    return "Livre : " + nom;
+                }
+            }
+          blanks:
+            - ["extends"]
+            - ["super"]
+            - ["@Override"]
+      - slug: java-ex-override-libre
+        kind: CODE_LIBRE
+        title: "Chaque animal a son cri"
+        difficulty: INTERMEDIAIRE
+        skill: poo
+        statement: |
+          1. la classe `Animal` a une méthode `public String cri()` qui renvoie `"..."` ;
+          2. `Chat extends Animal` redéfinit `cri()` avec `@Override` pour renvoyer `"Miaou"` ;
+          3. dans le `main` de la classe `Zoo`, range un `new Chat()` dans une variable de type `Animal` et
+             affiche son cri.
+        criteria: "extends, @Override, variable de type Animal contenant un Chat."
+        hints:
+          - "`class Chat extends Animal { @Override public String cri() { return \"Miaou\"; } }`"
+          - "`Animal a = new Chat();`"
+          - "`System.out.println(a.cri());`"
+        solution: |
+          public class Zoo {
+              public static void main(String[] args) {
+                  Animal a = new Chat();
+                  System.out.println(a.cri());
+              }
+          }
+
+          class Animal {
+              public String cri() {
+                  return "...";
+              }
+          }
+
+          class Chat extends Animal {
+              @Override
+              public String cri() {
+                  return "Miaou";
+              }
+          }
+        explanation: "La variable est de type Animal, mais c'est le cri du chat qui s'affiche."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            public class Zoo {
+                public static void main(String[] args) {
+
+                }
+            }
+
+            class Animal {
+
+            }
+
+            class Chat {
+
+            }
+          checks:
+            - pattern: 'class\s+Chat\s+extends\s+Animal'
+              message: "Chat hérite d'Animal."
+            - pattern: '@Override\s+public\s+String\s+cri\s*\(\s*\)\s*\{\s*return\s+"Miaou"\s*;'
+              message: "Redéfinis cri() avec @Override pour renvoyer \"Miaou\"."
+            - pattern: 'Animal\s+\w+\s*=\s*new\s+Chat\s*\(\s*\)'
+              message: "Range le chat dans une variable de type Animal : Animal a = new Chat();"
+          output: "Miaou"
+      - slug: java-ex-override-bug
+        kind: CORRIGER_ERREUR
+        title: "Une redéfinition ratée"
+        difficulty: FACILE
+        skill: poo
+        statement: |
+          Le compilateur signale « method does not override or implement a method from a supertype » : le
+          nom de la méthode redéfinie contient une faute de frappe. Corrige-le pour qu'il corresponde au
+          parent (`description`).
+        criteria: "La méthode redéfinie s'appelle description."
+        hints:
+          - "Compare le nom avec celui du parent, lettre par lettre."
+          - "@Override a détecté la faute : c'est son rôle."
+          - "`public String description()`"
+        solution: |
+          public class Boutique {
+              public static void main(String[] args) {
+                  Produit p = new Promo();
+                  System.out.println(p.description());
+              }
+          }
+
+          class Produit {
+              public String description() {
+                  return "Produit";
+              }
+          }
+
+          class Promo extends Produit {
+              @Override
+              public String description() {
+                  return "Produit en promotion";
+              }
+          }
+        explanation: "Grâce à @Override, la faute est trouvée avant l'exécution."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Boutique {
+                public static void main(String[] args) {
+                    Produit p = new Promo();
+                    System.out.println(p.description());
+                }
+            }
+
+            class Produit {
+                public String description() {
+                    return "Produit";
+                }
+            }
+
+            class Promo extends Produit {
+                @Override
+                public String descripton() {
+                    return "Produit en promotion";
+                }
+            }
+          checks:
+            - pattern: 'descripton'
+              absent: true
+              message: "Corrige la faute : description."
+            - pattern: '@Override\s+public\s+String\s+description\s*\(\s*\)'
+              message: "La méthode redéfinie s'appelle description()."
+          output: "Produit en promotion"
+
+  # ===================================================================== LEÇON 7
+  - slug: java-interfaces
+    title: "Les interfaces : un contrat à respecter"
+    duration: 11
+    objective: "Déclarer une interface, l'implémenter dans plusieurs classes et les manipuler à travers le type de l'interface."
+    prerequisites: "Leçon « Redéfinir une méthode »."
+    skills: [poo]
+    xp: 15
+    memo: |
+      - Une **interface** liste des méthodes **sans leur contenu** : c'est un contrat.
+      - `class NotificationEmail implements Notification` : la classe **signe** le contrat et doit fournir toutes ses méthodes.
+      - On peut manipuler tous les objets qui ont signé à travers le type de l'interface : `Notification n = new NotificationSms();`
+      - Une classe peut implémenter **plusieurs** interfaces (mais n'hérite que d'une classe).
+    commonMistakes: |
+      - Oublier une méthode du contrat : la classe ne compile pas.
+      - Essayer de faire `new Notification()` : on ne fabrique pas un contrat, seulement les classes qui l'ont signé.
+    blocks:
+      - type: text
+        md: |
+          Une application envoie des notifications par e-mail, par SMS… Le reste du code ne devrait pas avoir à
+          s'en soucier. Il suffit que chaque moyen respecte **le même contrat**.
+      - type: definition
+        id: def-interface-java
+        term: "Interface"
+        md: |
+          Une **prise électrique normalisée** : n'importe quel appareil qui respecte la norme peut s'y
+          brancher. L'interface est la norme ; chaque classe qui l'implémente est un appareil compatible.
+      - type: code
+        id: code-interface-java
+        language: java
+        title: "Deux façons de notifier"
+        code: |
+          public class Messagerie {
+              public static void main(String[] args) {
+                  Notification n = new NotificationSms();
+                  System.out.println(n.envoyer("Cours à 9 h"));
+                  n = new NotificationEmail();
+                  System.out.println(n.envoyer("Cours à 9 h"));
+              }
+          }
+
+          interface Notification {
+              String envoyer(String message);
+          }
+
+          class NotificationSms implements Notification {
+              @Override
+              public String envoyer(String message) {
+                  return "SMS : " + message;
+              }
+          }
+
+          class NotificationEmail implements Notification {
+              @Override
+              public String envoyer(String message) {
+                  return "E-mail : " + message;
+              }
+          }
+        lines:
+          - n: 3
+            note: "La variable a le type du contrat ; elle peut contenir n'importe quelle classe qui l'a signé."
+          - n: 10
+            note: "Le contrat : une méthode, sans contenu."
+          - n: 14
+            note: "`implements` : la classe signe le contrat et fournit la méthode."
+      - type: question
+        ref: java-hi-q2
+        review: def-interface-java
+      - type: question
+        ref: java-hi-q4
+        review: code-interface-java
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le contrat et sa signature."
+      - type: exercise
+        ref: java-ex-interface-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : deux façons de notifier."
+      - type: exercise
+        ref: java-ex-interface
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un contrat pas respecté."
+      - type: exercise
+        ref: java-ex-interface-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre une classe abstraite et une interface ?"
+            a: "Une interface définit un contrat (méthodes à fournir) et une classe peut en implémenter plusieurs ; une classe abstraite peut contenir des attributs et du code commun, mais on n'hérite que d'une seule classe."
+          - q: "Où utilisez-vous des interfaces dans Spring ?"
+            a: "Les repositories sont des interfaces (`extends JpaRepository`) dont Spring fournit l'implémentation ; on programme contre le contrat, pas contre une classe précise."
+      - type: quiz
+        items:
+          - ref: java-it-q3
+            review: def-interface-java
+          - ref: java-it-q4
+            review: code-interface-java
+          - ref: java-c2-b2
+            review: def-interface-java
+    questions:
+      - code: java-hi-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "Que doit faire une classe qui écrit `implements Notification` ?"
+        choices:
+          - label: "Fournir toutes les méthodes déclarées dans l'interface"
+            correct: true
+            why: "Sinon, elle ne compile pas."
+          - label: "Hériter des attributs de Notification"
+            correct: false
+            why: "Une interface ne fournit pas d'attributs."
+          - label: "Rien de particulier"
+            correct: false
+            why: "C'est un contrat à respecter."
+        explanation: "implements = signer le contrat."
       - code: java-hi-q4
         kind: VRAI_FAUX
         difficulty: 2
@@ -514,138 +2104,246 @@ lessons:
             correct: false
             why: "C'est l'héritage de classe qui est limité à un seul parent."
         explanation: "Un seul parent (extends), plusieurs contrats (implements)."
-      - code: java-hi-q5
+      - code: java-it-q3
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: poo
-        prompt: "À quoi sert `@Override` ?"
+        prompt: "Que contient une interface ?"
         choices:
-          - label: "À indiquer qu'on redéfinit une méthode du parent (vérifié par le compilateur)"
+          - label: "Des méthodes sans leur contenu : le contrat"
             correct: true
-            why: "Une faute de nom est alors détectée."
-          - label: "À rendre une méthode privée"
+            why: "Le « quoi », pas le « comment »."
+          - label: "Des attributs privés"
             correct: false
-            why: "Aucun rapport avec la visibilité."
-          - label: "À supprimer la méthode du parent"
+            why: "Une interface ne range pas de données d'objet."
+          - label: "Un constructeur"
             correct: false
-            why: "On la remplace pour cette classe, sans la supprimer."
-        explanation: "@Override protège des redéfinitions ratées."
+            why: "On ne fabrique pas une interface."
+        explanation: "L'interface dit quoi faire ; les classes disent comment."
+      - code: java-it-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: poo
+        prompt: "Dans l'exemple, qu'affiche la première ligne ?"
+        snippet: |
+          Notification n = new NotificationSms();
+          System.out.println(n.envoyer("Cours à 9 h"));
+        language: java
+        choices:
+          - label: "SMS : Cours à 9 h"
+            correct: true
+            why: "L'objet réel est un NotificationSms."
+          - label: "E-mail : Cours à 9 h"
+            correct: false
+            why: "C'est le SMS qui a été rangé dans n à ce moment-là."
+          - label: "Une erreur"
+            correct: false
+            why: "NotificationSms respecte le contrat."
+        explanation: "Polymorphisme : la version de l'objet réel s'exécute."
+      - code: java-c2-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: poo
+        prompt: "Quels sont les quatre piliers de la programmation orientée objet ?"
+        choices:
+          - label: "Encapsulation, héritage, polymorphisme, abstraction"
+            correct: true
+            why: "Les quatre notions classiques."
+          - label: "Variables, boucles, conditions, fonctions"
+            correct: false
+            why: "Ce sont les bases de toute programmation."
+          - label: "Classes, fichiers, dossiers, paquets"
+            correct: false
+            why: "Ce sont des éléments d'organisation."
+        explanation: "Question fréquente du jury : savoir les citer et les illustrer."
     exercises:
-      - slug: java-ex-heritage-guide
+      - slug: java-ex-interface-guide
         kind: COMPLETER
-        title: "Compléter un héritage"
+        title: "Compléter le contrat"
         difficulty: FACILE
         skill: poo
-        statement: "Un `Livre` est un `Produit`. Complète."
-        criteria: "Les trois trous sont corrects."
+        statement: "Complète l'interface Paiement et la classe qui la respecte."
+        criteria: "Les deux trous sont corrects."
         hints:
-          - "Le mot-clé de l'héritage."
-          - "Appeler le constructeur du parent."
-          - "extends, super, @Override."
-        solution: '["extends", "super", "@Override"]'
-        explanation: "`extends Produit`, `super(nom, prix)`, puis `@Override` sur la méthode redéfinie."
+          - "Le mot-clé qui déclare un contrat."
+          - "Le mot-clé qui signe le contrat."
+          - "interface, implements."
+        solution: '["interface", "implements"]'
+        explanation: "`interface Paiement { ... }` puis `class Carte implements Paiement`."
         xp: 10
         payload:
           language: java
           template: |
-            public class Livre [[1]] Produit {
-                public Livre(String nom, double prix) {
-                    [[2]](nom, prix);
-                }
+            [[1]] Paiement {
+                String payer();
+            }
 
-                [[3]]
-                public String etiquette() {
-                    return "Livre : " + getNom();
+            class Carte [[2]] Paiement {
+                @Override
+                public String payer() {
+                    return "Paiement par carte";
                 }
             }
           blanks:
-            - ["extends"]
-            - ["super"]
-            - ["@Override"]
+            - ["interface"]
+            - ["implements"]
       - slug: java-ex-interface
         kind: CODE_LIBRE
-        title: "Deux façons de notifier"
+        title: "Deux façons de saluer"
         difficulty: INTERMEDIAIRE
         skill: poo
         statement: |
-          1. déclare une interface `Notification` avec une méthode `String envoyer(String message)` ;
-          2. écris `NotificationEmail` et `NotificationSms` qui l'implémentent et renvoient
-             `"E-mail : " + message` et `"SMS : " + message` ;
-          3. utilise `@Override` sur chaque implémentation.
-        criteria: "Interface, deux implémentations avec @Override."
+          1. déclare une interface `Salutation` avec une méthode `String saluer(String prenom)` ;
+          2. écris `SalutationPolie` et `SalutationAmicale` qui l'implémentent et renvoient
+             `"Bonjour " + prenom` et `"Salut " + prenom` ;
+          3. utilise `@Override` sur chaque implémentation ;
+          4. dans le `main` de la classe `Accueil`, range une `SalutationAmicale` dans une variable de type
+             `Salutation` et affiche `saluer("Awa")`.
+        criteria: "Interface, deux implémentations avec @Override, utilisation par le type de l'interface."
         hints:
-          - "`public interface Notification { String envoyer(String message); }`"
-          - "`public class NotificationEmail implements Notification { ... }`"
-          - "`@Override public String envoyer(String message) { return \"E-mail : \" + message; }`"
+          - "`interface Salutation { String saluer(String prenom); }`"
+          - "`class SalutationAmicale implements Salutation { @Override public String saluer(String prenom) { ... } }`"
+          - "`Salutation s = new SalutationAmicale(); System.out.println(s.saluer(\"Awa\"));`"
         solution: |
-          public interface Notification {
-              String envoyer(String message);
-          }
-
-          public class NotificationEmail implements Notification {
-              @Override
-              public String envoyer(String message) {
-                  return "E-mail : " + message;
+          public class Accueil {
+              public static void main(String[] args) {
+                  Salutation s = new SalutationAmicale();
+                  System.out.println(s.saluer("Awa"));
               }
           }
 
-          public class NotificationSms implements Notification {
+          interface Salutation {
+              String saluer(String prenom);
+          }
+
+          class SalutationPolie implements Salutation {
               @Override
-              public String envoyer(String message) {
-                  return "SMS : " + message;
+              public String saluer(String prenom) {
+                  return "Bonjour " + prenom;
               }
           }
-        explanation: "Le reste de l'application manipule une `Notification` sans savoir si c'est un e-mail ou un SMS : on peut ajouter un nouveau canal sans rien casser."
+
+          class SalutationAmicale implements Salutation {
+              @Override
+              public String saluer(String prenom) {
+                  return "Salut " + prenom;
+              }
+          }
+        explanation: "Le main manipule une Salutation sans savoir laquelle : on peut en ajouter une troisième sans rien casser."
         xp: 25
         payload:
           language: java
           starter: |
-            // Interface et implémentations
+            public class Accueil {
+                public static void main(String[] args) {
 
+                }
+            }
+
+            // Interface et implémentations
           checks:
-            - pattern: 'interface\s+Notification\s*\{\s*String\s+envoyer\s*\(\s*String\s+\w+\s*\)\s*;'
-              message: "Déclare l'interface Notification avec String envoyer(String message);"
-            - pattern: 'class\s+NotificationEmail\s+implements\s+Notification'
-              message: "NotificationEmail doit implémenter Notification."
-            - pattern: 'class\s+NotificationSms\s+implements\s+Notification'
-              message: "NotificationSms doit implémenter Notification."
-            - pattern: '\A(?>[\s\S]*?@Override\s+public\s+String\s+envoyer){2}'
-              message: "Chaque implémentation redéfinit envoyer avec @Override."
-            - pattern: '"E-mail : "\s*\+'
-              message: "L'e-mail renvoie \"E-mail : \" + message."
-            - pattern: '"SMS : "\s*\+'
-              message: "Le SMS renvoie \"SMS : \" + message."
+            - pattern: 'interface\s+Salutation\s*\{\s*String\s+saluer\s*\(\s*String\s+\w+\s*\)\s*;'
+              message: "Déclare interface Salutation { String saluer(String prenom); }"
+            - pattern: 'class\s+SalutationPolie\s+implements\s+Salutation'
+              message: "SalutationPolie implémente Salutation."
+            - pattern: 'class\s+SalutationAmicale\s+implements\s+Salutation'
+              message: "SalutationAmicale implémente Salutation."
+            - pattern: '\A(?>[\s\S]*?@Override\s+public\s+String\s+saluer){2}'
+              message: "Chaque implémentation redéfinit saluer avec @Override."
+            - pattern: 'Salutation\s+\w+\s*=\s*new\s+SalutationAmicale\s*\(\s*\)'
+              message: "Dans main : Salutation s = new SalutationAmicale();"
+          output: "Salut Awa"
+      - slug: java-ex-interface-bug
+        kind: CORRIGER_ERREUR
+        title: "Un contrat pas respecté"
+        difficulty: FACILE
+        skill: poo
+        statement: |
+          Le compilateur refuse `Velo` : elle signe le contrat `Transport` mais ne fournit pas la méthode
+          `description()`. Ajoute-la (avec `@Override`) pour qu'elle renvoie `"Vélo : écologique"`.
+        criteria: "Velo fournit la méthode description() du contrat."
+        hints:
+          - "Toutes les méthodes du contrat doivent être écrites."
+          - "Même signature que dans l'interface, avec public."
+          - "`@Override public String description() { return \"Vélo : écologique\"; }`"
+        solution: |
+          public class Ville {
+              public static void main(String[] args) {
+                  Transport t = new Velo();
+                  System.out.println(t.description());
+              }
+          }
+
+          interface Transport {
+              String description();
+          }
+
+          class Velo implements Transport {
+              @Override
+              public String description() {
+                  return "Vélo : écologique";
+              }
+          }
+        explanation: "Signer un contrat, c'est s'engager à fournir toutes ses méthodes."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Ville {
+                public static void main(String[] args) {
+                    Transport t = new Velo();
+                    System.out.println(t.description());
+                }
+            }
+
+            interface Transport {
+                String description();
+            }
+
+            class Velo implements Transport {
+
+            }
+          checks:
+            - pattern: 'class\s+Velo\s+implements\s+Transport\s*\{[\s\S]*public\s+String\s+description\s*\(\s*\)\s*\{\s*return\s+"Vélo : écologique"\s*;'
+              message: "Écris dans Velo : public String description() { return \"Vélo : écologique\"; }"
+          output: "Vélo : écologique"
 
 bank:
-  - code: java-c2-b1
+  - code: java-c2-b3
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: poo
-    prompt: "Quelle visibilité rend un attribut accessible uniquement dans sa classe ?"
+    prompt: "Quel mot-clé utilise-t-on pour signer un contrat (interface) ?"
     choices:
-      - label: "`private`"
+      - label: "`implements`"
         correct: true
-        why: "La plus restrictive."
-      - label: "`protected`"
+        why: "class X implements Contrat."
+      - label: "`extends`"
         correct: false
-        why: "Accessible aussi aux classes enfants (et au paquet)."
-      - label: "`public`"
+        why: "extends sert à hériter d'une classe."
+      - label: "`new`"
         correct: false
-        why: "Accessible partout."
-    explanation: "private < (paquet) < protected < public."
-  - code: java-c2-b2
-    kind: CHOIX_UNIQUE
-    difficulty: 3
+        why: "new fabrique un objet."
+    explanation: "extends (hériter d'une classe) ≠ implements (signer une interface)."
+  - code: java-c2-b4
+    kind: RESULTAT_CODE
+    difficulty: 2
     skill: poo
-    prompt: "Quels sont les quatre piliers de la programmation orientée objet ?"
+    prompt: "Qu'affiche ce code ?"
+    snippet: |
+      Livre a = new Livre("Dune");
+      Livre b = a;
+      b.titre = "Kirikou";
+      System.out.println(a.titre);
+    language: java
     choices:
-      - label: "Encapsulation, héritage, polymorphisme, abstraction"
+      - label: "Kirikou"
         correct: true
-        why: "Les quatre notions classiques."
-      - label: "Variables, boucles, conditions, fonctions"
+        why: "a et b désignent le même objet : il n'y a eu qu'un seul new."
+      - label: "Dune"
         correct: false
-        why: "Ce sont les bases de toute programmation."
-      - label: "Classes, fichiers, dossiers, paquets"
+        why: "b n'est pas une copie : c'est le même objet que a."
+      - label: "null"
         correct: false
-        why: "Ce sont des éléments d'organisation."
-    explanation: "Question fréquente du jury : savoir les citer et les illustrer."
+        why: "Le titre a bien été rempli."
+    explanation: "Une variable objet désigne un objet ; deux variables peuvent désigner le même."

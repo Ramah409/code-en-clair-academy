@@ -2,128 +2,114 @@ slug: java-examen
 position: 4
 level: EXAMEN
 title: "Java pour le titre CDA"
-summary: "Écrire un code Java propre (records, equals et hashCode, immutabilité, principes SOLID) et répondre aux questions Java du jury."
-quizQuestionCount: 10
+summary: "Écrire un code Java propre (records, objets immuables, dépendre d'interfaces) et répondre aux questions Java du jury. Une seule notion par leçon."
+quizQuestionCount: 12
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: java-bonnes-pratiques
-    title: "Un code Java propre"
-    duration: 14
-    objective: "Utiliser les records, redéfinir equals et hashCode, préférer l'immutabilité et appliquer les principes SOLID de base."
+    title: "Les records : des classes de données en une ligne"
+    duration: 10
+    objective: "Écrire un record, lire ses champs et savoir ce que Java génère automatiquement (equals, hashCode, toString)."
     prerequisites: "Chapitre « Collections et exceptions »."
     skills: [poo, java-bases]
-    xp: 25
+    xp: 15
     memo: |
-      - **record** : `public record ProduitDto(Long id, String nom) {}` — une classe de données immuable, avec constructeur, accesseurs, `equals`, `hashCode` et `toString` générés.
-      - Si deux objets sont « égaux » (`equals`), ils doivent avoir le même `hashCode` (sinon les `HashSet`/`HashMap` se trompent).
-      - **Immuable** : l'objet ne change plus après sa création (attributs `final`, pas de setter) → plus simple et plus sûr.
-      - **SOLID** (bases) : une classe = une responsabilité (S) ; dépendre d'interfaces plutôt que de classes concrètes (D).
-      - Nommage : classes en `PascalCase`, méthodes et variables en `camelCase`, constantes en `MAJUSCULES`.
+      - `record Livre(String titre, String auteur) {}` : une classe de données **en une ligne**.
+      - Java génère le constructeur, les accesseurs `titre()` et `auteur()` (sans « get »), `equals`, `hashCode` et `toString`.
+      - Un record est **immuable** : pas de setter, ses champs ne changent plus.
+      - Idéal pour les **DTO** (les données envoyées par une API).
+      - Règle : deux objets égaux (`equals`) doivent avoir le même `hashCode` — le record s'en occupe pour toi.
     commonMistakes: |
-      - Redéfinir `equals` sans `hashCode`.
-      - Des classes « fourre-tout » (un service qui gère utilisateurs, paiements et e-mails).
-      - Des noms vagues (`data`, `tmp`, `traiter()`).
+      - Appeler `getTitre()` sur un record : c'est `titre()`.
+      - Vouloir modifier un champ de record : impossible, il faut en créer un nouveau.
     blocks:
       - type: text
         md: |
-          Un code qui marche n'est pas forcément un bon code. Le jury regarde aussi s'il est **lisible**,
-          **cohérent** et **facile à faire évoluer**.
+          Beaucoup de classes ne servent qu'à **transporter des données** : un constructeur, des getters, et
+          c'est tout. Java propose une écriture ultra-courte pour elles : le **record**.
       - type: definition
         id: def-record
         term: "record"
         md: |
-          Une classe **pour transporter des données**, écrite en une ligne. Java fabrique tout le reste :
-          constructeur, accès aux champs, comparaison, affichage. C'est l'**enveloppe** idéale pour les DTO
-          d'une API.
+          Une **enveloppe scellée** : on y met des informations à la fabrication, on peut les lire, mais plus
+          les changer. Java écrit tout le reste pour toi.
       - type: compare
         left:
           title: "Classe classique (extrait)"
+          language: java
           code: |
-            public class ProduitDto {
-                private final Long id;
-                private final String nom;
-                public ProduitDto(Long id, String nom) { this.id = id; this.nom = nom; }
-                public Long getId() { return id; }
-                public String getNom() { return nom; }
+            class LivreDto {
+                private final String titre;
+                private final String auteur;
+                public LivreDto(String titre, String auteur) { this.titre = titre; this.auteur = auteur; }
+                public String getTitre() { return titre; }
+                public String getAuteur() { return auteur; }
                 // + equals, hashCode, toString…
             }
-          language: java
         right:
           title: "record (équivalent)"
           good: true
-          code: |
-            public record ProduitDto(Long id, String nom) {
-            }
           language: java
+          code: |
+            record LivreDto(String titre, String auteur) {
+            }
+      - type: code
+        id: code-record
+        language: java
+        title: "Utiliser un record"
+        code: |
+          public class Catalogue {
+              public static void main(String[] args) {
+                  LivreDto dune = new LivreDto("Dune", "Frank Herbert");
+                  System.out.println(dune.titre());
+                  System.out.println(dune);
+                  LivreDto copie = new LivreDto("Dune", "Frank Herbert");
+                  System.out.println(dune.equals(copie));
+              }
+          }
+
+          record LivreDto(String titre, String auteur) {
+          }
+        lines:
+          - n: 3
+            note: "Le constructeur est généré : on donne les champs dans l'ordre."
+          - n: 4
+            note: "L'accesseur s'appelle `titre()`, pas `getTitre()`."
+          - n: 5
+            note: "`toString` généré : LivreDto[titre=Dune, auteur=Frank Herbert]."
+          - n: 7
+            note: "`equals` généré : mêmes valeurs, donc true."
       - type: question
         ref: java-bp-q1
         review: def-record
-      - type: definition
-        id: def-equals-hashcode
-        term: "equals et hashCode"
-        md: |
-          `equals` dit si deux objets sont **équivalents** ; `hashCode` donne un **numéro de casier** utilisé
-          par les `HashMap` et `HashSet` pour ranger l'objet. Deux objets égaux doivent aller dans le même
-          casier, sinon on ne les retrouve pas.
-      - type: definition
-        id: def-solid
-        term: "SOLID (les deux principes les plus cités)"
-        md: |
-          - **S — responsabilité unique** : une classe fait une seule chose. Le `AuthService` gère
-            l'authentification, pas l'envoi des factures.
-          - **D — inversion des dépendances** : une classe dépend d'un **contrat** (interface), pas d'une
-            classe concrète. On peut alors changer l'implémentation (ou la remplacer par une doublure dans un
-            test).
-      - type: code
-        id: code-solid
-        language: java
-        title: "Dépendre d'une interface"
-        code: |
-          public class InscriptionService {
-              private final Notification notification;
-
-              public InscriptionService(Notification notification) {
-                  this.notification = notification;
-              }
-
-              public void inscrire(String email) {
-                  // ... enregistrer le compte
-                  notification.envoyer("Bienvenue !");
-              }
-          }
-        lines:
-          - n: 2
-            note: "`final` : la dépendance ne changera plus. Son type est l'**interface** `Notification`."
-          - n: 4
-            note: "La dépendance est **fournie** de l'extérieur (injection par le constructeur), comme dans Spring."
-          - n: 10
-            note: "Le service ne sait pas si c'est un e-mail ou un SMS : il suit le contrat."
       - type: question
-        ref: java-bp-q2
-        review: def-solid
+        ref: java-rc-q2
+        review: code-record
       - type: text
-        md: "Exercice guidé : complète un record et son utilisation."
+        md: "**Exercice 1 (guidé)** : complète un record et son utilisation."
       - type: exercise
         ref: java-ex-record-guide
       - type: text
-        md: "**Améliorer un code** : rends cette classe immuable."
+        md: "**Exercice 2 (en autonomie)** : un record Ville."
       - type: exercise
-        ref: java-ex-immuable
+        ref: java-ex-record-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un getter qui n'existe pas."
+      - type: exercise
+        ref: java-ex-record-bug
       - type: jury
         items:
           - q: "Qu'est-ce qu'un record et quand l'utilisez-vous ?"
             a: "Une classe de données immuable dont Java génère constructeur, accesseurs, equals, hashCode et toString. Je l'utilise pour les DTO de mon API."
           - q: "Pourquoi redéfinir hashCode quand on redéfinit equals ?"
             a: "Parce que les collections à hachage (HashMap, HashSet) utilisent hashCode pour ranger les objets ; deux objets égaux doivent avoir le même hashCode, sinon on ne les retrouve pas."
-          - q: "Pouvez-vous citer un principe SOLID appliqué dans votre projet ?"
-            a: "La responsabilité unique : contrôleur, service et repository ont chacun un rôle. Et l'inversion des dépendances : mes services reçoivent leurs dépendances par le constructeur, souvent sous forme d'interfaces."
       - type: quiz
         items:
           - ref: java-bp-q3
-            review: def-equals-hashcode
-          - ref: java-bp-q4
-            review: code-solid
+            review: def-record
+          - ref: java-rc-q4
+            review: code-record
           - ref: java-bp-q5
             review: def-record
     questions:
@@ -143,22 +129,22 @@ lessons:
             correct: false
             why: "C'est justement l'intérêt du record."
         explanation: "Records : immuables et concis."
-      - code: java-bp-q2
+      - code: java-rc-q2
         kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: poo
-        prompt: "Quel principe est respecté quand un service reçoit une interface par son constructeur ?"
+        difficulty: 1
+        skill: java-bases
+        prompt: "Comment lire le champ auteur du record `dune` ?"
         choices:
-          - label: "L'inversion des dépendances (le D de SOLID)"
+          - label: "`dune.auteur()`"
             correct: true
-            why: "Le service dépend d'un contrat, fourni de l'extérieur."
-          - label: "L'héritage multiple"
+            why: "L'accesseur porte le nom du champ, avec des parenthèses."
+          - label: "`dune.getAuteur()`"
             correct: false
-            why: "Aucun héritage ici."
-          - label: "La récursivité"
+            why: "Un record ne génère pas de get."
+          - label: "`dune.auteur`"
             correct: false
-            why: "Aucun rapport."
-        explanation: "C'est exactement ce que fait Spring avec l'injection de dépendances."
+            why: "Le champ est privé : on passe par l'accesseur."
+        explanation: "Record : `nomDuChamp()`."
       - code: java-bp-q3
         kind: VRAI_FAUX
         difficulty: 2
@@ -171,33 +157,38 @@ lessons:
           - label: "Faux"
             correct: true
             why: "Exact : c'est le contrat equals / hashCode."
-        explanation: "Égaux ⇒ même hashCode."
-      - code: java-bp-q4
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: poo
-        prompt: "Pourquoi l'attribut `notification` est-il `final` ?"
+        explanation: "Égaux ⇒ même hashCode (le record le garantit)."
+      - code: java-rc-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Dans l'exemple, qu'affiche `dune.equals(copie)` ?"
+        snippet: |
+          LivreDto dune = new LivreDto("Dune", "Frank Herbert");
+          LivreDto copie = new LivreDto("Dune", "Frank Herbert");
+          System.out.println(dune.equals(copie));
+        language: java
         choices:
-          - label: "Pour qu'il ne puisse plus être remplacé après la construction"
+          - label: "true"
             correct: true
-            why: "La dépendance est fixée une fois pour toutes."
-          - label: "Pour qu'il soit public"
+            why: "Le equals généré compare les valeurs des champs."
+          - label: "false"
             correct: false
-            why: "final ne change pas la visibilité."
-          - label: "Parce que c'est une interface"
+            why: "Ce sont deux objets, mais leurs valeurs sont identiques."
+          - label: "Une erreur"
             correct: false
-            why: "Aucun lien obligatoire."
-        explanation: "Dépendances final + injection par le constructeur : code plus sûr et testable."
+            why: "equals est généré automatiquement."
+        explanation: "Un record compare ses valeurs, pas ses exemplaires."
       - code: java-bp-q5
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: java-bases
         prompt: "Quelle convention de nommage est correcte en Java ?"
         choices:
-          - label: "Classe `CommandeService`, méthode `calculerTotal`, constante `TAUX_TVA`"
+          - label: "Classe `InscriptionService`, méthode `envoyerEmail`, constante `NOMBRE_ESSAIS`"
             correct: true
             why: "PascalCase, camelCase, MAJUSCULES."
-          - label: "Classe `commande_service`, méthode `CalculerTotal`"
+          - label: "Classe `inscription_service`, méthode `EnvoyerEmail`"
             correct: false
             why: "Conventions inversées."
           - label: "Tout en majuscules"
@@ -222,7 +213,7 @@ lessons:
         payload:
           language: java
           template: |
-            public [[1]] UtilisatriceDto(Long id, String [[2]]) {
+            [[1]] UtilisatriceDto(Long id, String [[2]]) {
             }
 
             UtilisatriceDto dto = new UtilisatriceDto(1L, "awa@exemple.fr");
@@ -231,6 +222,358 @@ lessons:
             - ["record"]
             - ["email"]
             - ["email"]
+      - slug: java-ex-record-libre
+        kind: CODE_LIBRE
+        title: "Un record Ville"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          1. déclare un record `Ville` avec deux champs texte : `nom` et `pays` ;
+          2. dans le `main` de la classe `Carte`, fabrique `new Ville("Bamako", "Mali")` et affiche son nom
+             puis son pays avec les accesseurs.
+        criteria: "Un record à deux champs, un new, deux accesseurs."
+        hints:
+          - "`record Ville(String nom, String pays) { }`"
+          - "`Ville v = new Ville(\"Bamako\", \"Mali\");`"
+          - "`System.out.println(v.nom());` puis `System.out.println(v.pays());`"
+        solution: |
+          public class Carte {
+              public static void main(String[] args) {
+                  Ville v = new Ville("Bamako", "Mali");
+                  System.out.println(v.nom());
+                  System.out.println(v.pays());
+              }
+          }
+
+          record Ville(String nom, String pays) {
+          }
+        explanation: "Une ligne pour le record, Java fait le reste."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Carte {
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'record\s+Ville\s*\(\s*String\s+nom\s*,\s*String\s+pays\s*\)'
+              message: "Déclare record Ville(String nom, String pays) { }"
+            - pattern: 'new\s+Ville\s*\(\s*"Bamako"\s*,\s*"Mali"\s*\)'
+              message: "Fabrique new Ville(\"Bamako\", \"Mali\")."
+            - pattern: '\w+\.nom\s*\(\s*\)'
+              message: "Lis le nom avec v.nom()."
+            - pattern: '\w+\.pays\s*\(\s*\)'
+              message: "Lis le pays avec v.pays()."
+          output: |
+            Bamako
+            Mali
+      - slug: java-ex-record-bug
+        kind: CORRIGER_ERREUR
+        title: "Un getter qui n'existe pas"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Le compilateur refuse `film.getTitre()` : un record ne génère pas de méthode « get ». Corrige
+          l'appel.
+        criteria: "Le champ est lu avec titre()."
+        hints:
+          - "L'accesseur d'un record porte le nom du champ."
+          - "Sans get, avec des parenthèses."
+          - "`film.titre()`"
+        solution: |
+          public class Cinema {
+              public static void main(String[] args) {
+                  FilmDto film = new FilmDto("Atlantique", "Mati Diop");
+                  System.out.println(film.titre());
+              }
+          }
+
+          record FilmDto(String titre, String realisatrice) {
+          }
+        explanation: "Record : `titre()`, pas `getTitre()`."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Cinema {
+                public static void main(String[] args) {
+                    FilmDto film = new FilmDto("Atlantique", "Mati Diop");
+                    System.out.println(film.getTitre());
+                }
+            }
+
+            record FilmDto(String titre, String realisatrice) {
+            }
+          checks:
+            - pattern: 'getTitre'
+              absent: true
+              message: "Un record n'a pas de getTitre()."
+            - pattern: 'film\.titre\s*\(\s*\)'
+              message: "Lis le champ avec film.titre()."
+          output: "Atlantique"
+
+  # ===================================================================== LEÇON 2
+  - slug: java-immuable
+    title: "Des objets qui ne changent pas : l'immutabilité"
+    duration: 10
+    objective: "Rendre une classe immuable (attributs private final, pas de setter) et comprendre pourquoi c'est plus sûr."
+    prerequisites: "Leçon « Les records »."
+    skills: [poo]
+    xp: 15
+    memo: |
+      - Un objet **immuable** ne change plus après sa fabrication.
+      - Recette : attributs `private final`, **aucun setter**, valeurs données dans le constructeur.
+      - Pour « changer », on fabrique un **nouvel** objet.
+      - `String` et les records sont immuables.
+      - Avantage : aucune autre partie du code ne peut modifier l'objet dans ton dos.
+    commonMistakes: |
+      - Garder un setter « au cas où » : l'objet n'est plus immuable.
+      - Oublier `final` sur un attribut.
+    blocks:
+      - type: text
+        md: |
+          Une adresse change ? Plutôt que de modifier l'ancienne (que d'autres parties du code utilisent peut-être),
+          on en crée une **nouvelle**. C'est l'**immutabilité**.
+      - type: definition
+        id: def-immuable
+        term: "Objet immuable"
+        md: |
+          Une **photo imprimée** : on ne peut pas la retoucher, mais on peut en imprimer une nouvelle. Personne
+          ne peut modifier ta photo en cachette.
+      - type: code
+        id: code-immuable
+        language: java
+        title: "Une adresse immuable"
+        code: |
+          public class Demenagement {
+              public static void main(String[] args) {
+                  Adresse avant = new Adresse("rue des Lilas", "Lyon");
+                  Adresse apres = new Adresse("avenue Blanche", "Dakar");
+                  System.out.println(avant.getVille());
+                  System.out.println(apres.getVille());
+              }
+          }
+
+          class Adresse {
+              private final String rue;
+              private final String ville;
+
+              public Adresse(String rue, String ville) {
+                  this.rue = rue;
+                  this.ville = ville;
+              }
+
+              public String getRue() { return rue; }
+              public String getVille() { return ville; }
+          }
+        lines:
+          - n: 4
+            note: "Pour « déménager », on fabrique une nouvelle adresse."
+          - n: 11
+            note: "`private final` : rempli une seule fois, dans le constructeur."
+          - n: 19
+            note: "Des getters, aucun setter."
+      - type: question
+        ref: java-im-q1
+        review: def-immuable
+      - type: question
+        ref: java-im-q2
+        review: code-immuable
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la classe immuable."
+      - type: exercise
+        ref: java-ex-immuable-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un badge immuable."
+      - type: exercise
+        ref: java-ex-immuable-libre
+      - type: text
+        md: "**Exercice 3 (améliorer un code)** : rends cette classe immuable."
+      - type: exercise
+        ref: java-ex-immuable
+      - type: quiz
+        items:
+          - ref: java-im-q3
+            review: def-immuable
+          - ref: java-im-q4
+            review: code-immuable
+          - ref: java-im-q5
+            review: def-immuable
+    questions:
+      - code: java-im-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Qu'est-ce qu'un objet immuable ?"
+        choices:
+          - label: "Un objet qui ne change plus après sa fabrication"
+            correct: true
+            why: "Comme une photo imprimée."
+          - label: "Un objet qu'on ne peut pas fabriquer"
+            correct: false
+            why: "On le fabrique normalement avec new."
+          - label: "Un objet sans attributs"
+            correct: false
+            why: "Il a des attributs, mais ils ne changent plus."
+        explanation: "Immuable = non modifiable après création."
+      - code: java-im-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Quelle recette rend une classe immuable ?"
+        choices:
+          - label: "Attributs private final, et aucun setter"
+            correct: true
+            why: "Remplis une fois, jamais modifiés."
+          - label: "Attributs public"
+            correct: false
+            why: "Au contraire : n'importe qui pourrait les changer."
+          - label: "Un setter par attribut"
+            correct: false
+            why: "Les setters permettent de modifier."
+        explanation: "private final + pas de setter (ou un record)."
+      - code: java-im-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: poo
+        prompt: "`String` est immuable en Java."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Chaque « modification » crée un nouveau texte."
+          - label: "Faux"
+            correct: false
+            why: "toUpperCase() renvoie un nouveau String sans changer l'ancien."
+        explanation: "C'est pour ça qu'on écrit `nom = nom.toUpperCase();`."
+      - code: java-im-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "Dans l'exemple, comment « changer » l'adresse de quelqu'un ?"
+        choices:
+          - label: "En fabriquant une nouvelle Adresse"
+            correct: true
+            why: "L'ancienne reste intacte."
+          - label: "Avec setVille"
+            correct: false
+            why: "Il n'y a volontairement pas de setter."
+          - label: "En écrivant avant.ville = \"Dakar\""
+            correct: false
+            why: "L'attribut est private final."
+        explanation: "Immuable : on remplace, on ne modifie pas."
+      - code: java-im-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "Quel est l'avantage principal d'un objet immuable ?"
+        choices:
+          - label: "Aucune autre partie du code ne peut le modifier en cachette"
+            correct: true
+            why: "Moins de surprises, moins de bugs."
+          - label: "Il est plus rapide à fabriquer"
+            correct: false
+            why: "Ce n'est pas une question de vitesse."
+          - label: "Il prend moins de place"
+            correct: false
+            why: "Ce n'est pas son intérêt."
+        explanation: "Plus simple à comprendre, plus sûr."
+    exercises:
+      - slug: java-ex-immuable-guide
+        kind: COMPLETER
+        title: "Compléter la classe immuable"
+        difficulty: FACILE
+        skill: poo
+        statement: "Complète pour que la classe Carte soit immuable."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Un attribut protégé et figé : private final."
+          - "Le deuxième mot fige la valeur."
+          - "private, final."
+        solution: '["private", "final"]'
+        explanation: "`private final String titulaire;`"
+        xp: 10
+        payload:
+          language: java
+          template: |
+            class Carte {
+                [[1]] [[2]] String titulaire;
+
+                public Carte(String titulaire) {
+                    this.titulaire = titulaire;
+                }
+
+                public String getTitulaire() {
+                    return titulaire;
+                }
+            }
+          blanks:
+            - ["private"]
+            - ["final"]
+      - slug: java-ex-immuable-libre
+        kind: CODE_LIBRE
+        title: "Un badge immuable"
+        difficulty: FACILE
+        skill: poo
+        statement: |
+          Écris une classe `Badge` immuable :
+          - deux attributs `private final String` : `nom` et `service` ;
+          - un constructeur qui les remplit ;
+          - deux getters, et **aucun** setter.
+
+          Dans le `main` de la classe `Accueil`, fabrique un badge (`"Awa"`, `"Formation"`) et affiche son
+          service.
+        criteria: "Attributs private final, constructeur, getters, pas de setter."
+        hints:
+          - "`private final String nom;` et `private final String service;`"
+          - "`public String getService() { return service; }`"
+          - "Pas de méthode qui commence par set."
+        solution: |
+          public class Accueil {
+              public static void main(String[] args) {
+                  Badge badge = new Badge("Awa", "Formation");
+                  System.out.println(badge.getService());
+              }
+          }
+
+          class Badge {
+              private final String nom;
+              private final String service;
+
+              public Badge(String nom, String service) {
+                  this.nom = nom;
+                  this.service = service;
+              }
+
+              public String getNom() { return nom; }
+              public String getService() { return service; }
+          }
+        explanation: "Une fois fabriqué, le badge ne peut plus changer."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Accueil {
+                public static void main(String[] args) {
+
+                }
+            }
+
+            class Badge {
+
+            }
+          checks:
+            - pattern: 'private\s+final\s+String\s+nom\s*;'
+              message: "Déclare private final String nom;"
+            - pattern: 'private\s+final\s+String\s+service\s*;'
+              message: "Déclare private final String service;"
+            - pattern: 'public\s+String\s+getService\s*\(\s*\)'
+              message: "Ajoute le getter getService()."
+            - pattern: '\bset[A-Z]\w*\s*\('
+              absent: true
+              message: "Pas de setter : l'objet est immuable."
+          output: "Formation"
       - slug: java-ex-immuable
         kind: CORRIGER_ERREUR
         title: "Rendre une classe immuable"
@@ -288,29 +631,391 @@ lessons:
             - pattern: 'private\s+final\s+String\s+ville|record\s+Adresse\s*\([^)]*String\s+ville'
               message: "ville doit être final (ou utilise un record)."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 3
+  - slug: java-solid
+    title: "Dépendre d'une interface : les principes SOLID"
+    duration: 11
+    objective: "Appliquer deux principes SOLID : une classe = une responsabilité, et recevoir ses dépendances (des interfaces) par le constructeur."
+    prerequisites: "Leçon « Des objets qui ne changent pas »."
+    skills: [poo]
+    xp: 20
+    memo: |
+      - **S — responsabilité unique** : une classe fait **une seule chose** (le service d'inscription n'envoie pas les factures).
+      - **D — inversion des dépendances** : une classe dépend d'un **contrat** (interface), pas d'une classe précise.
+      - On **reçoit** ses dépendances par le constructeur (on ne les fabrique pas soi-même avec new) : c'est l'**injection**, ce que fait Spring.
+      - Attribut de dépendance : `private final`.
+    commonMistakes: |
+      - Fabriquer ses dépendances à l'intérieur (`new NotificationEmail()`) : impossible de changer sans modifier la classe.
+      - Des classes « fourre-tout » qui font tout.
+    blocks:
+      - type: text
+        md: |
+          Un code qui marche n'est pas forcément un bon code. Le jury regarde aussi s'il est **facile à faire
+          évoluer**. Deux principes (sur les cinq de SOLID) reviennent toujours.
+      - type: definition
+        id: def-solid
+        term: "SOLID (S et D)"
+        md: |
+          - **S** : un **métier par personne** dans une équipe — la cuisinière cuisine, le serveur sert.
+          - **D** : une lampe se **branche sur une prise** normalisée, elle n'est pas soudée à une centrale
+            électrique. On peut changer de fournisseur sans changer la lampe.
+      - type: code
+        id: code-solid
+        language: java
+        title: "Un service qui reçoit sa dépendance"
+        code: |
+          public class Application {
+              public static void main(String[] args) {
+                  InscriptionService service = new InscriptionService(new NotificationSms());
+                  service.inscrire("awa@exemple.fr");
+              }
+          }
+
+          interface Notification {
+              void envoyer(String message);
+          }
+
+          class NotificationSms implements Notification {
+              @Override
+              public void envoyer(String message) {
+                  System.out.println("SMS : " + message);
+              }
+          }
+
+          class InscriptionService {
+              private final Notification notification;
+
+              public InscriptionService(Notification notification) {
+                  this.notification = notification;
+              }
+
+              public void inscrire(String email) {
+                  notification.envoyer("Bienvenue " + email);
+              }
+          }
+        lines:
+          - n: 3
+            note: "On **fournit** la dépendance de l'extérieur. Demain, on pourra donner un e-mail à la place."
+          - n: 20
+            note: "Le type de l'attribut est l'**interface**, et il est `final`."
+          - n: 22
+            note: "Injection par le constructeur, comme le fait Spring."
+          - n: 27
+            note: "Le service ne sait pas si c'est un SMS ou un e-mail : il suit le contrat."
+      - type: question
+        ref: java-bp-q2
+        review: def-solid
+      - type: question
+        ref: java-bp-q4
+        review: code-solid
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète l'injection."
+      - type: exercise
+        ref: java-ex-solid-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un service qui reçoit son journal."
+      - type: exercise
+        ref: java-ex-solid-libre
+      - type: text
+        md: "**Exercice 3 (améliorer un code)** : une dépendance soudée."
+      - type: exercise
+        ref: java-ex-solid-bug
+      - type: jury
+        items:
+          - q: "Pouvez-vous citer un principe SOLID appliqué dans votre projet ?"
+            a: "La responsabilité unique : contrôleur, service et repository ont chacun un rôle. Et l'inversion des dépendances : mes services reçoivent leurs dépendances par le constructeur, souvent sous forme d'interfaces."
+      - type: quiz
+        items:
+          - ref: java-so-q3
+            review: def-solid
+          - ref: java-so-q4
+            review: code-solid
+          - ref: java-so-q5
+            review: def-solid
+    questions:
+      - code: java-bp-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "Quel principe est respecté quand un service reçoit une interface par son constructeur ?"
+        choices:
+          - label: "L'inversion des dépendances (le D de SOLID)"
+            correct: true
+            why: "Le service dépend d'un contrat, fourni de l'extérieur."
+          - label: "L'héritage multiple"
+            correct: false
+            why: "Aucun héritage ici."
+          - label: "La récursivité"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "C'est exactement ce que fait Spring avec l'injection de dépendances."
+      - code: java-bp-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Pourquoi l'attribut `notification` est-il `final` ?"
+        choices:
+          - label: "Pour qu'il ne puisse plus être remplacé après la construction"
+            correct: true
+            why: "La dépendance est fixée une fois pour toutes."
+          - label: "Pour qu'il soit public"
+            correct: false
+            why: "final ne change pas la visibilité."
+          - label: "Parce que c'est une interface"
+            correct: false
+            why: "Aucun lien obligatoire."
+        explanation: "Dépendances final + injection par le constructeur : code plus sûr et testable."
+      - code: java-so-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: poo
+        prompt: "Que dit le principe de responsabilité unique (le S) ?"
+        choices:
+          - label: "Une classe fait une seule chose"
+            correct: true
+            why: "Un métier par personne."
+          - label: "Une classe n'a qu'un seul attribut"
+            correct: false
+            why: "Il s'agit de son rôle, pas du nombre d'attributs."
+          - label: "Une classe n'a qu'une seule méthode"
+            correct: false
+            why: "Plusieurs méthodes peuvent servir le même rôle."
+        explanation: "Si une classe fait trop de choses, on la découpe."
+      - code: java-so-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: poo
+        prompt: "Dans l'exemple, comment envoyer un e-mail au lieu d'un SMS ?"
+        choices:
+          - label: "En fournissant une autre implémentation de Notification au constructeur"
+            correct: true
+            why: "Le service n'a pas besoin de changer."
+          - label: "En modifiant InscriptionService"
+            correct: false
+            why: "Justement, on n'y touche pas."
+          - label: "C'est impossible"
+            correct: false
+            why: "C'est tout l'intérêt de dépendre d'une interface."
+        explanation: "On change la prise, pas la lampe."
+      - code: java-so-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: poo
+        prompt: "Écrire `new NotificationEmail()` à l'intérieur du service respecte l'inversion des dépendances."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Le service serait soudé à une classe précise."
+          - label: "Faux"
+            correct: true
+            why: "Exact : la dépendance doit être reçue, pas fabriquée."
+        explanation: "Recevoir par le constructeur = injection."
+    exercises:
+      - slug: java-ex-solid-guide
+        kind: COMPLETER
+        title: "Compléter l'injection"
+        difficulty: FACILE
+        skill: poo
+        statement: "Complète : le service reçoit son Paiement par le constructeur."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La dépendance est figée : private final."
+          - "Le type est l'interface Paiement."
+          - "final, Paiement, this."
+        solution: '["final", "Paiement", "this"]'
+        explanation: "`private final Paiement paiement;` puis `this.paiement = paiement;`"
+        xp: 10
+        payload:
+          language: java
+          template: |
+            class CommandeService {
+                private [[1]] Paiement paiement;
+
+                public CommandeService([[2]] paiement) {
+                    [[3]].paiement = paiement;
+                }
+            }
+          blanks:
+            - ["final"]
+            - ["Paiement"]
+            - ["this"]
+      - slug: java-ex-solid-libre
+        kind: CODE_LIBRE
+        title: "Un service qui reçoit son journal"
+        difficulty: INTERMEDIAIRE
+        skill: poo
+        statement: |
+          1. l'interface `Journal` a une méthode `void noter(String message)` ;
+          2. `JournalConsole implements Journal` affiche `"[journal] " + message` ;
+          3. `ConnexionService` a un attribut `private final Journal journal`, reçu par le constructeur, et une
+             méthode `connecter(String email)` qui appelle `journal.noter("Connexion de " + email)` ;
+          4. dans le `main` de la classe `Site`, fabrique le service avec un `new JournalConsole()` et connecte
+             `awa@exemple.fr`.
+        criteria: "Interface, implémentation, dépendance private final reçue par le constructeur."
+        hints:
+          - "`interface Journal { void noter(String message); }`"
+          - "`public ConnexionService(Journal journal) { this.journal = journal; }`"
+          - "`new ConnexionService(new JournalConsole()).connecter(\"awa@exemple.fr\");`"
+        solution: |
+          public class Site {
+              public static void main(String[] args) {
+                  ConnexionService service = new ConnexionService(new JournalConsole());
+                  service.connecter("awa@exemple.fr");
+              }
+          }
+
+          interface Journal {
+              void noter(String message);
+          }
+
+          class JournalConsole implements Journal {
+              @Override
+              public void noter(String message) {
+                  System.out.println("[journal] " + message);
+              }
+          }
+
+          class ConnexionService {
+              private final Journal journal;
+
+              public ConnexionService(Journal journal) {
+                  this.journal = journal;
+              }
+
+              public void connecter(String email) {
+                  journal.noter("Connexion de " + email);
+              }
+          }
+        explanation: "Le service ne connaît que le contrat Journal : on pourrait écrire dans un fichier sans le modifier."
+        xp: 25
+        payload:
+          language: java
+          starter: |
+            public class Site {
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'interface\s+Journal\s*\{\s*void\s+noter\s*\(\s*String\s+\w+\s*\)\s*;'
+              message: "Déclare interface Journal { void noter(String message); }"
+            - pattern: 'class\s+JournalConsole\s+implements\s+Journal'
+              message: "JournalConsole implémente Journal."
+            - pattern: 'private\s+final\s+Journal\s+journal\s*;'
+              message: "Dans ConnexionService : private final Journal journal;"
+            - pattern: 'ConnexionService\s*\(\s*Journal\s+journal\s*\)\s*\{\s*this\.journal\s*=\s*journal\s*;'
+              message: "Reçois le journal par le constructeur."
+            - pattern: 'new\s+ConnexionService\s*\(\s*new\s+JournalConsole\s*\(\s*\)\s*\)'
+              message: "Dans main : new ConnexionService(new JournalConsole())."
+          output: "[journal] Connexion de awa@exemple.fr"
+      - slug: java-ex-solid-bug
+        kind: CORRIGER_ERREUR
+        title: "Une dépendance soudée"
+        difficulty: INTERMEDIAIRE
+        skill: poo
+        statement: |
+          `RappelService` fabrique lui-même un `NotificationEmail` : il est soudé à l'e-mail. Modifie-le pour
+          qu'il **reçoive** une `Notification` par son constructeur (attribut `private final`), et fournis-lui
+          un `NotificationEmail` dans le `main`.
+        criteria: "Plus de new NotificationEmail() dans le service ; la dépendance est reçue par le constructeur."
+        hints:
+          - "Supprime le new à l'intérieur du service."
+          - "Ajoute un constructeur RappelService(Notification notification)."
+          - "Dans main : `new RappelService(new NotificationEmail())`."
+        solution: |
+          public class Agenda {
+              public static void main(String[] args) {
+                  RappelService rappel = new RappelService(new NotificationEmail());
+                  rappel.rappeler("Cours à 9 h");
+              }
+          }
+
+          interface Notification {
+              void envoyer(String message);
+          }
+
+          class NotificationEmail implements Notification {
+              @Override
+              public void envoyer(String message) {
+                  System.out.println("E-mail : " + message);
+              }
+          }
+
+          class RappelService {
+              private final Notification notification;
+
+              public RappelService(Notification notification) {
+                  this.notification = notification;
+              }
+
+              public void rappeler(String message) {
+                  notification.envoyer(message);
+              }
+          }
+        explanation: "Le service dépend maintenant du contrat, fourni de l'extérieur."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            public class Agenda {
+                public static void main(String[] args) {
+                    RappelService rappel = new RappelService();
+                    rappel.rappeler("Cours à 9 h");
+                }
+            }
+
+            interface Notification {
+                void envoyer(String message);
+            }
+
+            class NotificationEmail implements Notification {
+                @Override
+                public void envoyer(String message) {
+                    System.out.println("E-mail : " + message);
+                }
+            }
+
+            class RappelService {
+                private NotificationEmail notification = new NotificationEmail();
+
+                public void rappeler(String message) {
+                    notification.envoyer(message);
+                }
+            }
+          checks:
+            - pattern: 'class\s+RappelService[\s\S]*new\s+NotificationEmail'
+              absent: true
+              message: "Le service ne doit plus fabriquer lui-même NotificationEmail."
+            - pattern: 'private\s+final\s+Notification\s+notification\s*;'
+              message: "Attribut : private final Notification notification;"
+            - pattern: 'RappelService\s*\(\s*Notification\s+notification\s*\)'
+              message: "Constructeur : RappelService(Notification notification)."
+            - pattern: 'new\s+RappelService\s*\(\s*new\s+NotificationEmail\s*\(\s*\)\s*\)'
+              message: "Dans main : new RappelService(new NotificationEmail())."
+          output: "E-mail : Cours à 9 h"
+
+  # ===================================================================== LEÇON 4
   - slug: java-questions-jury
     title: "Java devant le jury"
-    duration: 13
-    objective: "Répondre simplement aux questions classiques sur la JVM, la mémoire, String, static et les tests Java."
-    prerequisites: "Leçon « Un code Java propre »."
+    duration: 12
+    objective: "Répondre simplement aux questions classiques sur la JVM, la mémoire, static et String."
+    prerequisites: "Leçon « Dépendre d'une interface »."
     skills: [java-bases, oral-cda]
-    xp: 25
+    xp: 20
     memo: |
-      - **JVM** : exécute le bytecode ; **ramasse-miettes** (garbage collector) : libère la mémoire des objets inutilisés.
+      - **JVM** : exécute le programme compilé ; **ramasse-miettes** (garbage collector) : libère la mémoire des objets inutilisés.
       - **Pile** (stack) : variables locales et appels de méthodes ; **tas** (heap) : les objets créés avec `new`.
-      - `String` est **immuable** : chaque « modification » crée un nouveau texte (`StringBuilder` pour de nombreux ajouts).
-      - `static` : appartient à la **classe**, pas à chaque objet.
-      - Tests : **JUnit 5** (`@Test`, `assertEquals`) et **Mockito** pour les doublures.
+      - `static` : appartient à la **classe**, partagé par tous les objets.
+      - `String` est **immuable** : `StringBuilder` pour construire un texte en de nombreux morceaux.
+      - **Maven** (fichier `pom.xml`) gère les bibliothèques et la construction d'un projet Java.
     commonMistakes: |
       - Réciter une définition sans exemple.
       - Confondre JVM, JRE et JDK.
-      - Dire que Java n'a pas de problèmes de mémoire : des fuites restent possibles (références gardées inutilement).
     blocks:
       - type: text
         md: |
           Voici les questions Java qui reviennent le plus souvent. Pour chacune : une phrase simple, puis un
-          exemple.
+          exemple. Tu connais déjà toutes les notions : il s'agit de savoir les **expliquer**.
       - type: definition
         id: def-memoire
         term: "Pile et tas"
@@ -318,118 +1023,95 @@ lessons:
           - La **pile** (stack) est un **bloc-notes** de travail : chaque méthode appelée y pose ses variables
             locales, qui disparaissent à la fin de la méthode.
           - Le **tas** (heap) est un **entrepôt** où vivent les objets créés avec `new`. Le **ramasse-miettes**
-            passe régulièrement pour jeter ceux que plus personne n'utilise.
+            passe régulièrement jeter ceux que plus personne n'utilise.
       - type: definition
         id: def-static
         term: "static"
         md: |
           Ce qui est `static` appartient à la **classe elle-même**, partagé par tous les objets, comme le
-          règlement affiché dans le hall d'un immeuble (le même pour tous les appartements). `Math.max(…)` est
-          une méthode statique : on l'appelle sans créer d'objet.
+          règlement affiché dans le hall d'un immeuble (le même pour tous les appartements).
       - type: code
-        id: code-string
+        id: code-static
         language: java
-        title: "String est immuable"
+        title: "Un compteur partagé"
         code: |
-          String s = "CDA";
-          s.toLowerCase();
-          System.out.println(s);
-          s = s.toLowerCase();
-          System.out.println(s);
-
-          StringBuilder sb = new StringBuilder();
-          for (int i = 0; i < 3; i++) {
-              sb.append(i);
+          public class Comptes {
+              public static void main(String[] args) {
+                  new Compte("awa");
+                  new Compte("leo");
+                  System.out.println(Compte.nombreDeComptes);
+              }
           }
-          System.out.println(sb.toString());
-        lines:
-          - n: 2
-            note: "`toLowerCase()` renvoie un **nouveau** texte ; `s` n'est pas modifié."
-          - n: 3
-            note: "Affiche encore « CDA »."
-          - n: 4
-            note: "On range le nouveau texte dans `s`."
-          - n: 7
-            note: "Pour construire un texte en de nombreux morceaux, `StringBuilder` évite de créer un objet à chaque ajout."
-          - n: 11
-            note: "Affiche « 012 »."
-      - type: question
-        ref: java-jq-q1
-        review: code-string
-      - type: code
-        id: code-junit
-        language: java
-        title: "Un test JUnit 5"
-        code: |
-          class CompteBancaireTest {
 
-              @Test
-              void retraitSuperieurAuSoldeRefuse() {
-                  CompteBancaire compte = new CompteBancaire();
-                  compte.deposer(50);
+          class Compte {
+              static int nombreDeComptes = 0;
+              private final String pseudo;
 
-                  assertThrows(IllegalStateException.class, () -> compte.retirer(80));
-                  assertEquals(50, compte.getSolde());
+              public Compte(String pseudo) {
+                  this.pseudo = pseudo;
+                  nombreDeComptes++;
               }
           }
         lines:
-          - n: 3
-            note: "`@Test` : méthode de test exécutée par JUnit."
-          - n: 8
-            note: "On vérifie qu'une exception est levée."
-          - n: 9
-            note: "Et que le solde n'a pas bougé."
+          - n: 5
+            note: "On lit l'attribut static sur la **classe** : il est partagé."
+          - n: 10
+            note: "`static` : un seul exemplaire pour toute la classe."
+          - n: 15
+            note: "Chaque nouveau compte fait avancer le même compteur."
+      - type: question
+        ref: java-jq-q3
+        review: def-static
       - type: question
         ref: java-jq-q2
         review: def-memoire
       - type: text
-        md: "Exercice guidé : associe chaque notion à sa définition."
+        md: "**Exercice 1 (guidé)** : définitions express."
       - type: exercise
         ref: java-ex-jury-guide
       - type: text
-        md: "En autonomie : écris un test JUnit."
+        md: "**Exercice 2 (en autonomie)** : un compteur de visites partagé."
       - type: exercise
-        ref: java-ex-junit
+        ref: java-ex-static-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un texte qui ne change pas."
+      - type: exercise
+        ref: java-ex-string-bug
       - type: jury
         items:
           - q: "Qu'est-ce que le garbage collector ?"
-            a: "Un mécanisme de la JVM qui libère automatiquement la mémoire des objets qui ne sont plus référencés ; le développeur n'a pas à libérer la mémoire à la main."
+            a: "Un mécanisme de la JVM qui libère automatiquement la mémoire des objets qui ne sont plus utilisés ; le développeur n'a pas à libérer la mémoire à la main."
           - q: "Que signifie static ?"
-            a: "Un membre static appartient à la classe et non à chaque objet : il est partagé et accessible sans instance, comme `Math.max`."
+            a: "Un membre static appartient à la classe et non à chaque objet : il est partagé et accessible sans objet."
           - q: "Pourquoi String est-il immuable ?"
             a: "Pour la sécurité et le partage : un texte ne peut pas être modifié dans le dos d'un autre code. Chaque transformation renvoie un nouveau String."
-          - q: "Comment testez-vous votre code Java ?"
-            a: "Avec JUnit 5 pour les tests unitaires et Mockito pour simuler les dépendances ; dans Spring, avec @SpringBootTest et MockMvc pour les tests d'intégration."
+          - q: "Quelle différence entre JDK, JRE et JVM ?"
+            a: "La JVM exécute le programme compilé ; le JRE contient la JVM et les bibliothèques ; le JDK ajoute les outils de développement, dont le compilateur."
       - type: quiz
         items:
-          - ref: java-jq-q3
-            review: def-static
-          - ref: java-jq-q4
-            review: code-junit
           - ref: java-jq-q5
             review: def-memoire
+          - ref: java-jy-q4
+            review: code-static
+          - ref: java-c4-b2
+            review: def-memoire
     questions:
-      - code: java-jq-q1
-        kind: RESULTAT_CODE
+      - code: java-jq-q3
+        kind: CHOIX_UNIQUE
         difficulty: 2
-        skill: java-bases
-        prompt: "Qu'affiche ce code ?"
-        snippet: |
-          String nom = "awa";
-          nom.toUpperCase();
-          System.out.println(nom);
-        language: java
+        skill: poo
+        prompt: "Un compteur `static int nombreDeComptes` dans `Compte`…"
         choices:
-          - label: "awa"
+          - label: "est partagé par tous les comptes"
             correct: true
-            why: "toUpperCase renvoie un nouveau texte, non rangé."
-          - label: "AWA"
+            why: "Il appartient à la classe."
+          - label: "existe en un exemplaire par compte"
             correct: false
-            why: "Il faudrait `nom = nom.toUpperCase();`."
-          - label: "Une erreur"
+            why: "Ce serait un attribut sans static."
+          - label: "ne peut pas être modifié"
             correct: false
-            why: "Le code est valide."
-        explanation: "String est immuable : on récupère toujours le résultat."
+            why: "static n'est pas final."
+        explanation: "static = au niveau de la classe."
       - code: java-jq-q2
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -441,43 +1123,11 @@ lessons:
             why: "Les variables locales, elles, sont sur la pile."
           - label: "Dans la pile (stack)"
             correct: false
-            why: "La pile contient les variables locales et les références."
+            why: "La pile contient les variables locales."
           - label: "Dans le fichier .class"
             correct: false
-            why: "Le .class contient le bytecode, pas les objets."
+            why: "Le .class contient le programme compilé, pas les objets."
         explanation: "Objets → tas ; variables locales → pile."
-      - code: java-jq-q3
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: poo
-        prompt: "Un compteur `static int nombreDeComptes` dans `CompteBancaire`…"
-        choices:
-          - label: "est partagé par tous les comptes"
-            correct: true
-            why: "Il appartient à la classe."
-          - label: "existe en un exemplaire par compte"
-            correct: false
-            why: "Ce serait un attribut non static."
-          - label: "ne peut pas être modifié"
-            correct: false
-            why: "static n'est pas final."
-        explanation: "static = au niveau de la classe."
-      - code: java-jq-q4
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: java-tests
-        prompt: "Quelle annotation marque une méthode de test JUnit 5 ?"
-        choices:
-          - label: "`@Test`"
-            correct: true
-            why: "Oui."
-          - label: "`@Override`"
-            correct: false
-            why: "C'est pour redéfinir une méthode."
-          - label: "`@Entity`"
-            correct: false
-            why: "C'est JPA."
-        explanation: "`@Test`, puis des assertions (`assertEquals`, `assertThrows`)."
       - code: java-jq-q5
         kind: VRAI_FAUX
         difficulty: 2
@@ -486,11 +1136,48 @@ lessons:
         choices:
           - label: "Vrai"
             correct: false
-            why: "Non : le garbage collector s'en charge."
+            why: "Non : le ramasse-miettes s'en charge."
           - label: "Faux"
             correct: true
             why: "Exact : c'est automatique."
-        explanation: "Le ramasse-miettes libère les objets qui ne sont plus référencés."
+        explanation: "Le ramasse-miettes libère les objets qui ne sont plus utilisés."
+      - code: java-jy-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: poo
+        prompt: "Dans l'exemple, qu'affiche le programme ?"
+        snippet: |
+          new Compte("awa");
+          new Compte("leo");
+          System.out.println(Compte.nombreDeComptes);
+        language: java
+        choices:
+          - label: "2"
+            correct: true
+            why: "Le compteur partagé a avancé à chaque nouveau compte."
+          - label: "1"
+            correct: false
+            why: "static : c'est le même compteur pour les deux comptes."
+          - label: "0"
+            correct: false
+            why: "Le constructeur fait avancer le compteur."
+        explanation: "Un seul compteur pour toute la classe."
+      - code: java-c4-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quel outil gère les bibliothèques et la construction d'un projet Spring Boot ?"
+        choices:
+          - label: "Maven (fichier pom.xml)"
+            correct: true
+            why: "pom.xml décrit les dépendances et le build."
+          - label: "npm"
+            correct: false
+            why: "npm sert aux projets JavaScript (Angular)."
+          - label: "Docker"
+            correct: false
+            why: "Docker emballe l'application, il ne gère pas les bibliothèques Java."
+        explanation: "Maven : `./mvnw test`, `./mvnw package`."
     exercises:
       - slug: java-ex-jury-guide
         kind: COMPLETER
@@ -500,99 +1187,146 @@ lessons:
         statement: "Complète chaque phrase avec un mot."
         criteria: "Les quatre trous sont corrects."
         hints:
-          - "Ce qui exécute le bytecode : JVM."
+          - "Ce qui exécute le programme compilé : JVM."
           - "Ce qui appartient à la classe : static."
-          - "JVM, static, immuable, JUnit."
-        solution: '["JVM", "static", "immuable", "JUnit"]'
+          - "JVM, static, immuable, tas."
+        solution: '["JVM", "static", "immuable", "tas"]'
         explanation: "Quatre réponses prêtes pour l'oral."
         xp: 10
         payload:
           language: text
           caseSensitive: false
           template: |
-            La [[1]] exécute le bytecode Java.
+            La [[1]] exécute le programme Java compilé.
             Un attribut [[2]] est partagé par tous les objets de la classe.
             Un String ne change jamais : il est [[3]].
-            Les tests unitaires Java s'écrivent avec [[4]].
+            Les objets créés avec new vivent dans le [[4]].
           blanks:
             - ["JVM"]
             - ["static"]
             - ["immuable", "immutable"]
-            - ["JUnit", "JUnit 5"]
-      - slug: java-ex-junit
+            - ["tas", "heap"]
+      - slug: java-ex-static-libre
         kind: CODE_LIBRE
-        title: "Tester un dépôt refusé"
-        difficulty: INTERMEDIAIRE
-        skill: java-tests
+        title: "Un compteur de visites partagé"
+        difficulty: FACILE
+        skill: poo
         statement: |
-          Dans une classe `CompteBancaireTest`, écris le test `depotNegatifRefuse` :
-          1. crée un `CompteBancaire` ;
-          2. vérifie avec `assertThrows` qu'un dépôt de `-10` lève `IllegalArgumentException` ;
-          3. vérifie avec `assertEquals` que le solde vaut toujours `0`.
-        criteria: "Méthode @Test, assertThrows sur deposer(-10), assertEquals du solde."
+          1. la classe `Visite` a un attribut `static int total = 0;` et un constructeur qui fait
+             `total++` ;
+          2. dans le `main` de la classe `Musee`, fabrique trois visites, puis affiche `Visite.total`.
+        criteria: "Un attribut static, total++ dans le constructeur, affichage sur la classe."
         hints:
-          - "`@Test void depotNegatifRefuse() { ... }`"
-          - "`assertThrows(IllegalArgumentException.class, () -> compte.deposer(-10));`"
-          - "`assertEquals(0, compte.getSolde());`"
+          - "`static int total = 0;`"
+          - "`public Visite() { total++; }`"
+          - "`System.out.println(Visite.total);`"
         solution: |
-          class CompteBancaireTest {
-
-              @Test
-              void depotNegatifRefuse() {
-                  CompteBancaire compte = new CompteBancaire();
-
-                  assertThrows(IllegalArgumentException.class, () -> compte.deposer(-10));
-                  assertEquals(0, compte.getSolde());
+          public class Musee {
+              public static void main(String[] args) {
+                  new Visite();
+                  new Visite();
+                  new Visite();
+                  System.out.println(Visite.total);
               }
           }
-        explanation: "Un test vérifie aussi ce qui NE doit PAS arriver : ici, le solde ne bouge pas après un dépôt refusé."
-        xp: 25
+
+          class Visite {
+              static int total = 0;
+
+              public Visite() {
+                  total++;
+              }
+          }
+        explanation: "Trois objets, un seul compteur partagé."
+        xp: 15
         payload:
           language: java
           starter: |
-            class CompteBancaireTest {
+            public class Musee {
+                public static void main(String[] args) {
+
+                }
+            }
+
+            class Visite {
 
             }
           checks:
-            - pattern: '@Test\s+(public\s+)?void\s+depotNegatifRefuse\s*\(\s*\)'
-              message: "Déclare la méthode : @Test void depotNegatifRefuse()."
-            - pattern: 'new\s+CompteBancaire\s*\(\s*\)'
-              message: "Crée un compte : new CompteBancaire()."
-            - pattern: 'assertThrows\s*\(\s*IllegalArgumentException\.class\s*,\s*\(\s*\)\s*->\s*\w+\.deposer\s*\(\s*-\s*10\s*\)\s*\)'
-              message: "Vérifie l'exception : assertThrows(IllegalArgumentException.class, () -> compte.deposer(-10));"
-            - pattern: 'assertEquals\s*\(\s*0(\.0)?\s*,\s*\w+\.getSolde\s*\(\s*\)'
-              message: "Vérifie que le solde vaut 0 : assertEquals(0, compte.getSolde());"
+            - pattern: 'static\s+int\s+total\s*=\s*0\s*;'
+              message: "Déclare static int total = 0;"
+            - pattern: 'Visite\s*\(\s*\)\s*\{\s*total\s*\+\+'
+              message: "Dans le constructeur : total++;"
+            - pattern: 'System\.out\.println\s*\(\s*Visite\.total\s*\)'
+              message: "Affiche Visite.total."
+          output: "3"
+      - slug: java-ex-string-bug
+        kind: CORRIGER_ERREUR
+        title: "Un texte qui ne change pas"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Ce programme doit afficher `DAKAR`, mais il affiche `Dakar` : String est immuable, et le résultat de
+          `toUpperCase()` n'est rangé nulle part. Corrige.
+        criteria: "Le résultat de toUpperCase() est rangé dans ville."
+        hints:
+          - "toUpperCase() renvoie un nouveau texte."
+          - "Il faut le ranger."
+          - "`ville = ville.toUpperCase();`"
+        solution: |
+          public class Majuscules {
+              public static void main(String[] args) {
+                  String ville = "Dakar";
+                  ville = ville.toUpperCase();
+                  System.out.println(ville);
+              }
+          }
+        explanation: "String immuable : on récupère toujours le nouveau texte."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Majuscules {
+                public static void main(String[] args) {
+                    String ville = "Dakar";
+                    ville.toUpperCase();
+                    System.out.println(ville);
+                }
+            }
+          checks:
+            - pattern: 'ville\s*=\s*ville\.toUpperCase\s*\(\s*\)\s*;'
+              message: "Range le résultat : ville = ville.toUpperCase();"
+          output: "DAKAR"
 
 bank:
-  - code: java-c4-b1
+  - code: java-c4-b3
     kind: CHOIX_UNIQUE
     difficulty: 2
-    skill: java-tests
-    prompt: "À quoi sert Mockito dans un test unitaire ?"
+    skill: poo
+    prompt: "Quelle écriture crée un DTO immuable le plus simplement ?"
     choices:
-      - label: "À créer des doublures des dépendances (repository, service externe)"
+      - label: "`record ProduitDto(Long id, String nom) {}`"
         correct: true
-        why: "On teste la classe seule."
-      - label: "À compiler le projet"
+        why: "Une ligne, immuable, equals et hashCode générés."
+      - label: "`class ProduitDto { public Long id; public String nom; }`"
         correct: false
-        why: "C'est Maven ou Gradle."
-      - label: "À lancer le serveur"
+        why: "Attributs publics et modifiables."
+      - label: "`interface ProduitDto {}`"
         correct: false
-        why: "Un test unitaire ne lance pas de serveur."
-    explanation: "Mockito : when(...).thenReturn(...), verify(...)."
-  - code: java-c4-b2
+        why: "Une interface est un contrat, pas des données."
+    explanation: "DTO → record."
+  - code: java-c4-b4
     kind: CHOIX_UNIQUE
     difficulty: 2
-    skill: java-bases
-    prompt: "Quel outil gère les dépendances et la construction d'un projet Spring Boot ?"
+    skill: poo
+    prompt: "Un service reçoit ses dépendances par son constructeur. Comment s'appelle ce mécanisme ?"
     choices:
-      - label: "Maven (ou Gradle)"
+      - label: "L'injection de dépendances"
         correct: true
-        why: "pom.xml décrit les dépendances et le build."
-      - label: "npm"
+        why: "C'est ce que fait Spring pour toi."
+      - label: "L'héritage"
         correct: false
-        why: "npm sert aux projets JavaScript (Angular)."
-      - label: "Docker"
+        why: "Aucun extends ici."
+      - label: "L'encapsulation"
         correct: false
-        why: "Docker emballe l'application, il ne gère pas les dépendances Java."
-    explanation: "Maven : `./mvnw test`, `./mvnw package`."
+        why: "L'encapsulation protège les données."
+    explanation: "Injection par le constructeur = recommandée par Spring."

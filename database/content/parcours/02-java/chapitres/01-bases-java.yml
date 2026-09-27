@@ -2,28 +2,28 @@ slug: java-bases
 position: 1
 level: DEBUTANT
 title: "Les bases de Java"
-summary: "Écrire, compiler et lancer un programme Java, déclarer des variables typées et utiliser conditions et boucles."
-quizQuestionCount: 10
+summary: "Écrire un programme Java, déclarer des variables typées, travailler avec des textes, décider, répéter, ranger dans un tableau et écrire ses propres méthodes. Une seule notion par leçon."
+quizQuestionCount: 15
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: java-premier-programme
     title: "Ton premier programme Java"
-    duration: 11
-    objective: "Comprendre la structure d'un programme Java (classe, main) et le rôle de la compilation."
-    prerequisites: "Parcours « Premiers pas en programmation » (chapitre 1) conseillé."
+    duration: 10
+    objective: "Comprendre la structure d'un programme Java (classe, main), afficher avec System.out.println et savoir ce qu'est la compilation."
+    prerequisites: "Parcours « Premiers pas en programmation » conseillé."
     skills: [java-bases]
     xp: 15
     memo: |
       - Tout code Java vit dans une **classe** : `public class Bonjour { ... }`.
-      - Le programme démarre dans la méthode `public static void main(String[] args)`.
+      - Le programme démarre dans `public static void main(String[] args)` : la **porte d'entrée**. Pour l'instant, recopie cette ligne telle quelle.
       - `System.out.println("…");` affiche une ligne (l'équivalent de `console.log`).
-      - Le **compilateur** (`javac`) transforme le code en **bytecode**, que la **JVM** (`java`) exécute.
-      - Le fichier porte le nom de la classe publique : `Bonjour.java`.
+      - Chaque instruction se termine **obligatoirement** par un point-virgule.
+      - Le **compilateur** (`javac`) vérifie et traduit le code ; la **JVM** (`java`) l'exécute.
     commonMistakes: |
-      - Oublier le point-virgule en fin d'instruction : erreur de compilation.
-      - Nom de fichier différent du nom de la classe publique.
+      - Oublier le point-virgule : erreur de compilation.
       - Écrire `system.out.println` : Java distingue majuscules et minuscules (`System`).
+      - Nom de fichier différent du nom de la classe publique.
     blocks:
       - type: text
         md: |
@@ -51,9 +51,9 @@ lessons:
           - n: 1
             note: "La classe `Bonjour`. Le fichier doit s'appeler `Bonjour.java`."
           - n: 2
-            note: "`main` : la **porte d'entrée**. Java commence toujours ici. Les mots `public static void` seront expliqués plus tard."
+            note: "`main` : la **porte d'entrée**. Java commence toujours ici. Les autres mots seront expliqués plus tard."
           - n: 3
-            note: "`System.out.println` affiche une ligne. Le texte est entre guillemets doubles."
+            note: "`System.out.println` affiche une ligne. Le texte est entre guillemets doubles, et la ligne finit par `;`."
           - n: 5
             note: "Accolade qui ferme `main`."
           - n: 6
@@ -65,10 +65,10 @@ lessons:
         id: def-compilation
         term: "Compilation et JVM"
         md: |
-          Le **compilateur** (`javac`) relit tout ton code et le **traduit** en *bytecode* (un langage
-          intermédiaire), comme un traducteur qui vérifie chaque phrase avant de publier le livre. S'il
-          trouve une faute, il refuse : c'est une **erreur de compilation**. Ensuite, la **JVM** (machine
-          virtuelle Java) exécute ce bytecode sur n'importe quel ordinateur (Windows, Mac, Linux).
+          Le **compilateur** (`javac`) relit tout ton code et le **traduit**, comme un traducteur qui vérifie
+          chaque phrase avant de publier le livre. S'il trouve une faute, il refuse : c'est une **erreur de
+          compilation**. Ensuite, la **JVM** (machine virtuelle Java) exécute le résultat sur n'importe quel
+          ordinateur (Windows, Mac, Linux).
       - type: steps
         title: "Lancer le programme en ligne de commande"
         items:
@@ -79,13 +79,17 @@ lessons:
         ref: java-pp-q2
         review: def-compilation
       - type: text
-        md: "Exercice guidé : complète la structure du programme."
+        md: "**Exercice 1 (guidé)** : complète la structure du programme."
       - type: exercise
         ref: java-ex-main-guide
       - type: text
-        md: "En autonomie : écris un programme Java complet qui affiche trois lignes."
+        md: "**Exercice 2 (en autonomie)** : écris un programme Java complet qui affiche trois lignes."
       - type: exercise
         ref: java-ex-presentation
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : le compilateur refuse ce programme."
+      - type: exercise
+        ref: java-ex-premier-bug
       - type: jury
         items:
           - q: "Quelle différence entre JDK, JRE et JVM ?"
@@ -112,7 +116,7 @@ lessons:
             why: "Oui : `public static void main(String[] args)`."
           - label: "`start`"
             correct: false
-            why: "Ce n'est pas le point d'entrée Java."
+            why: "Ce n'est pas la porte d'entrée Java."
           - label: "La première ligne du fichier, quelle qu'elle soit"
             correct: false
             why: "Java cherche la méthode main."
@@ -123,7 +127,7 @@ lessons:
         skill: java-bases
         prompt: "Que fait la commande `javac Bonjour.java` ?"
         choices:
-          - label: "Elle compile le code en bytecode (Bonjour.class)"
+          - label: "Elle compile (vérifie et traduit) le code"
             correct: true
             why: "javac = Java compiler."
           - label: "Elle exécute le programme"
@@ -131,7 +135,7 @@ lessons:
             why: "C'est la commande `java`."
           - label: "Elle installe Java"
             correct: false
-            why: "Java doit déjà être installé (JDK)."
+            why: "Java doit déjà être installé."
         explanation: "Compiler (javac), puis exécuter (java)."
       - code: java-pp-q3
         kind: CHOIX_UNIQUE
@@ -147,7 +151,7 @@ lessons:
             why: "C'est du JavaScript."
           - label: "`print Salut`"
             correct: false
-            why: "Syntaxe inconnue en Java."
+            why: "Écriture inconnue en Java."
         explanation: "`System.out.println` affiche une ligne dans la console."
       - code: java-pp-q4
         kind: VRAI_FAUX
@@ -157,7 +161,7 @@ lessons:
         choices:
           - label: "Vrai"
             correct: true
-            why: "Le compilateur refuse de produire le bytecode."
+            why: "Le compilateur refuse de produire le programme."
           - label: "Faux"
             correct: false
             why: "Sans compilation réussie, rien à exécuter."
@@ -173,7 +177,7 @@ lessons:
             why: "Même nom que la classe publique, extension .java."
           - label: "`commande.txt`"
             correct: false
-            why: "L'extension doit être .java et la casse respectée."
+            why: "L'extension doit être .java et les majuscules respectées."
           - label: "`Main.java`"
             correct: false
             why: "Le nom doit correspondre à la classe publique."
@@ -246,119 +250,133 @@ lessons:
             Bonjour
             J'apprends Java
             À bientôt
+      - slug: java-ex-premier-bug
+        kind: CORRIGER_ERREUR
+        title: "Deux fautes de compilation"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Le compilateur refuse ce programme : `system` est écrit en minuscule et un point-virgule manque.
+          Corrige les deux fautes.
+        criteria: "System avec une majuscule, chaque instruction terminée par ;"
+        hints:
+          - "Java distingue majuscules et minuscules."
+          - "Regarde la fin de chaque ligne d'affichage."
+          - "`System.out.println(\"Coucou\");`"
+        solution: |
+          public class Coucou {
+              public static void main(String[] args) {
+                  System.out.println("Coucou");
+                  System.out.println("Java est strict");
+              }
+          }
+        explanation: "`System` prend une majuscule, et chaque instruction finit par un point-virgule."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Coucou {
+                public static void main(String[] args) {
+                    system.out.println("Coucou");
+                    System.out.println("Java est strict")
+                }
+            }
+          checks:
+            - pattern: '\bsystem\.out'
+              absent: true
+              message: "System s'écrit avec une majuscule."
+            - pattern: 'System\.out\.println\s*\(\s*"Java est strict"\s*\)\s*;'
+              message: "Ajoute le point-virgule après la deuxième instruction."
+          output: |
+            Coucou
+            Java est strict
 
   # ===================================================================== LEÇON 2
   - slug: java-types-conditions
-    title: "Types, conditions et boucles en Java"
-    duration: 13
-    objective: "Déclarer des variables typées (int, double, boolean, String), écrire des if et des for, et comparer des textes avec equals."
+    title: "Les variables typées : int, double, boolean, String"
+    duration: 10
+    objective: "Déclarer une variable en annonçant son type, et choisir le bon type pour chaque valeur."
     prerequisites: "Leçon « Ton premier programme Java »."
     skills: [java-bases]
-    xp: 20
+    xp: 15
     memo: |
-      - Java est **typé statiquement** : `int age = 18;` — le type est annoncé et ne change plus.
-      - Types de base : `int` (entier), `double` (décimal), `boolean` (vrai/faux), `char` (un caractère) ; `String` pour les textes.
-      - Conditions et boucles : mêmes écritures qu'en JavaScript (`if`, `else`, `for`, `while`, `&&`, `||`).
-      - Comparer deux textes : `a.equals(b)`, **jamais** `a == b`.
-      - `final` : une valeur qui ne change plus (comme `const`).
-      - `var` peut déduire le type (`var ville = "Lyon";`), mais le type reste fixé.
+      - Java est **typé** : on annonce le type avant le nom, `int age = 18;`, et il ne change plus.
+      - `int` : nombre entier ; `double` : nombre à virgule (écrite avec un point) ; `boolean` : `true`/`false` ; `String` : texte (avec une **majuscule**).
+      - Changer la valeur : `age = 19;` (sans répéter le type).
+      - Le compilateur refuse une valeur du mauvais type.
     commonMistakes: |
-      - Comparer des `String` avec `==` : on compare les adresses mémoire, pas le contenu.
-      - Mettre un décimal dans un `int` : `int prix = 9.99;` ne compile pas.
-      - Comparer deux `String` avec `==` au lieu de `equals` : le résultat peut être faux même si les textes sont identiques.
+      - Mettre un nombre à virgule dans un `int` : `int prix = 9.99;` ne compile pas.
+      - Écrire `string` en minuscules : c'est `String`.
+      - Répéter le type pour changer la valeur : `int age = 19;` une deuxième fois est refusé.
     blocks:
       - type: text
         md: |
           En JavaScript, une variable pouvait contenir un nombre puis un texte. En Java, **non** : chaque
-          variable a un **type fixe**. Le compilateur vérifie tout.
+          variable a un **type fixe**, annoncé à sa création. Le compilateur vérifie tout.
       - type: definition
         id: def-typage-statique
-        term: "Typage statique"
+        term: "Variable typée"
         md: |
-          Le type de chaque variable est **décidé une fois pour toutes** et vérifié à la compilation. C'est
-          comme des **bocaux étiquetés** : dans le bocal « sucre », on ne peut pas verser du sel.
+          Des **bocaux étiquetés** : dans le bocal « sucre », on ne peut pas verser du sel. En Java, l'étiquette
+          (le type) est écrite devant le nom de la variable, et elle ne change jamais.
       - type: code
         id: code-types
         language: java
-        title: "Des variables typées"
+        title: "Quatre variables typées"
         code: |
-          int age = 25;
-          double prix = 19.99;
-          boolean abonne = true;
-          String prenom = "Awa";
-          final int MAJORITE = 18;
-
-          if (age >= MAJORITE && abonne) {
-              System.out.println(prenom + " a accès au contenu.");
-          }
-          for (int i = 1; i <= 3; i++) {
-              System.out.println("Tour " + i);
+          public class Profil {
+              public static void main(String[] args) {
+                  int age = 25;
+                  double taille = 1.68;
+                  boolean abonnee = true;
+                  String prenom = "Awa";
+                  System.out.println(prenom);
+                  System.out.println(age);
+                  age = 26;
+                  System.out.println(age);
+              }
           }
         lines:
-          - n: 1
-            note: "`int` : nombre entier."
-          - n: 2
-            note: "`double` : nombre à virgule (écrite avec un point)."
           - n: 3
-            note: "`boolean` : true ou false."
+            note: "`int` : un nombre entier."
           - n: 4
-            note: "`String` (avec une majuscule) : un texte."
+            note: "`double` : un nombre à virgule (écrite avec un point)."
           - n: 5
-            note: "`final` : la valeur ne changera plus. Par convention, en MAJUSCULES."
-          - n: 7
-            note: "Même syntaxe qu'en JavaScript pour `if` et `&&`."
-          - n: 10
-            note: "La variable de boucle est typée : `int i`."
+            note: "`boolean` : true ou false."
+          - n: 6
+            note: "`String` (avec une majuscule) : un texte."
+          - n: 9
+            note: "On change la valeur sans répéter le type."
       - type: question
         ref: java-tc-q1
         review: def-typage-statique
-      - type: definition
-        id: def-equals
-        term: "Comparer des textes : equals"
-        md: |
-          `==` vérifie si deux variables désignent **le même objet en mémoire** (le même exemplaire),
-          `equals` vérifie si elles ont **le même contenu**. Deux livres identiques achetés séparément ont
-          le même contenu (`equals` vrai) mais ne sont pas le même exemplaire (`==` faux).
-      - type: compare
-        left:
-          title: "Piège"
-          good: false
-          code: |
-            String saisie = lireClavier();
-            if (saisie == "oui") { ... }
-          language: java
-        right:
-          title: "Correct"
-          good: true
-          code: |
-            String saisie = lireClavier();
-            if ("oui".equals(saisie)) { ... }
-          language: java
       - type: question
-        ref: java-tc-q2
-        review: def-equals
+        ref: java-ty-q2
+        review: code-types
       - type: text
-        md: "Exercice guidé : complète les types."
+        md: "**Exercice 1 (guidé)** : choisis les bons types."
       - type: exercise
         ref: java-ex-types-guide
       - type: text
-        md: "En autonomie : écris une méthode qui choisit un tarif selon l'âge et le statut."
+        md: "**Exercice 2 (en autonomie)** : la fiche d'une ville."
       - type: exercise
-        ref: java-ex-tarif
+        ref: java-ex-types-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des valeurs dans le mauvais bocal."
+      - type: exercise
+        ref: java-ex-types-bug
       - type: jury
         items:
-          - q: "Pourquoi compare-t-on les String avec equals et pas avec == ?"
-            a: "`==` compare les références (le même objet en mémoire) ; `equals` compare le contenu. Deux textes identiques peuvent être deux objets différents."
           - q: "Quelle différence entre un type primitif et un objet en Java ?"
-            a: "Les primitifs (`int`, `double`, `boolean`) contiennent directement une valeur ; les objets (`String`, `Integer`, tes classes) sont manipulés par référence et ont des méthodes."
+            a: "Les primitifs (`int`, `double`, `boolean`) contiennent directement une valeur ; les objets (`String`, tes classes) sont manipulés par référence et ont des méthodes."
       - type: quiz
         items:
-          - ref: java-tc-q3
-            review: code-types
-          - ref: java-tc-q4
-            review: code-types
           - ref: java-tc-q5
-            review: def-equals
+            review: def-typage-statique
+          - ref: java-ty-q4
+            review: code-types
+          - ref: java-ty-q5
+            review: code-types
     questions:
       - code: java-tc-q1
         kind: CHOIX_UNIQUE
@@ -366,35 +384,537 @@ lessons:
         skill: java-bases
         prompt: "Quelle déclaration compile ?"
         choices:
-          - label: "`double prix = 9.99;`"
+          - label: "`double taille = 1.68;`"
             correct: true
-            why: "Un décimal dans un double."
-          - label: "`int prix = 9.99;`"
+            why: "Un nombre à virgule dans un double."
+          - label: "`int taille = 1.68;`"
             correct: false
-            why: "Un int ne peut pas contenir de décimales."
+            why: "Un int ne peut pas contenir de virgule."
           - label: "`int age = \"18\";`"
             correct: false
             why: "\"18\" est un texte."
         explanation: "Le type annoncé doit correspondre à la valeur."
-      - code: java-tc-q2
+      - code: java-ty-q2
         kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quel type choisir pour ranger « vrai » ou « faux » ?"
+        choices:
+          - label: "`boolean`"
+            correct: true
+            why: "true ou false."
+          - label: "`String`"
+            correct: false
+            why: "String range des textes."
+          - label: "`int`"
+            correct: false
+            why: "int range des nombres entiers."
+        explanation: "`boolean connecte = false;`"
+      - code: java-tc-q5
+        kind: VRAI_FAUX
         difficulty: 2
         skill: java-bases
-        prompt: "Comment vérifier que `role` contient le texte ADMIN ?"
+        prompt: "En Java, une variable déclarée `int` peut plus tard recevoir un texte."
         choices:
-          - label: "`\"ADMIN\".equals(role)`"
+          - label: "Vrai"
+            correct: false
+            why: "Non : le type est fixé."
+          - label: "Faux"
             correct: true
-            why: "equals compare le contenu (et évite une erreur si role est null)."
-          - label: "`role == \"ADMIN\"`"
+            why: "Exact : le compilateur refuse."
+        explanation: "C'est la grande différence avec JavaScript."
+      - code: java-ty-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "La variable `ville` existe déjà. Comment changer sa valeur en « Nice » ?"
+        choices:
+          - label: "`ville = \"Nice\";`"
+            correct: true
+            why: "Le type n'est écrit qu'à la création."
+          - label: "`String ville = \"Nice\";`"
             correct: false
-            why: "== compare les références, pas le contenu."
-          - label: "`role = \"ADMIN\"`"
+            why: "Répéter le type recrée la variable : refusé."
+          - label: "`ville := \"Nice\";`"
             correct: false
-            why: "C'est une affectation."
-        explanation: "Pour les objets (dont String) : equals."
+            why: "Cette écriture n'existe pas en Java."
+        explanation: "Le type s'écrit une seule fois, à la déclaration."
+      - code: java-ty-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Comment s'écrit le type « texte » en Java ?"
+        choices:
+          - label: "`String`, avec une majuscule"
+            correct: true
+            why: "Les types objets commencent par une majuscule."
+          - label: "`string`"
+            correct: false
+            why: "En minuscules, Java ne le reconnaît pas."
+          - label: "`text`"
+            correct: false
+            why: "Ce type n'existe pas."
+        explanation: "`String prenom = \"Awa\";`"
+    exercises:
+      - slug: java-ex-types-guide
+        kind: COMPLETER
+        title: "Choisir les bons types"
+        difficulty: FACILE
+        skill: java-bases
+        statement: "Complète avec le type Java qui convient."
+        criteria: "Les quatre types sont corrects."
+        hints:
+          - "Un âge entier : int. Une taille à virgule : double."
+          - "Un texte : String, avec une majuscule."
+          - "int, double, String, boolean."
+        solution: '["int", "double", "String", "boolean"]'
+        explanation: "Chaque valeur dans le bocal qui lui correspond."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            [[1]] age = 30;
+            [[2]] taille = 1.75;
+            [[3]] ville = "Lille";
+            [[4]] connecte = false;
+          blanks:
+            - ["int"]
+            - ["double"]
+            - ["String"]
+            - ["boolean"]
+      - slug: java-ex-types-libre
+        kind: CODE_LIBRE
+        title: "La fiche d'une ville"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Dans le `main` d'une classe `Ville`, déclare :
+          - `nom` (texte) qui vaut `"Dakar"` ;
+          - `quartiers` (entier) qui vaut `19` ;
+          - `capitale` (vrai/faux) qui vaut `true` ;
+          puis affiche les trois, une ligne chacun.
+        criteria: "Trois variables correctement typées et trois affichages."
+        hints:
+          - "`String nom = \"Dakar\";`"
+          - "`int quartiers = 19;` et `boolean capitale = true;`"
+          - "`System.out.println(nom);` (et pareil pour les deux autres)"
+        solution: |
+          public class Ville {
+              public static void main(String[] args) {
+                  String nom = "Dakar";
+                  int quartiers = 19;
+                  boolean capitale = true;
+                  System.out.println(nom);
+                  System.out.println(quartiers);
+                  System.out.println(capitale);
+              }
+          }
+        explanation: "Chaque valeur a son type : texte, entier, booléen."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Ville {
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'String\s+nom\s*=\s*"Dakar"\s*;'
+              message: "Déclare String nom = \"Dakar\";"
+            - pattern: 'int\s+quartiers\s*=\s*19\s*;'
+              message: "Déclare int quartiers = 19;"
+            - pattern: 'boolean\s+capitale\s*=\s*true\s*;'
+              message: "Déclare boolean capitale = true;"
+            - pattern: '\A(?>[\s\S]*?System\.out\.println\s*\(){3}'
+              message: "Affiche les trois variables."
+          output: |
+            Dakar
+            19
+            true
+      - slug: java-ex-types-bug
+        kind: CORRIGER_ERREUR
+        title: "Des valeurs dans le mauvais bocal"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Le compilateur refuse deux lignes : `taille` contient un nombre à virgule mais est déclarée `int`,
+          et `inscrite` contient un booléen mais est déclarée `String`. Corrige les deux types.
+        criteria: "taille est un double, inscrite est un boolean."
+        hints:
+          - "Un nombre à virgule se range dans un double."
+          - "true se range dans un boolean."
+          - "`double taille = 1.62;` et `boolean inscrite = true;`"
+        solution: |
+          public class Fiche {
+              public static void main(String[] args) {
+                  double taille = 1.62;
+                  boolean inscrite = true;
+                  System.out.println(taille);
+                  System.out.println(inscrite);
+              }
+          }
+        explanation: "Chaque valeur doit aller dans le bocal de son type."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Fiche {
+                public static void main(String[] args) {
+                    int taille = 1.62;
+                    String inscrite = true;
+                    System.out.println(taille);
+                    System.out.println(inscrite);
+                }
+            }
+          checks:
+            - pattern: 'double\s+taille\s*=\s*1\.62\s*;'
+              message: "taille contient un nombre à virgule : double taille = 1.62;"
+            - pattern: 'boolean\s+inscrite\s*=\s*true\s*;'
+              message: "inscrite contient true : boolean inscrite = true;"
+          output: |
+            1.62
+            true
+
+  # ===================================================================== LEÇON 3
+  - slug: java-final
+    title: "Une valeur qui ne change pas : final"
+    duration: 8
+    objective: "Déclarer une constante avec final et respecter la convention des MAJUSCULES."
+    prerequisites: "Leçon « Les variables typées »."
+    skills: [java-bases]
+    xp: 10
+    memo: |
+      - `final` rend une variable **non modifiable** : c'est l'équivalent de `const`.
+      - Convention : les constantes s'écrivent en **MAJUSCULES**, mots séparés par `_` : `final int AGE_MAJORITE = 18;`
+      - Essayer de changer une variable `final` : **erreur de compilation**.
+    commonMistakes: |
+      - Oublier le type : `final AGE = 18;` ne compile pas (il faut `final int`).
+      - Vouloir changer une constante plus loin dans le code.
+    blocks:
+      - type: text
+        md: |
+          L'âge de la majorité, le nom de l'application : ces valeurs ne changent jamais. On les protège
+          avec `final`.
+      - type: definition
+        id: def-final
+        term: "final"
+        md: |
+          Une valeur **gravée dans le marbre** : une fois écrite, personne ne peut la modifier. Le compilateur
+          refuse toute tentative.
+      - type: code
+        id: code-final
+        language: java
+        title: "Deux constantes"
+        code: |
+          public class Reglages {
+              public static void main(String[] args) {
+                  final int AGE_MAJORITE = 18;
+                  final String NOM_APPLI = "Code en Clair";
+                  System.out.println(NOM_APPLI);
+                  System.out.println(AGE_MAJORITE);
+              }
+          }
+        lines:
+          - n: 3
+            note: "`final`, puis le type, puis le nom en MAJUSCULES."
+          - n: 4
+            note: "Une constante texte."
+      - type: question
+        ref: java-tc-q4
+        review: def-final
+      - type: question
+        ref: java-fi-q2
+        review: code-final
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les constantes."
+      - type: exercise
+        ref: java-ex-final-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : deux constantes et une variable."
+      - type: exercise
+        ref: java-ex-final-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une constante qui devait changer."
+      - type: exercise
+        ref: java-ex-final-bug
+      - type: quiz
+        items:
+          - ref: java-fi-q3
+            review: def-final
+          - ref: java-fi-q4
+            review: code-final
+          - ref: java-fi-q5
+            review: def-final
+    questions:
+      - code: java-tc-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quel mot-clé rend une variable non modifiable ?"
+        choices:
+          - label: "`final`"
+            correct: true
+            why: "L'équivalent de const."
+          - label: "`static`"
+            correct: false
+            why: "static signifie autre chose (on le verra avec les méthodes)."
+          - label: "`public`"
+            correct: false
+            why: "public règle la visibilité."
+        explanation: "`final int AGE_MAJORITE = 18;`"
+      - code: java-fi-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quelle est la bonne façon d'écrire une constante ?"
+        choices:
+          - label: "`final int NOMBRE_ESSAIS = 3;`"
+            correct: true
+            why: "final, type, nom en MAJUSCULES."
+          - label: "`final NOMBRE_ESSAIS = 3;`"
+            correct: false
+            why: "Il manque le type."
+          - label: "`int final nombreEssais = 3;`"
+            correct: false
+            why: "final se place devant le type, et le nom s'écrit en majuscules."
+        explanation: "`final` + type + NOM_EN_MAJUSCULES."
+      - code: java-fi-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-bases
+        prompt: "Changer la valeur d'une variable `final` provoque une erreur de compilation."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le compilateur refuse."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement le rôle de final."
+        explanation: "L'erreur arrive avant même l'exécution."
+      - code: java-fi-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Pourquoi écrire les constantes en MAJUSCULES ?"
+        choices:
+          - label: "Pour les repérer d'un coup d'œil dans le code"
+            correct: true
+            why: "C'est une convention partagée par tous les développeurs Java."
+          - label: "Parce que Java l'exige"
+            correct: false
+            why: "C'est une convention, pas une règle du compilateur."
+          - label: "Pour qu'elles s'exécutent plus vite"
+            correct: false
+            why: "Aucun effet sur la vitesse."
+        explanation: "Une convention rend le code lisible par toute l'équipe."
+      - code: java-fi-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quel est l'équivalent Java du `const` de JavaScript ?"
+        choices:
+          - label: "`final`"
+            correct: true
+            why: "Une valeur qui ne change plus."
+          - label: "`let`"
+            correct: false
+            why: "let n'existe pas en Java."
+          - label: "`String`"
+            correct: false
+            why: "C'est un type."
+        explanation: "const (JS) ≈ final (Java)."
+    exercises:
+      - slug: java-ex-final-guide
+        kind: COMPLETER
+        title: "Compléter les constantes"
+        difficulty: FACILE
+        skill: java-bases
+        statement: "Complète les deux constantes."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot qui fige une valeur : final."
+          - "Un texte : String. Un entier : int."
+          - "final, String, int."
+        solution: '["final", "String", "int"]'
+        explanation: "`final String DEVISE = \"Apprendre\";` et `final int NIVEAUX = 3;`"
+        xp: 10
+        payload:
+          language: java
+          template: |
+            [[1]] [[2]] DEVISE = "Apprendre en comprenant";
+            final [[3]] NIVEAUX = 3;
+          blanks:
+            - ["final"]
+            - ["String"]
+            - ["int"]
+      - slug: java-ex-final-libre
+        kind: CODE_LIBRE
+        title: "Deux constantes et une variable"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Dans le `main` d'une classe `Jeu` :
+          - déclare la constante `NOM_JEU` (texte) qui vaut `"Quiz CDA"` ;
+          - déclare la variable `niveau` (texte) qui vaut `"débutante"`, puis change-la en `"confirmée"` ;
+          - affiche `NOM_JEU`, puis `niveau`.
+        criteria: "Une constante final en majuscules, une variable modifiée, deux affichages."
+        hints:
+          - "`final String NOM_JEU = \"Quiz CDA\";`"
+          - "`String niveau = \"débutante\";` puis `niveau = \"confirmée\";`"
+          - "Deux `System.out.println(...)`."
+        solution: |
+          public class Jeu {
+              public static void main(String[] args) {
+                  final String NOM_JEU = "Quiz CDA";
+                  String niveau = "débutante";
+                  niveau = "confirmée";
+                  System.out.println(NOM_JEU);
+                  System.out.println(niveau);
+              }
+          }
+        explanation: "Le nom du jeu est fixe (final), le niveau change."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Jeu {
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'final\s+String\s+NOM_JEU\s*=\s*"Quiz CDA"\s*;'
+              message: "Déclare final String NOM_JEU = \"Quiz CDA\";"
+            - pattern: 'String\s+niveau\s*=\s*"débutante"\s*;'
+              message: "Déclare String niveau = \"débutante\";"
+            - pattern: '(?<!String\s)\bniveau\s*=\s*"confirmée"\s*;'
+              message: "Change la valeur : niveau = \"confirmée\";"
+            - pattern: 'System\.out\.println\s*\(\s*NOM_JEU\s*\)'
+              message: "Affiche NOM_JEU."
+          output: |
+            Quiz CDA
+            confirmée
+      - slug: java-ex-final-bug
+        kind: CORRIGER_ERREUR
+        title: "Une constante qui devait changer"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Le compilateur refuse la ligne 4 : `statut` est `final`, mais il doit pouvoir changer. Retire
+          `final` (et, puisque ce n'est plus une constante, écris son nom en minuscules).
+        criteria: "statut n'est plus final et peut changer."
+        hints:
+          - "Une valeur qui change ne peut pas être final."
+          - "Une variable ordinaire s'écrit en minuscules."
+          - "`String statut = \"en attente\";` puis `statut = \"livrée\";`"
+        solution: |
+          public class Colis {
+              public static void main(String[] args) {
+                  String statut = "en attente";
+                  statut = "livrée";
+                  System.out.println(statut);
+              }
+          }
+        explanation: "final est réservé aux valeurs qui ne changent jamais."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Colis {
+                public static void main(String[] args) {
+                    final String STATUT = "en attente";
+                    STATUT = "livrée";
+                    System.out.println(STATUT);
+                }
+            }
+          checks:
+            - pattern: 'final\s+String\s+\w+\s*=\s*"en attente"'
+              absent: true
+              message: "Retire final : le statut doit pouvoir changer."
+            - pattern: 'String\s+statut\s*=\s*"en attente"\s*;'
+              message: "Déclare String statut = \"en attente\"; (nom en minuscules)."
+            - pattern: '(?<!String\s)\bstatut\s*=\s*"livrée"\s*;'
+              message: "Change la valeur : statut = \"livrée\";"
+          output: "livrée"
+
+  # ===================================================================== LEÇON 4
+  - slug: java-textes
+    title: "Les textes : coller et transformer un String"
+    duration: 9
+    objective: "Assembler des textes avec + et utiliser les outils des String : toUpperCase, toLowerCase, length."
+    prerequisites: "Leçon « Une valeur qui ne change pas : final »."
+    skills: [java-bases]
+    xp: 10
+    memo: |
+      - Comme en JavaScript, `+` **colle** des textes : `"Bonjour " + prenom`.
+      - Outils d'un String : `toUpperCase()`, `toLowerCase()`, `trim()`, et `length()` — en Java, **avec parenthèses**.
+      - Un outil renvoie un **nouveau** texte : `nom.toUpperCase();` seul ne change pas `nom`.
+    commonMistakes: |
+      - Écrire `length` sans parenthèses (c'était le cas en JavaScript, pas en Java).
+      - Oublier de ranger le résultat : `nom = nom.toUpperCase();`.
+    blocks:
+      - type: text
+        md: |
+          Bonne nouvelle : les textes Java ressemblent beaucoup à ceux de JavaScript. Deux différences : le
+          type s'écrit `String`, et `length()` prend des parenthèses.
+      - type: definition
+        id: def-string
+        term: "String et ses outils"
+        md: |
+          Un texte avec sa **boîte à outils** attachée, comme en JavaScript. On choisit l'outil avec un point
+          et on l'active avec des parenthèses : `prenom.toUpperCase()`.
+      - type: code
+        id: code-string-outils
+        language: java
+        title: "Coller et transformer"
+        code: |
+          public class Accueil {
+              public static void main(String[] args) {
+                  String prenom = "Awa";
+                  String message = "Bonjour " + prenom + " !";
+                  System.out.println(message);
+                  System.out.println(prenom.toUpperCase());
+                  System.out.println(prenom.length());
+              }
+          }
+        lines:
+          - n: 4
+            note: "`+` colle trois morceaux : Bonjour Awa !"
+          - n: 6
+            note: "Affiche AWA."
+          - n: 7
+            note: "`length()` avec parenthèses : le nombre de caractères."
+      - type: question
+        ref: java-tc-q3
+        review: code-string-outils
+      - type: question
+        ref: java-c1-b2
+        review: def-string
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le collage et l'outil."
+      - type: exercise
+        ref: java-ex-textes-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un badge en majuscules."
+      - type: exercise
+        ref: java-ex-textes-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un length à la mode JavaScript."
+      - type: exercise
+        ref: java-ex-textes-bug
+      - type: quiz
+        items:
+          - ref: java-jq-q1
+            review: def-string
+          - ref: java-tx-q4
+            review: code-string-outils
+          - ref: java-tx-q5
+            review: def-string
+    questions:
       - code: java-tc-q3
         kind: RESULTAT_CODE
-        difficulty: 2
+        difficulty: 1
         skill: java-bases
         prompt: "Qu'affiche ce code ?"
         snippet: |
@@ -411,88 +931,1477 @@ lessons:
           - label: "Bonjour prenom.toUpperCase() !"
             correct: false
             why: "Hors des guillemets, le code est exécuté : c'est sa valeur qui est collée."
-        explanation: "Comme en JavaScript, `+` colle des textes en Java, et les String ont leurs propres outils (`toUpperCase`, `length`, `equals`…)."
-      - code: java-tc-q4
+        explanation: "Comme en JavaScript, `+` colle des textes, et les String ont leurs propres outils."
+      - code: java-c1-b2
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: java-bases
-        prompt: "Quel mot-clé rend une variable non modifiable ?"
+        prompt: "Comment obtient-on le nombre de caractères du String `nom` en Java ?"
         choices:
-          - label: "`final`"
+          - label: "`nom.length()`"
             correct: true
-            why: "L'équivalent de const."
-          - label: "`static`"
+            why: "En Java, length est un outil : avec parenthèses."
+          - label: "`nom.length`"
             correct: false
-            why: "static signifie « partagé par la classe »."
-          - label: "`public`"
+            why: "Sans parenthèses, c'est l'écriture JavaScript."
+          - label: "`length(nom)`"
             correct: false
-            why: "public règle la visibilité."
-        explanation: "`final int MAJORITE = 18;`"
-      - code: java-tc-q5
-        kind: VRAI_FAUX
+            why: "On écrit le texte, un point, puis l'outil."
+        explanation: "`String.length()` : avec des parenthèses."
+      - code: java-jq-q1
+        kind: RESULTAT_CODE
         difficulty: 2
         skill: java-bases
-        prompt: "En Java, une variable déclarée `int` peut plus tard recevoir un texte."
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          String nom = "awa";
+          nom.toUpperCase();
+          System.out.println(nom);
+        language: java
+        choices:
+          - label: "awa"
+            correct: true
+            why: "toUpperCase renvoie un nouveau texte, qui n'a pas été rangé."
+          - label: "AWA"
+            correct: false
+            why: "Il faudrait `nom = nom.toUpperCase();`."
+          - label: "Une erreur"
+            correct: false
+            why: "Le code est valide."
+        explanation: "Un String ne change jamais : on récupère toujours le résultat de l'outil."
+      - code: java-tx-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quel code range le prénom en minuscules dans la même variable ?"
+        choices:
+          - label: "`prenom = prenom.toLowerCase();`"
+            correct: true
+            why: "On range le nouveau texte dans la variable."
+          - label: "`prenom.toLowerCase();`"
+            correct: false
+            why: "Le résultat est perdu."
+          - label: "`toLowerCase(prenom);`"
+            correct: false
+            why: "On écrit le texte, un point, puis l'outil."
+        explanation: "Transformer, puis ranger."
+      - code: java-tx-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-bases
+        prompt: "En Java, `+` sert aussi à coller des textes."
         choices:
           - label: "Vrai"
-            correct: false
-            why: "Non : le type est fixé (typage statique)."
-          - label: "Faux"
             correct: true
-            why: "Exact : le compilateur refuse."
-        explanation: "C'est la différence majeure avec JavaScript."
+            why: "Exactement comme en JavaScript."
+          - label: "Faux"
+            correct: false
+            why: "C'est pourtant la façon la plus courante."
+        explanation: "`\"Bonjour \" + prenom`."
     exercises:
-      - slug: java-ex-types-guide
+      - slug: java-ex-textes-guide
         kind: COMPLETER
-        title: "Choisir les bons types"
+        title: "Coller et transformer"
         difficulty: FACILE
         skill: java-bases
-        statement: "Complète avec le type Java qui convient."
-        criteria: "Les quatre types sont corrects."
+        statement: "Complète : colle « Salut » et le prénom, puis affiche le prénom en majuscules."
+        criteria: "Les deux trous sont corrects."
         hints:
-          - "Un âge entier : int. Un prix à virgule : double."
-          - "Un texte : String, avec une majuscule."
-          - "int, double, String, boolean."
-        solution: '["int", "double", "String", "boolean"]'
-        explanation: "Chaque valeur dans le bocal qui lui correspond."
+          - "Le signe qui colle deux textes."
+          - "L'outil des majuscules."
+          - "+, toUpperCase."
+        solution: '["+", "toUpperCase"]'
+        explanation: "`\"Salut \" + prenom` puis `prenom.toUpperCase()`."
         xp: 10
         payload:
           language: java
           template: |
-            [[1]] age = 30;
-            [[2]] prix = 12.50;
-            [[3]] ville = "Lille";
-            [[4]] connecte = false;
+            String prenom = "Inès";
+            System.out.println("Salut " [[1]] prenom);
+            System.out.println(prenom.[[2]]());
+          blanks:
+            - ["+"]
+            - ["toUpperCase"]
+      - slug: java-ex-textes-libre
+        kind: CODE_LIBRE
+        title: "Un badge en majuscules"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Dans le `main` d'une classe `Badge` :
+          1. crée `prenom` qui vaut `"Awa"` et `role` qui vaut `"formatrice"` ;
+          2. crée `badge` en collant le prénom, `" - "` et le rôle ;
+          3. affiche `badge` en majuscules : `AWA - FORMATRICE`.
+        criteria: "Deux String, un collage avec +, un affichage avec toUpperCase()."
+        hints:
+          - "`String badge = prenom + \" - \" + role;`"
+          - "L'outil des majuscules : toUpperCase()."
+          - "`System.out.println(badge.toUpperCase());`"
+        solution: |
+          public class Badge {
+              public static void main(String[] args) {
+                  String prenom = "Awa";
+                  String role = "formatrice";
+                  String badge = prenom + " - " + role;
+                  System.out.println(badge.toUpperCase());
+              }
+          }
+        explanation: "On colle d'abord, puis on transforme le tout."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Badge {
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'String\s+badge\s*=\s*prenom\s*\+\s*" - "\s*\+\s*role\s*;'
+              message: "Colle les morceaux : String badge = prenom + \" - \" + role;"
+            - pattern: 'System\.out\.println\s*\(\s*badge\.toUpperCase\s*\(\s*\)\s*\)'
+              message: "Affiche badge.toUpperCase()."
+          output: "AWA - FORMATRICE"
+      - slug: java-ex-textes-bug
+        kind: CORRIGER_ERREUR
+        title: "Un length à la mode JavaScript"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Le compilateur refuse `motDePasse.length` : en Java, `length` est un outil qui prend des
+          parenthèses. Corrige.
+        criteria: "length() avec parenthèses."
+        hints:
+          - "En JavaScript : length. En Java : length()."
+          - "Ajoute les parenthèses."
+          - "`motDePasse.length()`"
+        solution: |
+          public class Securite {
+              public static void main(String[] args) {
+                  String motDePasse = "soleil";
+                  System.out.println(motDePasse.length());
+              }
+          }
+        explanation: "Pour un String Java : `length()`."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Securite {
+                public static void main(String[] args) {
+                    String motDePasse = "soleil";
+                    System.out.println(motDePasse.length);
+                }
+            }
+          checks:
+            - pattern: 'motDePasse\.length\s*\(\s*\)'
+              message: "Écris motDePasse.length() avec des parenthèses."
+          output: "6"
+
+  # ===================================================================== LEÇON 5
+  - slug: java-conditions
+    title: "Les conditions en Java : if, else, &&, ||"
+    duration: 10
+    objective: "Écrire des conditions en Java : la même écriture qu'en JavaScript, avec == et != pour comparer des nombres."
+    prerequisites: "Leçon « Les textes : coller et transformer un String »."
+    skills: [java-bases]
+    xp: 15
+    memo: |
+      - `if`, `else if`, `else`, `&&`, `||`, `!` : **exactement** comme en JavaScript.
+      - Nombres : `==` (égal), `!=` (différent), `<`, `>`, `<=`, `>=`. Java n'a pas de `===`.
+      - Pour comparer des **textes**, il faudra un outil spécial : ce sera la leçon suivante.
+      - La condition doit être un vrai `boolean` : `if (age)` ne compile pas.
+    commonMistakes: |
+      - Écrire `===` : n'existe pas en Java.
+      - Écrire `if (age)` : la condition doit répondre true ou false.
+    blocks:
+      - type: text
+        md: |
+          Tu connais déjà les conditions en JavaScript. En Java, l'écriture est la même ; seul le signe
+          « égal » change : `==` au lieu de `===`.
+      - type: definition
+        id: def-conditions-java
+        term: "Conditions en Java"
+        md: |
+          Le même **carrefour** qu'en JavaScript : une question (vrai/faux) choisit la route. Pour comparer
+          deux nombres, on écrit `==` (égal) ou `!=` (différent).
+      - type: code
+        id: code-conditions-java
+        language: java
+        title: "Un message selon l'heure et le jour"
+        code: |
+          public class Salutation {
+              public static void main(String[] args) {
+                  int heure = 20;
+                  boolean weekEnd = true;
+                  if (heure < 12) {
+                      System.out.println("Bonjour");
+                  } else if (heure < 18) {
+                      System.out.println("Bon après-midi");
+                  } else {
+                      System.out.println("Bonsoir");
+                  }
+                  if (weekEnd || heure == 12) {
+                      System.out.println("Pense à faire une pause !");
+                  }
+              }
+          }
+        lines:
+          - n: 5
+            note: "Comme en JavaScript : if, else if, else."
+          - n: 12
+            note: "`||` : le week-end, ou à midi pile (`==` compare deux nombres)."
+      - type: question
+        ref: java-cd-q1
+        review: def-conditions-java
+      - type: question
+        ref: java-cd-q2
+        review: code-conditions-java
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la condition."
+      - type: exercise
+        ref: java-ex-conditions-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : l'accès à une salle."
+      - type: exercise
+        ref: java-ex-conditions-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un === à la mode JavaScript."
+      - type: exercise
+        ref: java-ex-conditions-bug
+      - type: quiz
+        items:
+          - ref: java-cd-q3
+            review: def-conditions-java
+          - ref: java-cd-q4
+            review: code-conditions-java
+          - ref: java-cd-q5
+            review: def-conditions-java
+    questions:
+      - code: java-cd-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Comment tester qu'un `int nombre` vaut 3 en Java ?"
+        choices:
+          - label: "`nombre == 3`"
+            correct: true
+            why: "Pour les nombres, == compare les valeurs."
+          - label: "`nombre === 3`"
+            correct: false
+            why: "=== n'existe pas en Java."
+          - label: "`nombre = 3`"
+            correct: false
+            why: "Un seul = range la valeur 3 au lieu de comparer."
+        explanation: "Pour comparer deux nombres en Java : ==."
+      - code: java-cd-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Dans l'exemple, qu'affiche le programme à 20 h, un jour de week-end ?"
+        snippet: |
+          int heure = 20;
+          boolean weekEnd = true;
+        language: java
+        choices:
+          - label: "Bonsoir, puis Pense à faire une pause !"
+            correct: true
+            why: "20 n'est ni avant 12 ni avant 18 ; et weekEnd vaut true."
+          - label: "Bon après-midi"
+            correct: false
+            why: "20 n'est pas avant 18."
+          - label: "Bonsoir seulement"
+            correct: false
+            why: "Le deuxième if est indépendant : le week-end affiche aussi la pause."
+        explanation: "Deux if séparés : chacun décide pour lui-même."
+      - code: java-cd-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-bases
+        prompt: "En Java, `if`, `else` et `&&` s'écrivent comme en JavaScript."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Même écriture."
+          - label: "Faux"
+            correct: false
+            why: "Seul le signe égal change (== au lieu de ===)."
+        explanation: "Ce que tu as appris en JavaScript sert directement."
+      - code: java-cd-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Quelle condition est correcte pour « la personne est inscrite et a au moins 18 ans » ?"
+        choices:
+          - label: "`inscrite && age >= 18`"
+            correct: true
+            why: "Un booléen et une comparaison, reliés par &&."
+          - label: "`inscrite && age =>= 18`"
+            correct: false
+            why: "Le signe s'écrit >=."
+          - label: "`inscrite === true && age >= 18`"
+            correct: false
+            why: "=== n'existe pas en Java."
+        explanation: "Même logique qu'en JavaScript, sans ===."
+      - code: java-cd-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quel signe veut dire « différent de » pour des nombres en Java ?"
+        choices:
+          - label: "`!=`"
+            correct: true
+            why: "Pas de === ni de !== en Java."
+          - label: "`!==`"
+            correct: false
+            why: "C'est l'écriture JavaScript."
+          - label: "`<>`"
+            correct: false
+            why: "C'est l'écriture SQL."
+        explanation: "Java : == et !=."
+    exercises:
+      - slug: java-ex-conditions-guide
+        kind: COMPLETER
+        title: "Compléter la condition"
+        difficulty: FACILE
+        skill: java-bases
+        statement: "Complète : si le stock vaut 0, affiche « Rupture », sinon « Disponible »."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "« si » se dit if."
+          - "Pour comparer deux nombres en Java : deux signes égal."
+          - "if, ==, else."
+        solution: '["if", "==", "else"]'
+        explanation: "`if (stock == 0) { ... } else { ... }`"
+        xp: 10
+        payload:
+          language: java
+          template: |
+            int stock = 0;
+            [[1]] (stock [[2]] 0) {
+                System.out.println("Rupture");
+            } [[3]] {
+                System.out.println("Disponible");
+            }
+          blanks:
+            - ["if"]
+            - ["=="]
+            - ["else"]
+      - slug: java-ex-conditions-libre
+        kind: CODE_LIBRE
+        title: "L'accès à une salle"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Dans le `main` d'une classe `Salle`, avec `boolean aUnBadge = true;` et `int heure = 10;`,
+          affiche `Entrée autorisée` si la personne a un badge **et** que l'heure est au moins 8,
+          sinon `Entrée refusée`.
+        criteria: "Un if avec un booléen et >= reliés par &&, et un else."
+        hints:
+          - "`aUnBadge` vaut déjà true ou false."
+          - "`&& heure >= 8`"
+          - "`if (aUnBadge && heure >= 8) { ... } else { ... }`"
+        solution: |
+          public class Salle {
+              public static void main(String[] args) {
+                  boolean aUnBadge = true;
+                  int heure = 10;
+                  if (aUnBadge && heure >= 8) {
+                      System.out.println("Entrée autorisée");
+                  } else {
+                      System.out.println("Entrée refusée");
+                  }
+              }
+          }
+        explanation: "Les deux conditions doivent être vraies."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Salle {
+                public static void main(String[] args) {
+                    boolean aUnBadge = true;
+                    int heure = 10;
+
+                }
+            }
+          checks:
+            - pattern: 'aUnBadge(\s*==\s*true)?\s*&&\s*heure\s*>=\s*8'
+              message: "Écris la condition : aUnBadge && heure >= 8."
+            - pattern: '\belse\b'
+              message: "Ajoute un else pour le refus."
+            - pattern: 'System\.out\.println\s*\(\s*"Entrée autorisée"\s*\)'
+              message: "Affiche \"Entrée autorisée\"."
+          output: "Entrée autorisée"
+      - slug: java-ex-conditions-bug
+        kind: CORRIGER_ERREUR
+        title: "Un === à la mode JavaScript"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Le compilateur refuse `places === 0` : ce signe n'existe pas en Java. Corrige la comparaison.
+        criteria: "La comparaison utilise ==."
+        hints:
+          - "Java n'a pas de ===."
+          - "Pour deux nombres : ==."
+          - "`if (places == 0)`"
+        solution: |
+          public class Cinema {
+              public static void main(String[] args) {
+                  int places = 0;
+                  if (places == 0) {
+                      System.out.println("Complet");
+                  }
+              }
+          }
+        explanation: "En Java, les nombres se comparent avec ==."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Cinema {
+                public static void main(String[] args) {
+                    int places = 0;
+                    if (places === 0) {
+                        System.out.println("Complet");
+                    }
+                }
+            }
+          checks:
+            - pattern: '==='
+              absent: true
+              message: "=== n'existe pas en Java."
+            - pattern: 'if\s*\(\s*places\s*==\s*0\s*\)'
+              message: "Écris if (places == 0)."
+          output: "Complet"
+
+  # ===================================================================== LEÇON 6
+  - slug: java-equals
+    title: "Comparer deux textes : equals"
+    duration: 9
+    objective: "Comparer le contenu de deux String avec equals, et comprendre pourquoi == ne convient pas."
+    prerequisites: "Leçon « Les conditions en Java »."
+    skills: [java-bases]
+    xp: 10
+    memo: |
+      - Pour comparer deux textes : `a.equals(b)`, qui répond `true` ou `false`.
+      - **Jamais** `a == b` pour des String : `==` vérifie si c'est le **même exemplaire** en mémoire, pas le même contenu.
+      - Astuce : `"ADMIN".equals(role)` fonctionne même si `role` est vide (null).
+      - `equalsIgnoreCase` compare sans tenir compte des majuscules.
+    commonMistakes: |
+      - Comparer des String avec `==` : le résultat peut être faux alors que les textes sont identiques.
+    blocks:
+      - type: text
+        md: |
+          En JavaScript, `===` comparait deux textes. En Java, les textes sont des **objets**, et on les compare
+          avec un outil spécial : `equals`.
+      - type: definition
+        id: def-equals
+        term: "equals"
+        md: |
+          `==` vérifie si deux variables désignent **le même exemplaire**, `equals` vérifie si elles ont **le
+          même contenu**. Deux livres identiques achetés séparément ont le même contenu (`equals` vrai) mais ne
+          sont pas le même exemplaire (`==` faux).
+      - type: code
+        id: code-equals
+        language: java
+        title: "Comparer des textes"
+        code: |
+          public class Connexion {
+              public static void main(String[] args) {
+                  String role = "ADMIN";
+                  System.out.println(role.equals("ADMIN"));
+                  System.out.println("admin".equals(role));
+                  System.out.println("admin".equalsIgnoreCase(role));
+              }
+          }
+        lines:
+          - n: 4
+            note: "Même contenu : true."
+          - n: 5
+            note: "Les majuscules comptent : false."
+          - n: 6
+            note: "`equalsIgnoreCase` ignore les majuscules : true."
+      - type: compare
+        left:
+          title: "Piège"
+          good: false
+          language: java
+          code: |
+            if (saisie == "oui") { ... }
+          md: "Compare les exemplaires : peut répondre faux même si la saisie vaut « oui »."
+        right:
+          title: "Correct"
+          good: true
+          language: java
+          code: |
+            if ("oui".equals(saisie)) { ... }
+          md: "Compare le contenu."
+      - type: question
+        ref: java-tc-q2
+        review: def-equals
+      - type: question
+        ref: java-eq-q2
+        review: code-equals
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la comparaison."
+      - type: exercise
+        ref: java-ex-equals-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : vérifier un mot de passe."
+      - type: exercise
+        ref: java-ex-equals-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un == entre deux textes."
+      - type: exercise
+        ref: java-ex-equals-bug
+      - type: jury
+        items:
+          - q: "Pourquoi compare-t-on les String avec equals et pas avec == ?"
+            a: "`==` compare les références (le même objet en mémoire) ; `equals` compare le contenu. Deux textes identiques peuvent être deux objets différents."
+      - type: quiz
+        items:
+          - ref: java-eq-q3
+            review: def-equals
+          - ref: java-eq-q4
+            review: code-equals
+          - ref: java-eq-q5
+            review: def-equals
+    questions:
+      - code: java-tc-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Comment vérifier que `role` contient le texte ADMIN ?"
+        choices:
+          - label: "`\"ADMIN\".equals(role)`"
+            correct: true
+            why: "equals compare le contenu (et ne plante pas si role est vide)."
+          - label: "`role == \"ADMIN\"`"
+            correct: false
+            why: "== compare les exemplaires, pas le contenu."
+          - label: "`role = \"ADMIN\"`"
+            correct: false
+            why: "C'est un rangement de valeur."
+        explanation: "Pour les textes : equals."
+      - code: java-eq-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          String ville = "Lyon";
+          System.out.println(ville.equals("lyon"));
+        language: java
+        choices:
+          - label: "false"
+            correct: true
+            why: "Les majuscules comptent : L n'est pas l."
+          - label: "true"
+            correct: false
+            why: "equals tient compte des majuscules."
+          - label: "Lyon"
+            correct: false
+            why: "equals répond true ou false."
+        explanation: "Pour ignorer les majuscules : equalsIgnoreCase."
+      - code: java-eq-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-bases
+        prompt: "Pour comparer deux String en Java, on utilise `==`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "== compare les exemplaires en mémoire."
+          - label: "Faux"
+            correct: true
+            why: "Exact : on utilise equals."
+        explanation: "Réflexe Java : equals pour les textes."
+      - code: java-eq-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Que répond `\"Oui\".equalsIgnoreCase(\"OUI\")` ?"
+        choices:
+          - label: "true"
+            correct: true
+            why: "Les majuscules sont ignorées."
+          - label: "false"
+            correct: false
+            why: "equalsIgnoreCase ne tient pas compte des majuscules."
+          - label: "Une erreur"
+            correct: false
+            why: "C'est un outil tout à fait valide."
+        explanation: "Pratique pour une saisie utilisateur."
+      - code: java-eq-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Pourquoi écrire `\"ADMIN\".equals(role)` plutôt que `role.equals(\"ADMIN\")` ?"
+        choices:
+          - label: "Parce que ça ne plante pas si role est vide (null)"
+            correct: true
+            why: "Le texte \"ADMIN\" existe toujours, lui."
+          - label: "Parce que c'est plus rapide"
+            correct: false
+            why: "Aucune différence de vitesse."
+          - label: "Parce que l'autre écriture est interdite"
+            correct: false
+            why: "Elle est permise, mais plante si role vaut null."
+        explanation: "Mettre la valeur connue en premier évite une erreur."
+    exercises:
+      - slug: java-ex-equals-guide
+        kind: COMPLETER
+        title: "Compléter la comparaison"
+        difficulty: FACILE
+        skill: java-bases
+        statement: "Complète pour afficher si la saison vaut « été »."
+        criteria: "Le trou est correct."
+        hints:
+          - "L'outil qui compare deux textes."
+          - "Il s'écrit après un point, avec des parenthèses."
+          - "equals."
+        solution: '["equals"]'
+        explanation: "`\"été\".equals(saison)` répond true ou false."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            String saison = "hiver";
+            System.out.println("été".[[1]](saison));
+          blanks:
+            - ["equals"]
+      - slug: java-ex-equals-libre
+        kind: CODE_LIBRE
+        title: "Vérifier un mot de passe"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Dans le `main` d'une classe `MotDePasse`, crée `saisie` qui vaut `"soleil"`, puis affiche le
+          résultat de la comparaison entre `"soleil"` et `saisie` avec `equals`.
+        criteria: "Une comparaison avec equals affichée."
+        hints:
+          - "`String saisie = \"soleil\";`"
+          - "`\"soleil\".equals(saisie)` répond true ou false."
+          - "`System.out.println(\"soleil\".equals(saisie));`"
+        solution: |
+          public class MotDePasse {
+              public static void main(String[] args) {
+                  String saisie = "soleil";
+                  System.out.println("soleil".equals(saisie));
+              }
+          }
+        explanation: "Même contenu : true."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class MotDePasse {
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'String\s+saisie\s*=\s*"soleil"\s*;'
+              message: "Crée String saisie = \"soleil\";"
+            - pattern: '"soleil"\.equals\s*\(\s*saisie\s*\)|saisie\.equals\s*\(\s*"soleil"\s*\)'
+              message: "Compare avec equals : \"soleil\".equals(saisie)."
+            - pattern: 'saisie\s*==|==\s*saisie'
+              absent: true
+              message: "N'utilise pas == pour des textes."
+          output: "true"
+      - slug: java-ex-equals-bug
+        kind: CORRIGER_ERREUR
+        title: "Un == entre deux textes"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Ce code compare deux textes avec `==`. Remplace la comparaison par `equals`.
+        criteria: "La comparaison utilise equals."
+        hints:
+          - "== compare les exemplaires, pas le contenu."
+          - "Pour le contenu : equals."
+          - "`System.out.println(\"Lyon\".equals(ville));`"
+        solution: |
+          public class Comparaison {
+              public static void main(String[] args) {
+                  String ville = "Lyon";
+                  System.out.println("Lyon".equals(ville));
+              }
+          }
+        explanation: "equals compare le contenu des textes."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Comparaison {
+                public static void main(String[] args) {
+                    String ville = "Lyon";
+                    System.out.println(ville == "Lyon");
+                }
+            }
+          checks:
+            - pattern: 'ville\s*==|==\s*ville'
+              absent: true
+              message: "Remplace == par equals."
+            - pattern: '"Lyon"\.equals\s*\(\s*ville\s*\)|ville\.equals\s*\(\s*"Lyon"\s*\)'
+              message: "Compare avec equals : \"Lyon\".equals(ville)."
+          output: "true"
+
+  # ===================================================================== LEÇON 7
+  - slug: java-boucles
+    title: "Les boucles en Java : for et while"
+    duration: 9
+    objective: "Répéter des instructions avec for et while en Java, en typant le compteur."
+    prerequisites: "Leçon « Comparer deux textes : equals »."
+    skills: [java-bases]
+    xp: 10
+    memo: |
+      - `for (int i = 1; i <= 5; i++) { ... }` : comme en JavaScript, mais le compteur est **typé** (`int i`).
+      - `while (condition) { ... }` : identique à JavaScript.
+      - Toujours faire évoluer la condition pour sortir de la boucle.
+    commonMistakes: |
+      - Écrire `let i` : let n'existe pas en Java, c'est `int i`.
+      - Oublier de faire évoluer la variable d'un while : boucle infinie.
+    blocks:
+      - type: text
+        md: |
+          Les boucles Java ressemblent à celles de JavaScript. Une seule différence : le compteur a un type,
+          `int`.
+      - type: definition
+        id: def-boucles-java
+        term: "Boucles en Java"
+        md: |
+          Le même **tour de piste** qu'en JavaScript. Le compteur est une vraie variable Java : on écrit son
+          type, `int`.
+      - type: code
+        id: code-boucles-java
+        language: java
+        title: "for et while"
+        code: |
+          public class Rebours {
+              public static void main(String[] args) {
+                  for (int i = 1; i <= 3; i++) {
+                      System.out.println("Étape " + i);
+                  }
+                  int secondes = 3;
+                  while (secondes > 0) {
+                      System.out.println(secondes);
+                      secondes--;
+                  }
+                  System.out.println("Partez !");
+              }
+          }
+        lines:
+          - n: 3
+            note: "`int i` : le compteur est typé. Le reste est identique à JavaScript."
+          - n: 7
+            note: "while : tant qu'il reste des secondes."
+          - n: 9
+            note: "La condition évolue : on sortira de la boucle."
+      - type: question
+        ref: java-bo-q1
+        review: def-boucles-java
+      - type: question
+        ref: java-bo-q2
+        review: code-boucles-java
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la boucle for."
+      - type: exercise
+        ref: java-ex-boucles-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : les jours d'une semaine."
+      - type: exercise
+        ref: java-ex-boucles-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un let à la mode JavaScript."
+      - type: exercise
+        ref: java-ex-boucles-bug
+      - type: quiz
+        items:
+          - ref: java-bo-q3
+            review: def-boucles-java
+          - ref: java-bo-q4
+            review: code-boucles-java
+          - ref: java-bo-q5
+            review: def-boucles-java
+    questions:
+      - code: java-bo-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quelle boucle for est correcte en Java ?"
+        choices:
+          - label: "`for (int i = 1; i <= 5; i++)`"
+            correct: true
+            why: "Compteur typé int."
+          - label: "`for (let i = 1; i <= 5; i++)`"
+            correct: false
+            why: "let n'existe pas en Java."
+          - label: "`for (i = 1; i <= 5; i++)`"
+            correct: false
+            why: "Il faut déclarer i avec son type."
+        explanation: "Le compteur est une variable Java : `int i`."
+      - code: java-bo-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          for (int i = 1; i <= 2; i++) {
+              System.out.println("Tour " + i);
+          }
+        language: java
+        choices:
+          - label: "Tour 1 puis Tour 2"
+            correct: true
+            why: "i vaut 1 puis 2 ; à 3, la condition est fausse."
+          - label: "Tour 2 seulement"
+            correct: false
+            why: "Chaque tour affiche sa ligne."
+          - label: "Tour 1, Tour 2, Tour 3"
+            correct: false
+            why: "La boucle s'arrête avant 3."
+        explanation: "Un tour par valeur de i."
+      - code: java-bo-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-bases
+        prompt: "La boucle while s'écrit de la même façon en Java et en JavaScript."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "`while (condition) { ... }`."
+          - label: "Faux"
+            correct: false
+            why: "L'écriture est identique."
+        explanation: "Seules les déclarations de variables changent (le type)."
+      - code: java-bo-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Dans l'exemple, à quoi sert `secondes--` ?"
+        choices:
+          - label: "À faire avancer le compte à rebours pour que la boucle s'arrête"
+            correct: true
+            why: "Sans lui, la boucle ne finirait jamais."
+          - label: "À afficher les secondes"
+            correct: false
+            why: "C'est println qui affiche."
+          - label: "À rien"
+            correct: false
+            why: "Il est indispensable."
+        explanation: "Toujours faire évoluer la condition d'un while."
+      - code: java-bo-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quelle boucle choisir pour afficher les mois de 1 à 12 ?"
+        choices:
+          - label: "`for`, car on connaît le nombre de tours"
+            correct: true
+            why: "12 tours connus d'avance."
+          - label: "`while`, car on ne sait pas quand s'arrêter"
+            correct: false
+            why: "Ici, on sait très bien quand s'arrêter."
+          - label: "Aucune"
+            correct: false
+            why: "Écrire 12 lignes à la main serait pénible."
+        explanation: "Nombre de tours connu → for."
+    exercises:
+      - slug: java-ex-boucles-guide
+        kind: COMPLETER
+        title: "Compléter la boucle for"
+        difficulty: FACILE
+        skill: java-bases
+        statement: "Complète pour afficher « Page 1 » à « Page 4 »."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le compteur est un entier."
+          - "On continue tant que i est au plus 4."
+          - "int, <=, ++."
+        solution: '["int", "<=", "++"]'
+        explanation: "`for (int i = 1; i <= 4; i++)`"
+        xp: 10
+        payload:
+          language: java
+          template: |
+            for ([[1]] i = 1; i [[2]] 4; i[[3]]) {
+                System.out.println("Page " + i);
+            }
           blanks:
             - ["int"]
-            - ["double"]
+            - ["<="]
+            - ["++"]
+      - slug: java-ex-boucles-libre
+        kind: CODE_LIBRE
+        title: "Les jours d'une semaine"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Dans le `main` d'une classe `Semaine`, affiche avec une boucle `for` : `Jour 1`, `Jour 2`… jusqu'à
+          `Jour 7`.
+        criteria: "Une boucle for de 1 à 7 et un affichage avec +."
+        hints:
+          - "`for (int i = 1; i <= 7; i++) { ... }`"
+          - "Dans la boucle : colle \"Jour \" et i."
+          - "`System.out.println(\"Jour \" + i);`"
+        solution: |
+          public class Semaine {
+              public static void main(String[] args) {
+                  for (int i = 1; i <= 7; i++) {
+                      System.out.println("Jour " + i);
+                  }
+              }
+          }
+        explanation: "Sept tours, sept lignes."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Semaine {
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'for\s*\(\s*int\s+(\w+)\s*=\s*1\s*;\s*\1\s*<=\s*7\s*;\s*\1\s*\+\+\s*\)'
+              message: "Écris for (int i = 1; i <= 7; i++)."
+            - pattern: 'System\.out\.println\s*\(\s*"Jour "\s*\+\s*\w+\s*\)'
+              message: "Affiche \"Jour \" + i."
+          output: |
+            Jour 1
+            Jour 2
+            …
+            Jour 7
+      - slug: java-ex-boucles-bug
+        kind: CORRIGER_ERREUR
+        title: "Un let à la mode JavaScript"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Le compilateur refuse `let i` : en Java, le compteur doit être déclaré avec son type. Corrige.
+        criteria: "Le compteur est déclaré int."
+        hints:
+          - "let n'existe pas en Java."
+          - "Un compteur est un nombre entier."
+          - "`for (int i = 1; i <= 3; i++)`"
+        solution: |
+          public class Essais {
+              public static void main(String[] args) {
+                  for (int i = 1; i <= 3; i++) {
+                      System.out.println("Essai " + i);
+                  }
+              }
+          }
+        explanation: "En Java, chaque variable a son type, même un compteur."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Essais {
+                public static void main(String[] args) {
+                    for (let i = 1; i <= 3; i++) {
+                        System.out.println("Essai " + i);
+                    }
+                }
+            }
+          checks:
+            - pattern: '\blet\s'
+              absent: true
+              message: "let n'existe pas en Java."
+            - pattern: 'for\s*\(\s*int\s+i\s*=\s*1'
+              message: "Déclare le compteur : for (int i = 1; ...)."
+          output: |
+            Essai 1
+            Essai 2
+            Essai 3
+
+  # ===================================================================== LEÇON 8
+  - slug: java-tableaux
+    title: "Les tableaux : String[] et la boucle for-each"
+    duration: 10
+    objective: "Créer un tableau Java de taille fixe, lire une case, connaître sa taille et le parcourir avec for-each."
+    prerequisites: "Leçon « Les boucles en Java »."
+    skills: [java-bases]
+    xp: 15
+    memo: |
+      - `String[] jours = {"lundi", "mardi", "mercredi"};` : un tableau de textes (les crochets après le type).
+      - Les cases commencent à **0** : `jours[0]` vaut `"lundi"`.
+      - `jours.length` donne la taille — ici **sans** parenthèses.
+      - Un tableau Java a une **taille fixe** : on ne peut pas y ajouter de case (pour ça, on utilisera les List).
+      - Parcourir : `for (String jour : jours) { ... }` (le `:` se lit « dans »).
+    commonMistakes: |
+      - Écrire `jours.length()` : pour un tableau, c'est `length` sans parenthèses.
+      - Lire une case qui n'existe pas : `ArrayIndexOutOfBoundsException`.
+    blocks:
+      - type: text
+        md: |
+          Comme en JavaScript, un tableau range plusieurs valeurs. En Java, il a un type (`String[]`) et une
+          taille fixe.
+      - type: definition
+        id: def-tableau-java
+        term: "Tableau Java"
+        md: |
+          Une **boîte à œufs** : un nombre de cases fixé à la fabrication, toutes de la même sorte. On peut
+          changer ce qu'il y a dans une case, mais pas ajouter de case.
+      - type: code
+        id: code-tableau-java
+        language: java
+        title: "Un tableau de jours"
+        code: |
+          public class Planning {
+              public static void main(String[] args) {
+                  String[] jours = {"lundi", "mardi", "mercredi"};
+                  System.out.println(jours[0]);
+                  System.out.println(jours.length);
+                  for (String jour : jours) {
+                      System.out.println("Cours le " + jour);
+                  }
+              }
+          }
+        lines:
+          - n: 3
+            note: "`String[]` : un tableau de textes, créé avec des accolades."
+          - n: 4
+            note: "Case 0 : lundi."
+          - n: 5
+            note: "La taille : `length` sans parenthèses pour un tableau."
+          - n: 6
+            note: "for-each : « pour chaque jour dans jours ». L'équivalent du for…of de JavaScript."
+      - type: question
+        ref: java-tb-q1
+        review: def-tableau-java
+      - type: question
+        ref: java-tb-q2
+        review: code-tableau-java
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le tableau et son parcours."
+      - type: exercise
+        ref: java-ex-tableaux-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une liste de couleurs."
+      - type: exercise
+        ref: java-ex-tableaux-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une case qui n'existe pas."
+      - type: exercise
+        ref: java-ex-tableaux-bug
+      - type: quiz
+        items:
+          - ref: java-tb-q3
+            review: def-tableau-java
+          - ref: java-tb-q4
+            review: code-tableau-java
+          - ref: java-tb-q5
+            review: def-tableau-java
+    questions:
+      - code: java-tb-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quelle écriture crée un tableau de textes en Java ?"
+        choices:
+          - label: "`String[] fruits = {\"pomme\", \"kiwi\"};`"
+            correct: true
+            why: "Le type suivi de crochets, les valeurs entre accolades."
+          - label: "`String fruits = [\"pomme\", \"kiwi\"];`"
+            correct: false
+            why: "C'est l'écriture JavaScript, et il manque les crochets au type."
+          - label: "`const fruits = {\"pomme\", \"kiwi\"};`"
+            correct: false
+            why: "const n'existe pas en Java."
+        explanation: "`Type[] nom = {valeur1, valeur2};`"
+      - code: java-tb-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          String[] notes = {"do", "ré", "mi"};
+          System.out.println(notes[2]);
+        language: java
+        choices:
+          - label: "mi"
+            correct: true
+            why: "Case 0 : do, case 1 : ré, case 2 : mi."
+          - label: "ré"
+            correct: false
+            why: "ré est dans la case 1."
+          - label: "Une erreur"
+            correct: false
+            why: "La case 2 existe."
+        explanation: "Les cases commencent à 0."
+      - code: java-tb-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Comment obtient-on la taille du tableau `jours` ?"
+        choices:
+          - label: "`jours.length`"
+            correct: true
+            why: "Pour un tableau : sans parenthèses."
+          - label: "`jours.length()`"
+            correct: false
+            why: "Les parenthèses, c'est pour un String."
+          - label: "`jours.size()`"
+            correct: false
+            why: "size() servira pour les List."
+        explanation: "Tableau : length ; String : length() ; List : size()."
+      - code: java-tb-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Comment se lit `for (String jour : jours)` ?"
+        choices:
+          - label: "« pour chaque jour dans le tableau jours »"
+            correct: true
+            why: "Le : se lit « dans »."
+          - label: "« pour jour égal à jours »"
+            correct: false
+            why: "Aucune égalité ici."
+          - label: "« tant que jour est différent de jours »"
+            correct: false
+            why: "C'est un parcours, pas un while."
+        explanation: "C'est le for…of de JavaScript."
+      - code: java-tb-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-bases
+        prompt: "On peut ajouter une case à un tableau Java déjà créé."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Sa taille est fixe."
+          - label: "Faux"
+            correct: true
+            why: "Exact : pour une liste qui grandit, on utilisera List."
+        explanation: "Taille fixe : c'est la limite des tableaux."
+    exercises:
+      - slug: java-ex-tableaux-guide
+        kind: COMPLETER
+        title: "Compléter le tableau"
+        difficulty: FACILE
+        skill: java-bases
+        statement: "Complète pour créer le tableau des villes et afficher chacune."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Un tableau de textes : String[]."
+          - "Les valeurs s'écrivent entre accolades."
+          - "[], {, :"
+        solution: '["[]", "{", ":"]'
+        explanation: "`String[] villes = {...};` puis `for (String ville : villes)`."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            String[[1]] villes = [[2]]"Dakar", "Lyon"};
+            for (String ville [[3]] villes) {
+                System.out.println(ville);
+            }
+          blanks:
+            - ["[]"]
+            - ["{"]
+            - [":"]
+      - slug: java-ex-tableaux-libre
+        kind: CODE_LIBRE
+        title: "Une liste de couleurs"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Dans le `main` d'une classe `Couleurs` :
+          1. crée le tableau `couleurs` avec `"rouge"`, `"vert"` et `"bleu"` ;
+          2. affiche sa taille ;
+          3. affiche chaque couleur avec une boucle for-each.
+        criteria: "Un tableau String[], length, une boucle for-each."
+        hints:
+          - "`String[] couleurs = {\"rouge\", \"vert\", \"bleu\"};`"
+          - "`System.out.println(couleurs.length);`"
+          - "`for (String couleur : couleurs) { System.out.println(couleur); }`"
+        solution: |
+          public class Couleurs {
+              public static void main(String[] args) {
+                  String[] couleurs = {"rouge", "vert", "bleu"};
+                  System.out.println(couleurs.length);
+                  for (String couleur : couleurs) {
+                      System.out.println(couleur);
+                  }
+              }
+          }
+        explanation: "La taille, puis chaque élément."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public class Couleurs {
+                public static void main(String[] args) {
+
+                }
+            }
+          checks:
+            - pattern: 'String\s*\[\s*\]\s+couleurs\s*=\s*\{\s*"rouge"\s*,\s*"vert"\s*,\s*"bleu"\s*\}\s*;'
+              message: "Crée String[] couleurs = {\"rouge\", \"vert\", \"bleu\"};"
+            - pattern: 'System\.out\.println\s*\(\s*couleurs\.length\s*\)'
+              message: "Affiche couleurs.length."
+            - pattern: 'for\s*\(\s*String\s+\w+\s*:\s*couleurs\s*\)'
+              message: "Parcours avec for (String couleur : couleurs)."
+          output: |
+            3
+            rouge
+            vert
+            bleu
+      - slug: java-ex-tableaux-bug
+        kind: CORRIGER_ERREUR
+        title: "Une case qui n'existe pas"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Ce programme plante avec « ArrayIndexOutOfBoundsException : Index 3 out of bounds for length 3 ».
+          Il veut afficher le **dernier** invité. Corrige l'indice.
+        criteria: "Le dernier invité est lu à l'indice 2."
+        hints:
+          - "Trois cases : 0, 1 et 2."
+          - "La case 3 n'existe pas."
+          - "`invites[2]`"
+        solution: |
+          public class Invites {
+              public static void main(String[] args) {
+                  String[] invites = {"Awa", "Léo", "Inès"};
+                  System.out.println(invites[2]);
+              }
+          }
+        explanation: "Le dernier élément est à l'indice length - 1, ici 2."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Invites {
+                public static void main(String[] args) {
+                    String[] invites = {"Awa", "Léo", "Inès"};
+                    System.out.println(invites[3]);
+                }
+            }
+          checks:
+            - pattern: 'invites\s*\[\s*2\s*\]'
+              message: "Lis la dernière case : invites[2]."
+            - pattern: 'invites\s*\[\s*3\s*\]'
+              absent: true
+              message: "La case 3 n'existe pas."
+          output: "Inès"
+
+  # ===================================================================== LEÇON 9
+  - slug: java-methodes
+    title: "Écrire ses propres méthodes"
+    duration: 11
+    objective: "Écrire une méthode static avec des paramètres typés et un type de retour, puis l'appeler depuis main."
+    prerequisites: "Leçon « Les tableaux »."
+    skills: [java-bases]
+    xp: 15
+    memo: |
+      - Une **méthode** Java = une fonction rangée dans une classe.
+      - `static String saluer(String prenom) { return "Bonjour " + prenom; }` : type du résultat, nom, paramètres **typés**.
+      - `void` : la méthode ne renvoie rien (comme `main`).
+      - `static` : on peut l'appeler directement depuis `main`, sans créer d'objet (les objets arrivent au chapitre suivant).
+      - Appel : `saluer("Awa")`.
+    commonMistakes: |
+      - Oublier le type d'un paramètre : `saluer(prenom)` dans la déclaration ne compile pas.
+      - Oublier `return` alors que le type de retour n'est pas void.
+      - Renvoyer une valeur du mauvais type.
+    blocks:
+      - type: text
+        md: |
+          En JavaScript, tu écrivais des fonctions. En Java, on les appelle des **méthodes**, et chaque
+          information a son type : les paramètres **et** le résultat.
+      - type: definition
+        id: def-methode-java
+        term: "Méthode"
+        md: |
+          Une **recette** avec une étiquette précise : « je prends un texte, je rends un texte ». Le compilateur
+          vérifie qu'on lui donne bien les bons ingrédients et qu'elle rend bien le bon plat.
+      - type: code
+        id: code-methode-java
+        language: java
+        title: "Une méthode qui prépare un message"
+        code: |
+          public class Accueil {
+              static String saluer(String prenom) {
+                  return "Bonjour " + prenom + " !";
+              }
+
+              public static void main(String[] args) {
+                  String message = saluer("Awa");
+                  System.out.println(message);
+                  System.out.println(saluer("Léo"));
+              }
+          }
+        lines:
+          - n: 2
+            note: "`static`, le type du résultat (`String`), le nom, puis le paramètre typé (`String prenom`)."
+          - n: 3
+            note: "`return` renvoie le message préparé."
+          - n: 7
+            note: "L'appel, depuis main. Le résultat est rangé dans une variable String."
+      - type: question
+        ref: java-c1-b1
+        review: def-methode-java
+      - type: question
+        ref: java-me-q2
+        review: code-methode-java
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la méthode."
+      - type: exercise
+        ref: java-ex-methodes-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : choisir un tarif."
+      - type: exercise
+        ref: java-ex-tarif
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un paramètre sans type."
+      - type: exercise
+        ref: java-ex-methodes-bug
+      - type: quiz
+        items:
+          - ref: java-me-q3
+            review: def-methode-java
+          - ref: java-me-q4
+            review: code-methode-java
+          - ref: java-me-q5
+            review: def-methode-java
+    questions:
+      - code: java-c1-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-bases
+        prompt: "Que signifie `void` dans une déclaration de méthode ?"
+        choices:
+          - label: "La méthode ne renvoie rien"
+            correct: true
+            why: "void = vide."
+          - label: "La méthode est vide"
+            correct: false
+            why: "Elle peut contenir du code ; elle ne renvoie simplement pas de valeur."
+          - label: "La méthode est privée"
+            correct: false
+            why: "La visibilité est donnée par d'autres mots."
+        explanation: "`void` indique l'absence de valeur renvoyée."
+      - code: java-me-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Que signifie `static String saluer(String prenom)` ?"
+        choices:
+          - label: "saluer reçoit un texte et renvoie un texte"
+            correct: true
+            why: "Le premier String est le type du résultat, le second celui du paramètre."
+          - label: "saluer reçoit deux textes"
+            correct: false
+            why: "Un seul paramètre : prenom."
+          - label: "saluer ne renvoie rien"
+            correct: false
+            why: "Ce serait void."
+        explanation: "Type du résultat, nom, paramètres typés."
+      - code: java-me-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-bases
+        prompt: "En Java, chaque paramètre d'une méthode doit avoir un type."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "`(String prenom, int age)`."
+          - label: "Faux"
+            correct: false
+            why: "Sans type, le compilateur refuse."
+        explanation: "Tout est typé en Java."
+      - code: java-me-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          static String crier(String mot) {
+              return mot.toUpperCase();
+          }
+          // dans main :
+          System.out.println(crier("bravo"));
+        language: java
+        choices:
+          - label: "BRAVO"
+            correct: true
+            why: "La méthode renvoie le mot en majuscules."
+          - label: "bravo"
+            correct: false
+            why: "Le mot est transformé avant d'être renvoyé."
+          - label: "crier(\"bravo\")"
+            correct: false
+            why: "La méthode est appelée : on affiche son résultat."
+        explanation: "Appeler, récupérer le résultat, l'afficher."
+      - code: java-me-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-bases
+        prompt: "Quel est le bon nom pour une fonction rangée dans une classe Java ?"
+        choices:
+          - label: "Une méthode"
+            correct: true
+            why: "En Java, toute fonction est une méthode d'une classe."
+          - label: "Une variable"
+            correct: false
+            why: "Une variable range une valeur."
+          - label: "Un tableau"
+            correct: false
+            why: "Un tableau range plusieurs valeurs."
+        explanation: "Fonction (JavaScript) ≈ méthode (Java)."
+    exercises:
+      - slug: java-ex-methodes-guide
+        kind: COMPLETER
+        title: "Compléter la méthode"
+        difficulty: FACILE
+        skill: java-bases
+        statement: "Complète la méthode qui fabrique une étiquette « Prénom (Ville) »."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le type du résultat : un texte."
+          - "Le paramètre ville est un texte."
+          - "String, String, return."
+        solution: '["String", "String", "return"]'
+        explanation: "`static String etiquette(String prenom, String ville) { return ...; }`"
+        xp: 10
+        payload:
+          language: java
+          template: |
+            static [[1]] etiquette(String prenom, [[2]] ville) {
+                [[3]] prenom + " (" + ville + ")";
+            }
+          blanks:
             - ["String"]
-            - ["boolean"]
+            - ["String"]
+            - ["return"]
       - slug: java-ex-tarif
         kind: CODE_LIBRE
         title: "Choisir un tarif"
         difficulty: INTERMEDIAIRE
         skill: java-bases
         statement: |
-          Écris une méthode `static double tarif(int age, boolean etudiant)` qui renvoie :
-          - `0.0` si l'âge est inférieur à 12 ;
-          - `5.0` si la personne est étudiante ;
-          - `9.5` sinon.
+          Écris une méthode `static String tarif(int age, boolean etudiant)` qui renvoie :
+          - `"Gratuit"` si l'âge est plus petit que 12 ;
+          - `"Tarif réduit"` si la personne est étudiante ;
+          - `"Plein tarif"` sinon.
         criteria: "Signature correcte, trois cas traités dans le bon ordre, valeurs de retour."
         hints:
-          - "`static double tarif(int age, boolean etudiant) { ... }`"
-          - "`if (age < 12) { return 0.0; }` en premier."
-          - "`else if (etudiant) { return 5.0; }` puis `return 9.5;`"
+          - "`static String tarif(int age, boolean etudiant) { ... }`"
+          - "`if (age < 12) { return \"Gratuit\"; }` en premier."
+          - "`else if (etudiant) { return \"Tarif réduit\"; }` puis `return \"Plein tarif\";`"
         solution: |
-          static double tarif(int age, boolean etudiant) {
+          static String tarif(int age, boolean etudiant) {
               if (age < 12) {
-                  return 0.0;
+                  return "Gratuit";
               } else if (etudiant) {
-                  return 5.0;
+                  return "Tarif réduit";
               }
-              return 9.5;
+              return "Plein tarif";
           }
-        explanation: "Les cas sont testés du plus particulier au plus général. `static` permet d'appeler la méthode sans créer d'objet (depuis main par exemple)."
+        explanation: "Les cas sont testés du plus particulier au plus général."
         xp: 20
         payload:
           language: java
@@ -500,55 +2409,94 @@ lessons:
             // Ta méthode tarif
 
           checks:
-            - pattern: 'static\s+double\s+tarif\s*\(\s*int\s+age\s*,\s*boolean\s+etudiant\s*\)'
-              message: "Signature attendue : static double tarif(int age, boolean etudiant)."
+            - pattern: 'static\s+String\s+tarif\s*\(\s*int\s+age\s*,\s*boolean\s+etudiant\s*\)'
+              message: "Signature attendue : static String tarif(int age, boolean etudiant)."
             - pattern: 'if\s*\(\s*age\s*<\s*12\s*\)'
               message: "Teste d'abord l'âge : if (age < 12)."
-            - pattern: 'return\s+0(\.0)?\s*;'
-              message: "Les moins de 12 ans ne paient rien : return 0.0;"
+            - pattern: 'return\s+"Gratuit"\s*;'
+              message: "Les moins de 12 ans : return \"Gratuit\";"
             - pattern: 'if\s*\(\s*etudiant\s*(==\s*true\s*)?\)'
               message: "Teste le statut étudiant : else if (etudiant)."
-            - pattern: 'return\s+5(\.0)?\s*;'
-              message: "Tarif étudiant : return 5.0;"
-            - pattern: 'return\s+9\.5\s*;'
-              message: "Tarif normal : return 9.5;"
+            - pattern: 'return\s+"Tarif réduit"\s*;'
+              message: "Pour les étudiants : return \"Tarif réduit\";"
+            - pattern: 'return\s+"Plein tarif"\s*;'
+              message: "Sinon : return \"Plein tarif\";"
             - pattern: 'age\s*<\s*12[\s\S]*etudiant'
-              message: "Teste l'âge AVANT le statut étudiant (un enfant étudiant ne paie pas)."
+              message: "Teste l'âge AVANT le statut étudiant."
+      - slug: java-ex-methodes-bug
+        kind: CORRIGER_ERREUR
+        title: "Un paramètre sans type"
+        difficulty: FACILE
+        skill: java-bases
+        statement: |
+          Le compilateur refuse la méthode : le paramètre `ville` n'a pas de type, et la méthode oublie de
+          renvoyer son résultat. Corrige les deux problèmes.
+        criteria: "Le paramètre est typé String et la méthode renvoie le message."
+        hints:
+          - "Chaque paramètre a un type."
+          - "Une méthode qui n'est pas void doit renvoyer une valeur."
+          - "`static String bienvenue(String ville) { return \"Bienvenue à \" + ville; }`"
+        solution: |
+          public class Tourisme {
+              static String bienvenue(String ville) {
+                  return "Bienvenue à " + ville;
+              }
+
+              public static void main(String[] args) {
+                  System.out.println(bienvenue("Dakar"));
+              }
+          }
+        explanation: "Paramètre typé, résultat renvoyé avec return."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public class Tourisme {
+                static String bienvenue(ville) {
+                    System.out.println("Bienvenue à " + ville);
+                }
+
+                public static void main(String[] args) {
+                    System.out.println(bienvenue("Dakar"));
+                }
+            }
+          checks:
+            - pattern: 'static\s+String\s+bienvenue\s*\(\s*String\s+ville\s*\)'
+              message: "Type le paramètre : bienvenue(String ville)."
+            - pattern: 'return\s+"Bienvenue à "\s*\+\s*ville\s*;'
+              message: "Renvoie le message : return \"Bienvenue à \" + ville;"
+          output: "Bienvenue à Dakar"
 
 bank:
-  - code: java-c1-b1
+  - code: java-c1-b3
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: java-bases
+    prompt: "Quelle ligne compile en Java ?"
+    choices:
+      - label: "`String ville = \"Nice\";`"
+        correct: true
+        why: "Type, nom, valeur, point-virgule."
+      - label: "`let ville = \"Nice\";`"
+        correct: false
+        why: "let n'existe pas en Java."
+      - label: "`String ville = \"Nice\"`"
+        correct: false
+        why: "Il manque le point-virgule."
+    explanation: "Java : type obligatoire et point-virgule obligatoire."
+  - code: java-c1-b4
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: java-bases
-    prompt: "Que signifie `void` dans `public static void main` ?"
+    prompt: "Pour la taille, quelle écriture va avec quoi ?"
     choices:
-      - label: "La méthode ne renvoie rien"
+      - label: "Tableau : `length` ; String : `length()`"
         correct: true
-        why: "void = vide."
-      - label: "La méthode est vide"
+        why: "Sans parenthèses pour un tableau, avec pour un texte."
+      - label: "Tableau : `length()` ; String : `length`"
         correct: false
-        why: "Elle peut contenir du code ; elle ne renvoie simplement pas de valeur."
-      - label: "La méthode est privée"
+        why: "C'est l'inverse."
+      - label: "Les deux : `size()`"
         correct: false
-        why: "La visibilité est donnée par public/private."
-    explanation: "Le type de retour `void` indique l'absence de valeur renvoyée."
-  - code: java-c1-b2
-    kind: RESULTAT_CODE
-    difficulty: 2
-    skill: java-bases
-    prompt: "Qu'affiche ce code ?"
-    snippet: |
-      String a = "Java";
-      System.out.println(a.length());
-    language: java
-    choices:
-      - label: "4"
-        correct: true
-        why: "Quatre caractères."
-      - label: "Java"
-        correct: false
-        why: "length() renvoie le nombre de caractères."
-      - label: "3"
-        correct: false
-        why: "On compte tous les caractères."
-    explanation: "`String.length()` : nombre de caractères (avec des parenthèses, c'est une méthode)."
+        why: "size() sert aux List."
+    explanation: "Petit piège classique de Java."
