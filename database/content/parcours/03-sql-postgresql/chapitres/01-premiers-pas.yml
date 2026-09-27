@@ -248,19 +248,19 @@ lessons:
   - slug: sql-select-colonnes
     title: "Choisir ses colonnes avec SELECT"
     duration: 10
-    objective: "Sélectionner uniquement les colonnes utiles, les renommer avec AS et calculer de nouvelles colonnes."
+    objective: "Sélectionner uniquement les colonnes utiles, les renommer avec AS et fabriquer de nouvelles colonnes de texte."
     prerequisites: "Leçon précédente : SELECT * FROM table."
     skills: [sql-select]
     xp: 10
     memo: |
       - `SELECT col1, col2 FROM table;` : colonnes séparées par des **virgules**, pas de virgule avant `FROM`.
-      - `AS` donne un **alias** (un nom d'affichage) à une colonne : `prix AS prix_ttc`.
-      - On peut **calculer** : `prix * 1.2`, `stock - 1`, `prenom || ' ' || nom`.
-      - Un calcul dans un `SELECT` ne modifie **jamais** les données stockées.
+      - `AS` donne un **alias** (un nom d'affichage) à une colonne : `nom AS produit`.
+      - On peut **transformer** : `UPPER(nom)` (majuscules), `LOWER(email)` (minuscules), `prenom || ' ' || nom` (coller).
+      - Une transformation dans un `SELECT` ne modifie **jamais** les données stockées.
     commonMistakes: |
       - Mettre une virgule après la dernière colonne : `SELECT nom, prix, FROM produits` → erreur de syntaxe.
-      - Entourer un alias d'apostrophes : `AS 'total'` est incorrect ; utilise `AS total` ou `AS "Total TTC"`.
-      - Croire que `prix * 1.2` met à jour la table : c'est seulement l'affichage.
+      - Entourer un alias d'apostrophes : `AS 'client'` est incorrect ; utilise `AS client` ou `AS "Nom du client"`.
+      - Croire que `UPPER(nom)` met à jour la table : c'est seulement l'affichage.
     blocks:
       - type: text
         md: |
@@ -292,22 +292,22 @@ lessons:
         term: "Alias (AS)"
         md: |
           Nom temporaire donné à une colonne (ou à une table) **dans le résultat**. Il rend le résultat plus
-          parlant et sera indispensable avec les calculs et les jointures.
+          parlant et sera indispensable avec les transformations et les jointures.
       - type: code
         language: sql
-        title: "Calculer et renommer"
+        title: "Transformer et renommer"
         code: |
           SELECT nom,
-                 prix AS prix_ht,
-                 ROUND(prix * 1.2, 2) AS prix_ttc
+                 nom AS produit,
+                 UPPER(nom) AS etiquette
           FROM produits;
         lines:
           - n: 1
             note: "Première colonne : le nom du produit, sans modification."
           - n: 2
-            note: "`AS prix_ht` renomme la colonne `prix` dans le résultat (la table n'est pas modifiée)."
+            note: "`AS produit` renomme la colonne `nom` dans le résultat (la table n'est pas modifiée)."
           - n: 3
-            note: "On multiplie le prix par 1,2 (TVA à 20 %) et `ROUND(..., 2)` arrondit à 2 décimales. Pas de virgule après la dernière colonne."
+            note: "`UPPER` met le nom en majuscules, comme sur une étiquette de rayon. Pas de virgule après la dernière colonne."
           - n: 4
             note: "La table interrogée."
       - type: demo
@@ -318,8 +318,8 @@ lessons:
         language: sql
         code: |
           SELECT nom,
-                 prix AS prix_ht,
-                 ROUND(prix * 1.2, 2) AS prix_ttc,
+                 nom AS produit,
+                 UPPER(nom) AS etiquette,
                  prenom_inexistant
           FROM produits;
       - type: callout
@@ -367,14 +367,14 @@ lessons:
         kind: VRAI_FAUX
         difficulty: 1
         skill: sql-select
-        prompt: "La requête `SELECT prix * 2 FROM produits;` double le prix des produits enregistrés dans la table."
+        prompt: "La requête `SELECT UPPER(nom) FROM produits;` met les noms des produits en majuscules dans la table."
         choices:
           - label: "Vrai"
             correct: false
             why: "Non : SELECT ne fait que lire. Pour modifier les données, il faudra UPDATE."
           - label: "Faux"
             correct: true
-            why: "Exact : le calcul n'existe que dans le résultat affiché."
+            why: "Exact : la transformation n'existe que dans le résultat affiché."
         explanation: "Un SELECT est une **lecture** : il ne modifie jamais les données. Les modifications passent par INSERT, UPDATE ou DELETE."
       - code: sql-l2-q3
         kind: RESULTAT_CODE
@@ -404,9 +404,9 @@ lessons:
         kind: COMPLETER_CODE
         difficulty: 1
         skill: sql-select
-        prompt: "Complète pour que la colonne calculée s'appelle `valeur_stock`."
+        prompt: "Complète pour que la nouvelle colonne s'appelle `etiquette`."
         snippet: |
-          SELECT nom, prix * stock ____ valeur_stock
+          SELECT nom, UPPER(nom) ____ etiquette
           FROM produits;
         language: sql
         answers: ["AS"]
@@ -431,9 +431,9 @@ lessons:
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: sql-select
-        prompt: À quoi sert `AS` dans `SELECT prix * 1.2 AS prix_ttc FROM produits;` ?
+        prompt: À quoi sert `AS` dans `SELECT UPPER(nom) AS etiquette FROM produits;` ?
         choices:
-          - label: À donner un nom lisible à la colonne calculée
+          - label: À donner un nom lisible à la nouvelle colonne
             correct: true
             why: "Oui : c'est un alias."
           - label: À enregistrer la colonne dans la table
@@ -482,24 +482,24 @@ lessons:
           starter: "SELECT \nFROM clients;\n"
       - slug: sql-ex-nom-complet
         kind: SQL
-        title: "Nom complet et prix TTC"
+        title: "Une étiquette de rayon"
         difficulty: INTERMEDIAIRE
         skill: sql-select
         statement: |
           Pour une étiquette de rayon, affiche pour chaque produit :
           - son **nom** ;
-          - son **prix TTC** (prix × 1,2) arrondi à **2 décimales**, dans une colonne nommée `prix_ttc`.
-        criteria: "2 colonnes : nom et prix_ttc (arrondi à 2 décimales), 30 lignes."
+          - son **nom en majuscules**, dans une colonne nommée `etiquette`.
+        criteria: "2 colonnes : nom et etiquette (le nom en majuscules), 30 lignes."
         hints:
-          - "Le calcul se fait directement dans le SELECT : `prix * 1.2`."
-          - "La fonction `ROUND(valeur, 2)` arrondit à deux décimales. En SQL, le séparateur décimal est le point."
-          - "`SELECT nom, ROUND(prix * 1.2, 2) AS prix_ttc FROM produits;`"
+          - "La transformation se fait directement dans le SELECT."
+          - "La fonction `UPPER(texte)` met un texte en majuscules."
+          - "`SELECT nom, UPPER(nom) AS etiquette FROM produits;`"
         solution: |
-          SELECT nom, ROUND(prix * 1.2, 2) AS prix_ttc
+          SELECT nom, UPPER(nom) AS etiquette
           FROM produits;
         explanation: |
-          `prix * 1.2` calcule le TTC pour chaque ligne, `ROUND(…, 2)` arrondit au centime et `AS prix_ttc`
-          nomme la colonne. Rien n'est modifié dans la table : le calcul n'existe que dans le résultat.
+          `UPPER(nom)` transforme le nom pour chaque ligne et `AS etiquette` nomme la colonne. Rien n'est
+          modifié dans la table : la transformation n'existe que dans le résultat.
         xp: 15
         payload:
           mode: READ
@@ -641,26 +641,26 @@ lessons:
         kind: RESULTAT_CODE
         difficulty: 2
         skill: sql-select
-        prompt: "Combien de lignes renvoie cette requête sur la table `categories` (8 catégories, id de 1 à 8) ?"
+        prompt: "Que renvoie cette requête sur la table `categories` ?"
         snippet: |
           SELECT nom
           FROM categories
           WHERE id <> 3;
         language: sql
         choices:
-          - label: "7"
+          - label: "Toutes les catégories sauf celle d'id 3"
             correct: true
-            why: "`<>` signifie « différent de » : toutes les catégories sauf celle d'id 3."
-          - label: "1"
+            why: "`<>` signifie « différent de » : seule la catégorie d'id 3 est exclue."
+          - label: "Seulement la catégorie d'id 3"
             correct: false
             why: "Ce serait le cas avec `id = 3`."
-          - label: "8"
+          - label: "Toutes les catégories"
             correct: false
-            why: "Une ligne est exclue par la condition."
-          - label: "0"
+            why: "La condition exclut la catégorie d'id 3."
+          - label: "Aucune catégorie"
             correct: false
-            why: "La condition est vraie pour 7 lignes sur 8."
-        explanation: "`<>` est l'opérateur « différent de » du SQL standard. Ici, 8 − 1 = 7 lignes."
+            why: "La condition est vraie pour toutes les autres catégories."
+        explanation: "`<>` est l'opérateur « différent de » du SQL standard (PostgreSQL accepte aussi `!=`)."
       - code: sql-l3-q4
         kind: VRAI_FAUX
         difficulty: 1
@@ -1080,7 +1080,7 @@ bank:
     kind: RESULTAT_CODE
     difficulty: 2
     skill: sql-select
-    prompt: "La table `produits` contient 30 lignes. Combien de lignes renvoie cette requête ?"
+    prompt: "On demande 5 lignes avec `LIMIT 5`, mais `OFFSET` fait sauter presque toutes les lignes de la table. Que se passe-t-il ?"
     snippet: |
       SELECT nom
       FROM produits
@@ -1088,19 +1088,16 @@ bank:
       LIMIT 5 OFFSET 28;
     language: sql
     choices:
-      - label: "2"
+      - label: "On obtient seulement les lignes qui restent, même s'il y en a moins de 5"
         correct: true
-        why: "Après avoir sauté 28 lignes, il n'en reste que 2 : LIMIT 5 ne peut pas en inventer."
-      - label: "5"
+        why: "LIMIT fixe un maximum : il ne peut pas inventer des lignes qui n'existent pas."
+      - label: "On obtient toujours 5 lignes"
         correct: false
-        why: "LIMIT est un maximum : il ne reste que 2 lignes après l'OFFSET."
-      - label: "0"
-        correct: false
-        why: "30 − 28 = 2 lignes restent disponibles."
-      - label: "Erreur"
+        why: "LIMIT est un maximum, pas un nombre garanti."
+      - label: "Une erreur"
         correct: false
         why: "Dépasser la fin du résultat n'est pas une erreur."
-    explanation: "LIMIT fixe un **maximum**. Avec OFFSET 28 sur 30 lignes, il reste 2 lignes à afficher."
+    explanation: "LIMIT fixe un **maximum**. Après un grand OFFSET, il peut rester moins de lignes que demandé, voire aucune."
   - code: sql-c1-b4
     kind: CHOIX_UNIQUE
     difficulty: 2
@@ -1167,19 +1164,19 @@ bank:
     skill: sql-select
     prompt: "Que renvoie cette requête ?"
     snippet: |
-      SELECT 10 + 5 * 2 AS resultat;
+      SELECT 'Code' || ' en ' || 'Clair' AS titre;
     language: sql
     choices:
-      - label: "20"
+      - label: "Code en Clair"
         correct: true
-        why: "La multiplication est prioritaire : 5 × 2 = 10, puis 10 + 10 = 20."
-      - label: "30"
+        why: "`||` colle les trois morceaux, espaces compris."
+      - label: "CodeenClair"
         correct: false
-        why: "Ce serait (10 + 5) × 2 : il faudrait des parenthèses."
+        why: "Les espaces sont écrits dans le morceau ' en ' : ils sont conservés."
       - label: "Une erreur, car il n'y a pas de FROM"
         correct: false
-        why: "En PostgreSQL, un SELECT sans FROM est permis pour calculer une expression."
-    explanation: "Les priorités mathématiques s'appliquent. PostgreSQL accepte `SELECT` sans `FROM`, pratique pour tester une expression."
+        why: "En PostgreSQL, un SELECT sans FROM est permis pour tester une expression."
+    explanation: "`||` colle des textes. PostgreSQL accepte `SELECT` sans `FROM`, pratique pour tester une expression."
   - code: sql-c1-b9
     kind: CHOIX_UNIQUE
     difficulty: 2

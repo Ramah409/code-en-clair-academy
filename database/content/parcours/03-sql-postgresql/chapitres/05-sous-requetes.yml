@@ -443,43 +443,43 @@ lessons:
           programme en fonctions. La clause `WITH` (Common Table Expression) le permet.
       - type: code
         language: sql
-        title: "Étape 1 : le montant de chaque commande ; étape 2 : les commandes au-dessus du panier moyen"
+        title: "Étape 1 : le nombre d'articles de chaque commande ; étape 2 : les commandes plus garnies que la moyenne"
         code: |
-          WITH montants AS (
+          WITH articles AS (
             SELECT commande_id,
-                   SUM(quantite * prix_unitaire) AS montant
+                   SUM(quantite) AS nb_articles
             FROM lignes_commande
             GROUP BY commande_id
           )
-          SELECT commande_id, montant
-          FROM montants
-          WHERE montant > (SELECT AVG(montant) FROM montants)
-          ORDER BY montant DESC;
+          SELECT commande_id, nb_articles
+          FROM articles
+          WHERE nb_articles > (SELECT AVG(nb_articles) FROM articles)
+          ORDER BY nb_articles DESC;
         lines:
           - n: 1
-            note: "On nomme une étape intermédiaire `montants`."
+            note: "On nomme une étape intermédiaire `articles`."
           - n: 2
-            note: "Elle calcule le montant total de chaque commande…"
+            note: "Elle compte les articles de chaque commande…"
           - n: 5
             note: "…grâce à un GROUP BY par commande."
           - n: 7
-            note: "La requête principale lit `montants` comme une table ordinaire."
+            note: "La requête principale lit `articles` comme une table ordinaire."
           - n: 9
-            note: "Et l'utilise même deux fois : pour filtrer et pour calculer le panier moyen."
+            note: "Et l'utilise même deux fois : pour filtrer et pour obtenir la moyenne (c'est la base qui la calcule)."
       - type: demo
         title: "Démonstration"
         language: sql
         code: |
-          WITH montants AS (
+          WITH articles AS (
             SELECT commande_id,
-                   SUM(quantite * prix_unitaire) AS montant
+                   SUM(quantite) AS nb_articles
             FROM lignes_commande
             GROUP BY commande_id
           )
-          SELECT commande_id, montant
-          FROM montants
-          WHERE montant > (SELECT AVG(montant) FROM montants)
-          ORDER BY montant DESC;
+          SELECT commande_id, nb_articles
+          FROM articles
+          WHERE nb_articles > (SELECT AVG(nb_articles) FROM articles)
+          ORDER BY nb_articles DESC;
       - type: question
         ref: sql-c5l3-q1
       - type: definition

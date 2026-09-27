@@ -1,5 +1,5 @@
 slug: premiers-pas-programmation
-version: 1
+version: 2
 position: 1
 title: "Premiers pas en programmation"
 category: ALGO
@@ -13,7 +13,7 @@ description: |
   **Exécuter** lance ton code et affiche le résultat. Tu peux te tromper autant que tu veux : rien ne se
   casse, et chaque erreur est expliquée.
 
-  **Au programme** : ce qu'est un programme, les variables, les calculs et les textes, les conditions, les
+  **Au programme** : ce qu'est un programme, les variables, les textes, les conditions, les
   boucles, les listes, les fonctions, les objets, la gestion des erreurs, puis une introduction à
   **TypeScript** (utilisé par Angular) et à l'**asynchrone**. Le dernier chapitre te prépare aux questions
   d'algorithmique du titre CDA.

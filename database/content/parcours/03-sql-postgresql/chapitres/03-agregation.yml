@@ -376,25 +376,25 @@ lessons:
         kind: RESULTAT_CODE
         difficulty: 2
         skill: sql-agregation
-        prompt: "La table `employes` compte 12 employés, répartis dans 4 services, et un consultant sans service. Combien de lignes renvoie cette requête ?"
+        prompt: "Un consultant n'est rattaché à aucun service. Que renvoie cette requête ?"
         snippet: |
           SELECT service_id, COUNT(*)
           FROM employes
           GROUP BY service_id;
         language: sql
         choices:
-          - label: "5"
+          - label: "Une ligne par service, plus une ligne pour les employés sans service (NULL)"
             correct: true
-            why: "Un groupe par service (4) plus un groupe pour la valeur NULL."
-          - label: "4"
+            why: "Les NULL forment un groupe à part."
+          - label: "Une ligne par service seulement"
             correct: false
             why: "Le consultant sans service forme un groupe NULL supplémentaire."
-          - label: "12"
+          - label: "Une ligne par employé"
             correct: false
             why: "Il y a une ligne par groupe, pas par employé."
-          - label: "1"
+          - label: "Une seule ligne"
             correct: false
-            why: "GROUP BY produit plusieurs groupes."
+            why: "GROUP BY produit un groupe par valeur différente."
         explanation: "Les NULL forment toujours un groupe à part dans un GROUP BY. Filtre-les avec `WHERE service_id IS NOT NULL` si besoin."
       - code: sql-c3l2-q4
         kind: COMPLETER_CODE
@@ -776,18 +776,18 @@ bank:
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: sql-agregation
-    prompt: "Quelle requête calcule le **chiffre d'affaires** total des lignes de commande ?"
+    prompt: "Quelle requête donne le **nombre total d'articles vendus** (somme des quantités) ?"
     choices:
-      - label: "`SELECT SUM(quantite * prix_unitaire) FROM lignes_commande;`"
+      - label: "`SELECT SUM(quantite) FROM lignes_commande;`"
         correct: true
-        why: "On multiplie ligne par ligne, puis on additionne."
-      - label: "`SELECT SUM(quantite) * SUM(prix_unitaire) FROM lignes_commande;`"
+        why: "SUM additionne la colonne quantite de toutes les lignes : c'est la base qui fait l'addition."
+      - label: "`SELECT COUNT(quantite) FROM lignes_commande;`"
         correct: false
-        why: "Multiplier deux sommes ne donne pas la somme des produits."
-      - label: "`SELECT COUNT(prix_unitaire) FROM lignes_commande;`"
+        why: "COUNT compte les lignes, il n'additionne pas les quantités."
+      - label: "`SELECT MAX(quantite) FROM lignes_commande;`"
         correct: false
-        why: "COUNT compte des lignes, il n'additionne pas des montants."
-    explanation: "Une fonction d'agrégat peut s'appliquer à une **expression** calculée pour chaque ligne."
+        why: "MAX donne seulement la plus grande quantité."
+    explanation: "COUNT compte des lignes, SUM additionne les valeurs d'une colonne : dans les deux cas, c'est PostgreSQL qui calcule."
   - code: sql-c3-b3
     kind: CHOIX_UNIQUE
     difficulty: 2
@@ -852,21 +852,21 @@ bank:
     kind: RESULTAT_CODE
     difficulty: 2
     skill: sql-agregation
-    prompt: "Que renvoie cette requête sur les valeurs (4, NULL, 2) ?"
+    prompt: "Que fait `AVG` quand une des valeurs est NULL ?"
     snippet: |
       SELECT AVG(x) FROM (VALUES (4), (NULL), (2)) AS t(x);
     language: sql
     choices:
-      - label: "3"
+      - label: "Il ignore la valeur NULL et travaille seulement avec les valeurs connues"
         correct: true
-        why: "La moyenne est calculée sur 4 et 2 seulement : (4 + 2) / 2 = 3."
-      - label: "2"
+        why: "Les fonctions d'agrégat laissent de côté les NULL."
+      - label: "Il compte la valeur NULL comme un zéro"
         correct: false
-        why: "Ce serait (4 + 0 + 2) / 3, en comptant NULL comme 0."
-      - label: "NULL"
+        why: "NULL veut dire « inconnu », pas zéro."
+      - label: "Le résultat devient NULL"
         correct: false
-        why: "Un seul NULL ne rend pas la moyenne NULL : il est ignoré."
-    explanation: "Les agrégats ignorent les NULL. `VALUES` permet de créer une petite table à la volée pour tester."
+        why: "Un seul NULL ne rend pas le résultat NULL : il est ignoré."
+    explanation: "Les agrégats (`SUM`, `AVG`, `MIN`, `MAX`, `COUNT(colonne)`) ignorent les NULL. `VALUES` permet de créer une petite table à la volée pour tester."
   - code: sql-c3-b8
     kind: CHOIX_UNIQUE
     difficulty: 3

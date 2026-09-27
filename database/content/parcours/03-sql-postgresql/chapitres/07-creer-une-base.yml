@@ -686,27 +686,25 @@ lessons:
           Crée une vue `ventes_par_produit` qui affiche, pour chaque produit **déjà vendu** dans une commande
           **non annulée** :
           - `produit` : le nom du produit ;
-          - `quantite_vendue` : la somme des quantités ;
-          - `chiffre_affaires` : la somme de quantité × prix unitaire.
+          - `quantite_vendue` : la somme des quantités (calculée par `SUM`).
 
           Puis, dans la même exécution, interroge la vue pour afficher ses lignes triées par
-          `chiffre_affaires` décroissant.
-        criteria: "Une vue ventes_par_produit ; la requête finale affiche 3 colonnes triées par chiffre d'affaires décroissant."
+          `quantite_vendue` décroissante, puis par `produit`.
+        criteria: "Une vue ventes_par_produit ; la requête finale affiche 2 colonnes triées par quantité vendue décroissante puis par produit."
         hints:
           - "`CREATE VIEW ventes_par_produit AS SELECT ...` avec deux jointures (lignes_commande → produits, lignes_commande → commandes)."
           - "Filtre `WHERE co.statut <> 'ANNULEE'` et regroupe par produit (p.id, p.nom)."
-          - "Termine par `SELECT * FROM ventes_par_produit ORDER BY chiffre_affaires DESC;`"
+          - "Termine par `SELECT * FROM ventes_par_produit ORDER BY quantite_vendue DESC, produit;`"
         solution: |
           CREATE VIEW ventes_par_produit AS
           SELECT p.nom AS produit,
-                 SUM(l.quantite) AS quantite_vendue,
-                 SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+                 SUM(l.quantite) AS quantite_vendue
           FROM lignes_commande l
           JOIN produits p ON p.id = l.produit_id
           JOIN commandes co ON co.id = l.commande_id
           WHERE co.statut <> 'ANNULEE'
           GROUP BY p.id, p.nom;
-          SELECT * FROM ventes_par_produit ORDER BY chiffre_affaires DESC;
+          SELECT * FROM ventes_par_produit ORDER BY quantite_vendue DESC, produit;
         explanation: |
           La vue encapsule une requête d'analyse : n'importe quel tableau de bord peut ensuite l'interroger
           simplement, sans répéter les jointures ni les règles (« on exclut les commandes annulées »).

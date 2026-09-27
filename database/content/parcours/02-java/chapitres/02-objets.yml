@@ -54,8 +54,8 @@ lessons:
                   return nom;
               }
 
-              public double prixTTC() {
-                  return prix * 1.2;
+              public String etiquette() {
+                  return nom + " : " + prix + " €";
               }
           }
         lines:
@@ -77,14 +77,14 @@ lessons:
           Produit alarme = new Produit("Alarme", 15.0);
           Produit sac = new Produit("Sac antivol", 20.0);
           System.out.println(alarme.getNom());
-          System.out.println(sac.prixTTC());
+          System.out.println(sac.etiquette());
         lines:
           - n: 1
             note: "`new` construit un objet à partir du plan, en appelant le constructeur."
           - n: 2
             note: "Un deuxième objet, indépendant du premier."
           - n: 4
-            note: "Affiche 24.0."
+            note: "Affiche « Sac antivol : 20.0 € »."
       - type: question
         ref: java-co-q1
         review: def-classe
@@ -190,19 +190,19 @@ lessons:
         prompt: "Qu'affiche ce code ?"
         snippet: |
           Produit p = new Produit("Coque", 10.0);
-          System.out.println(p.prixTTC());
+          System.out.println(p.etiquette());
         language: java
         choices:
-          - label: "12.0"
+          - label: "Coque : 10.0 €"
             correct: true
-            why: "10.0 × 1.2."
-          - label: "10.0"
-            correct: false
-            why: "prixTTC applique la TVA."
+            why: "etiquette() colle le nom, « : », le prix et « € »."
           - label: "Coque"
             correct: false
-            why: "C'est getNom() qui renverrait le nom."
-        explanation: "La méthode utilise l'attribut prix de cet objet."
+            why: "C'est getNom() qui renverrait seulement le nom."
+          - label: "etiquette()"
+            correct: false
+            why: "La méthode est appelée : on affiche le texte qu'elle renvoie."
+        explanation: "La méthode utilise les attributs nom et prix de cet objet."
       - code: java-co-q5
         kind: VRAI_FAUX
         difficulty: 2
@@ -554,8 +554,8 @@ lessons:
                 }
 
                 [[3]]
-                public double prixTTC() {
-                    return getPrix() * 1.055;
+                public String etiquette() {
+                    return "Livre : " + getNom();
                 }
             }
           blanks:

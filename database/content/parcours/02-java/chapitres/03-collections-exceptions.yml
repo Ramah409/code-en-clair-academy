@@ -501,35 +501,33 @@ lessons:
             - ["finally"]
       - slug: java-ex-exception-perso
         kind: CODE_LIBRE
-        title: "Une exception StockInsuffisant"
+        title: "Une exception EmailDejaUtilise"
         difficulty: INTERMEDIAIRE
         skill: java-exceptions
         statement: |
-          1. crée `StockInsuffisantException`, qui hérite de `RuntimeException`, avec un constructeur
-             `StockInsuffisantException(String produit)` qui appelle `super("Stock insuffisant pour " + produit)` ;
-          2. écris `static void retirerDuStock(Map<String, Integer> stock, String produit, int quantite)` qui
-             lève cette exception si la quantité demandée dépasse le stock (`getOrDefault(produit, 0)`),
-             sinon met à jour le stock avec `put`.
-        criteria: "Exception personnalisée, contrôle du stock, levée de l'exception, mise à jour."
+          1. crée `EmailDejaUtiliseException`, qui hérite de `RuntimeException`, avec un constructeur
+             `EmailDejaUtiliseException(String email)` qui appelle `super("E-mail déjà utilisé : " + email)` ;
+          2. écris `static void inscrire(Set<String> emails, String email)` qui lève cette exception si
+             l'e-mail est déjà dans l'ensemble (`contains`), sinon l'ajoute avec `add`.
+        criteria: "Exception personnalisée, contrôle de l'e-mail, levée de l'exception, ajout."
         hints:
-          - "`public class StockInsuffisantException extends RuntimeException { ... }`"
-          - "`int disponible = stock.getOrDefault(produit, 0);`"
-          - "`if (quantite > disponible) { throw new StockInsuffisantException(produit); } stock.put(produit, disponible - quantite);`"
+          - "`public class EmailDejaUtiliseException extends RuntimeException { ... }`"
+          - "`if (emails.contains(email)) { throw new EmailDejaUtiliseException(email); }`"
+          - "Sinon : `emails.add(email);`"
         solution: |
-          public class StockInsuffisantException extends RuntimeException {
-              public StockInsuffisantException(String produit) {
-                  super("Stock insuffisant pour " + produit);
+          public class EmailDejaUtiliseException extends RuntimeException {
+              public EmailDejaUtiliseException(String email) {
+                  super("E-mail déjà utilisé : " + email);
               }
           }
 
-          static void retirerDuStock(Map<String, Integer> stock, String produit, int quantite) {
-              int disponible = stock.getOrDefault(produit, 0);
-              if (quantite > disponible) {
-                  throw new StockInsuffisantException(produit);
+          static void inscrire(Set<String> emails, String email) {
+              if (emails.contains(email)) {
+                  throw new EmailDejaUtiliseException(email);
               }
-              stock.put(produit, disponible - quantite);
+              emails.add(email);
           }
-        explanation: "L'exception porte un nom métier clair : l'appelant (ou le gestionnaire d'erreurs) sait exactement ce qui s'est passé."
+        explanation: "L'exception porte un nom métier clair : l'appelant (ou le gestionnaire d'erreurs) sait exactement ce qui s'est passé, et l'API pourra répondre 409."
         xp: 25
         payload:
           language: java
@@ -537,18 +535,18 @@ lessons:
             // Exception et méthode
 
           checks:
-            - pattern: 'class\s+StockInsuffisantException\s+extends\s+RuntimeException'
+            - pattern: 'class\s+EmailDejaUtiliseException\s+extends\s+RuntimeException'
               message: "L'exception hérite de RuntimeException."
-            - pattern: 'StockInsuffisantException\s*\(\s*String\s+\w+\s*\)\s*\{\s*super\s*\('
-              message: "Le constructeur reçoit le produit et appelle super(message)."
-            - pattern: 'static\s+void\s+retirerDuStock\s*\(\s*Map\s*<\s*String\s*,\s*Integer\s*>\s+\w+\s*,\s*String\s+\w+\s*,\s*int\s+\w+\s*\)'
-              message: "Signature : static void retirerDuStock(Map<String, Integer> stock, String produit, int quantite)."
-            - pattern: 'getOrDefault\s*\(\s*\w+\s*,\s*0\s*\)'
-              message: "Lis le stock disponible avec getOrDefault(produit, 0)."
-            - pattern: 'throw\s+new\s+StockInsuffisantException\s*\('
-              message: "Lève StockInsuffisantException quand la quantité dépasse le stock."
-            - pattern: '\.put\s*\(\s*\w+\s*,\s*\w+\s*-\s*\w+\s*\)'
-              message: "Mets à jour le stock : stock.put(produit, disponible - quantite)."
+            - pattern: 'EmailDejaUtiliseException\s*\(\s*String\s+\w+\s*\)\s*\{\s*super\s*\('
+              message: "Le constructeur reçoit l'e-mail et appelle super(message)."
+            - pattern: 'static\s+void\s+inscrire\s*\(\s*Set\s*<\s*String\s*>\s+\w+\s*,\s*String\s+\w+\s*\)'
+              message: "Signature : static void inscrire(Set<String> emails, String email)."
+            - pattern: 'if\s*\(\s*\w+\.contains\s*\(\s*\w+\s*\)\s*\)'
+              message: "Vérifie si l'e-mail est déjà présent : if (emails.contains(email))."
+            - pattern: 'throw\s+new\s+EmailDejaUtiliseException\s*\('
+              message: "Lève EmailDejaUtiliseException quand l'e-mail est déjà utilisé."
+            - pattern: '\w+\.add\s*\(\s*\w+\s*\)'
+              message: "Sinon, ajoute l'e-mail : emails.add(email)."
 
 bank:
   - code: java-c3-b1

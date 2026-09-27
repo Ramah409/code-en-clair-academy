@@ -489,51 +489,53 @@ lessons:
 
   # ===================================================================== LEÇON 3
   - slug: prog-calculs-textes
-    title: "Calculer et assembler des textes"
+    title: "Assembler et transformer des textes"
     duration: 10
-    objective: "Faire des calculs, coller des textes et construire un message avec les gabarits `${}`."
+    objective: "Coller des textes, construire un message avec les gabarits `${}` et utiliser les outils des textes (majuscules, recherche, nettoyage)."
     prerequisites: "Leçon « Les variables »."
     skills: [algo-bases]
     xp: 15
     memo: |
-      - Opérateurs : `+` addition, `-` soustraction, `*` multiplication, `/` division, `%` reste de la division.
-      - Les parenthèses fixent l'ordre : `(2 + 3) * 4` vaut 20.
       - Avec des textes, `+` **colle** : `"Bon" + "jour"` donne `"Bonjour"`.
       - Gabarit : `` `Bonjour ${prenom}` `` insère la valeur de la variable dans le texte (accents graves).
-      - `Number("12")` transforme un texte en nombre.
+      - `texte.toUpperCase()` met en MAJUSCULES, `texte.toLowerCase()` en minuscules.
+      - `texte.includes("mot")` répond `true` si le texte contient ce mot, sinon `false`.
+      - `texte.trim()` enlève les espaces en trop au début et à la fin.
     commonMistakes: |
       - Utiliser des guillemets normaux au lieu des accents graves pour un gabarit : `"${prenom}"` s'affiche tel quel.
-      - Oublier les parenthèses : `2 + 3 * 4` vaut 14, pas 20.
-      - Additionner un nombre et un texte en croyant faire un calcul.
+      - Oublier l'espace en collant : `"Bonjour" + "Awa"` donne `"BonjourAwa"`.
+      - Oublier les parenthèses : `prenom.toUpperCase` sans `()` ne transforme rien.
     blocks:
       - type: text
-        md: "Un ordinateur est d'abord une **calculatrice** géante. Voyons comment lui faire calculer."
-      - type: definition
-        id: def-operateur
-        term: "Opérateur"
         md: |
-          Un **symbole** qui fait une opération : `+`, `-`, `*` (multiplier), `/` (diviser), `%` (le **reste**
-          d'une division). Comme sur une calculatrice, mais `*` remplace `×`.
+          Un programme passe son temps à fabriquer des **messages** : « Bonjour Awa », « Ta commande est prête »,
+          « Mot de passe incorrect ». Voyons comment assembler et transformer des textes.
+      - type: definition
+        id: def-concatenation
+        term: "Concaténation"
+        md: |
+          Le fait de **coller des textes bout à bout**, comme on accroche des wagons l'un derrière l'autre.
+          En JavaScript, on colle avec le signe `+`. Attention : les espaces ne s'ajoutent pas tout seuls.
       - type: code
-        id: code-calculs
+        id: code-textes
         language: javascript
-        title: "Calculer un prix total"
+        title: "Fabriquer un message"
         code: |
-          const prixUnitaire = 12;
-          const quantite = 3;
-          const total = prixUnitaire * quantite;
-          console.log(total);
-          console.log(10 % 3);
+          const prenom = "Awa";
+          const ville = "Lyon";
+          const message = "Bonjour " + prenom + " de " + ville + " !";
+          console.log(message);
+          console.log(prenom.toUpperCase());
         lines:
           - n: 3
-            note: "On calcule 12 × 3 et on range le résultat (36) dans `total`."
+            note: "On colle cinq morceaux. Les espaces sont écrits **dans** les guillemets."
           - n: 4
-            note: "Affiche 36."
+            note: "Affiche : Bonjour Awa de Lyon !"
           - n: 5
-            note: "`%` donne le reste : 10 divisé par 3 fait 3, reste **1**. Utile pour savoir si un nombre est pair (`n % 2 === 0`)."
+            note: "`toUpperCase()` renvoie le texte en majuscules : AWA."
       - type: question
         ref: prog-c-q1
-        review: def-operateur
+        review: def-concatenation
       - type: definition
         id: def-gabarit
         term: "Gabarit de texte (template literal)"
@@ -559,20 +561,28 @@ lessons:
         language: javascript
         code: |
           const prenom = "Awa";
-          const age = 25;
+          const ville = "Lyon";
           console.log("Bonjour " + prenom + " !");
-          console.log(`${prenom} a ${age} ans, et ${age + 1} l'année prochaine.`);
+          console.log(`${prenom} habite à ${ville}.`);
+          console.log(prenom.toUpperCase());
       - type: question
         ref: prog-c-q2
         review: def-gabarit
+      - type: definition
+        id: def-outils-texte
+        term: "Les outils des textes"
+        md: |
+          Chaque texte a une **boîte à outils** attachée. On l'ouvre avec un point : `prenom.toUpperCase()`.
+          Les plus utiles : `toUpperCase()` (majuscules), `toLowerCase()` (minuscules), `includes("mot")`
+          (le texte contient-il ce mot ? réponse `true` ou `false`) et `trim()` (enlève les espaces en trop).
       - type: text
-        md: "Exercice guidé : complète le calcul d'une note moyenne."
+        md: "Exercice guidé : complète le message de bienvenue."
       - type: exercise
-        ref: prog-ex-moyenne-guide
+        ref: prog-ex-bienvenue-guide
       - type: text
-        md: "En autonomie : calcule le prix d'un panier et affiche un message avec un gabarit."
+        md: "En autonomie : fabrique une carte de visite avec un gabarit."
       - type: exercise
-        ref: prog-ex-panier
+        ref: prog-ex-carte-visite
       - type: jury
         items:
           - q: "Qu'est-ce qu'une concaténation ?"
@@ -580,9 +590,9 @@ lessons:
       - type: quiz
         items:
           - ref: prog-c-q3
-            review: code-calculs
+            review: def-outils-texte
           - ref: prog-c-q4
-            review: def-operateur
+            review: def-outils-texte
           - ref: prog-c-q5
             review: def-gabarit
     questions:
@@ -590,20 +600,23 @@ lessons:
         kind: RESULTAT_CODE
         difficulty: 1
         skill: algo-bases
-        prompt: "Qu'affiche `console.log((2 + 3) * 4);` ?"
-        snippet: "console.log((2 + 3) * 4);"
+        prompt: "Qu'affiche ce code ?"
+        snippet: |
+          const debut = "Bon";
+          const fin = "jour";
+          console.log(debut + fin);
         language: javascript
         choices:
-          - label: "20"
+          - label: "Bonjour"
             correct: true
-            why: "Les parenthèses d'abord : 5 × 4."
-          - label: "14"
+            why: "Le `+` colle les deux textes."
+          - label: "Bon jour"
             correct: false
-            why: "Ce serait sans parenthèses : 2 + 12."
-          - label: "234"
+            why: "Aucun espace n'est ajouté automatiquement."
+          - label: "debut + fin"
             correct: false
-            why: "Ce sont des nombres, pas des textes."
-        explanation: "Comme en maths : parenthèses, puis multiplications, puis additions."
+            why: "Sans guillemets, ce sont les valeurs des variables qui sont utilisées."
+        explanation: "Avec des textes, `+` colle bout à bout, sans ajouter d'espace."
       - code: prog-c-q2
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -626,117 +639,119 @@ lessons:
         skill: algo-bases
         prompt: "Qu'affiche ce code ?"
         snippet: |
-          const n = 7;
-          console.log(n % 2);
+          const phrase = "J'adore le chocolat";
+          console.log(phrase.includes("chocolat"));
         language: javascript
         choices:
-          - label: "1"
+          - label: "true"
             correct: true
-            why: "7 = 2 × 3 + 1 : le reste est 1, donc 7 est impair."
-          - label: "3.5"
+            why: "La phrase contient bien le mot « chocolat »."
+          - label: "false"
             correct: false
-            why: "Ce serait `7 / 2`."
-          - label: "0"
+            why: "Ce serait le cas si le mot n'était pas dans la phrase."
+          - label: "chocolat"
             correct: false
-            why: "0 signifierait que 7 est pair."
-        explanation: "`%` donne le reste de la division entière."
+            why: "`includes` répond par vrai ou faux, il ne renvoie pas le mot."
+        explanation: "`includes` répond à la question « ce texte contient-il ce mot ? » par `true` ou `false`."
       - code: prog-c-q4
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: algo-bases
-        prompt: "Quel symbole sert à multiplier en JavaScript ?"
+        prompt: "`prenom` vaut `\"awa\"`. Quel code affiche `AWA` ?"
         choices:
-          - label: "`*`"
+          - label: "`console.log(prenom.toUpperCase());`"
             correct: true
-            why: "Oui."
-          - label: "`x`"
+            why: "`toUpperCase()` met tout le texte en majuscules."
+          - label: "`console.log(prenom.toLowerCase());`"
             correct: false
-            why: "`x` serait lu comme un nom de variable."
-          - label: "`×`"
+            why: "`toLowerCase()` met en minuscules."
+          - label: "`console.log(prenom.toUpperCase);`"
             correct: false
-            why: "Ce caractère n'est pas un opérateur en programmation."
-        explanation: "`*` multiplie, `/` divise."
+            why: "Sans les parenthèses, l'outil n'est pas utilisé."
+        explanation: "Les outils des textes s'utilisent avec un point et des parenthèses : `texte.outil()`."
       - code: prog-c-q5
         kind: RESULTAT_CODE
         difficulty: 2
         skill: algo-bases
         prompt: "Qu'affiche ce code ?"
         snippet: |
-          const a = 4;
-          console.log(`${a} + 1 = ${a + 1}`);
+          const animal = "chat";
+          console.log(`Mon ${animal} dort.`);
         language: javascript
         choices:
-          - label: "4 + 1 = 5"
+          - label: "Mon chat dort."
             correct: true
-            why: "Le premier `${a}` affiche 4, le second calcule 5."
-          - label: "a + 1 = a + 1"
+            why: "`${animal}` est remplacé par la valeur de la variable."
+          - label: "Mon ${animal} dort."
             correct: false
-            why: "Ce qui est dans `${}` est remplacé par sa valeur."
-          - label: "5 = 5"
+            why: "Ce serait le cas avec des guillemets normaux."
+          - label: "Mon animal dort."
             correct: false
-            why: "Le texte `+ 1 =` hors des `${}` reste tel quel."
-        explanation: "Dans un gabarit, seul ce qui est entre `${ }` est calculé."
+            why: "C'est la valeur de la variable qui est insérée, pas son nom."
+        explanation: "Dans un gabarit, ce qui est entre `${ }` est remplacé par sa valeur."
     exercises:
-      - slug: prog-ex-moyenne-guide
+      - slug: prog-ex-bienvenue-guide
         kind: COMPLETER
-        title: "Calculer une moyenne"
+        title: "Un message de bienvenue"
         difficulty: FACILE
         skill: algo-bases
-        statement: "Calcule la moyenne de trois notes : additionne-les puis divise par 3."
+        statement: "Complète : mets le prénom en majuscules, puis affiche un message avec un gabarit."
         criteria: "Les trois trous sont corrects."
         hints:
-          - "On additionne d'abord : il faut des parenthèses."
-          - "Le symbole de la division est la barre oblique."
-          - "( , ) , /"
-        solution: '["(", ")", "/"]'
-        explanation: "`(12 + 15 + 9) / 3` : les parenthèses font l'addition avant la division. Résultat : 12."
+          - "L'outil qui met en majuscules s'appelle toUpperCase."
+          - "Un gabarit commence et finit par un accent grave `."
+          - "toUpperCase , ` , `"
+        solution: '["toUpperCase", "`", "`"]'
+        explanation: "`prenom.toUpperCase()` donne AWA, puis le gabarit affiche : Bienvenue AWA !"
         xp: 10
         payload:
           language: javascript
           template: |
-            const moyenne = [[1]]12 + 15 + 9[[2]] [[3]] 3;
-            console.log(moyenne);
+            const prenom = "awa";
+            const nom = prenom.[[1]]();
+            console.log([[2]]Bienvenue ${nom} ![[3]]);
           blanks:
-            - ["("]
-            - [")"]
-            - ["/"]
-      - slug: prog-ex-panier
+            - ["toUpperCase"]
+            - ["`"]
+            - ["`"]
+      - slug: prog-ex-carte-visite
         kind: CODE_LIBRE
-        title: "Le prix d'un panier"
+        title: "Une carte de visite"
         difficulty: FACILE
         skill: algo-bases
         statement: |
-          1. crée `prix` qui vaut `20` et `quantite` qui vaut `3` ;
-          2. crée `total` qui vaut `prix * quantite` ;
-          3. affiche avec un **gabarit** : `Total : 60 €` (utilise `${total}`).
-        criteria: "Variables, calcul et gabarit avec ${total}."
+          1. crée `prenom` qui vaut `"Awa"` et `metier` qui vaut `"développeuse"` ;
+          2. crée `carte` avec un **gabarit** qui donne : `Awa, développeuse` (utilise `${prenom}` et `${metier}`) ;
+          3. affiche la carte **en majuscules** avec `toUpperCase()`.
+        criteria: "Deux variables, un gabarit avec ${prenom} et ${metier}, affichage en majuscules."
         hints:
-          - "`const prix = 20;` et `const quantite = 3;`"
-          - "`const total = prix * quantite;`"
-          - "``console.log(`Total : ${total} €`);``"
+          - "`const prenom = \"Awa\";` et `const metier = \"développeuse\";`"
+          - "``const carte = `${prenom}, ${metier}`;``"
+          - "`console.log(carte.toUpperCase());`"
         solution: |
-          const prix = 20;
-          const quantite = 3;
-          const total = prix * quantite;
-          console.log(`Total : ${total} €`);
-        explanation: "Le calcul est fait une seule fois et rangé dans `total`, puis inséré dans le message."
+          const prenom = "Awa";
+          const metier = "développeuse";
+          const carte = `${prenom}, ${metier}`;
+          console.log(carte.toUpperCase());
+        explanation: "Le gabarit assemble le texte une seule fois, puis `toUpperCase()` le transforme. Résultat : AWA, DÉVELOPPEUSE."
         xp: 15
         payload:
           language: javascript
           starter: |
             // Ton code ici
 
+          output: "AWA, DÉVELOPPEUSE"
           checks:
-            - pattern: '(const|let)\s+prix\s*=\s*20\b'
-              message: "Déclare prix = 20."
-            - pattern: '(const|let)\s+quantite\s*=\s*3\b'
-              message: "Déclare quantite = 3."
-            - pattern: '(const|let)\s+total\s*=\s*(prix\s*\*\s*quantite|quantite\s*\*\s*prix)'
-              message: "Calcule total = prix * quantite."
-            - pattern: '`[^`]*\$\{\s*total\s*\}[^`]*`'
-              message: "Affiche le total avec un gabarit entre accents graves : `Total : ${total} €`."
+            - pattern: '(const|let)\s+prenom\s*=\s*["''`]Awa["''`]'
+              message: "Déclare prenom = \"Awa\"."
+            - pattern: '(const|let)\s+metier\s*=\s*["''`]développeuse["''`]'
+              message: "Déclare metier = \"développeuse\"."
+            - pattern: '(const|let)\s+carte\s*=\s*`[^`]*\$\{\s*prenom\s*\}[^`]*\$\{\s*metier\s*\}[^`]*`'
+              message: "Crée carte avec un gabarit qui contient ${prenom} puis ${metier}."
+            - pattern: '\.toUpperCase\s*\(\s*\)'
+              message: "Mets la carte en majuscules avec toUpperCase()."
             - pattern: 'console\.log\s*\('
-              message: "Affiche le message avec console.log."
+              message: "Affiche le résultat avec console.log."
 
 bank:
   - code: prog-c1-b1

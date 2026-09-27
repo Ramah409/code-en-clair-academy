@@ -19,7 +19,7 @@ lessons:
       - `function saluer(prenom) { return "Bonjour " + prenom; }` : `prenom` est un **paramètre**.
       - On l'**appelle** avec un **argument** : `saluer("Awa")`.
       - `return` renvoie un résultat **et** arrête la fonction.
-      - Écriture courte (fonction fléchée) : `const double = (n) => n * 2;`
+      - Écriture courte (fonction fléchée) : `const crier = (texte) => texte.toUpperCase();`
     commonMistakes: |
       - Oublier `return` : la fonction renvoie `undefined`.
       - Afficher (`console.log`) au lieu de renvoyer (`return`) : on ne peut plus réutiliser le résultat.
@@ -39,33 +39,33 @@ lessons:
       - type: code
         id: code-fonction
         language: javascript
-        title: "Une fonction qui calcule un prix TTC"
+        title: "Une fonction qui prépare un message"
         code: |
-          function prixTTC(prixHT) {
-            return prixHT * 1.2;
+          function saluer(prenom) {
+            return `Bonjour ${prenom} !`;
           }
 
-          const prix = prixTTC(50);
-          console.log(prix);
-          console.log(prixTTC(10));
+          const message = saluer("Awa");
+          console.log(message);
+          console.log(saluer("Léo"));
         lines:
           - n: 1
-            note: "`function` + le nom + les **paramètres** entre parenthèses : `prixHT` est une variable qui recevra la valeur donnée à l'appel."
+            note: "`function` + le nom + les **paramètres** entre parenthèses : `prenom` est une variable qui recevra la valeur donnée à l'appel."
           - n: 2
-            note: "`return` renvoie le résultat du calcul à celui qui a appelé la fonction."
+            note: "`return` renvoie le message préparé à celui qui a appelé la fonction."
           - n: 5
-            note: "L'**appel** : 50 est l'**argument**. Le résultat (60) est rangé dans `prix`."
+            note: "L'**appel** : \"Awa\" est l'**argument**. Le résultat (« Bonjour Awa ! ») est rangé dans `message`."
           - n: 7
-            note: "Réutilisation immédiate : affiche 12."
+            note: "Réutilisation immédiate : affiche « Bonjour Léo ! »."
       - type: demo
         title: "Crée tes appels"
         language: javascript
         code: |
-          function prixTTC(prixHT) {
-            return prixHT * 1.2;
+          function saluer(prenom) {
+            return `Bonjour ${prenom} !`;
           }
-          console.log(prixTTC(50));
-          console.log(prixTTC(99.99));
+          console.log(saluer("Awa"));
+          console.log(saluer("Inès"));
       - type: question
         ref: prog-f-q1
         review: def-fonction
@@ -73,27 +73,27 @@ lessons:
         left:
           title: "Fonction classique"
           code: |
-            function double(n) {
-              return n * 2;
+            function crier(texte) {
+              return texte.toUpperCase();
             }
           language: javascript
         right:
           title: "Fonction fléchée (même résultat)"
           code: |
-            const double = (n) => n * 2;
+            const crier = (texte) => texte.toUpperCase();
           language: javascript
       - type: callout
         variant: info
         title: "return ou console.log ?"
         md: |
           `console.log` **montre** une valeur à l'écran. `return` la **rend** au programme, qui peut la
-          réutiliser (la ranger, la comparer, la passer à une autre fonction). Une bonne fonction calcule et
-          rend ; c'est l'appelant qui décide de l'afficher.
+          réutiliser (la ranger, la comparer, la passer à une autre fonction). Une bonne fonction prépare son
+          résultat et le rend ; c'est l'appelant qui décide de l'afficher.
       - type: question
         ref: prog-f-q2
         review: code-fonction
       - type: text
-        md: "Exercice guidé : complète une fonction qui calcule l'aire d'un rectangle."
+        md: "Exercice guidé : complète une fonction qui présente une personne."
       - type: exercise
         ref: prog-ex-fonction-guide
       - type: text
@@ -103,7 +103,7 @@ lessons:
       - type: jury
         items:
           - q: "Quelle différence entre un paramètre et un argument ?"
-            a: "Le paramètre est le nom utilisé dans la définition de la fonction (`prixHT`) ; l'argument est la valeur réelle donnée lors de l'appel (`50`)."
+            a: "Le paramètre est le nom utilisé dans la définition de la fonction (`prenom`) ; l'argument est la valeur réelle donnée lors de l'appel (`\"Awa\"`)."
           - q: "Pourquoi découper son code en fonctions ?"
             a: "Pour éviter de répéter du code, donner un nom clair à chaque action, et pouvoir tester chaque morceau séparément."
       - type: quiz
@@ -121,44 +121,44 @@ lessons:
         skill: algo-fonctions
         prompt: "Qu'affiche ce code ?"
         snippet: |
-          function carre(n) {
-            return n * n;
+          function initiale(prenom) {
+            return prenom[0];
           }
-          console.log(carre(4));
+          console.log(initiale("Awa"));
         language: javascript
         choices:
-          - label: "16"
+          - label: "A"
             correct: true
-            why: "4 × 4."
-          - label: "8"
+            why: "`prenom[0]` est la première lettre du prénom."
+          - label: "Awa"
             correct: false
-            why: "Ce serait n + n."
-          - label: "carre(4)"
+            why: "La fonction ne renvoie que la première lettre."
+          - label: "initiale(\"Awa\")"
             correct: false
             why: "La fonction est appelée : on affiche son résultat."
-        explanation: "L'appel `carre(4)` exécute la fonction avec n = 4 et renvoie 16."
+        explanation: "L'appel `initiale(\"Awa\")` exécute la fonction avec prenom = \"Awa\" et renvoie \"A\"."
       - code: prog-f-q2
         kind: RESULTAT_CODE
         difficulty: 2
         skill: algo-fonctions
         prompt: "Qu'affiche ce code ?"
         snippet: |
-          function ajouter(a, b) {
-            console.log(a + b);
+          function saluer(prenom) {
+            console.log("Salut " + prenom);
           }
-          const resultat = ajouter(2, 3);
+          const resultat = saluer("Léo");
           console.log(resultat);
         language: javascript
         choices:
-          - label: "5 puis undefined"
+          - label: "Salut Léo puis undefined"
             correct: true
-            why: "La fonction affiche 5 mais ne renvoie rien : resultat vaut undefined."
-          - label: "5 puis 5"
+            why: "La fonction affiche « Salut Léo » mais ne renvoie rien : resultat vaut undefined."
+          - label: "Salut Léo puis Salut Léo"
             correct: false
-            why: "Il manque `return` pour que resultat vaille 5."
+            why: "Il manque `return` pour que resultat contienne le message."
           - label: "undefined"
             correct: false
-            why: "Le console.log interne affiche d'abord 5."
+            why: "Le console.log interne affiche d'abord « Salut Léo »."
         explanation: "Sans `return`, une fonction renvoie `undefined`."
       - code: prog-f-q3
         kind: CHOIX_UNIQUE
@@ -193,22 +193,22 @@ lessons:
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: algo-fonctions
-        prompt: "Quelle fonction fléchée renvoie la moitié d'un nombre ?"
+        prompt: "Quelle fonction fléchée renvoie un texte en majuscules ?"
         choices:
-          - label: "`const moitie = (n) => n / 2;`"
+          - label: "`const crier = (t) => t.toUpperCase();`"
             correct: true
-            why: "Paramètre n, résultat n / 2 renvoyé automatiquement."
-          - label: "`const moitie = n / 2;`"
+            why: "Paramètre t, résultat t.toUpperCase() renvoyé automatiquement."
+          - label: "`const crier = t.toUpperCase();`"
             correct: false
             why: "Ce n'est pas une fonction."
-          - label: "`const moitie = (n) => { n / 2 };`"
+          - label: "`const crier = (t) => { t.toUpperCase() };`"
             correct: false
             why: "Avec des accolades, il faut écrire `return`."
         explanation: "Sans accolades, la fonction fléchée renvoie l'expression ; avec accolades, il faut `return`."
     exercises:
       - slug: prog-ex-fonction-guide
         kind: COMPLETER
-        title: "L'aire d'un rectangle"
+        title: "Présenter une personne"
         difficulty: FACILE
         skill: algo-fonctions
         statement: "Complète la fonction et son appel."
@@ -216,21 +216,21 @@ lessons:
         hints:
           - "Le mot-clé qui déclare une fonction."
           - "Le mot-clé qui renvoie le résultat."
-          - "function, return, aire."
-        solution: '["function", "return", "aire"]'
-        explanation: "`function aire(l, h) { return l * h; }` puis `aire(4, 3)` renvoie 12."
+          - "function, return, presenter."
+        solution: '["function", "return", "presenter"]'
+        explanation: "`presenter(\"Awa\", \"Lyon\")` renvoie « Awa habite à Lyon »."
         xp: 10
         payload:
           language: javascript
           template: |
-            [[1]] aire(largeur, hauteur) {
-              [[2]] largeur * hauteur;
+            [[1]] presenter(prenom, ville) {
+              [[2]] `${prenom} habite à ${ville}`;
             }
-            console.log([[3]](4, 3));
+            console.log([[3]]("Awa", "Lyon"));
           blanks:
             - ["function"]
             - ["return"]
-            - ["aire"]
+            - ["presenter"]
       - slug: prog-ex-majeur
         kind: CODE_LIBRE
         title: "La fonction estMajeur"
@@ -349,9 +349,9 @@ lessons:
       - type: exercise
         ref: prog-ex-objet-guide
       - type: text
-        md: "En autonomie : calcule la valeur totale d'un stock de produits."
+        md: "En autonomie : affiche les produits disponibles d'une liste."
       - type: exercise
-        ref: prog-ex-stock
+        ref: prog-ex-disponibles
       - type: jury
         items:
           - q: "Quel lien entre un objet JavaScript et le JSON ?"
@@ -474,53 +474,51 @@ lessons:
             - ["{"]
             - [","]
             - ["titre"]
-      - slug: prog-ex-stock
+      - slug: prog-ex-disponibles
         kind: CODE_LIBRE
-        title: "La valeur du stock"
+        title: "Les produits disponibles"
         difficulty: INTERMEDIAIRE
         skill: algo-fonctions
         statement: |
-          Avec la liste fournie, calcule la valeur totale du stock : pour chaque produit, `prix * quantite`,
-          additionné dans une variable `total`. Affiche `total` (résultat attendu : 175).
-        criteria: "Parcours de la liste, multiplication prix × quantité, accumulation, affichage."
+          Avec la liste fournie, affiche le **nom** de chaque produit **disponible** (`enStock` vaut `true`),
+          sous la forme `Disponible : Alarme`. Les produits épuisés ne s'affichent pas.
+        criteria: "Parcours de la liste, test de la propriété enStock, affichage du nom avec un gabarit."
         hints:
-          - "`let total = 0;` avant la boucle."
           - "`for (const p of produits) { ... }`"
-          - "Dans la boucle : `total += p.prix * p.quantite;`"
+          - "Dans la boucle : `if (p.enStock) { ... }` (enStock vaut déjà true ou false)."
+          - "``console.log(`Disponible : ${p.nom}`);``"
         solution: |
           const produits = [
-            { nom: "Alarme", prix: 15, quantite: 5 },
-            { nom: "Coque SOS", prix: 10, quantite: 4 },
-            { nom: "Sac antivol", prix: 20, quantite: 3 }
+            { nom: "Alarme", enStock: true },
+            { nom: "Coque SOS", enStock: false },
+            { nom: "Sac antivol", enStock: true }
           ];
-          let total = 0;
           for (const p of produits) {
-            total += p.prix * p.quantite;
+            if (p.enStock) {
+              console.log(`Disponible : ${p.nom}`);
+            }
           }
-          console.log(total);
-        explanation: "15×5 + 10×4 + 20×3 = 75 + 40 + 60 = 175. On combine liste, objets et boucle."
+        explanation: "On combine liste, objets, boucle et condition : c'est la base de tous les écrans de catalogue."
         xp: 20
         payload:
           language: javascript
           starter: |
             const produits = [
-              { nom: "Alarme", prix: 15, quantite: 5 },
-              { nom: "Coque SOS", prix: 10, quantite: 4 },
-              { nom: "Sac antivol", prix: 20, quantite: 3 }
+              { nom: "Alarme", enStock: true },
+              { nom: "Coque SOS", enStock: false },
+              { nom: "Sac antivol", enStock: true }
             ];
 
           checks:
-            - pattern: 'let\s+total\s*=\s*0'
-              message: "Démarre le total à 0 : let total = 0;"
             - pattern: 'for\s*\('
               message: "Parcours la liste avec une boucle."
-            - pattern: '(\w+)\.prix\s*\*\s*\1\.quantite|(\w+)\.quantite\s*\*\s*\2\.prix'
-              message: "Multiplie le prix par la quantité de chaque produit : p.prix * p.quantite."
-            - pattern: 'total\s*\+=|total\s*=\s*total\s*\+'
-              message: "Ajoute chaque résultat au total : total += ..."
-            - pattern: 'console\.log\s*\(\s*total\s*\)'
-              message: "Affiche le total."
-          output: "175"
+            - pattern: 'if\s*\(\s*(\w+)\.enStock\s*(===?\s*true\s*)?\)'
+              message: "Teste si le produit est disponible : if (p.enStock)."
+            - pattern: 'console\.log\s*\(\s*`[^`]*\$\{\s*\w+\.nom\s*\}[^`]*`'
+              message: "Affiche le nom avec un gabarit : `Disponible : ${p.nom}`."
+          output: |
+            Disponible : Alarme
+            Disponible : Sac antivol
 
   # ===================================================================== LEÇON 3
   - slug: prog-filter-map-reduce
@@ -533,7 +531,7 @@ lessons:
     memo: |
       - `liste.filter(x => condition)` : garde les éléments pour lesquels la condition est vraie.
       - `liste.map(x => transformation)` : crée une nouvelle liste de même taille, chaque élément transformé.
-      - `liste.reduce((acc, x) => acc + x, 0)` : résume la liste en une seule valeur (0 = départ).
+      - `liste.reduce((acc, x) => acc + x, "")` : résume la liste en une seule valeur (`""` = point de départ).
       - Ces méthodes ne modifient pas la liste d'origine : elles en créent une nouvelle.
       - On peut les enchaîner : `produits.filter(...).map(...)`.
     commonMistakes: |
@@ -561,25 +559,25 @@ lessons:
         id: def-reduce
         term: "reduce : tout résumer en une valeur"
         md: |
-          Parcourt la liste en gardant un **accumulateur**, comme le total d'une caisse enregistreuse qui
-          augmente à chaque article.
+          Parcourt la liste en gardant un **accumulateur**, comme un **collier** : on part d'un fil vide et
+          on enfile les perles une à une. À la fin, il ne reste qu'un seul objet : le collier.
       - type: code
         id: code-fmr
         language: javascript
-        title: "Les trois méthodes sur des prix"
+        title: "Les trois méthodes sur des prénoms"
         code: |
-          const prix = [5, 20, 12, 40];
-          const chers = prix.filter(p => p > 10);
-          const ttc = prix.map(p => p * 1.2);
-          const somme = prix.reduce((total, p) => total + p, 0);
-          console.log(chers, ttc, somme);
+          const prenoms = ["Awa", "Léo", "Inès"];
+          const sansLeo = prenoms.filter(p => p !== "Léo");
+          const enMajuscules = prenoms.map(p => p.toUpperCase());
+          const phrase = prenoms.reduce((acc, p) => acc + p + " ", "Invités : ");
+          console.log(sansLeo, enMajuscules, phrase);
         lines:
           - n: 2
-            note: "`filter` garde ceux qui dépassent 10 : [20, 12, 40]."
+            note: "`filter` garde tous ceux qui ne s'appellent pas Léo : [\"Awa\", \"Inès\"]."
           - n: 3
-            note: "`map` multiplie chacun par 1.2 : [6, 24, 14.4, 48]."
+            note: "`map` met chaque prénom en majuscules : [\"AWA\", \"LÉO\", \"INÈS\"]."
           - n: 4
-            note: "`reduce` : `total` démarre à 0 (le dernier argument), puis reçoit chaque prix. Résultat : 77."
+            note: "`reduce` : `acc` démarre à « Invités : » (le dernier argument), puis on colle chaque prénom. Résultat : « Invités : Awa Léo Inès »."
       - type: demo
         title: "Enchaîner les méthodes"
         language: javascript
@@ -622,19 +620,19 @@ lessons:
         kind: RESULTAT_CODE
         difficulty: 2
         skill: javascript-bases
-        prompt: "Que vaut `[3, 8, 1, 10].filter(n => n > 2)` ?"
-        snippet: "[3, 8, 1, 10].filter(n => n > 2)"
+        prompt: "Que vaut `[\"Awa\", \"Léo\", \"Inès\"].filter(p => p !== \"Léo\")` ?"
+        snippet: "[\"Awa\", \"Léo\", \"Inès\"].filter(p => p !== \"Léo\")"
         language: javascript
         choices:
-          - label: "[3, 8, 10]"
+          - label: "[\"Awa\", \"Inès\"]"
             correct: true
-            why: "1 est retiré car 1 > 2 est faux."
-          - label: "[true, true, false, true]"
+            why: "Léo est retiré car la condition est fausse pour lui."
+          - label: "[true, false, true]"
             correct: false
             why: "Ce serait le résultat de map avec la même condition."
-          - label: "3"
+          - label: "\"Léo\""
             correct: false
-            why: "filter renvoie une liste."
+            why: "filter renvoie une liste, et garde ceux qui passent le test."
         explanation: "filter garde les éléments pour lesquels la fonction renvoie vrai."
       - code: prog-m-q2
         kind: RESULTAT_CODE
@@ -658,19 +656,19 @@ lessons:
         kind: RESULTAT_CODE
         difficulty: 2
         skill: javascript-bases
-        prompt: "Que vaut `[2, 3, 4].reduce((acc, n) => acc + n, 10)` ?"
-        snippet: "[2, 3, 4].reduce((acc, n) => acc + n, 10)"
+        prompt: "Que vaut `[\"a\", \"b\", \"c\"].reduce((acc, l) => acc + l, \"x\")` ?"
+        snippet: "[\"a\", \"b\", \"c\"].reduce((acc, l) => acc + l, \"x\")"
         language: javascript
         choices:
-          - label: "19"
+          - label: "\"xabc\""
             correct: true
-            why: "Départ 10, puis +2, +3, +4."
-          - label: "9"
+            why: "Départ « x », puis on colle a, b et c."
+          - label: "\"abc\""
             correct: false
-            why: "La valeur de départ est 10, pas 0."
-          - label: "[12, 13, 14]"
+            why: "La valeur de départ est « x » : elle est au début du résultat."
+          - label: "[\"xa\", \"xb\", \"xc\"]"
             correct: false
-            why: "reduce renvoie une seule valeur."
+            why: "reduce renvoie une seule valeur, pas une liste."
         explanation: "Le second argument de reduce est la valeur de départ de l'accumulateur."
       - code: prog-m-q4
         kind: VRAI_FAUX
@@ -719,9 +717,9 @@ lessons:
         payload:
           language: javascript
           template: |
-            const pairs = nombres.[[1]](n => n % 2 === 0);
-            const doubles = nombres.[[2]](n => n * 2);
-            const somme = nombres.[[3]]((acc, n) => acc + n, 0);
+            const sansLeo = prenoms.[[1]](p => p !== "Léo");
+            const enMajuscules = prenoms.[[2]](p => p.toUpperCase());
+            const phrase = prenoms.[[3]]((acc, p) => acc + p + " ", "");
           blanks:
             - ["filter"]
             - ["map"]
@@ -775,7 +773,7 @@ bank:
     skill: algo-fonctions
     prompt: "Quel nom de fonction est le plus clair ?"
     choices:
-      - label: "`calculerPrixTTC`"
+      - label: "`envoyerMessageBienvenue`"
         correct: true
         why: "Un verbe et ce que fait la fonction."
       - label: "`f1`"
@@ -790,16 +788,16 @@ bank:
     difficulty: 3
     skill: javascript-bases
     prompt: "Que vaut ce résultat ?"
-    snippet: "[1, 2, 3, 4].filter(n => n > 1).map(n => n * 10)"
+    snippet: "[\"awa\", \"léo\", \"inès\"].filter(p => p !== \"léo\").map(p => p.toUpperCase())"
     language: javascript
     choices:
-      - label: "[20, 30, 40]"
+      - label: "[\"AWA\", \"INÈS\"]"
         correct: true
-        why: "On garde 2, 3, 4 puis on multiplie par 10."
-      - label: "[10, 20, 30, 40]"
+        why: "On retire léo, puis on met les autres en majuscules."
+      - label: "[\"AWA\", \"LÉO\", \"INÈS\"]"
         correct: false
-        why: "1 a été retiré par filter."
-      - label: "90"
+        why: "léo a été retiré par filter."
+      - label: "\"AWAINÈS\""
         correct: false
-        why: "Il n'y a pas de reduce."
+        why: "Il n'y a pas de reduce : le résultat reste une liste."
     explanation: "Les méthodes enchaînées s'appliquent de gauche à droite."

@@ -63,14 +63,14 @@ lessons:
         language: javascript
         title: "Signaler et attraper une erreur"
         code: |
-          function diviser(a, b) {
-            if (b === 0) {
-              throw new Error("Division par zéro impossible");
+          function saluer(prenom) {
+            if (prenom === "") {
+              throw new Error("Le prénom est vide");
             }
-            return a / b;
+            return `Bonjour ${prenom} !`;
           }
           try {
-            console.log(diviser(10, 0));
+            console.log(saluer(""));
           } catch (e) {
             console.log("Problème : " + e.message);
           }
@@ -125,21 +125,21 @@ lessons:
         kind: RESULTAT_CODE
         difficulty: 2
         skill: algo-fonctions
-        prompt: "Qu'affiche l'exemple `diviser(10, 0)` avec try / catch ?"
+        prompt: "Qu'affiche l'exemple `saluer(\"\")` avec try / catch ?"
         snippet: |
           try {
-            console.log(diviser(10, 0));
+            console.log(saluer(""));
           } catch (e) {
             console.log("Problème : " + e.message);
           }
         language: javascript
         choices:
-          - label: "Problème : Division par zéro impossible"
+          - label: "Problème : Le prénom est vide"
             correct: true
             why: "L'erreur est lancée puis attrapée par catch."
-          - label: "Infinity"
+          - label: "Bonjour  !"
             correct: false
-            why: "La fonction lance une erreur avant de diviser."
+            why: "La fonction lance une erreur avant de préparer le message."
           - label: "Rien, le programme plante"
             correct: false
             why: "catch attrape l'erreur."
@@ -223,43 +223,43 @@ lessons:
         difficulty: INTERMEDIAIRE
         skill: algo-fonctions
         statement: |
-          Ce programme doit afficher la moyenne des notes (13). Exécute-le, lis les erreurs et corrige les
-          **trois** problèmes : une faute de frappe dans un nom, une réaffectation d'une `const`, et une
-          division par le mauvais nombre.
-        criteria: "Le programme calcule la moyenne sans erreur."
+          Ce programme doit afficher `Invités : Awa Léo Inès`. Exécute-le, lis les erreurs et corrige les
+          **trois** problèmes : une faute de frappe dans un nom, une réaffectation d'une `const`, et un
+          affichage de la mauvaise variable.
+        criteria: "Le programme affiche la liste des invités sans erreur."
         hints:
-          - "`somme` doit pouvoir changer : ce ne peut pas être une const."
-          - "Regarde bien le nom `notes` dans la boucle."
-          - "On divise par le nombre de notes : `notes.length`."
+          - "`liste` doit pouvoir changer : ce ne peut pas être une const."
+          - "Regarde bien le nom `invites` dans la boucle."
+          - "À la fin, on affiche le texte construit : `liste`."
         solution: |
-          const notes = [12, 14, 13];
-          let somme = 0;
-          for (const note of notes) {
-            somme += note;
+          const invites = ["Awa", "Léo", "Inès"];
+          let liste = "";
+          for (const invite of invites) {
+            liste += " " + invite;
           }
-          console.log(somme / notes.length);
-        explanation: "`let` car la somme évolue, `notes` bien orthographié, et division par `notes.length` (3) pour obtenir 13."
+          console.log("Invités :" + liste);
+        explanation: "`let` car le texte grandit à chaque tour, `invites` bien orthographié, et on affiche `liste`, le texte construit."
         xp: 25
         payload:
           language: javascript
           starter: |
-            const notes = [12, 14, 13];
-            const somme = 0;
-            for (const note of note) {
-              somme += note;
+            const invites = ["Awa", "Léo", "Inès"];
+            const liste = "";
+            for (const invite of invite) {
+              liste += " " + invite;
             }
-            console.log(somme / 2);
+            console.log("Invités :" + invite);
           checks:
-            - pattern: 'let\s+somme\s*=\s*0'
-              message: "somme change à chaque tour : déclare-la avec let."
-            - pattern: 'for\s*\(\s*const\s+note\s+of\s+notes\s*\)'
-              message: "La boucle parcourt la liste notes (avec un s)."
-            - pattern: 'somme\s*/\s*notes\.length'
-              message: "Divise par le nombre de notes : somme / notes.length."
-            - pattern: 'const\s+somme'
+            - pattern: 'let\s+liste\s*=\s*["''`]["''`]'
+              message: "liste change à chaque tour : déclare-la avec let."
+            - pattern: 'for\s*\(\s*const\s+invite\s+of\s+invites\s*\)'
+              message: "La boucle parcourt la liste invites (avec un s)."
+            - pattern: 'console\.log\s*\([^)]*\bliste\b'
+              message: "Affiche le texte construit : liste."
+            - pattern: 'const\s+liste'
               absent: true
-              message: "somme ne peut pas être une const."
-          output: "13"
+              message: "liste ne peut pas être une const."
+          output: "Invités : Awa Léo Inès"
 
   # ===================================================================== LEÇON 2
   - slug: prog-typescript
@@ -296,19 +296,19 @@ lessons:
         language: typescript
         title: "Des annotations de type"
         code: |
-          let age: number = 18;
+          let inscrite: boolean = true;
           const prenom: string = "Awa";
-          function prixTTC(prixHT: number): number {
-            return prixHT * 1.2;
+          function saluer(nom: string): string {
+            return `Bonjour ${nom} !`;
           }
-          prixTTC("50");
+          saluer(true);
         lines:
           - n: 1
-            note: "`: number` : age ne contiendra que des nombres."
+            note: "`: boolean` : inscrite ne contiendra que true ou false."
           - n: 3
-            note: "Le paramètre est un nombre, et la fonction renvoie un nombre (`): number`)."
+            note: "Le paramètre est un texte, et la fonction renvoie un texte (`): string`)."
           - n: 6
-            note: "Erreur signalée **avant** l'exécution : on passe un texte là où un nombre est attendu."
+            note: "Erreur signalée **avant** l'exécution : on passe un booléen là où un texte est attendu."
       - type: question
         ref: prog-ts-q1
         review: def-typescript

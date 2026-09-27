@@ -34,26 +34,26 @@ lessons:
       - type: steps
         title: "Les six étapes"
         items:
-          - "**Reformule** : « une ligne par client, avec son chiffre d'affaires 2024, du plus grand au plus petit »."
-          - "**Tables** : clients (nom), commandes (date, statut), lignes_commande (montants). Clés : `commandes.client_id`, `lignes_commande.commande_id`."
+          - "**Reformule** : « une ligne par client, avec son nombre d'articles achetés en 2024, du plus grand au plus petit »."
+          - "**Tables** : clients (nom), commandes (date, statut), lignes_commande (quantités). Clés : `commandes.client_id`, `lignes_commande.commande_id`."
           - "**FROM et jointures**, puis **WHERE** : commandes de 2024, non annulées."
           - "**GROUP BY** client, car on veut un total **par** client."
           - "**SELECT** (nom, total) puis **ORDER BY** total décroissant et **LIMIT**."
-          - "**Vérifie** : recalcule à la main le total d'un client, et demande-toi si un client sans commande doit apparaître."
+          - "**Vérifie** : affiche les commandes d'un client pour relire une ligne du résultat, et demande-toi si un client sans commande doit apparaître."
       - type: code
         language: sql
         title: "Le résultat de la méthode"
         code: |
           SELECT cl.prenom || ' ' || cl.nom AS client,
                  COUNT(DISTINCT co.id) AS nb_commandes,
-                 SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+                 SUM(l.quantite) AS articles_achetes
           FROM clients cl
           JOIN commandes co ON co.client_id = cl.id
           JOIN lignes_commande l ON l.commande_id = co.id
           WHERE co.date_commande BETWEEN '2024-01-01' AND '2024-12-31'
             AND co.statut <> 'ANNULEE'
           GROUP BY cl.id, cl.prenom, cl.nom
-          ORDER BY chiffre_affaires DESC
+          ORDER BY articles_achetes DESC
           LIMIT 5;
         lines:
           - n: 2
@@ -63,26 +63,26 @@ lessons:
           - n: 7
             note: "Filtre sur l'année 2024 (bornes incluses)."
           - n: 8
-            note: "Règle métier implicite : une commande annulée ne rapporte rien."
+            note: "Règle métier implicite : une commande annulée ne compte pas."
           - n: 9
             note: "Étape 4 : un groupe par client (l'id garantit l'unicité même en cas d'homonymes)."
           - n: 10
             note: "Étape 5 : tri et limite."
       - type: demo
         title: "Démonstration"
-        md: "Vérifie une ligne à la main : exécute `SELECT * FROM commandes WHERE client_id = 1` puis additionne ses lignes de 2024."
+        md: "Relis une ligne du résultat : exécute `SELECT * FROM commandes WHERE client_id = 1` pour voir les commandes de ce client."
         language: sql
         code: |
           SELECT cl.prenom || ' ' || cl.nom AS client,
                  COUNT(DISTINCT co.id) AS nb_commandes,
-                 SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+                 SUM(l.quantite) AS articles_achetes
           FROM clients cl
           JOIN commandes co ON co.client_id = cl.id
           JOIN lignes_commande l ON l.commande_id = co.id
           WHERE co.date_commande BETWEEN '2024-01-01' AND '2024-12-31'
             AND co.statut <> 'ANNULEE'
           GROUP BY cl.id, cl.prenom, cl.nom
-          ORDER BY chiffre_affaires DESC
+          ORDER BY articles_achetes DESC
           LIMIT 5;
       - type: question
         ref: sql-c8l1-q1
@@ -707,30 +707,29 @@ lessons:
 exercises:
   - slug: sql-projet-ca-mensuel
     kind: SQL
-    title: "Projet — Chiffre d'affaires mensuel"
+    title: "Projet — Commandes de chaque mois"
     difficulty: INTERMEDIAIRE
     skill: sql-agregation
     statement: |
-      Pour le tableau de bord, calcule le **chiffre d'affaires de chaque mois de 2024** (commandes non
-      annulées). Colonnes : `mois` (numéro du mois, de 1 à 12) et `chiffre_affaires`, triées par mois.
-      Seuls les mois ayant des ventes apparaissent.
-    criteria: "2 colonnes (mois, chiffre_affaires), commandes 2024 non annulées, tri par mois."
+      Pour le tableau de bord, affiche le **nombre de commandes de chaque mois de 2024** (commandes non
+      annulées). Colonnes : `mois` (numéro du mois, de 1 à 12) et `nb_commandes` (calculé par `COUNT`),
+      triées par mois. Seuls les mois ayant des commandes apparaissent.
+    criteria: "2 colonnes (mois, nb_commandes), commandes 2024 non annulées, tri par mois."
     hints:
-      - "Tables : commandes et lignes_commande. Le mois s'obtient avec EXTRACT(MONTH FROM date_commande)."
+      - "Une seule table suffit : commandes. Le mois s'obtient avec EXTRACT(MONTH FROM date_commande)."
       - "Filtre l'année 2024 et le statut, puis regroupe par mois."
       - "`GROUP BY EXTRACT(MONTH FROM co.date_commande) ORDER BY mois`"
     solution: |
       SELECT EXTRACT(MONTH FROM co.date_commande) AS mois,
-             SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+             COUNT(*) AS nb_commandes
       FROM commandes co
-      JOIN lignes_commande l ON l.commande_id = co.id
       WHERE co.date_commande BETWEEN '2024-01-01' AND '2024-12-31'
         AND co.statut <> 'ANNULEE'
       GROUP BY EXTRACT(MONTH FROM co.date_commande)
       ORDER BY mois;
     explanation: |
-      On regroupe les lignes de commande par mois de la commande, après avoir écarté les commandes annulées
-      et hors période. Ce type de requête alimente directement un graphique mensuel.
+      On regroupe les commandes par mois, après avoir écarté les commandes annulées et hors période : la base
+      compte les commandes de chaque groupe. Ce type de requête alimente directement un graphique mensuel.
     xp: 30
     payload:
       mode: READ
@@ -775,19 +774,18 @@ exercises:
       Crée une vue `indicateurs` qui renvoie **une seule ligne** avec :
       - `nb_clients` : le nombre total de clients ;
       - `nb_commandes` : le nombre de commandes non annulées ;
-      - `chiffre_affaires` : le chiffre d'affaires des commandes non annulées ;
-      - `panier_moyen` : chiffre d'affaires / nombre de commandes non annulées, arrondi à 2 décimales.
+      - `nb_articles` : le nombre total d'articles des commandes non annulées (somme des quantités).
 
       Termine par `SELECT * FROM indicateurs;`.
-    criteria: "Une vue indicateurs ; une ligne avec les 4 indicateurs exacts."
+    criteria: "Une vue indicateurs ; une ligne avec les 3 indicateurs exacts."
     hints:
       - "Chaque indicateur peut être une sous-requête scalaire : `(SELECT COUNT(*) FROM clients) AS nb_clients`."
-      - "Le chiffre d'affaires : somme des lignes des commandes dont le statut n'est pas ANNULEE (jointure ou sous-requête IN)."
-      - "Pour le panier moyen, divise le CA par le nombre de commandes et utilise ROUND(..., 2). Une CTE dans la vue peut éviter les répétitions."
+      - "Le nombre d'articles : SUM(quantite) des lignes des commandes dont le statut n'est pas ANNULEE (jointure ou sous-requête IN)."
+      - "Une CTE dans la vue peut éviter les répétitions : une ligne par commande valide avec son nombre d'articles."
     solution: |
       CREATE VIEW indicateurs AS
       WITH valides AS (
-        SELECT co.id, SUM(l.quantite * l.prix_unitaire) AS montant
+        SELECT co.id, SUM(l.quantite) AS articles
         FROM commandes co
         JOIN lignes_commande l ON l.commande_id = co.id
         WHERE co.statut <> 'ANNULEE'
@@ -795,13 +793,12 @@ exercises:
       )
       SELECT (SELECT COUNT(*) FROM clients) AS nb_clients,
              COUNT(*) AS nb_commandes,
-             SUM(montant) AS chiffre_affaires,
-             ROUND(SUM(montant) / COUNT(*), 2) AS panier_moyen
+             SUM(articles) AS nb_articles
       FROM valides;
       SELECT * FROM indicateurs;
     explanation: |
-      La CTE `valides` calcule le montant de chaque commande non annulée ; la requête principale en déduit
-      le nombre de commandes, le chiffre d'affaires et le panier moyen, et une sous-requête scalaire ajoute le
+      La CTE `valides` compte les articles de chaque commande non annulée ; la requête principale en déduit
+      le nombre de commandes et le nombre total d'articles, et une sous-requête scalaire ajoute le
       nombre de clients. La vue rend ces indicateurs accessibles en une ligne.
     xp: 40
     payload:

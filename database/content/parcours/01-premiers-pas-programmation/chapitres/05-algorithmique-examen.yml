@@ -10,17 +10,17 @@ lessons:
   - slug: prog-recherche-tri
     title: "Rechercher et trier"
     duration: 14
-    objective: "Écrire une recherche dans une liste, utiliser sort correctement et comprendre la complexité O(n)."
+    objective: "Écrire une recherche dans une liste, trier des mots correctement et expliquer pourquoi certaines recherches sont plus rapides que d'autres."
     prerequisites: "Chapitre « Écrire un code robuste »."
     skills: [algo-tri-recherche]
     xp: 25
     memo: |
-      - **Recherche linéaire** : on regarde les éléments un par un jusqu'à trouver ; coût proportionnel à la taille de la liste : **O(n)**.
-      - **Recherche dichotomique** (liste triée) : on coupe en deux à chaque étape ; coût **O(log n)**, bien plus rapide.
-      - Trier des nombres : `liste.sort((a, b) => a - b)` (croissant). Sans fonction, `sort` trie comme du texte (10 avant 9 !).
-      - La **complexité** mesure comment le temps grandit quand les données grandissent.
+      - **Recherche linéaire** : on regarde les éléments un par un jusqu'à trouver. Plus la liste est longue, plus c'est long.
+      - **Recherche dichotomique** (liste triée) : on ouvre au milieu et on garde la bonne moitié, encore et encore : bien plus rapide sur une grande liste.
+      - Trier des mots : `liste.sort()` met les MAJUSCULES avant les minuscules ; pour un vrai ordre alphabétique : `liste.sort((a, b) => a.localeCompare(b))`.
+      - La **complexité** décrit comment le temps d'un programme grandit quand la liste grandit.
     commonMistakes: |
-      - `[10, 9, 1].sort()` donne `[1, 10, 9]` : il faut `(a, b) => a - b`.
+      - `["awa", "Zoé"].sort()` donne `["Zoé", "awa"]` : les majuscules passent d'abord ; il faut `localeCompare`.
       - Faire une recherche dichotomique sur une liste non triée.
       - Continuer à chercher après avoir trouvé (oublier `return` ou `break`).
     blocks:
@@ -61,10 +61,10 @@ lessons:
         id: def-complexite
         term: "Complexité (notation O)"
         md: |
-          Une façon d'estimer le **travail** selon la quantité de données :
-          - **O(n)** : deux fois plus de données, deux fois plus de travail (chercher un nom en lisant tout l'annuaire) ;
-          - **O(log n)** : on divise le problème par deux à chaque étape (ouvrir l'annuaire au milieu, puis au milieu de la bonne moitié…) ;
-          - **O(n²)** : deux boucles imbriquées ; vite très lent sur de grandes listes.
+          Une façon de décrire le **travail** d'un programme selon la quantité de données, sans rien calculer :
+          - **linéaire**, noté O(n) : on lit tout, du début à la fin (chercher un nom en lisant tout l'annuaire) ;
+          - **dichotomique** : on ouvre l'annuaire au milieu, puis au milieu de la bonne moitié… : très rapide ;
+          - **deux boucles imbriquées** : pour chaque élément, on relit toute la liste ; ça devient vite très lent.
       - type: question
         ref: prog-r-q1
         review: def-complexite
@@ -73,26 +73,26 @@ lessons:
           title: "Piège : sort sans fonction"
           good: false
           code: |
-            [10, 9, 1].sort();
-            // [1, 10, 9] : trié comme du texte
+            ["awa", "Zoé", "Léo"].sort();
+            // ["Léo", "Zoé", "awa"] : majuscules d'abord
           language: javascript
         right:
-          title: "Tri numérique"
+          title: "Vrai ordre alphabétique"
           good: true
           code: |
-            [10, 9, 1].sort((a, b) => a - b);
-            // [1, 9, 10]
+            ["awa", "Zoé", "Léo"].sort((a, b) => a.localeCompare(b));
+            // ["awa", "Léo", "Zoé"]
           language: javascript
       - type: demo
-        title: "Trier des produits par prix"
+        title: "Trier des produits par nom"
         language: javascript
         code: |
           const produits = [
-            { nom: "Sac", prix: 20 },
-            { nom: "Coque", prix: 10 },
-            { nom: "Alarme", prix: 15 }
+            { nom: "Sac antivol" },
+            { nom: "Coque SOS" },
+            { nom: "Alarme" }
           ];
-          produits.sort((a, b) => a.prix - b.prix);
+          produits.sort((a, b) => a.nom.localeCompare(b.nom));
           console.log(produits.map(p => p.nom));
       - type: question
         ref: prog-r-q2
@@ -108,9 +108,9 @@ lessons:
       - type: jury
         items:
           - q: "Expliquez la différence entre une recherche linéaire et une recherche dichotomique."
-            a: "La recherche linéaire regarde les éléments un par un : O(n). La dichotomique, sur une liste triée, compare avec l'élément du milieu et élimine une moitié à chaque étape : O(log n)."
+            a: "La recherche linéaire regarde les éléments un par un, du début à la fin. La dichotomique, sur une liste triée, regarde l'élément du milieu et élimine une moitié à chaque étape : elle est beaucoup plus rapide sur une grande liste."
           - q: "Qu'est-ce que la complexité d'un algorithme ?"
-            a: "Une estimation de l'évolution du temps (ou de la mémoire) quand la taille des données augmente, notée avec O : O(1), O(log n), O(n), O(n²)."
+            a: "Une façon de décrire comment le temps (ou la mémoire) d'un programme évolue quand la quantité de données augmente. Par exemple, une recherche qui lit toute la liste est dite linéaire ; deux boucles imbriquées deviennent vite très lentes."
       - type: quiz
         items:
           - ref: prog-r-q3
@@ -124,18 +124,18 @@ lessons:
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: algo-tri-recherche
-        prompt: "Deux boucles imbriquées qui parcourent chacune toute la liste ont une complexité…"
+        prompt: "Deux boucles imbriquées qui parcourent chacune toute la liste…"
         choices:
-          - label: "O(n²)"
+          - label: "deviennent vite très lentes quand la liste grandit"
             correct: true
-            why: "n tours de boucle, chacun faisant n tours."
-          - label: "O(n)"
+            why: "Pour chaque élément, on relit toute la liste."
+          - label: "sont aussi rapides qu'une seule boucle"
             correct: false
-            why: "Ce serait une seule boucle."
-          - label: "O(log n)"
+            why: "Une seule boucle lit la liste une fois ; ici, on la relit à chaque tour."
+          - label: "sont plus rapides qu'une recherche dichotomique"
             correct: false
-            why: "Il faudrait diviser le problème à chaque étape."
-        explanation: "Boucle dans une boucle sur les mêmes données : n × n opérations."
+            why: "C'est l'inverse : la dichotomie est la plus rapide des trois."
+        explanation: "Une boucle dans une boucle sur les mêmes données : le travail explose sur une grande liste."
       - code: prog-r-q2
         kind: VRAI_FAUX
         difficulty: 1
@@ -187,20 +187,20 @@ lessons:
         kind: RESULTAT_CODE
         difficulty: 3
         skill: algo-tri-recherche
-        prompt: "Que donne `[25, 3, 100].sort()` ?"
-        snippet: "[25, 3, 100].sort()"
+        prompt: "Que donne `[\"banane\", \"Cerise\", \"abricot\"].sort()` ?"
+        snippet: "[\"banane\", \"Cerise\", \"abricot\"].sort()"
         language: javascript
         choices:
-          - label: "[100, 25, 3]"
+          - label: "[\"Cerise\", \"abricot\", \"banane\"]"
             correct: true
-            why: "Tri alphabétique : \"1…\" < \"2…\" < \"3\"."
-          - label: "[3, 25, 100]"
+            why: "Sans fonction de comparaison, les majuscules passent avant les minuscules."
+          - label: "[\"abricot\", \"banane\", \"Cerise\"]"
             correct: false
-            why: "Il faudrait `(a, b) => a - b`."
-          - label: "[100, 3, 25]"
+            why: "Il faudrait `(a, b) => a.localeCompare(b)` pour obtenir ce vrai ordre alphabétique."
+          - label: "[\"banane\", \"Cerise\", \"abricot\"]"
             correct: false
-            why: "\"25\" vient avant \"3\" dans l'ordre alphabétique."
-        explanation: "Sans fonction de comparaison, sort compare des textes."
+            why: "sort modifie bien l'ordre de la liste."
+        explanation: "Sans fonction de comparaison, sort place les majuscules d'abord ; `localeCompare` donne l'ordre du dictionnaire."
     exercises:
       - slug: prog-ex-recherche-guide
         kind: COMPLETER
@@ -364,7 +364,7 @@ lessons:
       - type: text
         md: "En autonomie : applique la méthode à un nouveau problème."
       - type: exercise
-        ref: prog-ex-moyenne-securisee
+        ref: prog-ex-initiale-securisee
       - type: jury
         items:
           - q: "Comment abordez-vous un problème algorithmique que vous ne connaissez pas ?"
@@ -398,18 +398,18 @@ lessons:
         kind: CHOIX_MULTIPLE
         difficulty: 2
         skill: algo-bases
-        prompt: "Pour une fonction qui calcule une moyenne, quels sont des cas limites à tester ?"
+        prompt: "Pour une fonction qui renvoie l'initiale d'un prénom, quels sont des cas limites à tester ?"
         choices:
-          - label: "Une liste vide"
+          - label: "Un prénom vide"
             correct: true
-            why: "Division par zéro !"
-          - label: "Une liste d'un seul élément"
+            why: "Il n'y a pas de première lettre : le programme risque de planter."
+          - label: "Un prénom d'une seule lettre"
             correct: true
-            why: "La moyenne est l'élément lui-même."
-          - label: "Une liste de trois notes ordinaires"
+            why: "L'initiale est la lettre elle-même."
+          - label: "Un prénom ordinaire comme « Awa »"
             correct: false
             why: "C'est le cas normal, pas un cas limite."
-        explanation: "Vide et un seul élément sont les cas limites classiques d'une liste."
+        explanation: "Vide et « un seul élément » sont les cas limites classiques, pour un texte comme pour une liste."
       - code: prog-mr-q3
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -485,100 +485,99 @@ lessons:
             - "Écrire le pseudo-code"
             - "Coder étape par étape"
             - "Tester sur les exemples"
-      - slug: prog-ex-moyenne-securisee
+      - slug: prog-ex-initiale-securisee
         kind: CODE_LIBRE
-        title: "Une moyenne qui ne plante jamais"
+        title: "Une initiale qui ne plante jamais"
         difficulty: INTERMEDIAIRE
         skill: algo-bases
         statement: |
-          Écris `moyenne(notes)` :
-          - si la liste est vide, renvoie `0` (cas limite) ;
-          - sinon, renvoie la somme des notes divisée par leur nombre.
+          Écris `initiale(prenom)` :
+          - si le prénom est vide (`""`), renvoie `"?"` (cas limite) ;
+          - sinon, renvoie sa première lettre en majuscule.
 
-          Teste avec `[10, 14]` (résultat 12) et avec `[]` (résultat 0).
-        criteria: "Cas de la liste vide traité avant la division ; somme ; division par length ; deux tests."
+          Teste avec `"awa"` (résultat `A`) et avec `""` (résultat `?`).
+        criteria: "Cas du prénom vide traité en premier ; première lettre en majuscule ; deux tests."
         hints:
-          - "Commence par `if (notes.length === 0) { return 0; }`."
-          - "Additionne avec une boucle ou `reduce`."
-          - "`return somme / notes.length;` puis `console.log(moyenne([10, 14]));` et `console.log(moyenne([]));`"
+          - "Commence par `if (prenom === \"\") { return \"?\"; }`."
+          - "La première lettre, c'est `prenom[0]` ; en majuscule : `prenom[0].toUpperCase()`."
+          - "Puis `console.log(initiale(\"awa\"));` et `console.log(initiale(\"\"));`"
         solution: |
-          function moyenne(notes) {
-            if (notes.length === 0) {
-              return 0;
+          function initiale(prenom) {
+            if (prenom === "") {
+              return "?";
             }
-            const somme = notes.reduce((total, n) => total + n, 0);
-            return somme / notes.length;
+            return prenom[0].toUpperCase();
           }
-          console.log(moyenne([10, 14]));
-          console.log(moyenne([]));
-        explanation: "Sans le test de la liste vide, on diviserait 0 par 0 et on obtiendrait `NaN` (« pas un nombre »)."
+          console.log(initiale("awa"));
+          console.log(initiale(""));
+        explanation: "Sans le test du prénom vide, `prenom[0]` vaudrait `undefined` et `toUpperCase()` ferait planter le programme."
         xp: 25
         payload:
           language: javascript
           starter: |
-            // Ta fonction moyenne
+            // Ta fonction initiale
 
           checks:
-            - pattern: 'function\s+moyenne\s*\(\s*\w+\s*\)|const\s+moyenne\s*='
-              message: "Déclare function moyenne(notes)."
-            - pattern: '\w+\.length\s*===?\s*0|!\s*\w+\.length'
-              message: "Traite d'abord le cas de la liste vide : if (notes.length === 0)."
-            - pattern: 'return\s+0\b'
-              message: "Pour une liste vide, renvoie 0."
-            - pattern: '/\s*\w+\.length'
-              message: "Divise la somme par le nombre de notes : / notes.length."
-            - pattern: 'moyenne\s*\(\s*\[\s*\]\s*\)'
-              message: "Teste le cas limite : moyenne([])."
+            - pattern: 'function\s+initiale\s*\(\s*\w+\s*\)|const\s+initiale\s*='
+              message: "Déclare function initiale(prenom)."
+            - pattern: '\w+\s*===?\s*["''`]["''`]|\w+\.length\s*===?\s*0|!\s*\w+\s*\)'
+              message: "Traite d'abord le cas du prénom vide : if (prenom === \"\")."
+            - pattern: 'return\s+["''`]\?["''`]'
+              message: "Pour un prénom vide, renvoie \"?\"."
+            - pattern: '\w+\s*\[\s*0\s*\]\s*\.toUpperCase\s*\(\s*\)'
+              message: "Renvoie la première lettre en majuscule : prenom[0].toUpperCase()."
+            - pattern: 'initiale\s*\(\s*["''`]["''`]\s*\)'
+              message: "Teste le cas limite : initiale(\"\")."
           output: |
-            12
-            0
+            A
+            ?
 
 bank:
   - code: prog-c5-b1
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: algo-tri-recherche
-    prompt: "Combien de comparaisons au maximum pour trouver un élément par dichotomie dans une liste triée de 1 000 éléments ?"
+    prompt: "Pourquoi la recherche dichotomique est-elle si rapide sur une grande liste triée ?"
     choices:
-      - label: "Environ 10"
+      - label: "Elle élimine la moitié de ce qui reste à chaque étape"
         correct: true
-        why: "2¹⁰ = 1 024 : on divise par deux environ 10 fois."
-      - label: "1 000"
+        why: "Comme dans un annuaire ouvert au milieu : on ne garde que la bonne moitié."
+      - label: "Elle lit tous les éléments très vite"
         correct: false
-        why: "C'est le pire cas de la recherche linéaire."
-      - label: "500"
+        why: "Au contraire, elle en lit très peu."
+      - label: "Elle commence toujours par la fin"
         correct: false
-        why: "On élimine une moitié à chaque étape."
-    explanation: "O(log n) : log₂(1000) ≈ 10."
+        why: "Elle commence par le milieu."
+    explanation: "À chaque étape, la partie à explorer est coupée en deux : il reste très vite peu d'éléments."
   - code: prog-c5-b2
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: algo-bases
-    prompt: "Que vaut `0 / 0` en JavaScript ?"
+    prompt: "Que vaut `[\"Awa\"][5]` en JavaScript ?"
     choices:
-      - label: "NaN (Not a Number)"
+      - label: "undefined"
         correct: true
-        why: "Le résultat n'est pas un nombre défini."
-      - label: "0"
+        why: "La case 5 n'existe pas : la liste n'a qu'un élément."
+      - label: "\"Awa\""
         correct: false
-        why: "0/0 n'est pas défini."
+        why: "\"Awa\" est dans la case 0."
       - label: "Une erreur"
         correct: false
-        why: "JavaScript ne lève pas d'erreur : il renvoie NaN."
-    explanation: "D'où l'importance de traiter le cas de la liste vide."
+        why: "JavaScript ne lève pas d'erreur : il renvoie undefined."
+    explanation: "D'où l'importance de traiter les cas limites : liste vide, case qui n'existe pas…"
   - code: prog-c5-b3
     kind: CHOIX_UNIQUE
     difficulty: 1
     skill: algo-bases
-    prompt: "Quelle complexité a la lecture de `liste[5]` ?"
+    prompt: "Lire `liste[5]` sur une liste d'un million d'éléments est-il rapide ?"
     choices:
-      - label: "O(1) : un accès direct, quelle que soit la taille"
+      - label: "Oui : on va directement à la case, sans parcourir la liste"
         correct: true
-        why: "On va directement à la case."
-      - label: "O(n)"
+        why: "L'accès par indice est direct, quelle que soit la taille."
+      - label: "Non : il faut lire les éléments un par un jusqu'à la case 5"
         correct: false
-        why: "On ne parcourt pas la liste."
-      - label: "O(n²)"
+        why: "Il n'y a aucune boucle : on saute directement à la case."
+      - label: "Non : c'est aussi lent que deux boucles imbriquées"
         correct: false
-        why: "Aucune boucle."
-    explanation: "L'accès par indice est immédiat."
+        why: "Aucune boucle n'est utilisée."
+    explanation: "L'accès par indice est immédiat : c'est ce qu'on appelle un accès direct."

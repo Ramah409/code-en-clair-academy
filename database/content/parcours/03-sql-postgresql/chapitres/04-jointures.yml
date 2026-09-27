@@ -316,26 +316,26 @@ lessons:
         kind: RESULTAT_CODE
         difficulty: 2
         skill: sql-jointures
-        prompt: "La table `produits` compte 30 lignes, dont 1 sans catégorie. Combien de lignes renvoie cette requête ?"
+        prompt: "Un produit n'a pas de catégorie. Que renvoie cette requête ?"
         snippet: |
           SELECT p.nom, c.nom
           FROM produits p
           LEFT JOIN categories c ON c.id = p.categorie_id;
         language: sql
         choices:
-          - label: "30"
+          - label: "Tous les produits, y compris celui sans catégorie (avec NULL à la place du nom de catégorie)"
             correct: true
-            why: "LEFT JOIN garde toutes les lignes de produits, y compris celle sans catégorie."
-          - label: "29"
+            why: "LEFT JOIN garde toutes les lignes de la table de gauche, produits."
+          - label: "Seulement les produits qui ont une catégorie"
             correct: false
             why: "Ce serait le résultat d'un INNER JOIN."
-          - label: "8"
+          - label: "Seulement la liste des catégories"
             correct: false
-            why: "C'est le nombre de catégories, pas de lignes de la jointure."
-          - label: "240"
+            why: "On affiche une ligne par produit."
+          - label: "Toutes les combinaisons produit / catégorie"
             correct: false
-            why: "Ce serait un produit cartésien (30 × 8), sans condition de jointure."
-        explanation: "Chaque produit a au plus une catégorie : la jointure externe renvoie exactement une ligne par produit."
+            why: "Ce serait un produit cartésien, sans condition de jointure."
+        explanation: "Chaque produit a au plus une catégorie : la jointure externe renvoie exactement une ligne par produit, avec NULL quand il n'y a pas de correspondance."
       - code: sql-c4l2-q2
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -491,14 +491,14 @@ lessons:
                  p.nom AS produit,
                  l.quantite,
                  l.prix_unitaire,
-                 l.quantite * l.prix_unitaire AS montant
+                 co.statut
           FROM commandes co
           JOIN lignes_commande l ON l.commande_id = co.id
           JOIN produits p ON p.id = l.produit_id
           WHERE co.id = 1;
         lines:
           - n: 5
-            note: "Le montant de chaque ligne = quantité × prix unitaire au moment de la commande."
+            note: "Le statut de la commande vient de la table `commandes`."
           - n: 6
             note: "On part des commandes."
           - n: 7
@@ -516,7 +516,7 @@ lessons:
                  p.nom AS produit,
                  l.quantite,
                  l.prix_unitaire,
-                 l.quantite * l.prix_unitaire AS montant
+                 co.statut
           FROM commandes co
           JOIN lignes_commande l ON l.commande_id = co.id
           JOIN produits p ON p.id = l.produit_id
@@ -525,20 +525,20 @@ lessons:
         ref: sql-c4l3-q1
       - type: code
         language: sql
-        title: "Chiffre d'affaires par catégorie (4 tables)"
+        title: "Articles vendus par catégorie (4 tables)"
         code: |
           SELECT c.nom AS categorie,
-                 SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+                 SUM(l.quantite) AS articles_vendus
           FROM lignes_commande l
           JOIN commandes co ON co.id = l.commande_id
           JOIN produits p   ON p.id = l.produit_id
           JOIN categories c ON c.id = p.categorie_id
           WHERE co.statut <> 'ANNULEE'
           GROUP BY c.nom
-          ORDER BY chiffre_affaires DESC;
+          ORDER BY articles_vendus DESC;
         lines:
           - n: 2
-            note: "Agrégat : la somme des montants de chaque groupe (catégorie)."
+            note: "Agrégat : le total des quantités vendues de chaque groupe (catégorie). C'est la base qui compte."
           - n: 4
             note: "On rejoint la commande pour connaître son statut."
           - n: 5
@@ -546,7 +546,7 @@ lessons:
           - n: 6
             note: "…et la catégorie pour afficher son nom."
           - n: 7
-            note: "Les commandes annulées ne comptent pas dans le chiffre d'affaires."
+            note: "Les commandes annulées ne comptent pas dans les ventes."
           - n: 8
             note: "Un groupe par catégorie."
       - type: demo
@@ -554,14 +554,14 @@ lessons:
         language: sql
         code: |
           SELECT c.nom AS categorie,
-                 SUM(l.quantite * l.prix_unitaire) AS chiffre_affaires
+                 SUM(l.quantite) AS articles_vendus
           FROM lignes_commande l
           JOIN commandes co ON co.id = l.commande_id
           JOIN produits p   ON p.id = l.produit_id
           JOIN categories c ON c.id = p.categorie_id
           WHERE co.statut <> 'ANNULEE'
           GROUP BY c.nom
-          ORDER BY chiffre_affaires DESC;
+          ORDER BY articles_vendus DESC;
       - type: question
         ref: sql-c4l3-q2
       - type: question
@@ -597,23 +597,23 @@ lessons:
         kind: RESULTAT_CODE
         difficulty: 2
         skill: sql-jointures
-        prompt: "La commande n°1 contient 1 exemplaire à 29,90 € et 2 exemplaires à 9,90 €. Que renvoie cette requête ?"
+        prompt: "Que renvoie cette requête ?"
         snippet: |
-          SELECT SUM(quantite * prix_unitaire)
+          SELECT COUNT(*)
           FROM lignes_commande
           WHERE commande_id = 1;
         language: sql
         choices:
-          - label: "49.70"
+          - label: "Le nombre de lignes de la commande n°1 (un article différent par ligne)"
             correct: true
-            why: "1 × 29,90 + 2 × 9,90 = 29,90 + 19,80 = 49,70."
-          - label: "39.80"
+            why: "COUNT(*) compte les lignes qui respectent le WHERE."
+          - label: "La liste des articles de la commande n°1"
             correct: false
-            why: "La quantité 2 de la seconde ligne n'a pas été prise en compte."
-          - label: "3"
+            why: "COUNT renvoie un seul nombre, pas une liste."
+          - label: "Le nombre total de commandes"
             correct: false
-            why: "C'est la somme des quantités."
-        explanation: "Le produit quantite × prix_unitaire est calculé pour chaque ligne, puis SUM additionne les résultats."
+            why: "Le WHERE ne garde que la commande n°1."
+        explanation: "COUNT(*) compte les lignes restantes après le WHERE : c'est l'ordinateur qui compte, pas toi."
       - code: sql-c4l3-q3
         kind: VRAI_FAUX
         difficulty: 2
@@ -660,18 +660,18 @@ lessons:
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: sql-jointures
-        prompt: Combien de JOIN faut-il pour relier 4 tables en chaîne ?
+        prompt: "Pour relier plusieurs tables en chaîne, que faut-il ajouter pour chaque nouvelle table ?"
         choices:
-          - label: '3'
+          - label: "Un JOIN avec sa condition ON"
             correct: true
-            why: 'Oui : un JOIN de moins que le nombre de tables.'
-          - label: '4'
+            why: "Oui : la première table est dans FROM, chaque table suivante arrive avec son JOIN."
+          - label: "Un nouveau FROM"
             correct: false
-            why: La première table est dans FROM.
-          - label: '2'
+            why: "Une requête n'a qu'un seul FROM."
+          - label: "Un WHERE sans condition"
             correct: false
-            why: Une table resterait isolée.
-        explanation: 'FROM t1 JOIN t2 JOIN t3 JOIN t4 : trois jointures, chacune avec sa condition ON.'
+            why: "La liaison se fait avec ON, dans le JOIN."
+        explanation: "FROM t1 JOIN t2 ON … JOIN t3 ON … : chaque table ajoutée a sa propre jointure et sa condition ON."
       - code: sqlq-multi-3
         kind: VRAI_FAUX
         difficulty: 2
@@ -688,32 +688,34 @@ lessons:
     exercises:
       - slug: sql-ex-montant-commandes
         kind: SQL
-        title: "Montant total de chaque commande livrée"
+        title: "Nombre d'articles de chaque commande livrée"
         difficulty: DIFFICILE
         skill: sql-jointures
         statement: |
           Pour chaque commande **livrée**, affiche son **id** (`commande_id`), le **nom du client**
-          (colonne `client`, au format « Prénom Nom ») et le **montant total** (`montant`). Trie par montant
-          décroissant et garde les **5 premières**.
-        criteria: "3 colonnes (commande_id, client, montant), 5 lignes, triées par montant décroissant."
+          (colonne `client`, au format « Prénom Nom ») et le **nombre de lignes** de la commande
+          (`nb_articles`, calculé par `COUNT`). Trie par `nb_articles` décroissant, puis par `commande_id`
+          croissant, et garde les **5 premières**.
+        criteria: "3 colonnes (commande_id, client, nb_articles), 5 lignes, triées par nb_articles décroissant puis commande_id."
         hints:
           - "Il faut trois tables : commandes, clients et lignes_commande."
-          - "Groupe par commande et par client ; le montant est `SUM(l.quantite * l.prix_unitaire)`. Le nom complet : `cl.prenom || ' ' || cl.nom`."
-          - "`... WHERE co.statut = 'LIVREE' GROUP BY co.id, cl.prenom, cl.nom ORDER BY montant DESC LIMIT 5`"
+          - "Groupe par commande et par client ; le nombre de lignes est `COUNT(*)`. Le nom complet : `cl.prenom || ' ' || cl.nom`."
+          - "`... WHERE co.statut = 'LIVREE' GROUP BY co.id, cl.prenom, cl.nom ORDER BY nb_articles DESC, commande_id LIMIT 5`"
         solution: |
           SELECT co.id AS commande_id,
                  cl.prenom || ' ' || cl.nom AS client,
-                 SUM(l.quantite * l.prix_unitaire) AS montant
+                 COUNT(*) AS nb_articles
           FROM commandes co
           JOIN clients cl ON cl.id = co.client_id
           JOIN lignes_commande l ON l.commande_id = co.id
           WHERE co.statut = 'LIVREE'
           GROUP BY co.id, cl.prenom, cl.nom
-          ORDER BY montant DESC
+          ORDER BY nb_articles DESC, commande_id
           LIMIT 5;
         explanation: |
-          Les deux jointures donnent accès au client et aux lignes. On regroupe par commande pour additionner
-          ses lignes ; `cl.prenom` et `cl.nom` figurent dans le GROUP BY pour pouvoir être affichés.
+          Les deux jointures donnent accès au client et aux lignes. On regroupe par commande pour compter
+          ses lignes ; `cl.prenom` et `cl.nom` figurent dans le GROUP BY pour pouvoir être affichés. Le second
+          critère de tri départage les commandes qui ont le même nombre d'articles.
         xp: 25
         payload:
           mode: READ
@@ -899,20 +901,20 @@ bank:
     kind: RESULTAT_CODE
     difficulty: 3
     skill: sql-jointures
-    prompt: "Combien de lignes produit une jointure **sans condition** entre `categories` (8 lignes) et `services` (4 lignes) ?"
+    prompt: "Que produit une jointure **sans condition** entre `categories` et `services` ?"
     snippet: |
       SELECT * FROM categories, services;
     language: sql
     choices:
-      - label: "32"
+      - label: "Toutes les combinaisons possibles : chaque catégorie avec chaque service"
         correct: true
-        why: "Sans condition, chaque ligne est combinée à chaque ligne : 8 × 4 = 32 (produit cartésien)."
-      - label: "12"
+        why: "Sans condition, chaque ligne est associée à chaque ligne (produit cartésien)."
+      - label: "Seulement les lignes qui se correspondent"
         correct: false
-        why: "Ce serait une addition ; une jointure multiplie les combinaisons."
-      - label: "8"
+        why: "Il faudrait une condition de jointure (ON) pour ça."
+      - label: "Une erreur"
         correct: false
-        why: "Toutes les combinaisons sont produites."
+        why: "La requête est valide, même si le résultat est rarement voulu."
     explanation: "Le produit cartésien (CROSS JOIN) est rarement voulu : c'est souvent le signe d'une condition de jointure oubliée."
   - code: sql-c4-b2
     kind: CHOIX_UNIQUE
@@ -994,7 +996,7 @@ bank:
     kind: RESULTAT_CODE
     difficulty: 3
     skill: sql-jointures
-    prompt: "4 clients n'ont jamais commandé. Combien de lignes renvoie cette requête ?"
+    prompt: "Que renvoie cette requête ?"
     snippet: |
       SELECT cl.id
       FROM clients cl
@@ -1002,15 +1004,15 @@ bank:
       WHERE co.id IS NULL;
     language: sql
     choices:
-      - label: "4"
+      - label: "Les clients qui n'ont jamais commandé"
         correct: true
         why: "Ce sont exactement les clients sans correspondance dans commandes."
-      - label: "0"
+      - label: "Aucun client"
         correct: false
         why: "Le LEFT JOIN conserve ces clients avec des colonnes co.* à NULL."
-      - label: "21"
+      - label: "Les clients qui ont au moins une commande"
         correct: false
-        why: "C'est le nombre de clients ayant au moins une commande."
+        why: "Ceux-là ont un co.id rempli : le WHERE les exclut."
     explanation: "L'anti-jointure isole les lignes de gauche sans correspondance à droite."
   - code: sql-c4-b8
     kind: CHOIX_MULTIPLE

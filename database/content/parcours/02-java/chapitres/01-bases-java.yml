@@ -265,7 +265,7 @@ lessons:
     commonMistakes: |
       - Comparer des `String` avec `==` : on compare les adresses mémoire, pas le contenu.
       - Mettre un décimal dans un `int` : `int prix = 9.99;` ne compile pas.
-      - Division entière : `7 / 2` vaut `3` avec des `int`.
+      - Comparer deux `String` avec `==` au lieu de `equals` : le résultat peut être faux même si les textes sont identiques.
     blocks:
       - type: text
         md: |
@@ -342,7 +342,7 @@ lessons:
       - type: exercise
         ref: java-ex-types-guide
       - type: text
-        md: "En autonomie : écris une méthode qui calcule un tarif."
+        md: "En autonomie : écris une méthode qui choisit un tarif selon l'âge et le statut."
       - type: exercise
         ref: java-ex-tarif
       - type: jury
@@ -398,21 +398,20 @@ lessons:
         skill: java-bases
         prompt: "Qu'affiche ce code ?"
         snippet: |
-          int a = 7;
-          int b = 2;
-          System.out.println(a / b);
+          String prenom = "Awa";
+          System.out.println("Bonjour " + prenom.toUpperCase() + " !");
         language: java
         choices:
-          - label: "3"
+          - label: "Bonjour AWA !"
             correct: true
-            why: "Division entière entre deux int : la partie décimale est perdue."
-          - label: "3.5"
+            why: "`toUpperCase()` met le prénom en majuscules, puis `+` colle les morceaux."
+          - label: "Bonjour Awa !"
             correct: false
-            why: "Il faudrait des double."
-          - label: "Une erreur"
+            why: "`toUpperCase()` transforme le prénom avant de le coller."
+          - label: "Bonjour prenom.toUpperCase() !"
             correct: false
-            why: "C'est valide, mais le résultat est entier."
-        explanation: "Entier ÷ entier = entier en Java. Utilise `7.0 / 2` ou des double pour 3.5."
+            why: "Hors des guillemets, le code est exécuté : c'est sa valeur qui est collée."
+        explanation: "Comme en JavaScript, `+` colle des textes en Java, et les String ont leurs propres outils (`toUpperCase`, `length`, `equals`…)."
       - code: java-tc-q4
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -471,7 +470,7 @@ lessons:
             - ["boolean"]
       - slug: java-ex-tarif
         kind: CODE_LIBRE
-        title: "Calculer un tarif"
+        title: "Choisir un tarif"
         difficulty: INTERMEDIAIRE
         skill: java-bases
         statement: |

@@ -838,25 +838,25 @@ lessons:
         kind: RESULTAT_CODE
         difficulty: 2
         skill: sql-select
-        prompt: "Les clients habitent dans 9 villes différentes et 3 clients n'ont pas de ville. Combien de lignes renvoie cette requête ?"
+        prompt: "Certains clients n'ont pas de ville. Que renvoie cette requête ?"
         snippet: |
           SELECT DISTINCT ville
           FROM clients;
         language: sql
         choices:
-          - label: "10"
+          - label: "Chaque ville une seule fois, plus une ligne NULL pour les clients sans ville"
             correct: true
-            why: "Les 9 villes, plus une ligne NULL : DISTINCT regroupe tous les NULL en une seule ligne."
-          - label: "9"
+            why: "DISTINCT regroupe tous les NULL en une seule ligne."
+          - label: "Chaque ville une seule fois, sans aucune ligne NULL"
             correct: false
             why: "Sans filtre IS NOT NULL, la valeur NULL apparaît une fois dans le résultat."
-          - label: "12"
+          - label: "Une ligne NULL par client sans ville"
             correct: false
-            why: "DISTINCT ne conserve qu'une seule ligne NULL, pas trois."
-          - label: "25"
+            why: "DISTINCT ne conserve qu'une seule ligne NULL."
+          - label: "Une ligne par client"
             correct: false
-            why: "Ce serait le nombre de clients sans DISTINCT."
-        explanation: "Pour DISTINCT (et GROUP BY), tous les NULL sont considérés comme identiques : ils forment une seule ligne. D'où l'intérêt d'ajouter `WHERE ville IS NOT NULL`."
+            why: "Ce serait le résultat sans DISTINCT."
+        explanation: "Pour DISTINCT (et GROUP BY), tous les NULL sont considérés comme identiques : ils forment une seule ligne. D'où l'intérêt d'ajouter `WHERE ville IS NOT NULL` si besoin."
       - code: sql-c2l4-q2
         kind: RESULTAT_CODE
         difficulty: 2
@@ -1096,19 +1096,19 @@ bank:
     skill: sql-select
     prompt: "Que renvoie cette requête ?"
     snippet: |
-      SELECT LENGTH('CDA') + LENGTH('Academy') AS n;
+      SELECT UPPER('cda') || ' ' || LOWER('ACADEMY') AS titre;
     language: sql
     choices:
-      - label: "10"
+      - label: "CDA academy"
         correct: true
-        why: "3 caractères + 7 caractères = 10."
-      - label: "11"
+        why: "UPPER met « cda » en majuscules, LOWER met « ACADEMY » en minuscules, et `||` colle le tout."
+      - label: "cda ACADEMY"
         correct: false
-        why: "Il n'y a pas d'espace compté : ce sont deux chaînes séparées."
-      - label: "CDAAcademy"
+        why: "Les deux fonctions transforment les textes avant qu'ils soient collés."
+      - label: "CDAacademy"
         correct: false
-        why: "`+` additionne les longueurs ; la concaténation s'écrit `||`."
-    explanation: "LENGTH compte les caractères d'un texte. Pour coller deux textes, PostgreSQL utilise `||`."
+        why: "Le morceau `' '` ajoute bien un espace entre les deux."
+    explanation: "UPPER et LOWER changent la casse d'un texte. Pour coller deux textes, PostgreSQL utilise `||`."
   - code: sql-c2-b7
     kind: CHOIX_UNIQUE
     difficulty: 2

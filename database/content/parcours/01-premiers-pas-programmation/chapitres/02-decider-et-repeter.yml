@@ -102,9 +102,9 @@ lessons:
       - type: exercise
         ref: prog-ex-if-guide
       - type: text
-        md: "En autonomie : écris un programme qui dit si un nombre est pair ou impair."
+        md: "En autonomie : écris un programme qui donne un conseil selon la météo."
       - type: exercise
-        ref: prog-ex-pair
+        ref: prog-ex-meteo
       - type: jury
         items:
           - q: "Quelle différence entre = et === en JavaScript ?"
@@ -241,43 +241,44 @@ lessons:
             - ["if"]
             - ["==="]
             - ["else"]
-      - slug: prog-ex-pair
+      - slug: prog-ex-meteo
         kind: CODE_LIBRE
-        title: "Pair ou impair ?"
+        title: "Un conseil selon la météo"
         difficulty: FACILE
         skill: algo-bases
         statement: |
-          Crée une constante `nombre` qui vaut `7`. Si le reste de la division de `nombre` par 2 vaut 0,
-          affiche `pair`, sinon affiche `impair`. Change ensuite la valeur pour vérifier les deux cas.
-        criteria: "Un if / else qui utilise nombre % 2 === 0."
+          Crée une constante `meteo` qui vaut `"pluie"`. Si `meteo` est égale à `"pluie"`, affiche
+          `Prends ton parapluie`, sinon affiche `Bonne balade`. Change ensuite la valeur (par exemple
+          `"soleil"`) pour vérifier les deux cas.
+        criteria: "Un if / else qui compare meteo à \"pluie\" avec ===."
         hints:
-          - "Le reste d'une division s'obtient avec `%`."
-          - "`if (nombre % 2 === 0) { ... } else { ... }`"
-          - "Dans chaque bloc : `console.log(\"pair\");` ou `console.log(\"impair\");`"
+          - "Pour comparer deux textes : trois signes égal `===`."
+          - "`if (meteo === \"pluie\") { ... } else { ... }`"
+          - "Dans chaque bloc : `console.log(\"Prends ton parapluie\");` ou `console.log(\"Bonne balade\");`"
         solution: |
-          const nombre = 7;
-          if (nombre % 2 === 0) {
-            console.log("pair");
+          const meteo = "pluie";
+          if (meteo === "pluie") {
+            console.log("Prends ton parapluie");
           } else {
-            console.log("impair");
+            console.log("Bonne balade");
           }
-        explanation: "Un nombre pair a un reste nul quand on le divise par 2."
+        explanation: "La condition compare deux textes : un seul des deux messages s'affiche."
         xp: 15
         payload:
           language: javascript
           starter: |
-            const nombre = 7;
+            const meteo = "pluie";
 
           checks:
-            - pattern: 'if\s*\(\s*nombre\s*%\s*2\s*===?\s*0\s*\)|if\s*\(\s*nombre\s*%\s*2\s*!==?\s*0\s*\)'
-              message: "Teste le reste : if (nombre % 2 === 0)."
+            - pattern: 'if\s*\(\s*meteo\s*===?\s*["''`]pluie["''`]\s*\)|if\s*\(\s*["''`]pluie["''`]\s*===?\s*meteo\s*\)'
+              message: "Compare la météo : if (meteo === \"pluie\")."
             - pattern: '\belse\b'
               message: "Ajoute un else pour l'autre cas."
-            - pattern: 'console\.log\s*\(\s*["''`]pair["''`]\s*\)'
-              message: "Affiche \"pair\" dans le bon cas."
-            - pattern: 'console\.log\s*\(\s*["''`]impair["''`]\s*\)'
-              message: "Affiche \"impair\" dans l'autre cas."
-          output: "impair"
+            - pattern: 'console\.log\s*\(\s*["''`]Prends ton parapluie["''`]\s*\)'
+              message: "Affiche \"Prends ton parapluie\" quand il pleut."
+            - pattern: 'console\.log\s*\(\s*["''`]Bonne balade["''`]\s*\)'
+              message: "Affiche \"Bonne balade\" dans l'autre cas."
+          output: "Prends ton parapluie"
 
   # ===================================================================== LEÇON 2
   - slug: prog-boucles
@@ -291,12 +292,12 @@ lessons:
       - Une **boucle** répète des instructions.
       - `for (let i = 1; i <= 5; i++) { ... }` : départ, condition pour continuer, pas (ici +1).
       - `while (condition) { ... }` répète **tant que** la condition est vraie.
-      - `i++` ajoute 1 à `i` ; `total += x` ajoute x à total.
+      - `i++` fait avancer le compteur d'un cran ; `texte += "…"` ajoute un morceau à la fin d'un texte.
       - Toujours faire avancer la boucle vers sa fin, sinon elle ne s'arrête jamais (boucle infinie).
     commonMistakes: |
       - Oublier `i++` dans un `while` : la boucle ne s'arrête jamais.
       - Se tromper de borne : `i < 5` fait 5 tours depuis 0, `i <= 5` en fait 6.
-      - Déclarer le total **dans** la boucle : il repart de 0 à chaque tour.
+      - Créer le texte **dans** la boucle : il repart de zéro à chaque tour.
     blocks:
       - type: text
         md: |
@@ -323,7 +324,7 @@ lessons:
             note: "Le bloc s'exécute à chaque tour : il affiche 1, 2, 3, 4, 5."
       - type: demo
         title: "Modifie la boucle"
-        md: "Essaie de compter jusqu'à 10, ou de 2 en 2 avec `i += 2`."
+        md: "Essaie de compter jusqu'à 10, ou affiche un message à chaque tour avec un gabarit."
         language: javascript
         code: |
           for (let i = 1; i <= 5; i++) {
@@ -333,22 +334,25 @@ lessons:
         ref: prog-b-q1
         review: code-for
       - type: code
-        id: code-somme
+        id: code-accumuler
         language: javascript
-        title: "Additionner avec une boucle"
+        title: "Construire un texte avec une boucle"
         code: |
-          let total = 0;
-          for (let i = 1; i <= 4; i++) {
-            total += i;
+          let cri = "";
+          for (let i = 1; i <= 3; i++) {
+            cri += "Hip ";
           }
-          console.log(total);
+          cri += "hourra !";
+          console.log(cri);
         lines:
           - n: 1
-            note: "Le total démarre à 0, **avant** la boucle."
+            note: "Le texte démarre **vide**, avant la boucle."
           - n: 3
-            note: "`total += i` veut dire `total = total + i`. Tours : 0+1, puis +2, +3, +4."
+            note: "`cri += \"Hip \"` ajoute « Hip » à la fin du texte, à chaque tour."
           - n: 5
-            note: "Après la boucle : affiche 10."
+            note: "Après la boucle, on ajoute la fin du cri."
+          - n: 6
+            note: "Affiche : Hip Hip Hip hourra !"
       - type: definition
         id: def-while
         term: "while (tant que)"
@@ -369,9 +373,9 @@ lessons:
       - type: exercise
         ref: prog-ex-boucle-ordre
       - type: text
-        md: "En autonomie : affiche la table de multiplication de 7."
+        md: "En autonomie : affiche les étapes d'une recette avec une boucle."
       - type: exercise
-        ref: prog-ex-table
+        ref: prog-ex-etapes
       - type: jury
         items:
           - q: "Quand utilise-t-on for plutôt que while ?"
@@ -379,7 +383,7 @@ lessons:
       - type: quiz
         items:
           - ref: prog-b-q3
-            review: code-somme
+            review: code-accumuler
           - ref: prog-b-q4
             review: code-for
           - ref: prog-b-q5
@@ -429,23 +433,23 @@ lessons:
         skill: algo-bases
         prompt: "Qu'affiche ce code ?"
         snippet: |
-          let total = 0;
+          let rire = "";
           for (let i = 1; i <= 3; i++) {
-            total += i;
+            rire += "ha";
           }
-          console.log(total);
+          console.log(rire);
         language: javascript
         choices:
-          - label: "6"
+          - label: "hahaha"
             correct: true
-            why: "1 + 2 + 3."
-          - label: "3"
+            why: "Trois tours : « ha » est ajouté trois fois."
+          - label: "ha"
             correct: false
-            why: "On additionne à chaque tour, on ne garde pas seulement le dernier."
-          - label: "0"
+            why: "On ajoute à chaque tour, on ne garde pas seulement le dernier."
+          - label: "Rien (un texte vide)"
             correct: false
-            why: "total change à chaque tour."
-        explanation: "`total += i` accumule les valeurs."
+            why: "rire change à chaque tour."
+        explanation: "`rire += \"ha\"` ajoute un morceau à chaque tour : le texte s'allonge."
       - code: prog-b-q4
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -455,9 +459,9 @@ lessons:
           - label: "Ajoute 1 à i"
             correct: true
             why: "C'est un raccourci de `i = i + 1`."
-          - label: "Double i"
+          - label: "Remet i à zéro"
             correct: false
-            why: "Ce serait `i = i * 2`."
+            why: "Ce serait `i = 0`."
           - label: "Affiche i"
             correct: false
             why: "Rien n'est affiché."
@@ -481,64 +485,64 @@ lessons:
         title: "Remettre une boucle dans l'ordre"
         difficulty: FACILE
         skill: algo-bases
-        statement: "Remets les lignes dans l'ordre pour afficher la somme des nombres de 1 à 10."
-        criteria: "Le total est créé avant la boucle et affiché après."
+        statement: "Remets les lignes dans l'ordre pour afficher trois fois « Bravo ! » sur une seule ligne."
+        criteria: "Le message est créé avant la boucle et affiché après."
         hints:
-          - "Le total démarre à 0, avant tout."
-          - "L'addition se fait dans la boucle."
-          - "On affiche le résultat une fois la boucle terminée."
+          - "Le message démarre vide, avant tout."
+          - "On ajoute « Bravo ! » dans la boucle."
+          - "On affiche le message une fois la boucle terminée."
         solution: |
-          let total = 0;
-          for (let i = 1; i <= 10; i++) {
-            total += i;
+          let message = "";
+          for (let i = 1; i <= 3; i++) {
+            message += "Bravo ! ";
           }
-          console.log(total);
-        explanation: "Préparer, répéter, puis afficher. Résultat : 55."
+          console.log(message);
+        explanation: "Préparer, répéter, puis afficher. Résultat : Bravo ! Bravo ! Bravo !"
         xp: 10
         payload:
           language: javascript
           lines:
-            - "let total = 0;"
-            - "for (let i = 1; i <= 10; i++) {"
-            - "  total += i;"
+            - "let message = \"\";"
+            - "for (let i = 1; i <= 3; i++) {"
+            - "  message += \"Bravo ! \";"
             - "}"
-            - "console.log(total);"
-      - slug: prog-ex-table
+            - "console.log(message);"
+      - slug: prog-ex-etapes
         kind: CODE_LIBRE
-        title: "La table de 7"
+        title: "Les étapes d'une recette"
         difficulty: FACILE
         skill: algo-bases
         statement: |
-          Avec une boucle `for`, affiche la table de multiplication de 7, de 1 à 10, sous la forme
-          `7 x 1 = 7`, `7 x 2 = 14`… (utilise un gabarit `${}`).
-        criteria: "Une boucle for de 1 à 10 et un affichage avec gabarit."
+          Avec une boucle `for`, affiche les étapes d'une recette, de 1 à 5, sous la forme
+          `Étape 1 : c'est fait`, `Étape 2 : c'est fait`… (utilise un gabarit `${}`).
+        criteria: "Une boucle for de 1 à 5 et un affichage avec gabarit."
         hints:
-          - "`for (let i = 1; i <= 10; i++) { ... }`"
-          - "Le résultat se calcule avec `7 * i`."
-          - "``console.log(`7 x ${i} = ${7 * i}`);``"
+          - "`for (let i = 1; i <= 5; i++) { ... }`"
+          - "Le numéro de l'étape, c'est `i` : on l'insère avec `${i}`."
+          - "``console.log(`Étape ${i} : c'est fait`);``"
         solution: |
-          for (let i = 1; i <= 10; i++) {
-            console.log(`7 x ${i} = ${7 * i}`);
+          for (let i = 1; i <= 5; i++) {
+            console.log(`Étape ${i} : c'est fait`);
           }
-        explanation: "La boucle fait varier i de 1 à 10 ; le gabarit construit chaque ligne."
+        explanation: "La boucle fait avancer i de 1 à 5 ; le gabarit construit chaque ligne."
         xp: 15
         payload:
           language: javascript
           starter: |
-            // Table de 7
+            // Les étapes de la recette
 
           checks:
-            - pattern: 'for\s*\(\s*let\s+(\w+)\s*=\s*1\s*;\s*\1\s*<=\s*10\s*;\s*\1\s*(\+\+|\+=\s*1)\s*\)'
-              message: "Écris une boucle de 1 à 10 : for (let i = 1; i <= 10; i++)."
-            - pattern: '7\s*\*\s*\w+|\w+\s*\*\s*7'
-              message: "Calcule le résultat avec 7 * i."
-            - pattern: 'console\.log\s*\(\s*`'
-              message: "Affiche chaque ligne avec un gabarit entre accents graves."
+            - pattern: 'for\s*\(\s*let\s+(\w+)\s*=\s*1\s*;\s*\1\s*<=\s*5\s*;\s*\1\s*(\+\+|\+=\s*1)\s*\)'
+              message: "Écris une boucle de 1 à 5 : for (let i = 1; i <= 5; i++)."
+            - pattern: 'console\.log\s*\(\s*`[^`]*\$\{\s*\w+\s*\}[^`]*`'
+              message: "Affiche chaque étape avec un gabarit qui contient ${i}."
+            - pattern: '`[^`]*[ÉE]tape'
+              message: "Chaque ligne commence par « Étape »."
           output: |
-            7 x 1 = 7
-            7 x 2 = 14
+            Étape 1 : c'est fait
+            Étape 2 : c'est fait
             …
-            7 x 10 = 70
+            Étape 5 : c'est fait
 
   # ===================================================================== LEÇON 3
   - slug: prog-tableaux
@@ -559,7 +563,7 @@ lessons:
       - Oublier les crochets `[ ]` à la création.
     blocks:
       - type: text
-        md: "Pour ranger **plusieurs** valeurs ensemble — une liste de courses, des notes — on utilise un **tableau**."
+        md: "Pour ranger **plusieurs** valeurs ensemble — une liste de courses, des prénoms — on utilise un **tableau**."
       - type: definition
         id: def-tableau
         term: "Tableau (array)"
@@ -597,15 +601,13 @@ lessons:
           `for (const element of liste)` prend les éléments un par un, du premier au dernier : comme on
           vide un panier en prenant les articles un à un.
       - type: demo
-        title: "Parcourir et additionner des notes"
+        title: "Accueillir chaque invité"
         language: javascript
         code: |
-          const notes = [12, 15, 9, 18];
-          let somme = 0;
-          for (const note of notes) {
-            somme += note;
+          const invites = ["Awa", "Léo", "Inès"];
+          for (const invite of invites) {
+            console.log(`Bienvenue ${invite} !`);
           }
-          console.log("Moyenne :", somme / notes.length);
       - type: question
         ref: prog-t-q2
         review: def-for-of
@@ -614,9 +616,9 @@ lessons:
       - type: exercise
         ref: prog-ex-tableau-guide
       - type: text
-        md: "En autonomie : trouve la note la plus haute d'une liste."
+        md: "En autonomie : cherche si un prénom est dans la liste des invités."
       - type: exercise
-        ref: prog-ex-maximum
+        ref: prog-ex-recherche
       - type: jury
         items:
           - q: "Pourquoi les indices commencent-ils à 0 ?"
@@ -656,23 +658,23 @@ lessons:
         skill: algo-bases
         prompt: "Qu'affiche ce code ?"
         snippet: |
-          let n = 0;
-          for (const x of [5, 5, 5]) {
-            n++;
+          let mot = "";
+          for (const lettre of ["A", "W", "A"]) {
+            mot += lettre;
           }
-          console.log(n);
+          console.log(mot);
         language: javascript
         choices:
-          - label: "3"
+          - label: "AWA"
             correct: true
-            why: "Un tour par élément : trois tours."
-          - label: "15"
+            why: "Un tour par lettre : A, puis W, puis A sont collés dans l'ordre."
+          - label: "A"
             correct: false
-            why: "On compte les tours, on n'additionne pas les valeurs."
-          - label: "5"
+            why: "On ajoute à chaque tour, on ne garde pas seulement la dernière lettre."
+          - label: "A,W,A"
             correct: false
-            why: "n augmente de 1 à chaque tour."
-        explanation: "for…of fait un tour par élément."
+            why: "`+=` colle les lettres sans virgule."
+        explanation: "for…of fait un tour par élément, dans l'ordre de la liste."
       - code: prog-t-q3
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -744,56 +746,61 @@ lessons:
             - ["["]
             - ["of"]
             - ["prenom"]
-      - slug: prog-ex-maximum
+      - slug: prog-ex-recherche
         kind: CODE_LIBRE
-        title: "La meilleure note"
+        title: "Inès est-elle invitée ?"
         difficulty: INTERMEDIAIRE
         skill: algo-bases
         statement: |
-          Avec la liste `const notes = [12, 17, 9, 15];` :
-          1. crée une variable `max` qui vaut la première note (`notes[0]`) ;
-          2. parcours la liste : si une note est plus grande que `max`, range-la dans `max` ;
-          3. affiche `max` (le résultat attendu est 17).
+          Avec la liste `const invites = ["Awa", "Léo", "Inès", "Karim"];` :
+          1. crée une variable `trouve` qui vaut `false` ;
+          2. parcours la liste : si un invité vaut `"Inès"`, mets `trouve` à `true` ;
+          3. après la boucle, affiche `Inès est invitée` si `trouve` vaut `true`, sinon `Inès n'est pas invitée`.
 
-          N'utilise pas `Math.max` : le but est de comprendre l'algorithme.
-        criteria: "Parcours de la liste, comparaison et mise à jour de max."
+          N'utilise pas `includes` : le but est de comprendre l'algorithme.
+        criteria: "Parcours de la liste, comparaison et mise à jour de trouve, puis affichage selon trouve."
         hints:
-          - "`let max = notes[0];`"
-          - "`for (const note of notes) { if (note > max) { ... } }`"
-          - "Dans le if : `max = note;`, puis après la boucle `console.log(max);`"
+          - "`let trouve = false;`"
+          - "`for (const invite of invites) { if (invite === \"Inès\") { ... } }`"
+          - "Dans le if : `trouve = true;`, puis après la boucle un `if (trouve) { ... } else { ... }`."
         solution: |
-          const notes = [12, 17, 9, 15];
-          let max = notes[0];
-          for (const note of notes) {
-            if (note > max) {
-              max = note;
+          const invites = ["Awa", "Léo", "Inès", "Karim"];
+          let trouve = false;
+          for (const invite of invites) {
+            if (invite === "Inès") {
+              trouve = true;
             }
           }
-          console.log(max);
+          if (trouve) {
+            console.log("Inès est invitée");
+          } else {
+            console.log("Inès n'est pas invitée");
+          }
         explanation: |
-          C'est l'algorithme du **maximum** : on garde le meilleur trouvé jusqu'ici et on le remplace dès
-          qu'on trouve mieux. On le retrouve partout (le prix le plus bas, le meilleur score…).
+          C'est l'algorithme de **recherche** : on regarde chaque élément un par un et on lève un drapeau
+          (`trouve`) dès qu'on tombe sur celui qu'on cherche. On le retrouve partout (un e-mail déjà
+          inscrit, un produit dans le panier…).
         xp: 20
         payload:
           language: javascript
           starter: |
-            const notes = [12, 17, 9, 15];
+            const invites = ["Awa", "Léo", "Inès", "Karim"];
 
           checks:
-            - pattern: 'let\s+max\s*=\s*notes\s*\[\s*0\s*\]'
-              message: "Démarre avec la première note : let max = notes[0];"
+            - pattern: 'let\s+trouve\s*=\s*false'
+              message: "Démarre avec let trouve = false;"
             - pattern: 'for\s*\('
               message: "Parcours la liste avec une boucle for."
-            - pattern: 'if\s*\(\s*\w+\s*>\s*max\s*\)|if\s*\(\s*max\s*<\s*\w+\s*\)'
-              message: "Compare chaque note à max : if (note > max)."
-            - pattern: '\bmax\s*=\s*(?!notes\s*\[)\w+'
-              message: "Mets à jour max quand tu trouves plus grand : max = note;"
-            - pattern: 'Math\.max'
+            - pattern: 'if\s*\(\s*\w+\s*===?\s*["''`]Inès["''`]\s*\)|if\s*\(\s*["''`]Inès["''`]\s*===?\s*\w+\s*\)'
+              message: "Compare chaque invité à \"Inès\" : if (invite === \"Inès\")."
+            - pattern: '\btrouve\s*=\s*true'
+              message: "Lève le drapeau quand tu la trouves : trouve = true;"
+            - pattern: '\.includes\s*\('
               absent: true
-              message: "Écris l'algorithme toi-même, sans Math.max."
-            - pattern: 'console\.log\s*\(\s*max\s*\)'
-              message: "Affiche le résultat : console.log(max);"
-          output: "17"
+              message: "Écris l'algorithme toi-même, sans includes."
+            - pattern: 'console\.log\s*\(\s*["''`]Inès est invitée["''`]\s*\)'
+              message: "Affiche \"Inès est invitée\" quand trouve vaut true."
+          output: "Inès est invitée"
 
 bank:
   - code: prog-c2-b1
@@ -824,7 +831,7 @@ bank:
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: algo-bases
-    prompt: "Que vaut `[4, 8, 15].length` ?"
+    prompt: "Que vaut `[\"Awa\", \"Léo\", \"Inès\"].length` ?"
     choices:
       - label: "3"
         correct: true
@@ -832,7 +839,7 @@ bank:
       - label: "2"
         correct: false
         why: "C'est l'indice du dernier, pas le nombre d'éléments."
-      - label: "27"
+      - label: "Inès"
         correct: false
-        why: "length compte les éléments, il ne les additionne pas."
+        why: "C'est le dernier élément ; length donne le nombre d'éléments."
     explanation: "`length` donne le nombre d'éléments."
