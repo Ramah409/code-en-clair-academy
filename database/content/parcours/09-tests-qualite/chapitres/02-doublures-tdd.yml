@@ -2,33 +2,32 @@ slug: tst-doublures-tdd
 position: 2
 level: INTERMEDIAIRE
 title: "Doublures, TDD et couverture"
-summary: "Isoler une classe avec Mockito, écrire le test avant le code (TDD) et mesurer ce que les tests couvrent."
-quizQuestionCount: 10
+summary: "Programmer une doublure, vérifier ses appels et capturer ses arguments, écrire le test avant le code (TDD) et lire un taux de couverture. Une seule notion par leçon."
+quizQuestionCount: 14
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: tst-mockito
-    title: "Isoler avec des doublures Mockito"
-    duration: 14
-    objective: "Créer des doublures, programmer leurs réponses, vérifier leurs appels et capturer les arguments transmis."
+    title: "Les bouchons : when… thenReturn"
+    duration: 11
+    objective: "Créer des doublures avec Mockito et programmer leurs réponses, y compris une panne."
     prerequisites: "Chapitre « Pourquoi et comment tester »."
     skills: [java-tests, spring-tests]
-    xp: 25
+    xp: 15
     memo: |
       - Une **doublure** remplace une dépendance (repository, service d'e-mail, API externe) pendant le test.
       - `@Mock` crée la doublure ; `@InjectMocks` crée la classe testée avec ses doublures.
       - **Bouchon** (stub) : `when(x.methode()).thenReturn(valeur)` → on programme une réponse.
-      - **Espion de vérification** : `verify(x).methode(...)`, `verify(x, never())`, `verify(x, times(2))`.
-      - `ArgumentCaptor` : récupérer l'objet exact passé à une doublure pour l'examiner.
+      - `thenThrow(...)` simule une panne de la dépendance.
+      - `@ExtendWith(MockitoExtension.class)` active Mockito dans la classe de test.
     commonMistakes: |
       - Doubler la classe qu'on teste : on ne teste plus rien.
-      - Tout vérifier avec `verify` : le test casse à chaque petite modification interne.
       - Oublier `@ExtendWith(MockitoExtension.class)` : les doublures restent `null`.
     blocks:
       - type: text
         md: |
-          Pour tester l'envoi d'un e-mail de bienvenue, on ne veut pas **vraiment** envoyer un e-mail à chaque
-          test. On remplace le service d'e-mail par une **doublure** qui note simplement qu'on l'a appelée.
+          Pour tester une inscription, on ne veut pas de vraie base de données. On remplace le repository par une
+          **doublure** à qui l'on dicte ses réponses.
       - type: definition
         id: def-doublure
         term: "Doublure"
@@ -37,9 +36,9 @@ lessons:
           risque. Il ne sait rien faire d'autre que ce qu'on lui a programmé, mais il enregistre tout ce qu'il
           subit.
       - type: code
-        id: code-mockito
+        id: code-bouchon
         language: java
-        title: "InscriptionServiceTest.java"
+        title: "Programmer une réponse"
         code: |
           @ExtendWith(MockitoExtension.class)
           class InscriptionServiceTest {
@@ -49,14 +48,11 @@ lessons:
               @InjectMocks InscriptionService service;
 
               @Test
-              void envoieUnEmailDeBienvenue() {
-                  when(utilisateurs.existsByEmail("awa@exemple.fr")).thenReturn(false);
+              void refuseUnEmailDejaUtilise() {
+                  when(utilisateurs.existsByEmail("awa@exemple.fr")).thenReturn(true);
 
-                  service.inscrire("awa@exemple.fr", "Awa");
-
-                  ArgumentCaptor<Email> captor = ArgumentCaptor.forClass(Email.class);
-                  verify(emails).envoyer(captor.capture());
-                  assertEquals("Bienvenue Awa !", captor.getValue().sujet());
+                  assertThrows(EmailDejaUtiliseException.class,
+                          () -> service.inscrire("awa@exemple.fr", "Awa"));
               }
           }
         lines:
@@ -67,58 +63,36 @@ lessons:
           - n: 6
             note: "Le **vrai** service, qui reçoit les deux doublures."
           - n: 10
-            note: "Bouchon : l'e-mail n'existe pas encore."
-          - n: 14
-            note: "Un « filet » pour attraper l'e-mail passé à la doublure."
-          - n: 15
-            note: "On vérifie que `envoyer` a été appelé, et on capture son argument."
-          - n: 16
-            note: "On examine l'e-mail capturé."
-      - type: question
-        ref: tst-mk-q1
-        review: code-mockito
+            note: "Bouchon : « oui, cet e-mail existe déjà »."
+          - n: 12
+            note: "Le service doit alors refuser l'inscription."
       - type: question
         ref: tst-mk-q2
         review: def-doublure
+      - type: question
+        ref: tst-mk-q4
+        review: code-bouchon
       - type: text
-        md: "Exercice guidé : complète les vérifications."
+        md: "**Exercice 1 (guidé)** : complète les bouchons."
       - type: exercise
-        ref: tst-ex-mockito-guide
+        ref: tst-ex-bouchon-guide
       - type: text
-        md: "En autonomie : teste le refus d'un e-mail déjà utilisé."
+        md: "**Exercice 2 (en autonomie)** : un e-mail libre."
       - type: exercise
-        ref: tst-ex-mockito
-      - type: jury
-        items:
-          - q: "Quelle différence entre un bouchon et un mock ?"
-            a: "Un bouchon (stub) renvoie des réponses programmées pour que le code testé puisse avancer : when…thenReturn. Un mock sert en plus à vérifier les interactions : verify(emails).envoyer(...). Avec Mockito, le même objet peut jouer les deux rôles."
-          - q: "Pourquoi ne pas tout vérifier avec verify ?"
-            a: "Parce que le test devient lié à la façon dont le code est écrit, pas à ce qu'il produit. Je vérifie d'abord le résultat, et j'utilise verify seulement pour les effets de bord importants, comme l'envoi d'un e-mail ou l'enregistrement en base."
+        ref: tst-ex-bouchon-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une doublure de trop."
+      - type: exercise
+        ref: tst-ex-bouchon-bug
       - type: quiz
         items:
-          - ref: tst-mk-q3
-            review: code-mockito
-          - ref: tst-mk-q4
-            review: code-mockito
           - ref: tst-mk-q5
             review: def-doublure
+          - ref: tst-c2-b1
+            review: code-bouchon
+          - ref: tst-bo-q5
+            review: code-bouchon
     questions:
-      - code: tst-mk-q1
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: java-tests
-        prompt: "À quoi sert `ArgumentCaptor` ?"
-        choices:
-          - label: "À récupérer l'objet exact passé à une doublure pour l'examiner"
-            correct: true
-            why: "On peut ensuite vérifier ses champs."
-          - label: "À créer une doublure"
-            correct: false
-            why: "C'est le rôle de @Mock."
-          - label: "À capturer les exceptions"
-            correct: false
-            why: "C'est le rôle de assertThrows."
-        explanation: "verify(x).methode(captor.capture()) puis captor.getValue()."
       - code: tst-mk-q2
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -135,22 +109,6 @@ lessons:
             correct: false
             why: "On le remplace justement, on ne le teste pas."
         explanation: "On teste une classe à la fois."
-      - code: tst-mk-q3
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: java-tests
-        prompt: "Comment vérifier qu'aucun e-mail n'a été envoyé ?"
-        choices:
-          - label: "verify(emails, never()).envoyer(any())"
-            correct: true
-            why: "never() = zéro appel."
-          - label: "assertNull(emails)"
-            correct: false
-            why: "La doublure existe, elle n'est pas null."
-          - label: "when(emails.envoyer(any())).thenReturn(null)"
-            correct: false
-            why: "On programme une réponse, on ne vérifie rien."
-        explanation: "Aussi : times(2), atLeastOnce()…"
       - code: tst-mk-q4
         kind: VRAI_FAUX
         difficulty: 2
@@ -180,35 +138,313 @@ lessons:
             correct: false
             why: "Idem."
         explanation: "@InjectMocks crée le vrai objet testé."
+      - code: tst-c2-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "`when(repo.findById(1L)).thenThrow(new RuntimeException())` sert à…"
+        choices:
+          - label: "Simuler une panne de la dépendance pour tester la réaction du code"
+            correct: true
+            why: "On teste le chemin d'erreur."
+          - label: "Faire échouer le test volontairement"
+            correct: false
+            why: "Le test vérifie la réaction, il ne doit pas échouer."
+          - label: "Supprimer l'élément 1"
+            correct: false
+            why: "Aucune donnée réelle n'est touchée."
+        explanation: "Les doublures permettent de reproduire facilement les cas d'erreur."
+      - code: tst-bo-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-tests
+        prompt: "Que renvoie une doublure qu'on n'a pas programmée, pour une méthode qui renvoie un booléen ?"
+        choices:
+          - label: "false (une valeur par défaut)"
+            correct: true
+            why: "Mockito renvoie des valeurs vides par défaut."
+          - label: "true"
+            correct: false
+            why: "La valeur par défaut est false."
+          - label: "Une erreur de compilation"
+            correct: false
+            why: "Le code compile."
+        explanation: "Il faut programmer les réponses utiles au test."
+    exercises:
+      - slug: tst-ex-bouchon-guide
+        kind: COMPLETER
+        title: "Compléter les bouchons"
+        difficulty: FACILE
+        skill: java-tests
+        statement: "Complète : la doublure, le vrai service, puis la réponse programmée."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "La doublure : Mock ; le vrai service : InjectMocks."
+          - "On programme avec when… thenReturn."
+          - "Mock, InjectMocks, when, thenReturn."
+        solution: '["Mock", "InjectMocks", "when", "thenReturn"]'
+        explanation: "Créer, injecter, programmer."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @[[1]] LivreRepository livres;
+            @[[2]] EmpruntService service;
+
+            [[3]](livres.existsById(3L)).[[4]](false);
+          blanks:
+            - ["Mock"]
+            - ["InjectMocks"]
+            - ["when"]
+            - ["thenReturn"]
+      - slug: tst-ex-bouchon-libre
+        kind: CODE_LIBRE
+        title: "Un e-mail libre"
+        difficulty: INTERMEDIAIRE
+        skill: java-tests
+        statement: |
+          Écris le test `accepteUnEmailLibre()` :
+          - programme `utilisateurs.existsByEmail("leo@exemple.fr")` pour renvoyer `false` ;
+          - appelle `service.inscrire("leo@exemple.fr", "Léo")` ;
+          - vérifie avec `assertDoesNotThrow` que rien n'est lancé, en enveloppant l'appel : `assertDoesNotThrow(() -> service.inscrire(...))`.
+        criteria: "when…thenReturn(false) et assertDoesNotThrow sur l'inscription."
+        hints:
+          - "`when(utilisateurs.existsByEmail(\"leo@exemple.fr\")).thenReturn(false);`"
+          - "`assertDoesNotThrow(() -> …)` enveloppe l'appel."
+          - "`assertDoesNotThrow(() -> service.inscrire(\"leo@exemple.fr\", \"Léo\"));`"
+        solution: |
+          @Test
+          void accepteUnEmailLibre() {
+              when(utilisateurs.existsByEmail("leo@exemple.fr")).thenReturn(false);
+              assertDoesNotThrow(() -> service.inscrire("leo@exemple.fr", "Léo"));
+          }
+        explanation: "Le chemin heureux, sans vraie base."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            @Test
+            void accepteUnEmailLibre() {
+
+            }
+          checks:
+            - pattern: 'when\s*\(\s*utilisateurs\.existsByEmail\s*\(\s*"leo@exemple\.fr"\s*\)\s*\)\s*\.thenReturn\s*\(\s*false\s*\)'
+              message: "Programme when(utilisateurs.existsByEmail(\"leo@exemple.fr\")).thenReturn(false)."
+            - pattern: 'assertDoesNotThrow\s*\(\s*\(\s*\)\s*->\s*service\.inscrire\s*\(\s*"leo@exemple\.fr"\s*,\s*"Léo"\s*\)\s*\)'
+              message: "Vérifie assertDoesNotThrow(() -> service.inscrire(\"leo@exemple.fr\", \"Léo\"))."
+      - slug: tst-ex-bouchon-bug
+        kind: CORRIGER_ERREUR
+        title: "Une doublure de trop"
+        difficulty: FACILE
+        skill: java-tests
+        statement: |
+          Ce test a remplacé le service **testé** par une doublure : il ne teste plus rien. Le service doit être
+          le vrai objet : remplace `@Mock` par `@InjectMocks` sur `service`.
+        criteria: "@InjectMocks InscriptionService service."
+        hints:
+          - "Quelle classe est testée ?"
+          - "Elle doit être réelle."
+          - "`@InjectMocks InscriptionService service;`"
+        solution: |
+          @Mock UtilisateurRepository utilisateurs;
+          @InjectMocks InscriptionService service;
+        explanation: "On double les dépendances, jamais l'objet testé."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @Mock UtilisateurRepository utilisateurs;
+            @Mock InscriptionService service;
+          checks:
+            - pattern: '@Mock\s+InscriptionService'
+              absent: true
+              message: "Le service testé ne doit pas être une doublure."
+            - pattern: '@InjectMocks\s+InscriptionService\s+service'
+              message: "Écris @InjectMocks InscriptionService service."
+
+  # ===================================================================== LEÇON 2
+  - slug: tst-captor
+    title: "Vérifier un appel et capturer son argument"
+    duration: 11
+    objective: "Vérifier qu'une doublure a été appelée, jamais appelée, et examiner l'objet qu'on lui a passé avec ArgumentCaptor."
+    prerequisites: "Leçon « Les bouchons : when… thenReturn »."
+    skills: [java-tests]
+    xp: 15
+    memo: |
+      - `verify(x).methode(...)` : la méthode a été appelée ; `verify(x, never())` : jamais.
+      - `ArgumentCaptor` : récupérer l'objet exact passé à une doublure pour l'examiner.
+      - On vérifie les **effets de bord importants** (e-mail envoyé, enregistrement), pas chaque détail interne.
+    commonMistakes: |
+      - Tout vérifier avec `verify` : le test casse à chaque petite modification interne.
+      - Oublier `captor.capture()` dans le verify.
+    blocks:
+      - type: definition
+        id: def-captor
+        term: "ArgumentCaptor"
+        md: |
+          Un **filet** tendu devant la doublure : quand on lui passe un objet, le filet l'attrape pour qu'on
+          puisse regarder ce qu'il contient.
+      - type: code
+        id: code-mockito
+        language: java
+        title: "Vérifier l'e-mail de bienvenue"
+        code: |
+          @Test
+          void envoieUnEmailDeBienvenue() {
+              when(utilisateurs.existsByEmail("awa@exemple.fr")).thenReturn(false);
+
+              service.inscrire("awa@exemple.fr", "Awa");
+
+              ArgumentCaptor<Email> captor = ArgumentCaptor.forClass(Email.class);
+              verify(emails).envoyer(captor.capture());
+              assertEquals("Bienvenue Awa !", captor.getValue().sujet());
+          }
+        lines:
+          - n: 3
+            note: "Bouchon : l'e-mail n'existe pas encore."
+          - n: 7
+            note: "Un « filet » pour attraper l'e-mail passé à la doublure."
+          - n: 8
+            note: "On vérifie que `envoyer` a été appelé, et on capture son argument."
+          - n: 9
+            note: "On examine l'e-mail capturé."
+      - type: question
+        ref: tst-mk-q1
+        review: def-captor
+      - type: question
+        ref: tst-mk-q3
+        review: code-mockito
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les vérifications."
+      - type: exercise
+        ref: tst-ex-mockito-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : refuser un e-mail déjà utilisé."
+      - type: exercise
+        ref: tst-ex-mockito
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un filet jamais tendu."
+      - type: exercise
+        ref: tst-ex-captor-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre un bouchon et un mock ?"
+            a: "Un bouchon (stub) renvoie des réponses programmées pour que le code testé puisse avancer : when…thenReturn. Un mock sert en plus à vérifier les interactions : verify(emails).envoyer(...). Avec Mockito, le même objet peut jouer les deux rôles."
+          - q: "Pourquoi ne pas tout vérifier avec verify ?"
+            a: "Parce que le test devient lié à la façon dont le code est écrit, pas à ce qu'il produit. Je vérifie d'abord le résultat, et j'utilise verify seulement pour les effets de bord importants, comme l'envoi d'un e-mail ou l'enregistrement en base."
+      - type: quiz
+        items:
+          - ref: tst-ca-q3
+            review: code-mockito
+          - ref: tst-ca-q4
+            review: def-captor
+          - ref: tst-ca-q5
+            review: code-mockito
+    questions:
+      - code: tst-mk-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "À quoi sert `ArgumentCaptor` ?"
+        choices:
+          - label: "À récupérer l'objet exact passé à une doublure pour l'examiner"
+            correct: true
+            why: "On peut ensuite vérifier ses champs."
+          - label: "À créer une doublure"
+            correct: false
+            why: "C'est le rôle de @Mock."
+          - label: "À capturer les exceptions"
+            correct: false
+            why: "C'est le rôle de assertThrows."
+        explanation: "verify(x).methode(captor.capture()) puis captor.getValue()."
+      - code: tst-mk-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Comment vérifier qu'aucun e-mail n'a été envoyé ?"
+        choices:
+          - label: "verify(emails, never()).envoyer(any())"
+            correct: true
+            why: "never() = zéro appel."
+          - label: "assertNull(emails)"
+            correct: false
+            why: "La doublure existe, elle n'est pas null."
+          - label: "when(emails.envoyer(any())).thenReturn(null)"
+            correct: false
+            why: "On programme une réponse, on ne vérifie rien."
+        explanation: "Aussi : times(2), atLeastOnce()…"
+      - code: tst-ca-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-tests
+        prompt: "Comment lire l'objet attrapé par le filet ?"
+        choices:
+          - label: "`captor.getValue()`"
+            correct: true
+            why: "La dernière valeur capturée."
+          - label: "`captor.capture()`"
+            correct: false
+            why: "capture() tend le filet dans le verify."
+          - label: "`emails.getValue()`"
+            correct: false
+            why: "On lit depuis le captor."
+        explanation: "capture() dans verify, getValue() ensuite."
+      - code: tst-ca-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: java-tests
+        prompt: "Il vaut mieux vérifier chaque appel interne avec verify, pour être sûr."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Le test casserait à chaque petite réorganisation."
+          - label: "Faux"
+            correct: true
+            why: "On vérifie les effets de bord importants."
+        explanation: "Tester le quoi, pas le comment."
+      - code: tst-ca-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Dans l'exemple, que vérifie la dernière ligne ?"
+        choices:
+          - label: "Le sujet de l'e-mail envoyé"
+            correct: true
+            why: "On examine l'objet capturé."
+          - label: "Que l'e-mail n'a pas été envoyé"
+            correct: false
+            why: "Il a été envoyé."
+          - label: "Que l'utilisateur existe"
+            correct: false
+            why: "Ce n'est pas la dernière ligne."
+        explanation: "Vérifier le contenu, pas seulement l'appel."
     exercises:
       - slug: tst-ex-mockito-guide
         kind: COMPLETER
         title: "Compléter les vérifications"
         difficulty: FACILE
         skill: java-tests
-        statement: "Complète : programmer la doublure, vérifier un appel, vérifier une absence d'appel."
+        statement: "Complète : vérifier un appel avec capture, lire la valeur, vérifier une absence d'appel."
         criteria: "Les quatre trous sont corrects."
         hints:
-          - "On programme avec when… thenReturn."
-          - "On vérifie avec verify ; zéro appel : never()."
-          - "when, thenReturn, verify, never."
-        solution: '["when", "thenReturn", "verify", "never"]'
-        explanation: "Programmer, agir, vérifier les appels."
+          - "On vérifie avec verify et on tend le filet avec capture."
+          - "On lit avec getValue ; zéro appel : never."
+          - "verify, capture, getValue, never."
+        solution: '["verify", "capture", "getValue", "never"]'
+        explanation: "Vérifier, capturer, examiner, et vérifier l'absence."
         xp: 10
         payload:
           language: java
           template: |
-            [[1]](stock.quantite("café")).[[2]](0);
+            ArgumentCaptor<Emprunt> captor = ArgumentCaptor.forClass(Emprunt.class);
+            [[1]](emprunts).save(captor.[[2]]());
+            assertEquals("Dune", captor.[[3]]().titre());
 
-            boolean ok = commandeService.commander("café", 1);
-
-            assertFalse(ok);
-            [[3]](stock).quantite("café");
-            verify(paiement, [[4]]()).debiter(any());
+            verify(emails, [[4]]()).envoyer(any());
           blanks:
-            - ["when"]
-            - ["thenReturn"]
             - ["verify"]
+            - ["capture"]
+            - ["getValue"]
             - ["never"]
       - slug: tst-ex-mockito
         kind: CODE_LIBRE
@@ -256,25 +492,53 @@ lessons:
               message: "Vérifie que `save` n'est jamais appelé : `verify(utilisateurs, never()).save(any())`."
             - pattern: 'verify\s*\(\s*emails\s*,\s*never\s*\(\s*\)\s*\)\s*\.envoyer\s*\('
               message: "Vérifie qu'aucun e-mail n'est envoyé : `verify(emails, never()).envoyer(any())`."
+      - slug: tst-ex-captor-bug
+        kind: CORRIGER_ERREUR
+        title: "Un filet jamais tendu"
+        difficulty: FACILE
+        skill: java-tests
+        statement: |
+          Le captor est créé, mais jamais tendu : `verify` utilise `any()`. Remplace `any()` par
+          `captor.capture()` pour attraper l'e-mail.
+        criteria: "verify(emails).envoyer(captor.capture())."
+        hints:
+          - "Le filet doit être dans le verify."
+          - "capture() tend le filet."
+          - "`verify(emails).envoyer(captor.capture());`"
+        solution: |
+          ArgumentCaptor<Email> captor = ArgumentCaptor.forClass(Email.class);
+          verify(emails).envoyer(captor.capture());
+          assertEquals("Bienvenue Awa !", captor.getValue().sujet());
+        explanation: "Sans capture(), getValue() n'a rien à donner."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            ArgumentCaptor<Email> captor = ArgumentCaptor.forClass(Email.class);
+            verify(emails).envoyer(any());
+            assertEquals("Bienvenue Awa !", captor.getValue().sujet());
+          checks:
+            - pattern: 'envoyer\s*\(\s*any\s*\(\s*\)\s*\)'
+              absent: true
+              message: "any() n'attrape rien."
+            - pattern: 'verify\s*\(\s*emails\s*\)\s*\.envoyer\s*\(\s*captor\.capture\s*\(\s*\)\s*\)'
+              message: "Écris verify(emails).envoyer(captor.capture())."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 3
   - slug: tst-tdd
-    title: "Le TDD et la couverture de code"
-    duration: 13
-    objective: "Appliquer le cycle rouge-vert-refactoriser, et interpréter un taux de couverture sans en faire un objectif absolu."
-    prerequisites: "Leçon « Isoler avec des doublures Mockito »."
+    title: "Le TDD : rouge, vert, refactoriser"
+    duration: 11
+    objective: "Appliquer le cycle rouge-vert-refactoriser pour ajouter une règle."
+    prerequisites: "Leçon « Vérifier un appel et capturer son argument »."
     skills: [tests-strategie, java-tests]
-    xp: 25
+    xp: 15
     memo: |
       - **TDD** (développement piloté par les tests) : écrire le test **avant** le code.
       - Cycle : **Rouge** (le test échoue) → **Vert** (le code minimal le fait passer) → **Refactoriser** (on améliore sans casser).
       - Avantages : on ne code que ce qui est utile, et chaque règle est protégée par un test.
-      - **Couverture** : pourcentage de lignes exécutées par les tests (JaCoCo en Java).
-      - 100 % de couverture ne garantit **pas** l'absence de bug : un test sans bonne assertion « couvre » sans vérifier.
     commonMistakes: |
-      - Écrire tout le code, puis quelques tests pour « faire de la couverture ».
+      - Écrire tout le code, puis quelques tests « pour la forme ».
       - Sauter l'étape rouge : on ne sait pas si le test peut échouer.
-      - Viser 100 % en testant des getters au lieu des règles métier.
     blocks:
       - type: text
         md: |
@@ -299,38 +563,33 @@ lessons:
       - type: question
         ref: tst-tdd-q1
         review: etapes-tdd
-      - type: definition
-        id: def-couverture
-        term: "Couverture de code"
-        md: |
-          Le **pourcentage de routes** d'une ville qu'un livreur a parcourues. 80 % des routes parcourues ne
-          veut pas dire qu'il a regardé si les maisons étaient en bon état. De même, une ligne exécutée par un
-          test n'est pas forcément **vérifiée**.
       - type: question
-        ref: tst-tdd-q2
-        review: def-couverture
+        ref: tst-tdd-q3
+        review: def-tdd
       - type: text
-        md: "Exercice guidé : remets un cycle TDD dans l'ordre."
+        md: "**Exercice 1 (guidé)** : remets un cycle TDD dans l'ordre."
       - type: exercise
         ref: tst-ex-tdd-ordre
       - type: text
-        md: "En autonomie : écris le code qui fait passer ces tests."
+        md: "**Exercice 2 (en autonomie)** : passer au vert."
       - type: exercise
         ref: tst-ex-tdd-vert
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un cycle dans le désordre."
+      - type: exercise
+        ref: tst-ex-tdd-bug
       - type: jury
         items:
           - q: "Pratiquez-vous le TDD ?"
             a: "Sur les règles métier, oui : j'écris le test qui décrit la règle, je le vois échouer, j'écris le code minimal, puis je refactorise avec les tests comme filet. Pour l'interface, j'écris plutôt les tests après. L'important est que chaque règle métier soit couverte par un test."
-          - q: "Quel est votre taux de couverture ?"
-            a: "Je le mesure avec JaCoCo, mais je ne vise pas un chiffre à tout prix. Je vérifie surtout que les services et règles métier sont bien couverts avec de vraies assertions. Une couverture élevée avec de mauvais tests ne protège de rien."
       - type: quiz
         items:
-          - ref: tst-tdd-q3
-            review: def-tdd
-          - ref: tst-tdd-q4
-            review: def-couverture
           - ref: tst-tdd-q5
             review: etapes-tdd
+          - ref: tst-c2-b2
+            review: def-tdd
+          - ref: tst-td-q5
+            review: def-tdd
     questions:
       - code: tst-tdd-q1
         kind: CHOIX_UNIQUE
@@ -348,19 +607,6 @@ lessons:
             correct: false
             why: "C'est la dernière étape."
         explanation: "Rouge → Vert → Refactoriser."
-      - code: tst-tdd-q2
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: tests-strategie
-        prompt: "Un code couvert à 100 % par les tests ne contient aucun bug."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "Couvrir une ligne ne veut pas dire la vérifier."
-          - label: "Faux"
-            correct: true
-            why: "Des tests sans bonnes assertions couvrent sans protéger."
-        explanation: "La couverture montre ce qui n'est pas testé, pas la qualité des tests."
       - code: tst-tdd-q3
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -377,13 +623,6 @@ lessons:
             correct: false
             why: "C'est une discipline, pas une contrainte technique."
         explanation: "On teste le test."
-      - code: tst-tdd-q4
-        kind: TEXTE
-        difficulty: 2
-        skill: java-tests
-        prompt: "Quel outil mesure la couverture de code des tests Java avec Maven ? (un nom)"
-        answers: ["JaCoCo", "Jacoco", "jacoco"]
-        explanation: "Le rapport HTML montre en rouge les lignes jamais exécutées."
       - code: tst-tdd-q5
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -400,35 +639,64 @@ lessons:
             correct: false
             why: "Ils sont le filet de sécurité."
         explanation: "Refactoriser = même comportement, meilleur code."
+      - code: tst-c2-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Que signifie « refactoriser » ?"
+        choices:
+          - label: "Améliorer la structure du code sans changer son comportement"
+            correct: true
+            why: "Les tests restent verts."
+          - label: "Ajouter une nouvelle fonctionnalité"
+            correct: false
+            why: "Ce serait un changement de comportement."
+          - label: "Réécrire toute l'application"
+            correct: false
+            why: "On procède par petites étapes sûres."
+        explanation: "Renommer, extraire une méthode, supprimer une duplication…"
+      - code: tst-td-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "À l'étape verte, on écrit le code le plus simple qui fait passer le test."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "On améliore ensuite, à l'étape refactoriser."
+          - label: "Faux"
+            correct: false
+            why: "Le code minimal d'abord."
+        explanation: "Simple d'abord, beau ensuite."
     exercises:
       - slug: tst-ex-tdd-ordre
         kind: REMETTRE_ORDRE
         title: "Un cycle TDD"
         difficulty: FACILE
         skill: tests-strategie
-        statement: "Remets dans l'ordre les étapes pour ajouter la règle « mot de passe d'au moins 12 caractères »."
+        statement: "Remets dans l'ordre les étapes pour ajouter la règle « un titre de livre ne peut pas être vide »."
         criteria: "Test, échec, code minimal, succès, amélioration, relance."
         hints:
           - "On commence par écrire le test."
           - "On le lance pour le voir échouer."
           - "On termine en améliorant le code et en relançant les tests."
         solution: |
-          Écrire le test : un mot de passe de 11 caractères est refusé
+          Écrire le test : un titre vide est refusé
           Lancer le test : il échoue (rouge)
-          Écrire le code minimal : if (mdp.length() < 12) throw …
+          Écrire le code minimal : if (titre.isBlank()) throw …
           Relancer le test : il passe (vert)
-          Remplacer 12 par une constante LONGUEUR_MIN
+          Donner un nom clair au message d'erreur
           Relancer tous les tests : ils restent verts
         explanation: "Rouge, vert, refactoriser, et toujours relancer."
         xp: 10
         payload:
           language: text
           lines:
-            - "Écrire le test : un mot de passe de 11 caractères est refusé"
+            - "Écrire le test : un titre vide est refusé"
             - "Lancer le test : il échoue (rouge)"
-            - "Écrire le code minimal : if (mdp.length() < 12) throw …"
+            - "Écrire le code minimal : if (titre.isBlank()) throw …"
             - "Relancer le test : il passe (vert)"
-            - "Remplacer 12 par une constante LONGUEUR_MIN"
+            - "Donner un nom clair au message d'erreur"
             - "Relancer tous les tests : ils restent verts"
       - slug: tst-ex-tdd-vert
         kind: CODE_LIBRE
@@ -481,37 +749,289 @@ lessons:
               message: "Lance une `IllegalArgumentException(MESSAGE_ABSENT)` si le pseudo est null."
             - pattern: 'return\s*!\s*pseudo\.isBlank\s*\(\s*\)|return\s+pseudo\.isBlank\s*\(\s*\)\s*==\s*false'
               message: "Renvoie `!pseudo.isBlank()` : valide s'il n'est pas vide."
+      - slug: tst-ex-tdd-bug
+        kind: CORRIGER_ERREUR
+        title: "Un cycle dans le désordre"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: |
+          Ce cycle commence par le code et oublie de voir le test échouer. Réécris-le dans l'ordre :
+          `Rouge`, `Vert`, `Refactoriser`, une étape par ligne.
+        criteria: "Les trois lignes dans l'ordre Rouge, Vert, Refactoriser."
+        hints:
+          - "Le test vient en premier, et il échoue."
+          - "Puis le code minimal, puis l'amélioration."
+          - "Rouge, Vert, Refactoriser."
+        solution: |
+          Rouge : écrire le test et le voir échouer
+          Vert : écrire le code minimal qui le fait passer
+          Refactoriser : améliorer le code, les tests restent verts
+        explanation: "Le test d'abord."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Vert : écrire le code minimal qui le fait passer
+            Refactoriser : améliorer le code, les tests restent verts
+            Rouge : écrire le test et le voir échouer
+          checks:
+            - pattern: '(?i)\A\s*Rouge\b[^\n]*\n\s*Vert\b[^\n]*\n\s*Refactoriser\b'
+              message: "L'ordre : Rouge, Vert, Refactoriser."
+
+  # ===================================================================== LEÇON 4
+  - slug: tst-couverture
+    title: "La couverture de code"
+    duration: 10
+    objective: "Lire un rapport de couverture et comprendre qu'une ligne couverte n'est pas forcément vérifiée."
+    prerequisites: "Leçon « Le TDD : rouge, vert, refactoriser »."
+    skills: [tests-strategie, java-tests]
+    xp: 15
+    memo: |
+      - **Couverture** : la part des lignes exécutées par les tests (JaCoCo en Java).
+      - Le rapport montre en **rouge** les lignes jamais exécutées : ce sont elles qu'il faut regarder.
+      - 100 % de couverture ne garantit **pas** l'absence de bug : un test sans bonne assertion « couvre » sans vérifier.
+      - On couvre d'abord les **règles métier**, pas les getters.
+    commonMistakes: |
+      - Viser un chiffre en testant des getters au lieu des règles métier.
+      - Des tests qui exécutent le code sans rien vérifier.
+    blocks:
+      - type: definition
+        id: def-couverture
+        term: "Couverture de code"
+        md: |
+          Le **plan des routes** qu'un livreur a parcourues. Avoir parcouru une route ne veut pas dire qu'il a
+          regardé si les maisons étaient en bon état. De même, une ligne exécutée par un test n'est pas
+          forcément **vérifiée**.
+      - type: compare
+        left:
+          title: "Couvre sans vérifier"
+          code: |
+            @Test
+            void emprunter() {
+                service.emprunter(1L, 7L);
+            }
+          language: java
+        right:
+          title: "Couvre et vérifie"
+          code: |
+            @Test
+            void emprunter() {
+                service.emprunter(1L, 7L);
+                verify(emprunts).save(any());
+            }
+          language: java
+      - type: question
+        ref: tst-tdd-q2
+        review: def-couverture
+      - type: question
+        ref: tst-tdd-q4
+        review: def-couverture
+      - type: text
+        md: "**Exercice 1 (guidé)** : lire le rapport."
+      - type: exercise
+        ref: tst-ex-couverture-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : où ajouter des tests ?"
+      - type: exercise
+        ref: tst-ex-couverture-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un test qui couvre sans vérifier."
+      - type: exercise
+        ref: tst-ex-couverture-bug
+      - type: jury
+        items:
+          - q: "Quel est votre taux de couverture ?"
+            a: "Je le mesure avec JaCoCo, mais je ne vise pas un chiffre à tout prix. Je vérifie surtout que les services et règles métier sont bien couverts avec de vraies assertions. Une couverture élevée avec de mauvais tests ne protège de rien."
+      - type: quiz
+        items:
+          - ref: tst-cv-q3
+            review: def-couverture
+          - ref: tst-cv-q4
+            review: def-couverture
+          - ref: tst-cv-q5
+            review: def-couverture
+    questions:
+      - code: tst-tdd-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Un code couvert à 100 % par les tests ne contient aucun bug."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Couvrir une ligne ne veut pas dire la vérifier."
+          - label: "Faux"
+            correct: true
+            why: "Des tests sans bonnes assertions couvrent sans protéger."
+        explanation: "La couverture montre ce qui n'est pas testé, pas la qualité des tests."
+      - code: tst-tdd-q4
+        kind: TEXTE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Quel outil mesure la couverture de code des tests Java avec Maven ? (un nom)"
+        answers: ["JaCoCo", "Jacoco", "jacoco"]
+        explanation: "Le rapport HTML montre en rouge les lignes jamais exécutées."
+      - code: tst-cv-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Dans le rapport JaCoCo, que signifie une ligne en rouge ?"
+        choices:
+          - label: "Aucun test ne l'a exécutée"
+            correct: true
+            why: "C'est une zone sans protection."
+          - label: "Elle contient un bug"
+            correct: false
+            why: "Elle n'est simplement pas testée."
+          - label: "Elle est trop longue"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Rouge = non exécutée."
+      - code: tst-cv-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Quelles lignes couvrir en priorité ?"
+        choices:
+          - label: "Les règles métier des services"
+            correct: true
+            why: "C'est là que se trouvent les décisions importantes."
+          - label: "Les getters et setters"
+            correct: false
+            why: "Peu de risque, peu d'intérêt."
+          - label: "Les imports"
+            correct: false
+            why: "Aucun intérêt."
+        explanation: "Tester ce qui peut casser."
+      - code: tst-cv-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Un test sans assertion augmente la couverture sans protéger le code."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Il exécute sans vérifier."
+          - label: "Faux"
+            correct: false
+            why: "La couverture compte les lignes exécutées, pas vérifiées."
+        explanation: "Couverture ≠ qualité."
+    exercises:
+      - slug: tst-ex-couverture-guide
+        kind: COMPLETER
+        title: "Lire le rapport"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: "Complète avec : rouge, vert, JaCoCo."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "L'outil Java : JaCoCo."
+          - "Non exécutée : rouge ; exécutée : vert."
+          - "JaCoCo, rouge, vert."
+        solution: '["JaCoCo", "rouge", "vert"]'
+        explanation: "Lire le rapport pour savoir où ajouter des tests."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            L'outil qui mesure la couverture en Java : [[1]]
+            Une ligne jamais exécutée apparaît en [[2]]
+            Une ligne exécutée apparaît en [[3]]
+          blanks:
+            - ["JaCoCo", "jacoco"]
+            - ["rouge"]
+            - ["vert"]
+      - slug: tst-ex-couverture-libre
+        kind: CODE_LIBRE
+        title: "Où ajouter des tests ?"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: |
+          Le rapport montre en rouge : la méthode `emprunter` (règle « livre déjà emprunté ») et le getter
+          `getTitre`. Écris en une ou deux phrases où tu ajoutes des tests en priorité, et pourquoi. Cite
+          **emprunter** et **règle**.
+        criteria: "La réponse priorise emprunter, en parlant de règle métier."
+        hints:
+          - "Laquelle contient une décision ?"
+          - "La règle « livre déjà emprunté »."
+          - "J'ajoute d'abord des tests sur emprunter, car elle contient une règle métier."
+        solution: |
+          J'ajoute d'abord des tests sur emprunter, car elle contient une règle métier qui peut casser.
+          Le getter getTitre ne présente presque aucun risque.
+        explanation: "Tester ce qui décide."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            J'ajoute d'abord des tests sur
+          checks:
+            - pattern: '(?i)emprunter'
+              message: "Cite la méthode emprunter."
+            - pattern: '(?i)r[èe]gle'
+              message: "Explique qu'elle contient une règle."
+      - slug: tst-ex-couverture-bug
+        kind: CORRIGER_ERREUR
+        title: "Un test qui couvre sans vérifier"
+        difficulty: FACILE
+        skill: java-tests
+        statement: |
+          Ce test exécute `emprunter` mais ne vérifie rien. Ajoute à la fin
+          `verify(emprunts).save(any());`.
+        criteria: "Une vérification après l'appel."
+        hints:
+          - "Il manque la vérification."
+          - "On vérifie que l'emprunt est enregistré."
+          - "`verify(emprunts).save(any());`"
+        solution: |
+          @Test
+          void emprunter() {
+              service.emprunter(1L, 7L);
+              verify(emprunts).save(any());
+          }
+        explanation: "Couvrir et vérifier."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @Test
+            void emprunter() {
+                service.emprunter(1L, 7L);
+            }
+          checks:
+            - pattern: 'service\.emprunter\s*\([^)]*\)\s*;\s*verify\s*\(\s*emprunts\s*\)\s*\.save\s*\('
+              message: "Ajoute verify(emprunts).save(any()); après l'appel."
 
 bank:
-  - code: tst-c2-b1
+  - code: tst-c2-b3
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: java-tests
-    prompt: "`when(repo.findById(1L)).thenThrow(new RuntimeException())` sert à…"
+    prompt: "Quelle annotation crée une doublure avec Mockito ?"
     choices:
-      - label: "Simuler une panne de la dépendance pour tester la réaction du code"
+      - label: "@Mock"
         correct: true
-        why: "On teste le chemin d'erreur."
-      - label: "Faire échouer le test volontairement"
+        why: "Une doublure prête à programmer."
+      - label: "@Test"
         correct: false
-        why: "Le test vérifie la réaction, il ne doit pas échouer."
-      - label: "Supprimer l'élément 1"
+        why: "Elle marque un test."
+      - label: "@Service"
         correct: false
-        why: "Aucune donnée réelle n'est touchée."
-    explanation: "Les doublures permettent de reproduire facilement les cas d'erreur."
-  - code: tst-c2-b2
+        why: "C'est Spring."
+    explanation: "@Mock pour les dépendances, @InjectMocks pour l'objet testé."
+  - code: tst-c2-b4
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: tests-strategie
-    prompt: "Que signifie « refactoriser » ?"
+    prompt: "Que veut dire TDD ?"
     choices:
-      - label: "Améliorer la structure du code sans changer son comportement"
+      - label: "Test-Driven Development : développement piloté par les tests"
         correct: true
-        why: "Les tests restent verts."
-      - label: "Ajouter une nouvelle fonctionnalité"
+        why: "Le test d'abord."
+      - label: "Test Data Directory"
         correct: false
-        why: "Ce serait un changement de comportement."
-      - label: "Réécrire toute l'application"
+        why: "Aucun rapport."
+      - label: "Total Debug Delivery"
         correct: false
-        why: "On procède par petites étapes sûres."
-    explanation: "Renommer, extraire une méthode, supprimer une duplication…"
+        why: "Aucun rapport."
+    explanation: "Rouge, vert, refactoriser."

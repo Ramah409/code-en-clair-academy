@@ -1,5 +1,5 @@
 slug: tests-qualite
-version: 2
+version: 3
 position: 9
 title: "Tests et qualité du code"
 summary: "Tester avec JUnit et Mockito, pratiquer le TDD, écrire du code propre, travailler avec Git et l'intégration continue, préparer un plan de tests."

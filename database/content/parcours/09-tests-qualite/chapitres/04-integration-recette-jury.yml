@@ -2,33 +2,31 @@ slug: tst-integration-jury
 position: 4
 level: EXAMEN
 title: "Intégration, bout en bout, recette et jury"
-summary: "Tester avec une vraie base (Testcontainers), automatiser un parcours dans le navigateur (Playwright), rédiger un cahier de recette, puis défendre sa démarche qualité."
-quizQuestionCount: 10
+summary: "Tester avec une vraie base (Testcontainers), automatiser un parcours dans le navigateur (Playwright), rédiger un cahier de recette, suivre le cycle d'un bug, puis défendre sa démarche qualité. Une seule notion par leçon."
+quizQuestionCount: 14
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: tst-integration-e2e
-    title: "Tests d'intégration, de bout en bout et cahier de recette"
-    duration: 15
-    objective: "Écrire un test d'intégration avec Testcontainers, un scénario Playwright, et une fiche de cas de test pour le cahier de recette."
+    title: "Le test d'intégration avec Testcontainers"
+    duration: 11
+    objective: "Écrire un test d'intégration qui démarre un vrai PostgreSQL jetable avec Testcontainers."
     prerequisites: "Chapitre « Code propre, Git et intégration continue »."
     skills: [tests-strategie, spring-tests]
-    xp: 30
+    xp: 15
     memo: |
       - **Testcontainers** : démarre un vrai PostgreSQL dans Docker pour la durée des tests.
       - `@SpringBootTest` : toute l'application ; `@ServiceConnection` relie le conteneur à Spring automatiquement.
-      - **Playwright** : pilote un vrai navigateur (`page.goto`, `page.getByLabel(...).fill`, `page.getByRole('button').click`, `expect(...).toBeVisible()`).
-      - Sélectionner par **rôle et libellé** (comme une utilisatrice) plutôt que par classe CSS.
-      - **Cahier de recette** : la liste des cas de test fonctionnels, avec pour chacun : identifiant, préconditions, étapes, résultat attendu, résultat obtenu.
+      - On utilise la **même version** de PostgreSQL qu'en production.
+      - Docker doit être présent sur la machine (ou la CI).
     commonMistakes: |
       - Tester l'intégration avec H2 alors que la production utilise PostgreSQL (comportements différents).
-      - Des scénarios E2E qui dépendent de données laissées par un autre test.
-      - Un cahier de recette sans résultat attendu précis (« ça marche »).
+      - Oublier que Docker doit tourner pour lancer ces tests.
     blocks:
       - type: text
         md: |
-          Les tests unitaires vérifient les pièces. Il faut aussi vérifier que les pièces **s'emboîtent** : le
-          SQL fonctionne sur PostgreSQL, et l'utilisatrice peut vraiment réserver depuis son navigateur.
+          Les tests unitaires vérifient les pièces. Il faut aussi vérifier que les pièces **s'emboîtent** : la
+          requête SQL générée fonctionne-t-elle vraiment sur PostgreSQL ?
       - type: definition
         id: def-testcontainers
         term: "Testcontainers"
@@ -39,25 +37,25 @@ lessons:
       - type: code
         id: code-integration
         language: java
-        title: "ProduitRepositoryIT.java"
+        title: "LivreRepositoryIT.java"
         code: |
           @SpringBootTest
           @Testcontainers
-          class ProduitRepositoryIT {
+          class LivreRepositoryIT {
 
               @Container
               @ServiceConnection
               static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
-              @Autowired ProduitRepository produits;
+              @Autowired LivreRepository livres;
 
               @Test
               void chercheSansTenirCompteDesMajuscules() {
-                  produits.save(new Produit("Café moulu", new BigDecimal("4.50")));
+                  livres.save(new Livre("Le Petit Prince"));
 
-                  List<Produit> trouves = produits.findByNomContainingIgnoreCase("CAFÉ");
+                  List<Livre> trouves = livres.findByTitreContainingIgnoreCase("PETIT");
 
-                  assertEquals(1, trouves.size());
+                  assertFalse(trouves.isEmpty());
               }
           }
         lines:
@@ -74,84 +72,33 @@ lessons:
       - type: question
         ref: tst-it-q1
         review: code-integration
-      - type: code
-        id: code-playwright
-        language: typescript
-        title: "reservation.spec.ts (Playwright)"
-        code: |
-          test('une cliente réserve un créneau', async ({ page }) => {
-            await page.goto('/connexion');
-            await page.getByLabel('E-mail').fill('cliente@exemple.fr');
-            await page.getByLabel('Mot de passe').fill('Mot-de-passe-test-1');
-            await page.getByRole('button', { name: 'Se connecter' }).click();
-
-            await page.getByRole('link', { name: 'Réserver' }).click();
-            await page.getByRole('button', { name: 'Mardi 10 h' }).click();
-
-            await expect(page.getByText('Réservation confirmée')).toBeVisible();
-          });
-        lines:
-          - n: 2
-            note: "Ouvre la page de connexion dans un vrai navigateur."
-          - n: 3
-            note: "Trouve le champ par son **libellé**, comme le ferait une personne."
-          - n: 5
-            note: "Trouve le bouton par son **rôle** et son **nom**."
-          - n: 10
-            note: "Vérifie ce que voit l'utilisatrice."
-      - type: definition
-        id: def-recette
-        term: "Cahier de recette"
-        md: |
-          La **liste de contrôle avant le décollage** d'un avion : chaque point est vérifié et coché. Pour une
-          application, chaque cas dit **quoi faire** et **quel résultat on attend**, pour que la cliente valide
-          que tout son besoin est couvert.
-      - type: code
-        id: code-recette
-        language: text
-        title: "Une fiche de cas de test"
-        code: |
-          ID               : CT-07
-          Fonctionnalité   : Réservation d'un créneau
-          Préconditions    : cliente connectée ; créneau « mardi 10 h » libre
-          Étapes           : 1. Ouvrir « Réserver »  2. Choisir « mardi 10 h »  3. Confirmer
-          Résultat attendu : message « Réservation confirmée » ; le créneau devient indisponible
-          Résultat obtenu  : conforme
-          Statut           : OK
-        lines:
-          - n: 1
-            note: "Un identifiant pour s'y référer (dans un ticket, au jury)."
-          - n: 3
-            note: "L'état de départ nécessaire."
-          - n: 5
-            note: "Précis et vérifiable, pas « ça marche »."
-          - n: 7
-            note: "OK ou KO ; un KO donne un ticket de correction."
       - type: question
-        ref: tst-it-q2
-        review: code-recette
+        ref: tst-it-q3
+        review: def-testcontainers
       - type: text
-        md: "Exercice guidé : complète le scénario Playwright."
+        md: "**Exercice 1 (guidé)** : complète les annotations."
       - type: exercise
-        ref: tst-ex-playwright-guide
+        ref: tst-ex-testcontainers-guide
       - type: text
-        md: "En autonomie : rédige une fiche de cas de test."
+        md: "**Exercice 2 (en autonomie)** : un test d'intégration des salles."
       - type: exercise
-        ref: tst-ex-fiche-recette
+        ref: tst-ex-testcontainers-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une base différente de la production."
+      - type: exercise
+        ref: tst-ex-testcontainers-bug
       - type: jury
         items:
           - q: "Pourquoi Testcontainers plutôt qu'une base H2 en mémoire ?"
             a: "Pour tester sur le même moteur qu'en production : PostgreSQL a ses propres types, fonctions (ILIKE, JSONB) et contraintes. H2 peut faire passer un test qui échouerait en production. Testcontainers démarre un vrai PostgreSQL jetable dans Docker."
-          - q: "Comment avez-vous validé votre application avec le client ?"
-            a: "Avec un cahier de recette : un cas de test par fonctionnalité, avec préconditions, étapes et résultat attendu. On l'a déroulé ensemble ; les cas KO ont donné des tickets, corrigés puis revérifiés. Les parcours critiques sont aussi automatisés avec Playwright."
       - type: quiz
         items:
-          - ref: tst-it-q3
+          - ref: tst-tc-q3
             review: def-testcontainers
-          - ref: tst-it-q4
-            review: code-playwright
-          - ref: tst-it-q5
-            review: def-recette
+          - ref: tst-tc-q4
+            review: code-integration
+          - ref: tst-tc-q5
+            review: code-integration
     questions:
       - code: tst-it-q1
         kind: CHOIX_UNIQUE
@@ -169,22 +116,6 @@ lessons:
             correct: false
             why: "C'est le rôle de Flyway."
         explanation: "Disponible depuis Spring Boot 3.1."
-      - code: tst-it-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: tests-strategie
-        prompt: "Quel « résultat attendu » est correct dans une fiche de recette ?"
-        choices:
-          - label: "Le message « Réservation confirmée » s'affiche et le créneau devient indisponible"
-            correct: true
-            why: "Précis et vérifiable."
-          - label: "Ça marche"
-            correct: false
-            why: "Impossible à vérifier objectivement."
-          - label: "Pas de bug"
-            correct: false
-            why: "Trop vague."
-        explanation: "Un résultat attendu se vérifie par oui ou non."
       - code: tst-it-q3
         kind: VRAI_FAUX
         difficulty: 2
@@ -198,6 +129,229 @@ lessons:
             correct: false
             why: "Sans Docker, il ne peut rien démarrer."
         explanation: "Les machines ubuntu-latest de GitHub Actions ont Docker."
+      - code: tst-tc-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-tests
+        prompt: "Que devient la base PostgreSQL de test après les tests ?"
+        choices:
+          - label: "Elle est jetée avec le conteneur"
+            correct: true
+            why: "Aucune trace."
+          - label: "Elle remplace la base de production"
+            correct: false
+            why: "Jamais."
+          - label: "Elle est gardée pour toujours"
+            correct: false
+            why: "Elle est jetable."
+        explanation: "Salle d'essai jetable."
+      - code: tst-tc-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-tests
+        prompt: "Pourquoi utiliser l'image `postgres:16-alpine` et pas H2 ?"
+        choices:
+          - label: "Pour tester sur le même moteur que la production"
+            correct: true
+            why: "Même comportement SQL."
+          - label: "Parce que H2 n'existe plus"
+            correct: false
+            why: "Il existe, mais il se comporte différemment."
+          - label: "Pour aller plus vite"
+            correct: false
+            why: "H2 est même plus rapide ; la fidélité compte plus."
+        explanation: "Tester comme en vrai."
+      - code: tst-tc-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-tests
+        prompt: "Que démarre `@SpringBootTest` ?"
+        choices:
+          - label: "Toute l'application Spring"
+            correct: true
+            why: "Tous les beans, avec la base."
+          - label: "Seulement un contrôleur"
+            correct: false
+            why: "C'est @WebMvcTest."
+          - label: "Un navigateur"
+            correct: false
+            why: "C'est Playwright."
+        explanation: "Test d'intégration complet côté serveur."
+    exercises:
+      - slug: tst-ex-testcontainers-guide
+        kind: COMPLETER
+        title: "Compléter les annotations"
+        difficulty: FACILE
+        skill: spring-tests
+        statement: "Complète les annotations du test d'intégration."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Toute l'application : SpringBootTest."
+          - "Le conteneur : Container ; la connexion automatique : ServiceConnection."
+          - "SpringBootTest, Container, ServiceConnection."
+        solution: '["SpringBootTest", "Container", "ServiceConnection"]'
+        explanation: "Application, conteneur, connexion."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @[[1]]
+            @Testcontainers
+            class SalleRepositoryIT {
+                @[[2]]
+                @[[3]]
+                static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+            }
+          blanks:
+            - ["SpringBootTest"]
+            - ["Container"]
+            - ["ServiceConnection"]
+      - slug: tst-ex-testcontainers-libre
+        kind: CODE_LIBRE
+        title: "Un test d'intégration des salles"
+        difficulty: INTERMEDIAIRE
+        skill: spring-tests
+        statement: |
+          Dans `SalleRepositoryIT` (conteneur déjà déclaré, `@Autowired SalleRepository salles`), écris le test
+          `trouveParVille()` : enregistre `new Salle("Atelier", "Lyon")`, cherche avec
+          `salles.findByVille("Lyon")`, et vérifie que la liste n'est pas vide.
+        criteria: "save, findByVille(\"Lyon\"), assertFalse(…isEmpty())."
+        hints:
+          - "`salles.save(new Salle(\"Atelier\", \"Lyon\"));`"
+          - "`List<Salle> trouvees = salles.findByVille(\"Lyon\");`"
+          - "`assertFalse(trouvees.isEmpty());`"
+        solution: |
+          @Test
+          void trouveParVille() {
+              salles.save(new Salle("Atelier", "Lyon"));
+              List<Salle> trouvees = salles.findByVille("Lyon");
+              assertFalse(trouvees.isEmpty());
+          }
+        explanation: "La vraie requête, sur la vraie base."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            @Test
+            void trouveParVille() {
+
+            }
+          checks:
+            - pattern: 'salles\.save\s*\(\s*new\s+Salle\s*\(\s*"Atelier"\s*,\s*"Lyon"\s*\)\s*\)'
+              message: "Enregistre salles.save(new Salle(\"Atelier\", \"Lyon\"))."
+            - pattern: '(\w+)\s*=\s*salles\.findByVille\s*\(\s*"Lyon"\s*\)[\s\S]*assertFalse\s*\(\s*\1\.isEmpty\s*\(\s*\)\s*\)'
+              message: "Cherche avec findByVille(\"Lyon\") puis vérifie assertFalse(liste.isEmpty())."
+      - slug: tst-ex-testcontainers-bug
+        kind: CORRIGER_ERREUR
+        title: "Une base différente de la production"
+        difficulty: FACILE
+        skill: spring-tests
+        statement: |
+          Ce test d'intégration utilise une base H2 en mémoire, alors que la production utilise PostgreSQL.
+          Remplace la configuration par un conteneur `PostgreSQLContainer` (`postgres:16-alpine`) annoté
+          `@Container` et `@ServiceConnection`.
+        criteria: "PostgreSQLContainer avec les deux annotations, plus de H2."
+        hints:
+          - "Tester sur le même moteur qu'en production."
+          - "`@Container @ServiceConnection static PostgreSQLContainer<?> postgres = …`"
+          - "`new PostgreSQLContainer<>(\"postgres:16-alpine\")`"
+        solution: |
+          @SpringBootTest
+          @Testcontainers
+          class LivreRepositoryIT {
+              @Container
+              @ServiceConnection
+              static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+          }
+        explanation: "Même moteur, mêmes surprises qu'en production."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:test")
+            class LivreRepositoryIT {
+            }
+          checks:
+            - pattern: '(?i)h2'
+              absent: true
+              message: "Pas de H2 : la production utilise PostgreSQL."
+            - pattern: '@Container\s+@ServiceConnection\s+static\s+PostgreSQLContainer\s*<\s*\?\s*>\s+\w+\s*=\s*new\s+PostgreSQLContainer\s*<\s*>\s*\(\s*"postgres:16-alpine"\s*\)'
+              message: "Déclare @Container @ServiceConnection static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:16-alpine\")."
+
+  # ===================================================================== LEÇON 2
+  - slug: tst-playwright
+    title: "Le test de bout en bout avec Playwright"
+    duration: 10
+    objective: "Écrire un scénario Playwright qui agit comme une utilisatrice dans un vrai navigateur."
+    prerequisites: "Leçon « Le test d'intégration avec Testcontainers »."
+    skills: [tests-strategie]
+    xp: 15
+    memo: |
+      - **Playwright** : pilote un vrai navigateur (`page.goto`, `fill`, `click`, `expect(...).toBeVisible()`).
+      - Sélectionner par **rôle et libellé** (`getByRole`, `getByLabel`), comme une utilisatrice, plutôt que par classe CSS.
+      - On automatise seulement les **parcours critiques** (inscription, connexion, réservation).
+    commonMistakes: |
+      - Des scénarios qui dépendent de données laissées par un autre test.
+      - Sélectionner par classe CSS : le test casse au moindre changement de style.
+    blocks:
+      - type: definition
+        id: def-playwright
+        term: "Playwright"
+        md: |
+          Un **robot testeur** qui s'assoit devant le navigateur : il ouvre les pages, remplit les champs,
+          clique, et vérifie ce qui s'affiche, comme le ferait une vraie personne.
+      - type: code
+        id: code-playwright
+        language: typescript
+        title: "reservation.spec.ts (Playwright)"
+        code: |
+          test('une cliente réserve une salle', async ({ page }) => {
+            await page.goto('/connexion');
+            await page.getByLabel('E-mail').fill('cliente@exemple.fr');
+            await page.getByLabel('Mot de passe').fill('Mot-de-passe-test');
+            await page.getByRole('button', { name: 'Se connecter' }).click();
+
+            await page.getByRole('link', { name: 'Réserver' }).click();
+            await page.getByRole('button', { name: 'Salle Atelier' }).click();
+
+            await expect(page.getByText('Réservation confirmée')).toBeVisible();
+          });
+        lines:
+          - n: 2
+            note: "Ouvre la page de connexion dans un vrai navigateur."
+          - n: 3
+            note: "Trouve le champ par son **libellé**, comme le ferait une personne."
+          - n: 5
+            note: "Trouve le bouton par son **rôle** et son **nom**."
+          - n: 10
+            note: "Vérifie ce que voit l'utilisatrice."
+      - type: question
+        ref: tst-it-q4
+        review: code-playwright
+      - type: question
+        ref: tst-c4-b2
+        review: def-playwright
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le scénario."
+      - type: exercise
+        ref: tst-ex-playwright-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un scénario de connexion."
+      - type: exercise
+        ref: tst-ex-playwright-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un sélecteur fragile."
+      - type: exercise
+        ref: tst-ex-playwright-bug
+      - type: quiz
+        items:
+          - ref: tst-pw-q3
+            review: code-playwright
+          - ref: tst-pw-q4
+            review: def-playwright
+          - ref: tst-pw-q5
+            review: code-playwright
+    questions:
       - code: tst-it-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -214,25 +368,67 @@ lessons:
             correct: false
             why: "Il en accepte, mais ils sont plus fragiles."
         explanation: "Un test qui pense comme une utilisatrice."
-      - code: tst-it-q5
-        kind: CHOIX_MULTIPLE
+      - code: tst-c4-b2
+        kind: CHOIX_UNIQUE
         difficulty: 2
         skill: tests-strategie
-        prompt: "Que contient une fiche de cas de test ? (plusieurs réponses)"
+        prompt: "Quel outil pilote un vrai navigateur pour les tests de bout en bout ?"
         choices:
-          - label: "Des préconditions"
+          - label: "Playwright"
             correct: true
-            why: "L'état de départ."
-          - label: "Des étapes"
-            correct: true
-            why: "Ce qu'il faut faire."
-          - label: "Un résultat attendu"
-            correct: true
-            why: "Ce qu'on doit constater."
-          - label: "Le code source complet de l'application"
+            why: "Aussi : Cypress, Selenium."
+          - label: "Mockito"
             correct: false
-            why: "La recette est fonctionnelle."
-        explanation: "Plus un identifiant, le résultat obtenu et le statut."
+            why: "Mockito crée des doublures Java."
+          - label: "JaCoCo"
+            correct: false
+            why: "JaCoCo mesure la couverture."
+        explanation: "Les tests E2E vérifient les parcours critiques."
+      - code: tst-pw-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Quelle méthode remplit un champ ?"
+        choices:
+          - label: "`fill`"
+            correct: true
+            why: "Elle tape le texte."
+          - label: "`click`"
+            correct: false
+            why: "Elle clique."
+          - label: "`goto`"
+            correct: false
+            why: "Elle ouvre une page."
+        explanation: "goto, fill, click, expect."
+      - code: tst-pw-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "On automatise avec Playwright tous les écrans de l'application, dans tous les détails."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Ce serait lent et fragile."
+          - label: "Faux"
+            correct: true
+            why: "Seulement les parcours critiques."
+        explanation: "Le haut de la pyramide reste étroit."
+      - code: tst-pw-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Que vérifie `expect(page.getByText('Réservation confirmée')).toBeVisible()` ?"
+        choices:
+          - label: "Que le message est affiché à l'écran"
+            correct: true
+            why: "Ce que voit l'utilisatrice."
+          - label: "Que la base contient la réservation"
+            correct: false
+            why: "Il regarde l'écran."
+          - label: "Que le bouton est cliquable"
+            correct: false
+            why: "Il vérifie un texte."
+        explanation: "On vérifie le résultat visible."
     exercises:
       - slug: tst-ex-playwright-guide
         kind: COMPLETER
@@ -260,6 +456,254 @@ lessons:
             - ["fill"]
             - ["click"]
             - ["toBeVisible"]
+      - slug: tst-ex-playwright-libre
+        kind: CODE_LIBRE
+        title: "Un scénario de connexion"
+        difficulty: INTERMEDIAIRE
+        skill: tests-strategie
+        statement: |
+          Écris les lignes d'un scénario qui : ouvre `/connexion`, remplit le champ « E-mail » avec
+          `awa@exemple.fr`, remplit « Mot de passe » avec `Mot-de-passe-test`, clique sur le bouton
+          « Se connecter », puis vérifie que le texte « Mes emprunts » est visible.
+        criteria: "goto, deux fill par libellé, click par rôle, expect toBeVisible."
+        hints:
+          - "`await page.goto('/connexion');`"
+          - "`await page.getByLabel('E-mail').fill('awa@exemple.fr');`"
+          - "`await expect(page.getByText('Mes emprunts')).toBeVisible();`"
+        solution: |
+          await page.goto('/connexion');
+          await page.getByLabel('E-mail').fill('awa@exemple.fr');
+          await page.getByLabel('Mot de passe').fill('Mot-de-passe-test');
+          await page.getByRole('button', { name: 'Se connecter' }).click();
+          await expect(page.getByText('Mes emprunts')).toBeVisible();
+        explanation: "Le parcours, vu par l'utilisatrice."
+        xp: 20
+        payload:
+          language: typescript
+          starter: |
+            await page.goto('');
+          checks:
+            - pattern: "page\\.goto\\s*\\(\\s*['\"]/connexion['\"]\\s*\\)"
+              message: "Ouvre /connexion."
+            - pattern: "getByLabel\\s*\\(\\s*['\"]E-mail['\"]\\s*\\)\\s*\\.fill\\s*\\(\\s*['\"]awa@exemple\\.fr['\"]"
+              message: "Remplis le champ E-mail."
+            - pattern: "getByLabel\\s*\\(\\s*['\"]Mot de passe['\"]\\s*\\)\\s*\\.fill\\s*\\("
+              message: "Remplis le champ Mot de passe."
+            - pattern: "getByRole\\s*\\(\\s*['\"]button['\"]\\s*,\\s*\\{\\s*name\\s*:\\s*['\"]Se connecter['\"]\\s*\\}\\s*\\)\\s*\\.click\\s*\\(\\s*\\)"
+              message: "Clique sur le bouton « Se connecter » avec getByRole."
+            - pattern: "expect\\s*\\(\\s*page\\.getByText\\s*\\(\\s*['\"]Mes emprunts['\"]\\s*\\)\\s*\\)\\s*\\.toBeVisible\\s*\\(\\s*\\)"
+              message: "Vérifie que « Mes emprunts » est visible."
+      - slug: tst-ex-playwright-bug
+        kind: CORRIGER_ERREUR
+        title: "Un sélecteur fragile"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: |
+          Ce scénario clique sur le bouton par sa classe CSS : il cassera au prochain changement de style.
+          Utilise plutôt `getByRole('button', { name: 'Emprunter' })`.
+        criteria: "getByRole button Emprunter, plus de classe CSS."
+        hints:
+          - "Comment une personne repère-t-elle le bouton ?"
+          - "Par son rôle et son nom."
+          - "`page.getByRole('button', { name: 'Emprunter' }).click();`"
+        solution: |
+          await page.getByRole('button', { name: 'Emprunter' }).click();
+        explanation: "Un sélecteur qui pense comme une utilisatrice."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            await page.locator('.btn-primary.mt-2').click();
+          checks:
+            - pattern: '\.btn-primary'
+              absent: true
+              message: "Pas de classe CSS."
+            - pattern: "getByRole\\s*\\(\\s*['\"]button['\"]\\s*,\\s*\\{\\s*name\\s*:\\s*['\"]Emprunter['\"]\\s*\\}\\s*\\)\\s*\\.click"
+              message: "Écris getByRole('button', { name: 'Emprunter' }).click()."
+
+  # ===================================================================== LEÇON 3
+  - slug: tst-recette
+    title: "Le cahier de recette"
+    duration: 10
+    objective: "Rédiger une fiche de cas de test précise, avec préconditions, étapes et résultat attendu vérifiable."
+    prerequisites: "Leçon « Le test de bout en bout avec Playwright »."
+    skills: [tests-strategie]
+    xp: 15
+    memo: |
+      - **Cahier de recette** : la liste des cas de test fonctionnels, déroulée avec le client.
+      - Chaque fiche : **identifiant**, **préconditions**, **étapes**, **résultat attendu**, résultat obtenu, statut.
+      - Un résultat attendu se vérifie par **oui ou non** : jamais « ça marche ».
+      - Un cas **KO** donne un ticket de correction.
+    commonMistakes: |
+      - Un cahier de recette sans résultat attendu précis.
+      - Oublier les préconditions (l'état de départ).
+    blocks:
+      - type: definition
+        id: def-recette
+        term: "Cahier de recette"
+        md: |
+          La **liste de contrôle avant le décollage** d'un avion : chaque point est vérifié et coché. Pour une
+          application, chaque cas dit **quoi faire** et **quel résultat on attend**, pour que la cliente valide
+          que tout son besoin est couvert.
+      - type: code
+        id: code-recette
+        language: text
+        title: "Une fiche de cas de test"
+        code: |
+          ID               : CT-07
+          Fonctionnalité   : Réservation d'une salle
+          Préconditions    : cliente connectée ; salle « Atelier » libre
+          Étapes           : 1. Ouvrir « Réserver »  2. Choisir « Atelier »  3. Confirmer
+          Résultat attendu : message « Réservation confirmée » ; la salle devient indisponible
+          Résultat obtenu  : conforme
+          Statut           : OK
+        lines:
+          - n: 1
+            note: "Un identifiant pour s'y référer (dans un ticket, au jury)."
+          - n: 3
+            note: "L'état de départ nécessaire."
+          - n: 5
+            note: "Précis et vérifiable, pas « ça marche »."
+          - n: 7
+            note: "OK ou KO ; un KO donne un ticket de correction."
+      - type: question
+        ref: tst-it-q2
+        review: code-recette
+      - type: question
+        ref: tst-it-q5
+        review: def-recette
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la fiche."
+      - type: exercise
+        ref: tst-ex-recette-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une fiche de recette."
+      - type: exercise
+        ref: tst-ex-fiche-recette
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un résultat attendu trop vague."
+      - type: exercise
+        ref: tst-ex-recette-bug
+      - type: jury
+        items:
+          - q: "Comment avez-vous validé votre application avec le client ?"
+            a: "Avec un cahier de recette : un cas de test par fonctionnalité, avec préconditions, étapes et résultat attendu. On l'a déroulé ensemble ; les cas KO ont donné des tickets, corrigés puis revérifiés. Les parcours critiques sont aussi automatisés avec Playwright."
+      - type: quiz
+        items:
+          - ref: tst-rc-q3
+            review: code-recette
+          - ref: tst-rc-q4
+            review: def-recette
+          - ref: tst-rc-q5
+            review: code-recette
+    questions:
+      - code: tst-it-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Quel « résultat attendu » est correct dans une fiche de recette ?"
+        choices:
+          - label: "Le message « Réservation confirmée » s'affiche et la salle devient indisponible"
+            correct: true
+            why: "Précis et vérifiable."
+          - label: "Ça marche"
+            correct: false
+            why: "Impossible à vérifier objectivement."
+          - label: "Pas de bug"
+            correct: false
+            why: "Trop vague."
+        explanation: "Un résultat attendu se vérifie par oui ou non."
+      - code: tst-it-q5
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Que contient une fiche de cas de test ? (plusieurs réponses)"
+        choices:
+          - label: "Des préconditions"
+            correct: true
+            why: "L'état de départ."
+          - label: "Des étapes"
+            correct: true
+            why: "Ce qu'il faut faire."
+          - label: "Un résultat attendu"
+            correct: true
+            why: "Ce qu'on doit constater."
+          - label: "Le code source complet de l'application"
+            correct: false
+            why: "La recette est fonctionnelle."
+        explanation: "Plus un identifiant, le résultat obtenu et le statut."
+      - code: tst-rc-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Que se passe-t-il quand un cas de recette est KO ?"
+        choices:
+          - label: "On ouvre un ticket de correction"
+            correct: true
+            why: "Puis on revérifie après correction."
+          - label: "On supprime le cas"
+            correct: false
+            why: "Le problème resterait."
+          - label: "Rien"
+            correct: false
+            why: "Il faut corriger."
+        explanation: "KO → ticket → correction → nouvelle vérification."
+      - code: tst-rc-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Le cahier de recette est déroulé avec le client pour valider son besoin."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "C'est un test d'acceptation."
+          - label: "Faux"
+            correct: false
+            why: "Le client valide."
+        explanation: "Recette = accord sur le besoin."
+      - code: tst-rc-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "À quoi servent les préconditions ?"
+        choices:
+          - label: "À décrire l'état de départ nécessaire au cas"
+            correct: true
+            why: "Par exemple : cliente connectée, salle libre."
+          - label: "À donner le résultat"
+            correct: false
+            why: "C'est le résultat attendu."
+          - label: "À nommer le testeur"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "On sait d'où partir."
+    exercises:
+      - slug: tst-ex-recette-guide
+        kind: COMPLETER
+        title: "Compléter la fiche"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: "Complète les intitulés de la fiche."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "L'état de départ : Préconditions."
+          - "Ce qu'on fait : Étapes ; ce qu'on doit voir : Résultat attendu."
+          - "Préconditions, Étapes, Résultat attendu."
+        solution: '["Préconditions", "Étapes", "Résultat attendu"]'
+        explanation: "D'où partir, quoi faire, quoi constater."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            ID : CT-03
+            [[1]] : l'adhérente est connectée ; le livre « Dune » est disponible
+            [[2]] : 1. Ouvrir la fiche de « Dune »  2. Cliquer sur « Emprunter »
+            [[3]] : le message « Emprunt enregistré » s'affiche
+          blanks:
+            - ["Préconditions", "Preconditions"]
+            - ["Étapes", "Etapes"]
+            - ["Résultat attendu", "Resultat attendu"]
       - slug: tst-ex-fiche-recette
         kind: CODE_LIBRE
         title: "Une fiche de recette"
@@ -292,40 +736,70 @@ lessons:
             Étapes :
             Résultat attendu :
           checks:
-            - pattern: '(?im)^\s*ID\s*:\s*\S+'
+            - pattern: '(?im)^\s*ID\s*:[ \t]*\S+'
               message: "Donne un identifiant après « ID : »."
-            - pattern: '(?im)^\s*Fonctionnalit[ée]\s*:\s*\S.{3,}'
+            - pattern: '(?im)^\s*Fonctionnalit[ée]\s*:[ \t]*\S[^\n]{3,}'
               message: "Nomme la fonctionnalité."
-            - pattern: '(?im)^\s*Pr[ée]conditions?\s*:\s*\S.{8,}'
+            - pattern: '(?im)^\s*Pr[ée]conditions?\s*:[ \t]*\S[^\n]{8,}'
               message: "Décris les préconditions (par exemple : un compte existe)."
-            - pattern: '(?im)^\s*[ÉE]tapes\s*:\s*\S.{15,}'
+            - pattern: '(?im)^\s*[ÉE]tapes\s*:[ \t]*\S[^\n]{15,}'
               message: "Décris les étapes."
-            - pattern: '(?im)^\s*R[ée]sultat\s+attendu\s*:.*(?:message|«|")'
+            - pattern: '(?im)^\s*R[ée]sultat\s+attendu\s*:[^\n]*(?:message|«|")'
               message: "Le résultat attendu doit citer le message affiché."
-            - pattern: '(?im)^\s*R[ée]sultat\s+attendu\s*:.*(?:reste|non\s+connect|pas\s+connect|n.est\s+pas\s+connect)'
+            - pattern: '(?im)^\s*R[ée]sultat\s+attendu\s*:[^\n]*(?:reste|non\s+connect|pas\s+connect|n.est\s+pas\s+connect)'
               message: "Le résultat attendu doit dire que l'utilisatrice n'est pas connectée."
+      - slug: tst-ex-recette-bug
+        kind: CORRIGER_ERREUR
+        title: "Un résultat attendu trop vague"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: |
+          Le résultat attendu de cette fiche est « ça marche ». Remplace-le par un résultat vérifiable qui cite
+          le message « Emprunt enregistré ».
+        criteria: "Résultat attendu précis, qui cite le message."
+        hints:
+          - "Qu'est-ce que l'adhérente doit voir ?"
+          - "Un message précis."
+          - "Résultat attendu : le message « Emprunt enregistré » s'affiche."
+        solution: |
+          ID : CT-03
+          Résultat attendu : le message « Emprunt enregistré » s'affiche et le livre devient indisponible
+        explanation: "Vérifiable par oui ou non."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            ID : CT-03
+            Résultat attendu : ça marche
+          checks:
+            - pattern: "(?i)ça\\s+marche"
+              absent: true
+              message: "« Ça marche » n'est pas vérifiable."
+            - pattern: '(?im)^\s*R[ée]sultat\s+attendu\s*:[^\n]*Emprunt enregistré'
+              message: "Cite le message « Emprunt enregistré »."
 
-  # ===================================================================== LEÇON 2
-  - slug: tst-questions-jury
-    title: "La qualité devant le jury"
-    duration: 12
-    objective: "Présenter sa démarche qualité complète et répondre aux questions sur les tests, la CI et la gestion des bugs."
-    prerequisites: "Leçon « Tests d'intégration, de bout en bout et cahier de recette »."
-    skills: [tests-strategie, oral-cda]
-    xp: 25
+  # ===================================================================== LEÇON 4
+  - slug: tst-bugs
+    title: "Le cycle de vie d'un bug"
+    duration: 9
+    objective: "Suivre un bug du signalement à la livraison, en passant par un test qui le reproduit."
+    prerequisites: "Leçon « Le cahier de recette »."
+    skills: [tests-strategie]
+    xp: 15
     memo: |
-      - Démarche qualité = **prévenir** (conventions, revue, linters) + **détecter** (tests, CI) + **corriger** (tickets, test de régression).
-      - Chiffres utiles : nombre de tests, temps d'exécution, couverture des services métier.
       - Un bug suit un cycle : signalement → reproduction → test qui échoue → correction → test vert → livraison.
+      - Un bon ticket : étapes pour reproduire, résultat attendu, résultat obtenu.
+      - Chaque bug corrigé laisse un **test de non-régression** derrière lui.
     commonMistakes: |
-      - « J'ai testé à la main » comme seule réponse.
-      - Annoncer 100 % de couverture sans pouvoir montrer les tests.
-      - Ne pas savoir lancer ses propres tests pendant la démonstration.
+      - Corriger sans test : le bug peut revenir.
+      - Un ticket « ça ne marche pas » impossible à reproduire.
     blocks:
-      - type: text
+      - type: definition
+        id: def-bug
+        term: "Test de non-régression"
         md: |
-          Le jury veut savoir si tu peux livrer un logiciel **fiable** dans une équipe. Montre une démarche
-          complète, avec des exemples tirés de ton projet.
+          Un **garde-fou** posé à l'endroit exact où quelqu'un est tombé : on corrige, puis on installe une
+          barrière pour que personne ne retombe au même endroit.
       - type: steps
         id: etapes-bug
         title: "Le cycle de vie d'un bug"
@@ -338,37 +812,33 @@ lessons:
       - type: question
         ref: tst-jq-q1
         review: etapes-bug
-      - type: jury
-        id: jury-qualite
-        title: "Questions fréquentes sur la qualité"
-        items:
-          - q: "Combien de tests avez-vous et comment les lancez-vous ?"
-            a: "Donnez le chiffre réel (par exemple 56 tests backend et 30 tests frontend), la commande (./mvnw test, npm test) et leur durée. Montrez qu'ils tournent dans GitHub Actions à chaque push."
-          - q: "Comment gérez-vous un bug découvert en production ?"
-            a: "Je le reproduis avec un test qui échoue, je le corrige sur une branche dédiée, la CI valide, puis je déploie. Le test reste dans la suite pour que le bug ne revienne jamais."
-          - q: "Qu'est-ce qui vous garantit qu'une modification ne casse rien ?"
-            a: "La suite de tests automatiques relancée par la CI sur chaque pull request, la revue de code, et le cahier de recette pour les parcours critiques avant une livraison."
-          - q: "Qu'est-ce qu'un test fragile (flaky) ?"
-            a: "Un test qui réussit ou échoue de façon aléatoire, souvent à cause du temps, de l'ordre d'exécution ou de données partagées. Je le corrige tout de suite, sinon l'équipe finit par ignorer les échecs."
       - type: question
-        ref: tst-jq-q2
-        review: jury-qualite
+        ref: tst-jq-q4
+        review: etapes-bug
       - type: text
-        md: "Exercice guidé : remets le cycle d'un bug dans l'ordre."
+        md: "**Exercice 1 (guidé)** : remets le cycle d'un bug dans l'ordre."
       - type: exercise
         ref: tst-ex-bug-ordre
       - type: text
-        md: "En autonomie : présente ta démarche qualité."
+        md: "**Exercice 2 (en autonomie)** : un ticket de bug."
       - type: exercise
-        ref: tst-ex-demarche
+        ref: tst-ex-ticket-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un ticket impossible à reproduire."
+      - type: exercise
+        ref: tst-ex-ticket-bug
+      - type: jury
+        items:
+          - q: "Comment gérez-vous un bug découvert en production ?"
+            a: "Je le reproduis avec un test qui échoue, je le corrige sur une branche dédiée, la CI valide, puis je déploie. Le test reste dans la suite pour que le bug ne revienne jamais."
       - type: quiz
         items:
-          - ref: tst-jq-q3
-            review: jury-qualite
-          - ref: tst-jq-q4
+          - ref: tst-c4-b1
+            review: def-bug
+          - ref: tst-bg-q4
             review: etapes-bug
-          - ref: tst-jq-q5
-            review: jury-qualite
+          - ref: tst-bg-q5
+            review: def-bug
     questions:
       - code: tst-jq-q1
         kind: CHOIX_UNIQUE
@@ -386,35 +856,6 @@ lessons:
             correct: false
             why: "Rien n'est encore corrigé."
         explanation: "Test rouge, correction, test vert."
-      - code: tst-jq-q2
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: tests-strategie
-        prompt: "Un test qui échoue une fois sur dix peut être ignoré sans conséquence."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "L'équipe apprend à ignorer les échecs, même les vrais."
-          - label: "Faux"
-            correct: true
-            why: "Un test fragile doit être corrigé rapidement."
-        explanation: "La confiance dans la suite de tests est précieuse."
-      - code: tst-jq-q3
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: oral-cda
-        prompt: "Le jury demande comment vous savez qu'une modification ne casse rien. Meilleure réponse ?"
-        choices:
-          - label: "Les tests automatiques relancés par la CI sur chaque pull request, plus une revue de code"
-            correct: true
-            why: "Concret et vérifiable."
-          - label: "Je fais attention"
-            correct: false
-            why: "Pas de méthode."
-          - label: "Je teste tout à la main avant chaque livraison"
-            correct: false
-            why: "Long, incomplet et non reproductible."
-        explanation: "Une démarche outillée."
       - code: tst-jq-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -431,13 +872,51 @@ lessons:
             correct: false
             why: "On cherche la cause, pas un coupable."
         explanation: "Plus l'environnement (navigateur, version) et une capture si utile."
-      - code: tst-jq-q5
-        kind: TEXTE
+      - code: tst-c4-b1
+        kind: CHOIX_UNIQUE
         difficulty: 2
         skill: tests-strategie
-        prompt: "Comment appelle-t-on en anglais un test qui réussit ou échoue de façon aléatoire ? (un mot)"
-        answers: ["flaky"]
-        explanation: "Souvent causé par le temps, l'ordre d'exécution ou des données partagées."
+        prompt: "Qu'est-ce qu'un test de non-régression ?"
+        choices:
+          - label: "Un test qui vérifie que ce qui marchait marche toujours après une modification"
+            correct: true
+            why: "Il protège l'existant."
+          - label: "Un test qui ne peut jamais échouer"
+            correct: false
+            why: "Un test qui n'échoue jamais ne sert à rien."
+          - label: "Un test manuel fait par le client"
+            correct: false
+            why: "Il est en général automatisé."
+        explanation: "Toute la suite automatique joue ce rôle à chaque changement."
+      - code: tst-bg-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Après la correction, le test qui reproduisait le bug est supprimé."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Il reste pour empêcher le retour du bug."
+          - label: "Faux"
+            correct: true
+            why: "C'est le garde-fou."
+        explanation: "Le test reste dans la suite."
+      - code: tst-bg-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Pourquoi écrire le test qui échoue AVANT la correction ?"
+        choices:
+          - label: "Pour prouver que le test détecte bien le bug"
+            correct: true
+            why: "S'il passait déjà, il ne protégerait rien."
+          - label: "Pour gagner du temps"
+            correct: false
+            why: "C'est une question de fiabilité."
+          - label: "Ce n'est pas utile"
+            correct: false
+            why: "C'est la base de la méthode."
+        explanation: "Rouge d'abord, comme en TDD."
     exercises:
       - slug: tst-ex-bug-ordre
         kind: REMETTRE_ORDRE
@@ -468,6 +947,230 @@ lessons:
             - "On corrige le code : le test passe"
             - "La CI valide la pull request"
             - "La correction est fusionnée et déployée"
+      - slug: tst-ex-ticket-libre
+        kind: CODE_LIBRE
+        title: "Un ticket de bug"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: |
+          Rédige un ticket pour ce bug : « le bouton Emprunter reste actif sur un livre déjà emprunté ». Utilise
+          les intitulés `Étapes :`, `Résultat attendu :` et `Résultat obtenu :`.
+        criteria: "Trois intitulés remplis, avec une vraie phrase."
+        hints:
+          - "Étapes : ouvrir la fiche d'un livre déjà emprunté."
+          - "Résultat attendu : le bouton Emprunter est désactivé."
+          - "Résultat obtenu : le bouton reste actif."
+        solution: |
+          Étapes : ouvrir la fiche d'un livre déjà emprunté
+          Résultat attendu : le bouton « Emprunter » est désactivé
+          Résultat obtenu : le bouton « Emprunter » reste actif
+        explanation: "N'importe qui peut reproduire."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Étapes :
+            Résultat attendu :
+            Résultat obtenu :
+          checks:
+            - pattern: '(?im)^\s*[ÉE]tapes\s*:[ \t]*\S[^\n]{10,}'
+              message: "Décris les étapes."
+            - pattern: '(?im)^\s*R[ée]sultat\s+attendu\s*:[ \t]*\S[^\n]{10,}'
+              message: "Décris le résultat attendu."
+            - pattern: '(?im)^\s*R[ée]sultat\s+obtenu\s*:[ \t]*\S[^\n]{10,}'
+              message: "Décris le résultat obtenu."
+      - slug: tst-ex-ticket-bug
+        kind: CORRIGER_ERREUR
+        title: "Un ticket impossible à reproduire"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: |
+          Ce ticket dit seulement « ça ne marche pas ». Remplace-le par les trois intitulés `Étapes :`,
+          `Résultat attendu :` et `Résultat obtenu :`, pour le bug « la recherche par auteur ne trouve rien ».
+        criteria: "Les trois intitulés, plus de « ça ne marche pas »."
+        hints:
+          - "Que faut-il faire pour voir le bug ?"
+          - "Que devrait-on voir ? Que voit-on ?"
+          - "Étapes : chercher « Hugo » dans le catalogue…"
+        solution: |
+          Étapes : chercher « Hugo » dans le catalogue
+          Résultat attendu : les livres de Victor Hugo s'affichent
+          Résultat obtenu : la liste reste vide
+        explanation: "Un ticket reproductible."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            ça ne marche pas
+          checks:
+            - pattern: "(?i)ça\\s+ne\\s+marche\\s+pas"
+              absent: true
+              message: "« Ça ne marche pas » ne permet pas de reproduire."
+            - pattern: '(?im)^\s*[ÉE]tapes\s*:[ \t]*\S[^\n]{10,}'
+              message: "Décris les étapes."
+            - pattern: '(?im)^\s*R[ée]sultat\s+attendu\s*:[ \t]*\S[^\n]{10,}'
+              message: "Décris le résultat attendu."
+            - pattern: '(?im)^\s*R[ée]sultat\s+obtenu\s*:[ \t]*\S[^\n]{8,}'
+              message: "Décris le résultat obtenu."
+
+  # ===================================================================== LEÇON 5
+  - slug: tst-questions-jury
+    title: "La qualité devant le jury"
+    duration: 10
+    objective: "Présenter sa démarche qualité en trois temps : prévenir, détecter, corriger."
+    prerequisites: "Leçon « Le cycle de vie d'un bug »."
+    skills: [tests-strategie, oral-cda]
+    xp: 20
+    memo: |
+      - Démarche qualité = **prévenir** (conventions, revue, linters) + **détecter** (tests, CI) + **corriger** (tickets, test de régression).
+      - Savoir lancer ses tests pendant la démonstration (`./mvnw test`, `npm test`).
+      - Un test **fragile** (flaky) se corrige tout de suite.
+    commonMistakes: |
+      - « J'ai testé à la main » comme seule réponse.
+      - Ne pas savoir lancer ses propres tests pendant la démonstration.
+    blocks:
+      - type: text
+        md: |
+          Le jury veut savoir si tu peux livrer un logiciel **fiable** dans une équipe. Montre une démarche
+          complète, avec des exemples tirés de ton projet.
+      - type: steps
+        id: etapes-demarche
+        title: "Prévenir, détecter, corriger"
+        items:
+          - "**Prévenir** : conventions de nommage, linters, revue de code sur chaque pull request."
+          - "**Détecter** : tests automatiques lancés par la CI, cahier de recette avant livraison."
+          - "**Corriger** : un ticket, un test de régression, la correction, la CI verte."
+      - type: jury
+        id: jury-qualite
+        title: "Questions fréquentes sur la qualité"
+        items:
+          - q: "Combien de tests avez-vous et comment les lancez-vous ?"
+            a: "Donnez le nombre réel de tests backend et frontend, la commande (./mvnw test, npm test) et leur durée. Montrez qu'ils tournent dans GitHub Actions à chaque push."
+          - q: "Qu'est-ce qui vous garantit qu'une modification ne casse rien ?"
+            a: "La suite de tests automatiques relancée par la CI sur chaque pull request, la revue de code, et le cahier de recette pour les parcours critiques avant une livraison."
+          - q: "Qu'est-ce qu'un test fragile (flaky) ?"
+            a: "Un test qui réussit ou échoue de façon aléatoire, souvent à cause du temps, de l'ordre d'exécution ou de données partagées. Je le corrige tout de suite, sinon l'équipe finit par ignorer les échecs."
+      - type: question
+        ref: tst-jq-q2
+        review: jury-qualite
+      - type: question
+        ref: tst-jq-q3
+        review: jury-qualite
+      - type: text
+        md: "**Exercice 1 (guidé)** : les trois temps."
+      - type: exercise
+        ref: tst-ex-demarche-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : présente ta démarche qualité."
+      - type: exercise
+        ref: tst-ex-demarche
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une réponse sans méthode."
+      - type: exercise
+        ref: tst-ex-demarche-bug
+      - type: quiz
+        items:
+          - ref: tst-jq-q5
+            review: jury-qualite
+          - ref: tst-qj-q4
+            review: etapes-demarche
+          - ref: tst-qj-q5
+            review: etapes-demarche
+    questions:
+      - code: tst-jq-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Un test qui échoue de temps en temps, au hasard, peut être ignoré sans conséquence."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "L'équipe apprend à ignorer les échecs, même les vrais."
+          - label: "Faux"
+            correct: true
+            why: "Un test fragile doit être corrigé rapidement."
+        explanation: "La confiance dans la suite de tests est précieuse."
+      - code: tst-jq-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Le jury demande comment vous savez qu'une modification ne casse rien. Meilleure réponse ?"
+        choices:
+          - label: "Les tests automatiques relancés par la CI sur chaque pull request, plus une revue de code"
+            correct: true
+            why: "Concret et vérifiable."
+          - label: "Je fais attention"
+            correct: false
+            why: "Pas de méthode."
+          - label: "Je teste tout à la main avant chaque livraison"
+            correct: false
+            why: "Long, incomplet et non reproductible."
+        explanation: "Une démarche outillée."
+      - code: tst-jq-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Comment appelle-t-on en anglais un test qui réussit ou échoue de façon aléatoire ? (un mot)"
+        answers: ["flaky"]
+        explanation: "Souvent causé par le temps, l'ordre d'exécution ou des données partagées."
+      - code: tst-qj-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Dans quel temps de la démarche qualité se place la revue de code ?"
+        choices:
+          - label: "Prévenir"
+            correct: true
+            why: "Elle évite que les erreurs arrivent sur main."
+          - label: "Corriger"
+            correct: false
+            why: "On corrige après avoir détecté."
+          - label: "Aucun"
+            correct: false
+            why: "Elle fait partie de la démarche."
+        explanation: "Prévenir, détecter, corriger."
+      - code: tst-qj-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Dans quel temps se place la CI qui lance les tests ?"
+        choices:
+          - label: "Détecter"
+            correct: true
+            why: "Elle repère les régressions."
+          - label: "Prévenir"
+            correct: false
+            why: "Elle détecte ce qui a déjà cassé."
+          - label: "Corriger"
+            correct: false
+            why: "Elle ne corrige rien elle-même."
+        explanation: "Tests + CI = détecter."
+    exercises:
+      - slug: tst-ex-demarche-guide
+        kind: COMPLETER
+        title: "Les trois temps"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: "Complète avec : Prévenir, Détecter, Corriger."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Avant l'erreur : prévenir."
+          - "La repérer : détecter ; la réparer : corriger."
+          - "Prévenir, Détecter, Corriger."
+        solution: '["Prévenir", "Détecter", "Corriger"]'
+        explanation: "Une démarche complète."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            [[1]] : revue de code et linters
+            [[2]] : tests automatiques et CI
+            [[3]] : ticket et test de régression
+          blanks:
+            - ["Prévenir", "Prevenir"]
+            - ["Détecter", "Detecter"]
+            - ["Corriger"]
       - slug: tst-ex-demarche
         kind: CODE_LIBRE
         title: "Ma démarche qualité"
@@ -494,43 +1197,72 @@ lessons:
             Détecter :
             Corriger :
           checks:
-            - pattern: '(?im)^\s*Pr[ée]venir\s*:.*(?:convention|revue|review|lint|sonar|pull\s*request|format)'
+            - pattern: '(?im)^\s*Pr[ée]venir\s*:[^\n]*(?:convention|revue|review|lint|sonar|pull\s*request|format)'
               message: "« Prévenir » : cite une pratique (revue de code, linter, conventions…)."
-            - pattern: '(?im)^\s*D[ée]tecter\s*:.*(?:test|junit|mockito|ci\b|github\s+actions|recette|playwright)'
+            - pattern: '(?im)^\s*D[ée]tecter\s*:[^\n]*(?:test|junit|mockito|ci\b|github\s+actions|recette|playwright)'
               message: "« Détecter » : cite des tests ou la CI."
-            - pattern: '(?im)^\s*Corriger\s*:.*(?:ticket|test|r[ée]gression|pull\s*request|branche)'
+            - pattern: '(?im)^\s*Corriger\s*:[^\n]*(?:ticket|test|r[ée]gression|pull\s*request|branche)'
               message: "« Corriger » : cite le ticket, le test de régression ou la pull request."
+      - slug: tst-ex-demarche-bug
+        kind: CORRIGER_ERREUR
+        title: "Une réponse sans méthode"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: |
+          À la question « Comment savez-vous que votre application fonctionne ? », cette réponse dit seulement
+          « J'ai testé à la main ». Remplace-la par une phrase qui cite les **tests automatiques** et la **CI**.
+        criteria: "Plus de « à la main » seul ; tests automatiques et CI cités."
+        hints:
+          - "Le jury attend une méthode outillée."
+          - "Tests automatiques + intégration continue."
+          - "Mes tests automatiques sont lancés par la CI à chaque pull request."
+        solution: |
+          Mes tests automatiques JUnit et Angular sont lancés par la CI GitHub Actions à chaque pull request.
+        explanation: "Une réponse vérifiable."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            J'ai testé à la main.
+          checks:
+            - pattern: "(?i)test[ée]\\s+à\\s+la\\s+main"
+              absent: true
+              message: "« Testé à la main » ne suffit pas."
+            - pattern: '(?i)tests?\s+automatiques?'
+              message: "Cite les tests automatiques."
+            - pattern: '(?i)\bCI\b|int[ée]gration\s+continue|github\s+actions'
+              message: "Cite la CI."
 
 bank:
-  - code: tst-c4-b1
+  - code: tst-c4-b3
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: tests-strategie
-    prompt: "Qu'est-ce qu'un test de non-régression ?"
+    prompt: "Quel outil démarre un vrai PostgreSQL jetable pour les tests ?"
     choices:
-      - label: "Un test qui vérifie que ce qui marchait marche toujours après une modification"
+      - label: "Testcontainers"
         correct: true
-        why: "Il protège l'existant."
-      - label: "Un test qui ne peut jamais échouer"
-        correct: false
-        why: "Un test qui n'échoue jamais ne sert à rien."
-      - label: "Un test manuel fait par le client"
-        correct: false
-        why: "Il est en général automatisé."
-    explanation: "Toute la suite automatique joue ce rôle à chaque changement."
-  - code: tst-c4-b2
-    kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: tests-strategie
-    prompt: "Quel outil pilote un vrai navigateur pour les tests de bout en bout ?"
-    choices:
+        why: "Dans Docker."
       - label: "Playwright"
-        correct: true
-        why: "Aussi : Cypress, Selenium."
-      - label: "Mockito"
         correct: false
-        why: "Mockito crée des doublures Java."
+        why: "Il pilote un navigateur."
       - label: "JaCoCo"
         correct: false
-        why: "JaCoCo mesure la couverture."
-    explanation: "Les tests E2E vérifient les parcours critiques."
+        why: "Il mesure la couverture."
+    explanation: "Tester sur le même moteur qu'en production."
+  - code: tst-c4-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: tests-strategie
+    prompt: "Qu'est-ce qu'un cahier de recette ?"
+    choices:
+      - label: "La liste des cas de test fonctionnels déroulés avec le client"
+        correct: true
+        why: "Pour valider le besoin."
+      - label: "Un livre de cuisine"
+        correct: false
+        why: "Pas ici !"
+      - label: "Le code des tests unitaires"
+        correct: false
+        why: "Il est fonctionnel, pas technique."
+    explanation: "Préconditions, étapes, résultat attendu."

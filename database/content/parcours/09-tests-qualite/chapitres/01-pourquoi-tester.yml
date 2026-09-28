@@ -2,29 +2,27 @@ slug: tst-pourquoi-tester
 position: 1
 level: DEBUTANT
 title: "Pourquoi et comment tester"
-summary: "Les familles de tests, la pyramide, le modèle préparer-agir-vérifier, puis les premiers tests JUnit 5."
-quizQuestionCount: 10
+summary: "Les familles de tests et la pyramide, le modèle préparer-agir-vérifier, puis les premiers tests JUnit 5 : vérifier une valeur, vérifier une erreur, repartir de zéro et tester plusieurs valeurs. Une seule notion par leçon."
+quizQuestionCount: 16
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: tst-familles
-    title: "Les familles de tests"
-    duration: 12
+    title: "Les familles de tests et la pyramide"
+    duration: 10
     objective: "Distinguer tests unitaires, d'intégration, de bout en bout et de recette, et expliquer la pyramide des tests."
     prerequisites: "Parcours « Java et la programmation objet »."
     skills: [tests-strategie]
-    xp: 20
+    xp: 15
     memo: |
       - **Unitaire** : une seule classe ou fonction, isolée. Très rapide.
       - **Intégration** : plusieurs morceaux ensemble (service + base de données). Plus lent.
       - **Bout en bout** (E2E) : un vrai navigateur clique dans l'application complète. Lent et fragile.
       - **Recette** (acceptation) : vérifier avec le client que le besoin est couvert.
       - **Pyramide** : beaucoup d'unitaires en bas, quelques intégrations, très peu de bout en bout en haut.
-      - **Régression** : un bug qui revient sur une fonctionnalité qui marchait. Les tests l'attrapent.
     commonMistakes: |
       - Tout tester à la main avant chaque livraison.
       - N'écrire que des tests de bout en bout : lents, fragiles, difficiles à déboguer.
-      - Tester seulement le « chemin heureux », jamais les erreurs.
     blocks:
       - type: text
         md: |
@@ -34,19 +32,19 @@ lessons:
         id: def-pyramide
         term: "La pyramide des tests"
         md: |
-          Pense à la **construction d'une voiture** : on teste chaque **pièce** (unitaire, des milliers de fois,
-          vite), puis le **moteur assemblé** (intégration), et enfin on fait **un tour de piste** avec la voiture
-          complète (bout en bout). On ne teste pas chaque vis en faisant un tour de piste !
+          Pense à la **construction d'une voiture** : on teste chaque **pièce** (unitaire, très souvent, vite),
+          puis le **moteur assemblé** (intégration), et enfin on fait **un tour de piste** avec la voiture complète
+          (bout en bout). On ne teste pas chaque vis en faisant un tour de piste !
       - type: code
         id: code-pyramide
         language: text
         title: "La pyramide"
         code: |2
-                   /\        Bout en bout : quelques-uns (Playwright, Cypress)
+                   /\        Bout en bout : très peu (Playwright, Cypress)
                   /  \
-                 /----\      Intégration : quelques dizaines (@SpringBootTest, Testcontainers)
+                 /----\      Intégration : quelques-uns (@SpringBootTest, Testcontainers)
                 /      \
-               /--------\    Unitaires : des centaines (JUnit, Mockito, Jasmine/Vitest)
+               /--------\    Unitaires : beaucoup (JUnit, Mockito, Vitest)
         lines:
           - n: 1
             note: "En haut : lents et coûteux, mais proches de l'utilisatrice."
@@ -57,37 +55,33 @@ lessons:
       - type: question
         ref: tst-fam-q1
         review: def-pyramide
-      - type: definition
-        id: def-aaa
-        term: "Préparer, agir, vérifier (AAA)"
-        md: |
-          Chaque test raconte une petite histoire en trois temps, comme une **recette** : on sort les ingrédients
-          (**préparer**), on fait cuire (**agir**), on goûte (**vérifier**). En anglais : Arrange, Act, Assert.
       - type: question
-        ref: tst-fam-q2
-        review: def-aaa
+        ref: tst-fam-q3
+        review: code-pyramide
       - type: text
-        md: "Exercice guidé : classe chaque test dans sa famille."
+        md: "**Exercice 1 (guidé)** : classe chaque test dans sa famille."
       - type: exercise
         ref: tst-ex-familles-guide
       - type: text
-        md: "En autonomie : décris la stratégie de tests d'une application."
+        md: "**Exercice 2 (en autonomie)** : une stratégie de tests."
       - type: exercise
         ref: tst-ex-strategie
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une pyramide à l'envers."
+      - type: exercise
+        ref: tst-ex-pyramide-bug
       - type: jury
         items:
           - q: "Quelle est votre stratégie de tests ?"
-            a: "Je suis la pyramide des tests : des tests unitaires nombreux sur la logique métier (JUnit 5, Mockito côté Spring, tests de services côté Angular), des tests d'intégration sur les contrôleurs et la base (MockMvc, Testcontainers), et quelques scénarios de bout en bout sur les parcours critiques comme l'inscription et la commande. Les tests tournent à chaque push dans GitHub Actions."
-          - q: "Qu'est-ce qu'un test de régression ?"
-            a: "Un test qui vérifie qu'une fonctionnalité qui marchait fonctionne toujours après une modification. En pratique, toute la suite de tests automatiques joue ce rôle. Quand je corrige un bug, j'ajoute d'abord un test qui le reproduit."
+            a: "Je suis la pyramide des tests : des tests unitaires nombreux sur la logique métier (JUnit 5, Mockito côté Spring, tests de services côté Angular), des tests d'intégration sur les contrôleurs et la base (MockMvc, Testcontainers), et quelques scénarios de bout en bout sur les parcours critiques comme l'inscription. Les tests tournent à chaque push dans GitHub Actions."
       - type: quiz
         items:
-          - ref: tst-fam-q3
-            review: code-pyramide
           - ref: tst-fam-q4
             review: def-pyramide
-          - ref: tst-fam-q5
-            review: def-aaa
+          - ref: tst-fa-q4
+            review: def-pyramide
+          - ref: tst-fa-q5
+            review: code-pyramide
     questions:
       - code: tst-fam-q1
         kind: CHOIX_UNIQUE
@@ -105,27 +99,11 @@ lessons:
             correct: false
             why: "Ils ne sont pas automatisés."
         explanation: "La base de la pyramide est la plus large."
-      - code: tst-fam-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: tests-strategie
-        prompt: "Dans un test, `assertEquals(\"Bonjour Awa\", message)` correspond à quelle étape ?"
-        choices:
-          - label: "Vérifier"
-            correct: true
-            why: "On compare le résultat à l'attendu."
-          - label: "Préparer"
-            correct: false
-            why: "Préparer, c'est créer les objets."
-          - label: "Agir"
-            correct: false
-            why: "Agir, c'est appeler la méthode testée."
-        explanation: "Arrange, Act, Assert."
       - code: tst-fam-q3
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: tests-strategie
-        prompt: "Un robot ouvre Chrome, s'inscrit, se connecte et passe une commande. Quel type de test ?"
+        prompt: "Un robot ouvre Chrome, s'inscrit, se connecte et emprunte un livre. Quel type de test ?"
         choices:
           - label: "Bout en bout (E2E)"
             correct: true
@@ -150,25 +128,38 @@ lessons:
             correct: false
             why: "C'est justement son avantage sur un test de bout en bout."
         explanation: "Petite portée = diagnostic rapide."
-      - code: tst-fam-q5
-        kind: CHOIX_MULTIPLE
+      - code: tst-fa-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Qui valide un test de recette ?"
+        choices:
+          - label: "Le client, qui vérifie que son besoin est couvert"
+            correct: true
+            why: "C'est un test d'acceptation."
+          - label: "Le compilateur Java"
+            correct: false
+            why: "Il vérifie la syntaxe."
+          - label: "Personne"
+            correct: false
+            why: "La recette engage le client."
+        explanation: "Recette = accord sur le besoin."
+      - code: tst-fa-q5
+        kind: CHOIX_UNIQUE
         difficulty: 2
         skill: tests-strategie
-        prompt: "Quels cas faut-il tester pour une méthode d'inscription ? (plusieurs réponses)"
+        prompt: "Pourquoi garder peu de tests de bout en bout ?"
         choices:
-          - label: "Une inscription normale"
+          - label: "Ils sont lents et cassent souvent pour des raisons extérieures"
             correct: true
-            why: "Le chemin heureux."
-          - label: "Un e-mail déjà utilisé"
-            correct: true
-            why: "Cas d'erreur métier."
-          - label: "Un e-mail vide ou sans @"
-            correct: true
-            why: "Valeur limite invalide."
-          - label: "La couleur du bouton « S'inscrire »"
+            why: "Réseau, navigateur, données…"
+          - label: "Ils ne servent à rien"
             correct: false
-            why: "Ce n'est pas la logique de la méthode."
-        explanation: "Chemin heureux, erreurs et valeurs limites."
+            why: "Ils vérifient les parcours critiques."
+          - label: "Ils sont interdits en production"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Quelques-uns, sur les parcours importants."
     exercises:
       - slug: tst-ex-familles-guide
         kind: COMPLETER
@@ -224,37 +215,314 @@ lessons:
             Intégration :
             Bout en bout :
           checks:
-            - pattern: '(?im)^\s*Unitaires?\s*:.*\b(?:JUnit|Mockito|Jasmine|Vitest|Jest|Karma)\b'
+            - pattern: '(?im)^\s*Unitaires?\s*:[^\n]*\b(?:JUnit|Mockito|Jasmine|Vitest|Jest|Karma)\b'
               message: "Cite un outil de tests unitaires (JUnit, Mockito, Vitest…) sur la ligne « Unitaires : »."
-            - pattern: '(?im)^\s*Int[ée]gration\s*:.*\b(?:MockMvc|Testcontainers|SpringBootTest|WebMvcTest|HttpTestingController)\b'
+            - pattern: '(?im)^\s*Int[ée]gration\s*:[^\n]*\b(?:MockMvc|Testcontainers|SpringBootTest|WebMvcTest|HttpTestingController)\b'
               message: "Cite un outil d'intégration (MockMvc, Testcontainers…) sur la ligne « Intégration : »."
-            - pattern: '(?im)^\s*Bout\s+en\s+bout\s*:.*\b(?:Playwright|Cypress|Selenium)\b'
+            - pattern: '(?im)^\s*Bout\s+en\s+bout\s*:[^\n]*\b(?:Playwright|Cypress|Selenium)\b'
               message: "Cite un outil de bout en bout (Playwright, Cypress…) sur la ligne « Bout en bout : »."
+      - slug: tst-ex-pyramide-bug
+        kind: CORRIGER_ERREUR
+        title: "Une pyramide à l'envers"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: |
+          Cette équipe a écrit « beaucoup » de tests de bout en bout et « peu » de tests unitaires. Remets les
+          bons mots : beaucoup d'unitaires, peu de bout en bout.
+        criteria: "Unitaires : beaucoup ; Bout en bout : peu."
+        hints:
+          - "Quels tests sont rapides et précis ?"
+          - "Les unitaires : il en faut beaucoup."
+          - "Unitaires : beaucoup ; Bout en bout : peu."
+        solution: |
+          Unitaires : beaucoup
+          Intégration : quelques-uns
+          Bout en bout : peu
+        explanation: "La base de la pyramide est la plus large."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Unitaires : peu
+            Intégration : quelques-uns
+            Bout en bout : beaucoup
+          checks:
+            - pattern: '(?mi)^\s*Unitaires\s*:\s*beaucoup\s*$'
+              message: "Il faut beaucoup de tests unitaires."
+            - pattern: '(?mi)^\s*Bout en bout\s*:\s*peu\s*$'
+              message: "Il faut peu de tests de bout en bout."
 
   # ===================================================================== LEÇON 2
-  - slug: tst-junit
-    title: "Écrire ses premiers tests JUnit 5"
-    duration: 14
-    objective: "Écrire des tests JUnit 5 avec @Test, les assertions principales, @BeforeEach et des tests paramétrés."
-    prerequisites: "Leçon « Les familles de tests »."
-    skills: [java-tests, tests-strategie]
-    xp: 25
+  - slug: tst-aaa
+    title: "Préparer, agir, vérifier"
+    duration: 9
+    objective: "Écrire un test en trois temps : préparer la situation, appeler la méthode, vérifier le résultat."
+    prerequisites: "Leçon « Les familles de tests et la pyramide »."
+    skills: [tests-strategie]
+    xp: 15
     memo: |
-      - `@Test` : cette méthode est un test. Nom lisible : `refuseUnInviteEnDouble()`.
+      - **Préparer** (Arrange) : créer les objets et la situation de départ.
+      - **Agir** (Act) : appeler **une** méthode testée.
+      - **Vérifier** (Assert) : comparer le résultat à ce qu'on attend.
+      - On teste le **chemin heureux**, les **erreurs** et les **valeurs limites**.
+    commonMistakes: |
+      - Mélanger plusieurs actions dans un seul test.
+      - Tester seulement le « chemin heureux », jamais les erreurs.
+    blocks:
+      - type: definition
+        id: def-aaa
+        term: "Préparer, agir, vérifier (AAA)"
+        md: |
+          Chaque test raconte une petite histoire en trois temps, comme une **recette** : on sort les ingrédients
+          (**préparer**), on fait cuire (**agir**), on goûte (**vérifier**). En anglais : Arrange, Act, Assert.
+      - type: code
+        id: code-aaa
+        language: java
+        title: "Un test en trois temps"
+        code: |
+          @Test
+          void saluerAvecLePrenom() {
+              Accueil accueil = new Accueil();
+
+              String message = accueil.saluer("Awa");
+
+              assertEquals("Bonjour Awa", message);
+          }
+        lines:
+          - n: 3
+            note: "**Préparer** : on crée l'objet à tester."
+          - n: 5
+            note: "**Agir** : on appelle la méthode."
+          - n: 7
+            note: "**Vérifier** : le message est bien celui attendu."
+      - type: question
+        ref: tst-fam-q2
+        review: code-aaa
+      - type: question
+        ref: tst-fam-q5
+        review: def-aaa
+      - type: text
+        md: "**Exercice 1 (guidé)** : nomme les trois temps."
+      - type: exercise
+        ref: tst-ex-aaa-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : remettre un test dans l'ordre."
+      - type: exercise
+        ref: tst-ex-aaa-ordre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : les temps dans le désordre."
+      - type: exercise
+        ref: tst-ex-aaa-bug
+      - type: jury
+        items:
+          - q: "Qu'est-ce qu'un test de régression ?"
+            a: "Un test qui vérifie qu'une fonctionnalité qui marchait fonctionne toujours après une modification. En pratique, toute la suite de tests automatiques joue ce rôle. Quand je corrige un bug, j'ajoute d'abord un test qui le reproduit."
+      - type: quiz
+        items:
+          - ref: tst-c1-b1
+            review: def-aaa
+          - ref: tst-aa-q4
+            review: code-aaa
+          - ref: tst-aa-q5
+            review: def-aaa
+    questions:
+      - code: tst-fam-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Dans un test, `assertEquals(\"Bonjour Awa\", message)` correspond à quelle étape ?"
+        choices:
+          - label: "Vérifier"
+            correct: true
+            why: "On compare le résultat à l'attendu."
+          - label: "Préparer"
+            correct: false
+            why: "Préparer, c'est créer les objets."
+          - label: "Agir"
+            correct: false
+            why: "Agir, c'est appeler la méthode testée."
+        explanation: "Arrange, Act, Assert."
+      - code: tst-fam-q5
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Quels cas faut-il tester pour une méthode d'inscription ? (plusieurs réponses)"
+        choices:
+          - label: "Une inscription normale"
+            correct: true
+            why: "Le chemin heureux."
+          - label: "Un e-mail déjà utilisé"
+            correct: true
+            why: "Cas d'erreur métier."
+          - label: "Un e-mail vide ou sans @"
+            correct: true
+            why: "Valeur limite invalide."
+          - label: "La couleur du bouton « S'inscrire »"
+            correct: false
+            why: "Ce n'est pas la logique de la méthode."
+        explanation: "Chemin heureux, erreurs et valeurs limites."
+      - code: tst-c1-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Tu corriges un bug signalé par une utilisatrice. Quelle est la bonne pratique ?"
+        choices:
+          - label: "Écrire d'abord un test qui reproduit le bug, puis le corriger"
+            correct: true
+            why: "Le bug ne pourra plus revenir sans qu'on le voie."
+          - label: "Corriger vite et ne rien ajouter"
+            correct: false
+            why: "Le bug pourrait revenir plus tard."
+          - label: "Supprimer les tests qui échouent"
+            correct: false
+            why: "On perd la protection."
+        explanation: "Un bug corrigé = un test de plus."
+      - code: tst-aa-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Dans l'exemple, quelle ligne correspond à « agir » ?"
+        choices:
+          - label: "`String message = accueil.saluer(\"Awa\");`"
+            correct: true
+            why: "On appelle la méthode testée."
+          - label: "`Accueil accueil = new Accueil();`"
+            correct: false
+            why: "C'est préparer."
+          - label: "`assertEquals(\"Bonjour Awa\", message);`"
+            correct: false
+            why: "C'est vérifier."
+        explanation: "Agir = appeler la méthode."
+      - code: tst-aa-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Un bon test n'agit qu'une seule fois : il teste une seule chose."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "En cas d'échec, on sait tout de suite quoi regarder."
+          - label: "Faux"
+            correct: false
+            why: "Un test = un comportement."
+        explanation: "Une histoire courte, une seule action."
+    exercises:
+      - slug: tst-ex-aaa-guide
+        kind: COMPLETER
+        title: "Nommer les trois temps"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: "Complète les commentaires avec : préparer, agir, vérifier."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "On crée d'abord la liste : préparer."
+          - "On appelle ajouter : agir ; on compare : vérifier."
+          - "préparer, agir, vérifier."
+        solution: '["préparer", "agir", "vérifier"]'
+        explanation: "Arrange, Act, Assert."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            ListeInvites liste = new ListeInvites();     → [[1]]
+            liste.ajouter("Awa");                         → [[2]]
+            assertTrue(liste.contient("Awa"));            → [[3]]
+          blanks:
+            - ["préparer", "preparer"]
+            - ["agir"]
+            - ["vérifier", "verifier"]
+      - slug: tst-ex-aaa-ordre
+        kind: REMETTRE_ORDRE
+        title: "Remettre un test dans l'ordre"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: "Remets les lignes de ce test dans l'ordre préparer, agir, vérifier."
+        criteria: "Annotation, signature, préparer, agir, vérifier, accolade."
+        hints:
+          - "L'annotation et la signature d'abord."
+          - "On crée l'objet avant d'appeler la méthode."
+          - "La vérification vient en dernier."
+        solution: |
+          @Test
+          void mettreEnMajuscules() {
+              Formateur f = new Formateur();
+              String resultat = f.majuscules("awa");
+              assertEquals("AWA", resultat);
+          }
+        explanation: "Préparer, agir, vérifier."
+        xp: 10
+        payload:
+          language: java
+          lines:
+            - "@Test"
+            - "void mettreEnMajuscules() {"
+            - "    Formateur f = new Formateur();"
+            - "    String resultat = f.majuscules(\"awa\");"
+            - "    assertEquals(\"AWA\", resultat);"
+            - "}"
+      - slug: tst-ex-aaa-bug
+        kind: CORRIGER_ERREUR
+        title: "Les temps dans le désordre"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: |
+          Ce test vérifie avant d'agir : `message` n'existe pas encore. Remets les lignes dans l'ordre : préparer,
+          agir, vérifier.
+        criteria: "La vérification vient après l'appel de saluer."
+        hints:
+          - "On ne peut pas vérifier un résultat pas encore calculé."
+          - "L'appel à saluer vient avant assertEquals."
+          - "Préparer, agir, vérifier."
+        solution: |
+          @Test
+          void saluerAvecLePrenom() {
+              Accueil accueil = new Accueil();
+              String message = accueil.saluer("Awa");
+              assertEquals("Bonjour Awa", message);
+          }
+        explanation: "L'histoire se raconte dans l'ordre."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @Test
+            void saluerAvecLePrenom() {
+                Accueil accueil = new Accueil();
+                assertEquals("Bonjour Awa", message);
+                String message = accueil.saluer("Awa");
+            }
+          checks:
+            - pattern: 'new\s+Accueil\s*\(\s*\)[\s\S]*accueil\.saluer\s*\(\s*"Awa"\s*\)[\s\S]*assertEquals\s*\(\s*"Bonjour Awa"\s*,\s*message\s*\)'
+              message: "Remets l'ordre : new Accueil(), puis saluer, puis assertEquals."
+
+  # ===================================================================== LEÇON 3
+  - slug: tst-junit
+    title: "Mon premier test JUnit 5"
+    duration: 10
+    objective: "Écrire un test JUnit 5 avec @Test et les assertions assertEquals, assertTrue et assertFalse."
+    prerequisites: "Leçon « Préparer, agir, vérifier »."
+    skills: [java-tests]
+    xp: 15
+    memo: |
+      - `@Test` : cette méthode est un test. Nom lisible : `ajouteUnInvite()`.
       - `assertEquals(attendu, obtenu)` : **l'attendu d'abord**.
-      - `assertTrue`, `assertFalse`, `assertNull`, `assertThrows(Exception.class, () -> …)`.
-      - `@BeforeEach` : exécuté avant chaque test, pour repartir d'un état propre.
-      - `@ParameterizedTest` + `@CsvSource` : le même test avec plusieurs jeux de données.
-      - `@DisplayName("…")` : une phrase lisible dans le rapport.
+      - `assertTrue(condition)`, `assertFalse(condition)`.
+      - Un test **sans assertion** passe toujours : il ne vérifie rien.
     commonMistakes: |
       - Inverser attendu et obtenu dans `assertEquals` : le message d'échec devient trompeur.
-      - Un test qui dépend du résultat d'un autre test.
-      - Un test sans aucune assertion : il passe toujours.
+      - Un test sans aucune assertion.
     blocks:
       - type: text
         md: |
           **JUnit 5** est l'outil standard pour tester du Java. Un test est une méthode ordinaire, marquée
           `@Test`, qui appelle ton code et vérifie le résultat.
+      - type: definition
+        id: def-assertion
+        term: "Assertion"
+        md: |
+          Une **affirmation** que le test vérifie : « le message vaut Bonjour Awa », « Awa est dans la liste ».
+          Si elle est fausse, le test échoue et le rapport dit ce qui était attendu.
       - type: code
         id: code-junit
         language: java
@@ -262,94 +530,59 @@ lessons:
         code: |
           class ListeInvitesTest {
 
-              private ListeInvites liste;
-
-              @BeforeEach
-              void preparer() {
-                  liste = new ListeInvites();
-              }
-
               @Test
               void ajouteUnInvite() {
+                  ListeInvites liste = new ListeInvites();
                   liste.ajouter("Awa");
                   assertTrue(liste.contient("Awa"));
               }
 
               @Test
-              void refuseUnInviteEnDouble() {
+              void garderLePremierInvite() {
+                  ListeInvites liste = new ListeInvites();
                   liste.ajouter("Awa");
-                  assertThrows(InviteDejaPresentException.class, () -> liste.ajouter("Awa"));
+                  assertEquals("Awa", liste.premier());
               }
           }
         lines:
-          - n: 5
-            note: "`@BeforeEach` : une liste neuve et vide avant **chaque** test."
-          - n: 10
+          - n: 3
             note: "`@Test` : JUnit exécutera cette méthode."
-          - n: 11
+          - n: 4
             note: "Le nom dit ce qu'on vérifie, comme une phrase."
-          - n: 13
+          - n: 7
             note: "`assertTrue(...)` : on vérifie qu'Awa est bien dans la liste."
-          - n: 18
-            note: "On prépare la situation : Awa est déjà invitée…"
-          - n: 19
-            note: "… et on vérifie que l'ajouter une deuxième fois lance bien l'exception."
+          - n: 14
+            note: "`assertEquals(attendu, obtenu)` : l'attendu d'abord."
       - type: question
         ref: tst-ju-q1
         review: code-junit
-      - type: definition
-        id: def-parametre
-        term: "Test paramétré"
-        md: |
-          Un **moule à gâteaux** : une seule recette de test, remplie avec plusieurs jeux de valeurs. Pratique
-          pour tester les **valeurs limites** (0, 1, le maximum…).
-      - type: code
-        id: code-parametre
-        language: java
-        title: "Tester plusieurs valeurs"
-        code: |
-          @ParameterizedTest
-          @CsvSource({
-              "0, false",
-              "17, false",
-              "18, true",
-              "65, true"
-          })
-          void estMajeur(int age, boolean attendu) {
-              assertEquals(attendu, Personne.estMajeur(age));
-          }
-        lines:
-          - n: 1
-            note: "Un test lancé une fois par ligne de données."
-          - n: 4
-            note: "17 et 18 : on teste juste avant et juste à la limite."
-          - n: 8
-            note: "Les colonnes deviennent les paramètres de la méthode."
       - type: question
-        ref: tst-ju-q2
-        review: code-parametre
+        ref: tst-ju-q4
+        review: def-assertion
       - type: text
-        md: "Exercice guidé : complète ce test."
+        md: "**Exercice 1 (guidé)** : complète le test."
       - type: exercise
         ref: tst-ex-junit-guide
       - type: text
-        md: "En autonomie : teste une méthode qui fabrique des initiales."
+        md: "**Exercice 2 (en autonomie)** : tester des initiales."
       - type: exercise
         ref: tst-ex-junit
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un attendu à l'envers."
+      - type: exercise
+        ref: tst-ex-junit-bug
       - type: jury
         items:
           - q: "Comment nommez-vous vos tests ?"
             a: "Par une phrase qui décrit le comportement attendu, par exemple refuseUnInviteEnDouble, éventuellement avec @DisplayName. En cas d'échec, le rapport dit tout de suite quelle règle est cassée."
-          - q: "Que sont les valeurs limites ?"
-            a: "Les valeurs juste avant, pile sur et juste après une frontière : 17, 18 et 19 ans pour la majorité, un texte vide pour un champ obligatoire. C'est là que se cachent la plupart des bugs, comme un < au lieu de <=. Je les teste avec des tests paramétrés."
       - type: quiz
         items:
-          - ref: tst-ju-q3
+          - ref: tst-jt-q3
             review: code-junit
-          - ref: tst-ju-q4
+          - ref: tst-jt-q4
+            review: def-assertion
+          - ref: tst-jt-q5
             review: code-junit
-          - ref: tst-ju-q5
-            review: def-parametre
     questions:
       - code: tst-ju-q1
         kind: CHOIX_UNIQUE
@@ -367,35 +600,6 @@ lessons:
             correct: false
             why: "Il compte pour la lisibilité des erreurs."
         explanation: "L'attendu d'abord."
-      - code: tst-ju-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: java-tests
-        prompt: "Pour une règle « accès réservé aux personnes majeures (18 ans) », quels âges tester en priorité ?"
-        choices:
-          - label: "17 ans ; 18 ans ; 19 ans"
-            correct: true
-            why: "Autour de la limite."
-          - label: "5 ans ; 40 ans ; 90 ans"
-            correct: false
-            why: "Loin de la frontière : on raterait un < au lieu de <=."
-          - label: "Seulement 18 ans"
-            correct: false
-            why: "Il faut aussi juste avant et juste après."
-        explanation: "Les bugs aiment les frontières."
-      - code: tst-ju-q3
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: java-tests
-        prompt: "Grâce à `@BeforeEach`, chaque test part d'une liste d'invités neuve et vide."
-        choices:
-          - label: "Vrai"
-            correct: true
-            why: "La méthode s'exécute avant chaque test."
-          - label: "Faux"
-            correct: false
-            why: "C'est justement son rôle."
-        explanation: "Des tests indépendants les uns des autres."
       - code: tst-ju-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -412,49 +616,80 @@ lessons:
             correct: false
             why: "Il échoue seulement si une exception survient."
         explanation: "Un test sans vérification donne une fausse confiance."
-      - code: tst-ju-q5
-        kind: TEXTE
-        difficulty: 2
+      - code: tst-jt-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
         skill: java-tests
-        prompt: "Quelle annotation fournit des jeux de données en lignes de texte séparées par des virgules ? (sans @)"
-        answers: ["CsvSource", "@CsvSource"]
-        explanation: "Avec `@ParameterizedTest`. Il existe aussi `@ValueSource` et `@MethodSource`."
+        prompt: "Quelle annotation marque une méthode de test ?"
+        choices:
+          - label: "@Test"
+            correct: true
+            why: "JUnit l'exécute."
+          - label: "@Service"
+            correct: false
+            why: "C'est Spring."
+          - label: "@Override"
+            correct: false
+            why: "C'est la redéfinition."
+        explanation: "@Test + une méthode void."
+      - code: tst-jt-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-tests
+        prompt: "Quelle assertion vérifie qu'une condition est fausse ?"
+        choices:
+          - label: "assertFalse"
+            correct: true
+            why: "Elle attend false."
+          - label: "assertTrue"
+            correct: false
+            why: "Elle attend true."
+          - label: "assertEquals"
+            correct: false
+            why: "Elle compare deux valeurs."
+        explanation: "assertTrue / assertFalse pour les booléens."
+      - code: tst-jt-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-tests
+        prompt: "Un nom de test comme `ajouteUnInvite` aide à comprendre ce qui est cassé en cas d'échec."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le nom décrit le comportement."
+          - label: "Faux"
+            correct: false
+            why: "Un bon nom est une documentation."
+        explanation: "Nommer comme une phrase."
     exercises:
       - slug: tst-ex-junit-guide
         kind: COMPLETER
-        title: "Compléter un test"
+        title: "Compléter le test"
         difficulty: FACILE
         skill: java-tests
-        statement: "Complète ce test du panier."
-        criteria: "Les quatre trous sont corrects."
+        statement: "Complète ce test de la liste des favoris."
+        criteria: "Les trois trous sont corrects."
         hints:
-          - "Avant chaque test : BeforeEach. Un test : Test."
-          - "L'égalité : assertEquals ; l'exception : assertThrows."
-          - "BeforeEach, Test, assertEquals, assertThrows."
-        solution: '["BeforeEach", "Test", "assertEquals", "assertThrows"]'
-        explanation: "Préparer, agir, vérifier la valeur ou l'exception."
+          - "Un test : Test."
+          - "L'égalité : assertEquals ; une condition vraie : assertTrue."
+          - "Test, assertEquals, assertTrue."
+        solution: '["Test", "assertEquals", "assertTrue"]'
+        explanation: "Une annotation, deux vérifications."
         xp: 10
         payload:
           language: java
           template: |
             @[[1]]
-            void preparer() { panier = new Panier(); }
-
-            @[[2]]
-            void garderLeNomDeLArticle() {
-                panier.ajouter("Café");
-                [[3]]("Café", panier.premierArticle());
-            }
-
-            @Test
-            void refuseUnArticleSansNom() {
-                [[4]](IllegalArgumentException.class, () -> panier.ajouter(""));
+            void garderLeTitre() {
+                Favoris favoris = new Favoris();
+                favoris.ajouter("Dune");
+                [[2]]("Dune", favoris.premier());
+                [[3]](favoris.contient("Dune"));
             }
           blanks:
-            - ["BeforeEach"]
             - ["Test"]
             - ["assertEquals"]
-            - ["assertThrows"]
+            - ["assertTrue"]
       - slug: tst-ex-junit
         kind: CODE_LIBRE
         title: "Tester des initiales"
@@ -462,18 +697,16 @@ lessons:
         skill: java-tests
         statement: |
           La méthode statique `Initiales.de(String nomComplet)` renvoie les initiales en majuscules :
-          `"Awa Diallo"` donne `"AD"`, `"Léo"` donne `"L"`. Elle lance `IllegalArgumentException` si le
-          texte est vide.
+          `"Awa Diallo"` donne `"AD"`, `"Léo"` donne `"L"`.
 
-          Écris la classe `InitialesTest` avec **trois** tests :
+          Écris la classe `InitialesTest` avec **deux** tests :
           - `prenomEtNom` : `"Awa Diallo"` → `"AD"` ;
-          - `prenomSeul` : `"Léo"` → `"L"` ;
-          - `refuseUnTexteVide` : `""` → exception.
-        criteria: "Trois méthodes @Test, deux assertEquals avec l'attendu en premier, un assertThrows."
+          - `prenomSeul` : `"Léo"` → `"L"`.
+        criteria: "Deux méthodes @Test, deux assertEquals avec l'attendu en premier."
         hints:
           - "`@Test void prenomEtNom() { assertEquals(\"AD\", Initiales.de(\"Awa Diallo\")); }`"
+          - "L'attendu vient en premier."
           - "`assertEquals(\"L\", Initiales.de(\"Léo\"));`"
-          - "`assertThrows(IllegalArgumentException.class, () -> Initiales.de(\"\"));`"
         solution: |
           class InitialesTest {
 
@@ -486,14 +719,9 @@ lessons:
               void prenomSeul() {
                   assertEquals("L", Initiales.de("Léo"));
               }
-
-              @Test
-              void refuseUnTexteVide() {
-                  assertThrows(IllegalArgumentException.class, () -> Initiales.de(""));
-              }
           }
-        explanation: "Le cas normal, un cas limite (un seul mot) et une valeur interdite (texte vide) : trois tests qui protègent la règle."
-        xp: 25
+        explanation: "Le cas normal et un cas limite (un seul mot)."
+        xp: 20
         payload:
           language: java
           starter: |
@@ -501,45 +729,805 @@ lessons:
 
             }
           checks:
-            - pattern: '\A(?>[\s\S]*?@Test\b){3}'
-              message: "Écris trois méthodes annotées `@Test`."
+            - pattern: '\A(?>[\s\S]*?@Test\b){2}'
+              message: "Écris deux méthodes annotées `@Test`."
             - pattern: 'void\s+prenomEtNom\s*\(\s*\)[^}]*assertEquals\s*\(\s*"AD"\s*,\s*Initiales\.de\s*\(\s*"Awa Diallo"\s*\)'
               message: "`prenomEtNom` : `assertEquals(\"AD\", Initiales.de(\"Awa Diallo\"))` (l'attendu d'abord)."
             - pattern: 'void\s+prenomSeul\s*\(\s*\)[^}]*assertEquals\s*\(\s*"L"\s*,\s*Initiales\.de\s*\(\s*"Léo"\s*\)'
               message: "`prenomSeul` : `assertEquals(\"L\", Initiales.de(\"Léo\"))`."
-            - pattern: 'void\s+refuseUnTexteVide\s*\(\s*\)[^}]*assertThrows\s*\(\s*IllegalArgumentException\.class\s*,\s*\(\s*\)\s*->\s*Initiales\.de\s*\(\s*""\s*\)'
-              message: "`refuseUnTexteVide` : `assertThrows(IllegalArgumentException.class, () -> Initiales.de(\"\"))`."
+      - slug: tst-ex-junit-bug
+        kind: CORRIGER_ERREUR
+        title: "Un attendu à l'envers"
+        difficulty: FACILE
+        skill: java-tests
+        statement: |
+          Dans ce test, l'attendu et l'obtenu sont inversés : en cas d'échec, le message serait trompeur. Remets
+          l'attendu en premier.
+        criteria: "assertEquals(\"AWA\", resultat)."
+        hints:
+          - "Quel est l'attendu ?"
+          - "Le texte fixe \"AWA\"."
+          - "`assertEquals(\"AWA\", resultat);`"
+        solution: |
+          String resultat = f.majuscules("awa");
+          assertEquals("AWA", resultat);
+        explanation: "L'attendu d'abord."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            String resultat = f.majuscules("awa");
+            assertEquals(resultat, "AWA");
+          checks:
+            - pattern: 'assertEquals\s*\(\s*resultat\s*,'
+              absent: true
+              message: "L'obtenu n'est pas le premier argument."
+            - pattern: 'assertEquals\s*\(\s*"AWA"\s*,\s*resultat\s*\)'
+              message: "Écris assertEquals(\"AWA\", resultat)."
+
+  # ===================================================================== LEÇON 4
+  - slug: tst-assertthrows
+    title: "Tester une erreur : assertThrows"
+    duration: 9
+    objective: "Vérifier qu'une méthode refuse une situation interdite en lançant la bonne exception."
+    prerequisites: "Leçon « Mon premier test JUnit 5 »."
+    skills: [java-tests]
+    xp: 15
+    memo: |
+      - `assertThrows(MonException.class, () -> objet.methode(...))` : le test réussit **seulement si** l'exception est lancée.
+      - La flèche `() -> …` enveloppe l'appel : JUnit l'exécute et observe.
+      - Tester les erreurs est aussi important que tester les réussites.
+    commonMistakes: |
+      - Un `try { … } catch { }` qui ne vérifie rien.
+      - Appeler la méthode sans flèche : l'exception casse le test au lieu d'être vérifiée.
+    blocks:
+      - type: definition
+        id: def-assertthrows
+        term: "assertThrows"
+        md: |
+          Un **crash-test** : on lance volontairement la voiture contre le mur pour vérifier que l'airbag se
+          déclenche. Ici, on donne une valeur interdite et on vérifie que la bonne alarme (l'exception) sonne.
+      - type: code
+        id: code-assertthrows
+        language: java
+        title: "Refuser un invité en double"
+        code: |
+          @Test
+          void refuseUnInviteEnDouble() {
+              ListeInvites liste = new ListeInvites();
+              liste.ajouter("Awa");
+              assertThrows(InviteDejaPresentException.class, () -> liste.ajouter("Awa"));
+          }
+        lines:
+          - n: 4
+            note: "On prépare la situation : Awa est déjà invitée…"
+          - n: 5
+            note: "… et on vérifie que l'ajouter une deuxième fois lance bien l'exception."
+      - type: question
+        ref: tst-at-q1
+        review: code-assertthrows
+      - type: question
+        ref: tst-at-q2
+        review: def-assertthrows
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la vérification."
+      - type: exercise
+        ref: tst-ex-assertthrows-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un texte vide refusé."
+      - type: exercise
+        ref: tst-ex-assertthrows-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un try/catch qui ne vérifie rien."
+      - type: exercise
+        ref: tst-ex-assertthrows-bug
+      - type: quiz
+        items:
+          - ref: tst-at-q3
+            review: code-assertthrows
+          - ref: tst-at-q4
+            review: def-assertthrows
+          - ref: tst-at-q5
+            review: code-assertthrows
+    questions:
+      - code: tst-at-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-tests
+        prompt: "Quand un test avec `assertThrows` réussit-il ?"
+        choices:
+          - label: "Quand l'exception attendue est lancée"
+            correct: true
+            why: "C'est ce qu'on vérifie."
+          - label: "Quand aucune exception n'est lancée"
+            correct: false
+            why: "Il échouerait."
+          - label: "Toujours"
+            correct: false
+            why: "Il vérifie vraiment."
+        explanation: "L'alarme doit sonner."
+      - code: tst-at-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-tests
+        prompt: "Tester les cas d'erreur est aussi important que tester les réussites."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Les règles métier refusent des situations."
+          - label: "Faux"
+            correct: false
+            why: "Un refus cassé est un bug grave."
+        explanation: "Chemin heureux + erreurs."
+      - code: tst-at-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Pourquoi écrire `() -> liste.ajouter(\"Awa\")` et pas simplement `liste.ajouter(\"Awa\")` ?"
+        choices:
+          - label: "La flèche confie l'appel à JUnit, qui peut observer l'exception"
+            correct: true
+            why: "Sinon, l'exception casserait le test avant la vérification."
+          - label: "C'est plus court"
+            correct: false
+            why: "C'est même plus long."
+          - label: "Aucune différence"
+            correct: false
+            why: "Sans flèche, rien n'est vérifié."
+        explanation: "JUnit exécute et observe."
+      - code: tst-at-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-tests
+        prompt: "Quel est le premier argument de `assertThrows` ?"
+        choices:
+          - label: "La classe de l'exception attendue (`MonException.class`)"
+            correct: true
+            why: "On dit quelle alarme doit sonner."
+          - label: "Le message d'erreur"
+            correct: false
+            why: "C'est la classe."
+          - label: "Le résultat attendu"
+            correct: false
+            why: "Il n'y a pas de résultat : une exception."
+        explanation: "assertThrows(Classe.class, () -> appel)."
+      - code: tst-at-q5
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Si `ajouter` accepte le doublon sans exception, que devient ce test ?"
+        snippet: |
+          liste.ajouter("Awa");
+          assertThrows(InviteDejaPresentException.class, () -> liste.ajouter("Awa"));
+        language: java
+        choices:
+          - label: "Il échoue : l'exception attendue n'est pas arrivée"
+            correct: true
+            why: "La règle est cassée, le test le signale."
+          - label: "Il réussit"
+            correct: false
+            why: "Il attend une exception."
+          - label: "Il ne compile pas"
+            correct: false
+            why: "Il compile."
+        explanation: "Le test protège la règle."
+    exercises:
+      - slug: tst-ex-assertthrows-guide
+        kind: COMPLETER
+        title: "Compléter la vérification"
+        difficulty: FACILE
+        skill: java-tests
+        statement: "Complète : l'assertion, la classe de l'exception et la flèche."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "L'assertion d'erreur : assertThrows."
+          - "La classe se note avec .class ; la flèche s'écrit ->."
+          - "assertThrows, class, ->."
+        solution: '["assertThrows", "class", "->"]'
+        explanation: "Quelle alarme, sur quel appel."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            [[1]](IllegalArgumentException.[[2]], () [[3]] favoris.ajouter(""));
+          blanks:
+            - ["assertThrows"]
+            - ["class"]
+            - ["->"]
+      - slug: tst-ex-assertthrows-libre
+        kind: CODE_LIBRE
+        title: "Un texte vide refusé"
+        difficulty: FACILE
+        skill: java-tests
+        statement: |
+          `Initiales.de("")` doit lancer `IllegalArgumentException`. Écris le test `refuseUnTexteVide`.
+        criteria: "@Test et assertThrows(IllegalArgumentException.class, () -> Initiales.de(\"\"))."
+        hints:
+          - "`@Test void refuseUnTexteVide() { … }`"
+          - "La classe : IllegalArgumentException.class."
+          - "`assertThrows(IllegalArgumentException.class, () -> Initiales.de(\"\"));`"
+        solution: |
+          @Test
+          void refuseUnTexteVide() {
+              assertThrows(IllegalArgumentException.class, () -> Initiales.de(""));
+          }
+        explanation: "Une valeur interdite, une alarme vérifiée."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            @Test
+            void refuseUnTexteVide() {
+
+            }
+          checks:
+            - pattern: 'assertThrows\s*\(\s*IllegalArgumentException\.class\s*,\s*\(\s*\)\s*->\s*Initiales\.de\s*\(\s*""\s*\)\s*\)'
+              message: "Écris assertThrows(IllegalArgumentException.class, () -> Initiales.de(\"\"))."
+      - slug: tst-ex-assertthrows-bug
+        kind: CORRIGER_ERREUR
+        title: "Un try/catch qui ne vérifie rien"
+        difficulty: INTERMEDIAIRE
+        skill: java-tests
+        statement: |
+          Ce test passe même si aucune exception n'est lancée. Remplace le `try/catch` par
+          `assertThrows(InviteDejaPresentException.class, () -> liste.ajouter("Awa"));`.
+        criteria: "assertThrows, plus de try/catch."
+        hints:
+          - "Un catch vide ne vérifie rien."
+          - "assertThrows vérifie que l'exception arrive."
+          - "`assertThrows(InviteDejaPresentException.class, () -> liste.ajouter(\"Awa\"));`"
+        solution: |
+          @Test
+          void refuseUnInviteEnDouble() {
+              ListeInvites liste = new ListeInvites();
+              liste.ajouter("Awa");
+              assertThrows(InviteDejaPresentException.class, () -> liste.ajouter("Awa"));
+          }
+        explanation: "Un vrai test d'erreur."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @Test
+            void refuseUnInviteEnDouble() {
+                ListeInvites liste = new ListeInvites();
+                liste.ajouter("Awa");
+                try {
+                    liste.ajouter("Awa");
+                } catch (InviteDejaPresentException e) {
+                }
+            }
+          checks:
+            - pattern: '\btry\s*\{'
+              absent: true
+              message: "Retire le try/catch."
+            - pattern: 'assertThrows\s*\(\s*InviteDejaPresentException\.class\s*,\s*\(\s*\)\s*->\s*liste\.ajouter\s*\(\s*"Awa"\s*\)\s*\)'
+              message: "Écris assertThrows(InviteDejaPresentException.class, () -> liste.ajouter(\"Awa\"))."
+
+  # ===================================================================== LEÇON 5
+  - slug: tst-beforeeach
+    title: "Repartir de zéro : @BeforeEach"
+    duration: 9
+    objective: "Préparer un état propre avant chaque test pour garder des tests indépendants."
+    prerequisites: "Leçon « Tester une erreur : assertThrows »."
+    skills: [java-tests]
+    xp: 15
+    memo: |
+      - `@BeforeEach` : une méthode exécutée **avant chaque** test.
+      - On y crée les objets communs : chaque test part d'une situation neuve.
+      - Des tests **indépendants** donnent le même résultat, quel que soit leur ordre.
+    commonMistakes: |
+      - Un test qui dépend du résultat d'un autre test.
+      - Partager un objet modifié entre tests sans le recréer.
+    blocks:
+      - type: definition
+        id: def-beforeeach
+        term: "@BeforeEach"
+        md: |
+          **Remettre la table à zéro** entre deux parties de jeu de société : chaque partie commence avec le même
+          plateau, peu importe comment la précédente s'est terminée.
+      - type: code
+        id: code-beforeeach
+        language: java
+        title: "Une liste neuve avant chaque test"
+        code: |
+          class ListeInvitesTest {
+
+              private ListeInvites liste;
+
+              @BeforeEach
+              void preparer() {
+                  liste = new ListeInvites();
+              }
+
+              @Test
+              void ajouteUnInvite() {
+                  liste.ajouter("Awa");
+                  assertTrue(liste.contient("Awa"));
+              }
+
+              @Test
+              void commenceVide() {
+                  assertFalse(liste.contient("Awa"));
+              }
+          }
+        lines:
+          - n: 5
+            note: "`@BeforeEach` : une liste neuve et vide avant **chaque** test."
+          - n: 18
+            note: "Même si l'autre test a ajouté Awa, celui-ci repart d'une liste vide."
+      - type: question
+        ref: tst-ju-q3
+        review: code-beforeeach
+      - type: question
+        ref: tst-c1-b2
+        review: def-beforeeach
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la préparation."
+      - type: exercise
+        ref: tst-ex-beforeeach-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une bibliothèque neuve."
+      - type: exercise
+        ref: tst-ex-beforeeach-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des tests qui se gênent."
+      - type: exercise
+        ref: tst-ex-beforeeach-bug
+      - type: quiz
+        items:
+          - ref: tst-be-q3
+            review: code-beforeeach
+          - ref: tst-be-q4
+            review: def-beforeeach
+          - ref: tst-be-q5
+            review: code-beforeeach
+    questions:
+      - code: tst-ju-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: java-tests
+        prompt: "Grâce à `@BeforeEach`, chaque test part d'une liste d'invités neuve et vide."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "La méthode s'exécute avant chaque test."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement son rôle."
+        explanation: "Des tests indépendants les uns des autres."
+      - code: tst-c1-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Pourquoi les tests doivent-ils être indépendants les uns des autres ?"
+        choices:
+          - label: "Pour pouvoir les lancer dans n'importe quel ordre, seuls ou ensemble, avec le même résultat"
+            correct: true
+            why: "Un test ne doit pas réussir « par chance »."
+          - label: "Pour qu'ils soient plus courts"
+            correct: false
+            why: "La longueur n'est pas le sujet."
+          - label: "Ce n'est pas nécessaire"
+            correct: false
+            why: "Des tests dépendants deviennent imprévisibles."
+        explanation: "`@BeforeEach` recrée un état propre avant chaque test."
+      - code: tst-be-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-tests
+        prompt: "Combien de fois `preparer()` est-elle exécutée dans l'exemple, qui a deux tests ?"
+        choices:
+          - label: "Une fois avant chacun des deux tests"
+            correct: true
+            why: "Avant chaque test."
+          - label: "Une seule fois pour toute la classe"
+            correct: false
+            why: "Ce serait @BeforeAll."
+          - label: "Jamais"
+            correct: false
+            why: "JUnit l'appelle automatiquement."
+        explanation: "Before each = avant chacun."
+      - code: tst-be-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-tests
+        prompt: "Un test peut compter sur le fait qu'un autre test s'est exécuté avant lui."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "L'ordre n'est pas garanti."
+          - label: "Faux"
+            correct: true
+            why: "Chaque test prépare sa propre situation."
+        explanation: "Indépendance."
+      - code: tst-be-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Où placer `liste = new ListeInvites();` pour que chaque test ait une liste neuve ?"
+        choices:
+          - label: "Dans une méthode annotée @BeforeEach"
+            correct: true
+            why: "Elle s'exécute avant chaque test."
+          - label: "Dans un seul des tests"
+            correct: false
+            why: "Les autres n'en profiteraient pas."
+          - label: "Nulle part"
+            correct: false
+            why: "La liste serait null."
+        explanation: "@BeforeEach pour la préparation commune."
+    exercises:
+      - slug: tst-ex-beforeeach-guide
+        kind: COMPLETER
+        title: "Compléter la préparation"
+        difficulty: FACILE
+        skill: java-tests
+        statement: "Complète l'annotation et la création de l'objet."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Avant chaque test : BeforeEach."
+          - "On crée un nouvel objet avec new."
+          - "BeforeEach, new."
+        solution: '["BeforeEach", "new"]'
+        explanation: "Une situation neuve avant chaque test."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            private Favoris favoris;
+
+            @[[1]]
+            void preparer() {
+                favoris = [[2]] Favoris();
+            }
+          blanks:
+            - ["BeforeEach"]
+            - ["new"]
+      - slug: tst-ex-beforeeach-libre
+        kind: CODE_LIBRE
+        title: "Une bibliothèque neuve"
+        difficulty: FACILE
+        skill: java-tests
+        statement: |
+          Dans `CatalogueTest`, déclare un champ `private Catalogue catalogue;` et une méthode `@BeforeEach`
+          `preparer()` qui crée `new Catalogue()`.
+        criteria: "Champ catalogue et @BeforeEach qui le crée."
+        hints:
+          - "`private Catalogue catalogue;`"
+          - "`@BeforeEach void preparer() { … }`"
+          - "`catalogue = new Catalogue();`"
+        solution: |
+          class CatalogueTest {
+              private Catalogue catalogue;
+
+              @BeforeEach
+              void preparer() {
+                  catalogue = new Catalogue();
+              }
+          }
+        explanation: "Chaque test aura son catalogue neuf."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            class CatalogueTest {
+
+            }
+          checks:
+            - pattern: 'private\s+Catalogue\s+catalogue\s*;'
+              message: "Déclare private Catalogue catalogue;"
+            - pattern: '@BeforeEach\s+(?:public\s+)?void\s+preparer\s*\(\s*\)\s*\{\s*catalogue\s*=\s*new\s+Catalogue\s*\(\s*\)\s*;'
+              message: "Écris @BeforeEach void preparer() { catalogue = new Catalogue(); }"
+      - slug: tst-ex-beforeeach-bug
+        kind: CORRIGER_ERREUR
+        title: "Des tests qui se gênent"
+        difficulty: FACILE
+        skill: java-tests
+        statement: |
+          La liste est créée une seule fois dans la déclaration du champ… puis modifiée par chaque test : les
+          résultats dépendent de l'ordre. Recrée-la dans une méthode `@BeforeEach`.
+        criteria: "@BeforeEach qui recrée la liste."
+        hints:
+          - "La liste doit être neuve pour chaque test."
+          - "Une méthode exécutée avant chaque test."
+          - "`@BeforeEach void preparer() { liste = new ListeInvites(); }`"
+        solution: |
+          class ListeInvitesTest {
+              private ListeInvites liste;
+
+              @BeforeEach
+              void preparer() {
+                  liste = new ListeInvites();
+              }
+          }
+        explanation: "Chaque test repart de zéro."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            class ListeInvitesTest {
+                private ListeInvites liste = new ListeInvites();
+            }
+          checks:
+            - pattern: '@BeforeEach\s+(?:public\s+)?void\s+\w+\s*\(\s*\)\s*\{\s*liste\s*=\s*new\s+ListeInvites\s*\(\s*\)\s*;'
+              message: "Recrée la liste dans une méthode @BeforeEach."
+
+  # ===================================================================== LEÇON 6
+  - slug: tst-parametres
+    title: "Plusieurs valeurs, un seul test : @ParameterizedTest"
+    duration: 10
+    objective: "Tester une même règle avec plusieurs jeux de valeurs, dont les valeurs limites."
+    prerequisites: "Leçon « Repartir de zéro : @BeforeEach »."
+    skills: [java-tests, tests-strategie]
+    xp: 15
+    memo: |
+      - `@ParameterizedTest` + `@CsvSource` : le même test avec plusieurs lignes de données.
+      - Les colonnes deviennent les paramètres de la méthode.
+      - **Valeurs limites** : les cas à la frontière (texte vide, seulement des espaces, une seule lettre).
+    commonMistakes: |
+      - Copier-coller le même test pour chaque valeur.
+      - Oublier les valeurs limites.
+    blocks:
+      - type: definition
+        id: def-parametre
+        term: "Test paramétré"
+        md: |
+          Un **moule à gâteaux** : une seule recette de test, remplie avec plusieurs jeux de valeurs. Pratique
+          pour tester les **valeurs limites**, là où se cachent souvent les bugs.
+      - type: code
+        id: code-parametre
+        language: java
+        title: "Tester plusieurs pseudos"
+        code: |
+          @ParameterizedTest
+          @CsvSource({
+              "awa, true",
+              "'', false",
+              "'   ', false",
+              "a, true"
+          })
+          void pseudoValide(String pseudo, boolean attendu) {
+              assertEquals(attendu, Pseudo.estValide(pseudo));
+          }
+        lines:
+          - n: 1
+            note: "Un test lancé une fois par ligne de données."
+          - n: 4
+            note: "Les valeurs limites : un texte vide, des espaces seulement."
+          - n: 8
+            note: "Les colonnes deviennent les paramètres de la méthode."
+      - type: question
+        ref: tst-ju-q2
+        review: def-parametre
+      - type: question
+        ref: tst-ju-q5
+        review: code-parametre
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le test paramétré."
+      - type: exercise
+        ref: tst-ex-parametre-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : tester des e-mails."
+      - type: exercise
+        ref: tst-ex-parametre-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une annotation manquante."
+      - type: exercise
+        ref: tst-ex-parametre-bug
+      - type: jury
+        items:
+          - q: "Que sont les valeurs limites ?"
+            a: "Les valeurs à la frontière d'une règle : un texte vide ou fait d'espaces pour un champ obligatoire, la valeur juste avant et juste après un seuil. C'est là que se cachent la plupart des bugs. Je les teste avec des tests paramétrés."
+      - type: quiz
+        items:
+          - ref: tst-pa-q3
+            review: code-parametre
+          - ref: tst-pa-q4
+            review: def-parametre
+          - ref: tst-pa-q5
+            review: code-parametre
+    questions:
+      - code: tst-ju-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Pour un champ « pseudo obligatoire », quelles valeurs tester en priorité ?"
+        choices:
+          - label: "Un texte vide, des espaces seulement, une seule lettre"
+            correct: true
+            why: "Les valeurs à la frontière de la règle."
+          - label: "Seulement « awa »"
+            correct: false
+            why: "On raterait les cas limites."
+          - label: "Des pseudos très longs uniquement"
+            correct: false
+            why: "Utile parfois, mais pas en priorité."
+        explanation: "Les bugs aiment les frontières."
+      - code: tst-ju-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Quelle annotation fournit des jeux de données en lignes de texte séparées par des virgules ? (sans @)"
+        answers: ["CsvSource", "@CsvSource"]
+        explanation: "Avec `@ParameterizedTest`. Il existe aussi `@ValueSource` et `@MethodSource`."
+      - code: tst-pa-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: java-tests
+        prompt: "Combien de fois le test de l'exemple est-il lancé ?"
+        choices:
+          - label: "Une fois par ligne de @CsvSource"
+            correct: true
+            why: "Chaque ligne est un cas."
+          - label: "Une seule fois"
+            correct: false
+            why: "C'est un test paramétré."
+          - label: "Jamais"
+            correct: false
+            why: "JUnit l'exécute."
+        explanation: "Une ligne = un lancement."
+      - code: tst-pa-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: java-tests
+        prompt: "Un test paramétré évite de copier-coller le même test pour chaque valeur."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Une recette, plusieurs données."
+          - label: "Faux"
+            correct: false
+            why: "C'est son intérêt principal."
+        explanation: "Le moule à gâteaux."
+      - code: tst-pa-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: java-tests
+        prompt: "Dans `\"awa, true\"`, que devient `true` ?"
+        choices:
+          - label: "Le paramètre `attendu` de la méthode"
+            correct: true
+            why: "La deuxième colonne va au deuxième paramètre."
+          - label: "Le pseudo"
+            correct: false
+            why: "C'est la première colonne."
+          - label: "Rien"
+            correct: false
+            why: "Chaque colonne devient un paramètre."
+        explanation: "Colonnes → paramètres, dans l'ordre."
+    exercises:
+      - slug: tst-ex-parametre-guide
+        kind: COMPLETER
+        title: "Compléter le test paramétré"
+        difficulty: FACILE
+        skill: java-tests
+        statement: "Complète les deux annotations et la vérification."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Un test paramétré : ParameterizedTest."
+          - "Des lignes de données : CsvSource ; la comparaison : assertEquals."
+          - "ParameterizedTest, CsvSource, assertEquals."
+        solution: '["ParameterizedTest", "CsvSource", "assertEquals"]'
+        explanation: "Une recette, plusieurs données."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @[[1]]
+            @[[2]]({ "awa, true", "'', false" })
+            void pseudoValide(String pseudo, boolean attendu) {
+                [[3]](attendu, Pseudo.estValide(pseudo));
+            }
+          blanks:
+            - ["ParameterizedTest"]
+            - ["CsvSource"]
+            - ["assertEquals"]
+      - slug: tst-ex-parametre-libre
+        kind: CODE_LIBRE
+        title: "Tester des e-mails"
+        difficulty: INTERMEDIAIRE
+        skill: java-tests
+        statement: |
+          `Email.estValide(String email)` renvoie vrai si l'e-mail contient un `@`. Écris un test paramétré
+          `emailValide(String email, boolean attendu)` avec au moins ces trois lignes :
+          `"awa@exemple.fr, true"`, `"awa.exemple.fr, false"` et `"'', false"`.
+        criteria: "@ParameterizedTest, @CsvSource avec les trois lignes, assertEquals(attendu, …)."
+        hints:
+          - "`@ParameterizedTest` puis `@CsvSource({ … })`."
+          - "Une ligne par cas, entre guillemets."
+          - "`assertEquals(attendu, Email.estValide(email));`"
+        solution: |
+          @ParameterizedTest
+          @CsvSource({
+              "awa@exemple.fr, true",
+              "awa.exemple.fr, false",
+              "'', false"
+          })
+          void emailValide(String email, boolean attendu) {
+              assertEquals(attendu, Email.estValide(email));
+          }
+        explanation: "Le cas normal, un cas faux, un cas vide."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            void emailValide(String email, boolean attendu) {
+
+            }
+          checks:
+            - pattern: '@ParameterizedTest'
+              message: "Ajoute @ParameterizedTest."
+            - pattern: '@CsvSource\s*\(\s*\{[^}]*"awa@exemple\.fr,\s*true"[^}]*"awa\.exemple\.fr,\s*false"[^}]*"'''',\s*false"'
+              message: "Mets les trois lignes dans @CsvSource, dans l'ordre demandé."
+            - pattern: 'assertEquals\s*\(\s*attendu\s*,\s*Email\.estValide\s*\(\s*email\s*\)\s*\)'
+              message: "Vérifie assertEquals(attendu, Email.estValide(email))."
+      - slug: tst-ex-parametre-bug
+        kind: CORRIGER_ERREUR
+        title: "Une annotation manquante"
+        difficulty: FACILE
+        skill: java-tests
+        statement: |
+          Ce test reçoit des paramètres mais n'est marqué que `@Test` : JUnit ne sait pas d'où viennent les
+          valeurs. Remplace `@Test` par `@ParameterizedTest`.
+        criteria: "@ParameterizedTest à la place de @Test."
+        hints:
+          - "Un test avec des paramètres de données…"
+          - "… est un test paramétré."
+          - "`@ParameterizedTest`"
+        solution: |
+          @ParameterizedTest
+          @CsvSource({ "awa, true", "'', false" })
+          void pseudoValide(String pseudo, boolean attendu) {
+              assertEquals(attendu, Pseudo.estValide(pseudo));
+          }
+        explanation: "@CsvSource va avec @ParameterizedTest."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @Test
+            @CsvSource({ "awa, true", "'', false" })
+            void pseudoValide(String pseudo, boolean attendu) {
+                assertEquals(attendu, Pseudo.estValide(pseudo));
+            }
+          checks:
+            - pattern: '@Test\b'
+              absent: true
+              message: "Remplace @Test."
+            - pattern: '@ParameterizedTest'
+              message: "Écris @ParameterizedTest."
 
 bank:
-  - code: tst-c1-b1
+  - code: tst-c1-b3
     kind: CHOIX_UNIQUE
     difficulty: 1
     skill: tests-strategie
-    prompt: "Tu corriges un bug signalé par une utilisatrice. Quelle est la bonne pratique ?"
+    prompt: "Qu'est-ce qu'une régression ?"
     choices:
-      - label: "Écrire d'abord un test qui reproduit le bug, puis le corriger"
+      - label: "Un bug qui revient sur une fonctionnalité qui marchait"
         correct: true
-        why: "Le bug ne pourra plus revenir sans qu'on le voie."
-      - label: "Corriger vite et ne rien ajouter"
+        why: "Les tests automatiques l'attrapent."
+      - label: "Une nouvelle fonctionnalité"
         correct: false
-        why: "Le bug pourrait revenir plus tard."
-      - label: "Supprimer les tests qui échouent"
+        why: "C'est l'inverse."
+      - label: "Un test qui passe"
         correct: false
-        why: "On perd la protection."
-    explanation: "Un bug corrigé = un test de plus."
-  - code: tst-c1-b2
+        why: "Aucun rapport."
+    explanation: "La suite de tests protège contre les régressions."
+  - code: tst-c1-b4
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: java-tests
-    prompt: "Pourquoi les tests doivent-ils être indépendants les uns des autres ?"
+    prompt: "Quel outil est le standard pour tester du Java ?"
     choices:
-      - label: "Pour pouvoir les lancer dans n'importe quel ordre, seuls ou ensemble, avec le même résultat"
+      - label: "JUnit"
         correct: true
-        why: "Un test ne doit pas réussir « par chance »."
-      - label: "Pour qu'ils soient plus courts"
+        why: "La version 5 est la plus utilisée."
+      - label: "Playwright"
         correct: false
-        why: "La longueur n'est pas le sujet."
-      - label: "Ce n'est pas nécessaire"
+        why: "Il teste dans un navigateur."
+      - label: "Docker"
         correct: false
-        why: "Des tests dépendants deviennent imprévisibles."
-    explanation: "`@BeforeEach` recrée un état propre avant chaque test."
+        why: "Il sert à exécuter des conteneurs."
+    explanation: "JUnit 5, souvent avec Mockito."
