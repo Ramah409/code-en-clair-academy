@@ -2,29 +2,26 @@ slug: dk-compose-nginx
 position: 2
 level: INTERMEDIAIRE
 title: "Docker Compose et Nginx"
-summary: "Décrire toute l'application (base, API, frontend) dans un seul fichier, conserver les données avec des volumes et servir Angular avec Nginx."
-quizQuestionCount: 10
+summary: "Décrire toute l'application dans un seul fichier, passer la configuration par un .env, garder les données avec des volumes, attendre qu'un service soit prêt, servir Angular avec Nginx et relayer l'API. Une seule notion par leçon."
+quizQuestionCount: 16
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: dk-compose
-    title: "Lancer toute l'application avec Docker Compose"
-    duration: 15
-    objective: "Écrire un fichier compose.yaml avec PostgreSQL et l'API, utiliser un volume, un réseau, des variables d'environnement et un contrôle de santé."
+    title: "Docker Compose : plusieurs conteneurs, un fichier"
+    duration: 10
+    objective: "Décrire plusieurs services dans compose.yaml, les lancer ensemble et les faire communiquer par leur nom."
     prerequisites: "Chapitre « Comprendre Docker »."
     skills: [docker-deploiement]
-    xp: 30
+    xp: 15
     memo: |
-      - **Docker Compose** : un fichier `compose.yaml` décrit **tous** les conteneurs ; `docker compose up -d` les lance ensemble.
+      - **Docker Compose** : un fichier `compose.yaml` décrit **tous** les conteneurs.
       - `services:` : un bloc par conteneur (`bdd`, `api`, `web`).
-      - Les services se parlent par leur **nom** : l'API se connecte à `jdbc:postgresql://bdd:5432/…`.
-      - `volumes:` : un espace de stockage qui **survit** aux conteneurs (indispensable pour la base).
-      - `environment:` + fichier `.env` : la configuration et les secrets, hors de l'image.
-      - `depends_on` + `healthcheck` : l'API attend que la base soit **prête**.
+      - `docker compose up -d` démarre tout ; `docker compose down` arrête et supprime les conteneurs.
+      - Les services se parlent par leur **nom** : l'API joint la base à `bdd:5432`.
     commonMistakes: |
       - Écrire `localhost` pour joindre la base depuis l'API : dans un conteneur, `localhost` désigne le conteneur lui-même.
-      - Oublier le volume : `docker compose down` efface toutes les données.
-      - Écrire les mots de passe en clair dans `compose.yaml` versionné.
+      - Lancer chaque conteneur à la main avec de longues commandes.
     blocks:
       - type: text
         md: |
@@ -35,84 +32,59 @@ lessons:
         term: "Docker Compose"
         md: |
           La **partition d'un orchestre** : chaque musicien (conteneur) a sa ligne, et le chef les fait jouer
-          ensemble, dans le bon ordre. Un seul geste (`docker compose up`) et tout l'orchestre démarre.
+          ensemble. Un seul geste (`docker compose up`) et tout l'orchestre démarre.
       - type: code
-        id: code-compose
+        id: code-compose-simple
         language: yaml
-        title: "compose.yaml"
+        title: "compose.yaml (version simple)"
         code: |
           services:
             bdd:
               image: postgres:16-alpine
-              environment:
-                POSTGRES_DB: boutique
-                POSTGRES_USER: boutique
-                POSTGRES_PASSWORD: ${DB_PASSWORD}
-              volumes:
-                - donnees-bdd:/var/lib/postgresql/data
-              healthcheck:
-                test: ["CMD-SHELL", "pg_isready -U boutique"]
-                interval: 5s
-                retries: 10
-
             api:
               build: ./backend
               environment:
-                DB_URL: jdbc:postgresql://bdd:5432/boutique
-                DB_PASSWORD: ${DB_PASSWORD}
-                JWT_SECRET: ${JWT_SECRET}
-              depends_on:
-                bdd:
-                  condition: service_healthy
+                DB_URL: jdbc:postgresql://bdd:5432/bibliotheque
               ports:
                 - "8080:8080"
-
-          volumes:
-            donnees-bdd:
         lines:
           - n: 2
             note: "Le service `bdd` : c'est aussi son **nom sur le réseau**."
-          - n: 7
-            note: "`${DB_PASSWORD}` est lu dans le fichier `.env` (non versionné)."
-          - n: 9
-            note: "Les données de PostgreSQL vont dans un **volume** : elles survivent aux conteneurs."
-          - n: 11
-            note: "`pg_isready` : la base est-elle prête à accepter des connexions ?"
-          - n: 16
+          - n: 5
             note: "`build` : l'image est construite à partir du Dockerfile de `./backend`."
-          - n: 18
+          - n: 7
             note: "On joint la base par son **nom de service**, `bdd`, pas par localhost."
-          - n: 23
-            note: "L'API ne démarre que lorsque la base est **en bonne santé**."
-          - n: 27
-            note: "Déclaration du volume nommé."
+          - n: 8
+            note: "Seule l'API publie un port vers ta machine."
       - type: question
         ref: dk-cp-q1
-        review: code-compose
+        review: code-compose-simple
       - type: question
         ref: dk-cp-q2
         review: def-compose
       - type: text
-        md: "Exercice guidé : complète le fichier Compose."
+        md: "**Exercice 1 (guidé)** : complète le fichier."
       - type: exercise
-        ref: dk-ex-compose-guide
+        ref: dk-ex-compose-base-guide
       - type: text
-        md: "En autonomie : corrige ce fichier Compose."
+        md: "**Exercice 2 (en autonomie)** : deux services."
       - type: exercise
-        ref: dk-ex-compose-corriger
+        ref: dk-ex-compose-base-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un localhost trompeur."
+      - type: exercise
+        ref: dk-ex-compose-base-bug
       - type: jury
         items:
-          - q: "Comment lancez-vous votre application en local ?"
-            a: "Avec docker compose up -d : un fichier compose.yaml décrit PostgreSQL (avec un volume pour les données et un healthcheck), l'API Spring Boot construite depuis son Dockerfile et le frontend servi par Nginx. Les secrets viennent d'un fichier .env non versionné."
           - q: "Comment l'API trouve-t-elle la base de données ?"
-            a: "Docker Compose crée un réseau commun où chaque service est joignable par son nom. L'URL JDBC est donc jdbc:postgresql://bdd:5432/boutique. depends_on avec condition service_healthy garantit que la base est prête avant le démarrage de l'API."
+            a: "Docker Compose crée un réseau commun où chaque service est joignable par son nom. L'URL JDBC est donc jdbc:postgresql://bdd:5432/bibliotheque."
       - type: quiz
         items:
-          - ref: dk-cp-q3
-            review: code-compose
-          - ref: dk-cp-q4
-            review: code-compose
-          - ref: dk-cp-q5
+          - ref: dk-cb-q3
+            review: code-compose-simple
+          - ref: dk-cb-q4
+            review: def-compose
+          - ref: dk-c2-b1
             review: def-compose
     questions:
       - code: dk-cp-q1
@@ -147,6 +119,463 @@ lessons:
             correct: false
             why: "docker run lance une seule image."
         explanation: "`docker compose down` arrête et supprime les conteneurs."
+      - code: dk-cb-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Que fait `build: ./backend` ?"
+        choices:
+          - label: "Il construit l'image à partir du Dockerfile du dossier backend"
+            correct: true
+            why: "Au lieu de télécharger une image."
+          - label: "Il télécharge l'image backend"
+            correct: false
+            why: "C'est image:."
+          - label: "Il lance les tests"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "image: pour télécharger, build: pour construire."
+      - code: dk-cb-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Dans un conteneur, `localhost` désigne le conteneur lui-même."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Chaque conteneur a son propre réseau."
+          - label: "Faux"
+            correct: false
+            why: "C'est pour ça qu'on utilise le nom du service."
+        explanation: "Pour joindre un autre service : son nom."
+      - code: dk-c2-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Quelle commande affiche les journaux du service `api` défini dans Compose ?"
+        choices:
+          - label: "docker compose logs api"
+            correct: true
+            why: "Ajouter `-f` pour suivre en direct."
+          - label: "docker compose ps api"
+            correct: false
+            why: "Elle liste l'état des services."
+          - label: "docker compose build api"
+            correct: false
+            why: "Elle construit l'image."
+        explanation: "`docker compose logs -f api` pour suivre en temps réel."
+    exercises:
+      - slug: dk-ex-compose-base-guide
+        kind: COMPLETER
+        title: "Compléter le fichier"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Complète : la liste des services, l'image de la base, et l'adresse de la base vue par l'API."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le bloc principal s'appelle services."
+          - "L'image : postgres:16-alpine ; l'adresse : le nom du service."
+          - "services, postgres:16-alpine, bdd."
+        solution: '["services", "postgres:16-alpine", "bdd"]'
+        explanation: "Des services qui se parlent par leur nom."
+        xp: 10
+        payload:
+          language: yaml
+          template: |
+            [[1]]:
+              bdd:
+                image: [[2]]
+              api:
+                build: ./backend
+                environment:
+                  DB_URL: jdbc:postgresql://[[3]]:5432/bibliotheque
+          blanks:
+            - ["services"]
+            - ["postgres:16-alpine", "postgres:16"]
+            - ["bdd"]
+      - slug: dk-ex-compose-base-libre
+        kind: CODE_LIBRE
+        title: "Deux services"
+        difficulty: INTERMEDIAIRE
+        skill: docker-deploiement
+        statement: |
+          Écris un `compose.yaml` avec deux services :
+          - `bdd` à partir de l'image `postgres:16-alpine` ;
+          - `api` construit depuis `./backend`, avec la variable `DB_URL: jdbc:postgresql://bdd:5432/salles` et
+            le port `"8080:8080"`.
+        criteria: "services, bdd avec image, api avec build, DB_URL vers bdd, ports."
+        hints:
+          - "`services:` puis `bdd:` et `api:` en retrait."
+          - "`build: ./backend`"
+          - "`ports:` puis `- \"8080:8080\"`."
+        solution: |
+          services:
+            bdd:
+              image: postgres:16-alpine
+            api:
+              build: ./backend
+              environment:
+                DB_URL: jdbc:postgresql://bdd:5432/salles
+              ports:
+                - "8080:8080"
+        explanation: "Toute l'application dans un fichier."
+        xp: 20
+        payload:
+          language: yaml
+          starter: |
+            services:
+          checks:
+            - pattern: '(?m)^\s+bdd:\s*$[\s\S]*?image:\s*postgres:16-alpine'
+              message: "Le service bdd utilise l'image postgres:16-alpine."
+            - pattern: '(?m)^\s+api:\s*$[\s\S]*?build:\s*\./backend'
+              message: "Le service api est construit depuis ./backend."
+            - pattern: 'DB_URL:\s*jdbc:postgresql://bdd:5432/salles'
+              message: "DB_URL: jdbc:postgresql://bdd:5432/salles"
+            - pattern: 'ports:\s*\n\s*-\s*"?8080:8080"?'
+              message: "Publie le port \"8080:8080\"."
+      - slug: dk-ex-compose-base-bug
+        kind: CORRIGER_ERREUR
+        title: "Un localhost trompeur"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          L'API cherche la base sur `localhost` : dans son conteneur, elle ne la trouvera jamais. Utilise le nom
+          du service, `bdd`.
+        criteria: "jdbc:postgresql://bdd:5432/…, plus de localhost."
+        hints:
+          - "Dans un conteneur, localhost = lui-même."
+          - "On joint un service par son nom."
+          - "`DB_URL: jdbc:postgresql://bdd:5432/bibliotheque`"
+        solution: |
+          services:
+            bdd:
+              image: postgres:16-alpine
+            api:
+              build: ./backend
+              environment:
+                DB_URL: jdbc:postgresql://bdd:5432/bibliotheque
+        explanation: "Le bon nom sur le réseau."
+        xp: 10
+        payload:
+          language: yaml
+          starter: |
+            services:
+              bdd:
+                image: postgres:16-alpine
+              api:
+                build: ./backend
+                environment:
+                  DB_URL: jdbc:postgresql://localhost:5432/bibliotheque
+          checks:
+            - pattern: 'localhost'
+              absent: true
+              message: "Dans un conteneur, `localhost` désigne le conteneur lui-même."
+            - pattern: 'jdbc:postgresql://bdd:5432/'
+              message: "Utilise jdbc:postgresql://bdd:5432/…"
+
+  # ===================================================================== LEÇON 2
+  - slug: dk-compose-env
+    title: "La configuration par le fichier .env"
+    duration: 9
+    objective: "Passer la configuration et les secrets aux services avec environment et un fichier .env non versionné."
+    prerequisites: "Leçon « Docker Compose : plusieurs conteneurs, un fichier »."
+    skills: [docker-deploiement, rgpd-secrets]
+    xp: 15
+    memo: |
+      - `environment:` donne des variables à un service.
+      - `${DB_PASSWORD}` est remplacé par la valeur du fichier `.env`, placé à côté de `compose.yaml`.
+      - Le `.env` est dans `.gitignore` : aucun secret dans le dépôt.
+    commonMistakes: |
+      - Écrire les mots de passe en clair dans `compose.yaml` versionné.
+      - Oublier le `.env` dans `.gitignore`.
+    blocks:
+      - type: definition
+        id: def-env
+        term: "Variables d'environnement"
+        md: |
+          Des **étiquettes collées sur le conteneur** au démarrage : l'image reste la même, mais chaque
+          environnement lui colle ses propres réglages. Les secrets viennent d'un **coffre** local, le `.env`.
+      - type: code
+        id: code-env
+        language: yaml
+        title: "compose.yaml et .env"
+        code: |
+          services:
+            bdd:
+              image: postgres:16-alpine
+              environment:
+                POSTGRES_DB: bibliotheque
+                POSTGRES_PASSWORD: ${DB_PASSWORD}
+            api:
+              build: ./backend
+              environment:
+                DB_PASSWORD: ${DB_PASSWORD}
+                JWT_SECRET: ${JWT_SECRET}
+
+          # .env (non versionné)
+          # DB_PASSWORD=…
+          # JWT_SECRET=…
+        lines:
+          - n: 6
+            note: "`${DB_PASSWORD}` est lu dans le fichier `.env`."
+          - n: 11
+            note: "Le secret JWT arrive aussi par l'environnement."
+      - type: question
+        ref: dk-cp-q5
+        review: code-env
+      - type: question
+        ref: dk-ce-q2
+        review: def-env
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les variables."
+      - type: exercise
+        ref: dk-ex-compose-env-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : le .env d'un projet."
+      - type: exercise
+        ref: dk-ex-env-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un mot de passe dans compose.yaml."
+      - type: exercise
+        ref: dk-ex-env-bug
+      - type: jury
+        items:
+          - q: "Comment lancez-vous votre application en local ?"
+            a: "Avec docker compose up -d : un fichier compose.yaml décrit PostgreSQL, l'API Spring Boot construite depuis son Dockerfile et le frontend servi par Nginx. Les secrets viennent d'un fichier .env non versionné."
+      - type: quiz
+        items:
+          - ref: dk-ce-q3
+            review: code-env
+          - ref: dk-ce-q4
+            review: def-env
+          - ref: dk-ce-q5
+            review: code-env
+    questions:
+      - code: dk-cp-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Quel fichier, non versionné, Docker Compose lit-il automatiquement pour remplacer `${DB_PASSWORD}` ? (son nom exact)"
+        answers: [".env", "env"]
+        explanation: "Le fichier `.env` à côté de `compose.yaml`, listé dans `.gitignore`."
+      - code: dk-ce-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Le fichier `.env` avec les vrais secrets peut être poussé sur GitHub."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Les secrets seraient publics."
+          - label: "Faux"
+            correct: true
+            why: "Il est listé dans .gitignore."
+        explanation: "Seul un .env.example factice est versionné."
+      - code: dk-ce-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Quel mot-clé donne des variables à un service ?"
+        choices:
+          - label: "environment"
+            correct: true
+            why: "Une liste de variables."
+          - label: "ports"
+            correct: false
+            why: "Il publie des ports."
+          - label: "build"
+            correct: false
+            why: "Il construit l'image."
+        explanation: "environment: puis NOM: valeur."
+      - code: dk-ce-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Pourquoi passer la configuration par l'environnement plutôt que dans l'image ?"
+        choices:
+          - label: "La même image sert partout ; seuls les réglages changent"
+            correct: true
+            why: "Et aucun secret dans l'image."
+          - label: "C'est plus rapide"
+            correct: false
+            why: "Ce n'est pas le but."
+          - label: "Les images ne peuvent rien contenir"
+            correct: false
+            why: "Elles contiennent l'application."
+        explanation: "Une image, plusieurs environnements."
+      - code: dk-ce-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Que devient `${JWT_SECRET}` au lancement ?"
+        choices:
+          - label: "La valeur de JWT_SECRET lue dans le .env"
+            correct: true
+            why: "Compose fait le remplacement."
+          - label: "Le texte « ${JWT_SECRET} »"
+            correct: false
+            why: "Il est remplacé."
+          - label: "Rien"
+            correct: false
+            why: "Il est remplacé par la valeur."
+        explanation: "${NOM} = valeur de NOM."
+    exercises:
+      - slug: dk-ex-compose-env-guide
+        kind: COMPLETER
+        title: "Compléter les variables"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Complète : le mot-clé des variables, puis les deux références aux secrets."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot-clé : environment."
+          - "Une référence : ${NOM}."
+          - "environment, ${DB_PASSWORD}, ${JWT_SECRET}."
+        solution: '["environment", "${DB_PASSWORD}", "${JWT_SECRET}"]'
+        explanation: "Aucun secret dans le fichier."
+        xp: 10
+        payload:
+          language: yaml
+          template: |
+            api:
+              build: ./backend
+              [[1]]:
+                DB_PASSWORD: [[2]]
+                JWT_SECRET: [[3]]
+          blanks:
+            - ["environment"]
+            - ["${DB_PASSWORD}"]
+            - ["${JWT_SECRET}"]
+      - slug: dk-ex-env-libre
+        kind: CODE_LIBRE
+        title: "Le .env d'un projet"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Écris le `.env.example` (versionné) du projet, avec des valeurs factices : `DB_PASSWORD=change-moi`
+          et `JWT_SECRET=a-generer`.
+        criteria: "Deux lignes avec des valeurs factices."
+        hints:
+          - "Une variable par ligne."
+          - "`DB_PASSWORD=change-moi`"
+          - "`JWT_SECRET=a-generer`"
+        solution: |
+          DB_PASSWORD=change-moi
+          JWT_SECRET=a-generer
+        explanation: "L'équipe sait quoi remplir dans son .env."
+        xp: 15
+        payload:
+          language: properties
+          starter: |
+            DB_PASSWORD=
+          checks:
+            - pattern: '(?m)^\s*DB_PASSWORD\s*=\s*change-moi\s*$'
+              message: "DB_PASSWORD=change-moi"
+            - pattern: '(?m)^\s*JWT_SECRET\s*=\s*a-generer\s*$'
+              message: "JWT_SECRET=a-generer"
+      - slug: dk-ex-env-bug
+        kind: CORRIGER_ERREUR
+        title: "Un mot de passe dans compose.yaml"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Le mot de passe de la base est écrit en clair dans `compose.yaml`, qui est versionné. Remplace-le par
+          `${DB_PASSWORD}`.
+        criteria: "POSTGRES_PASSWORD: ${DB_PASSWORD}."
+        hints:
+          - "Le fichier est sur GitHub."
+          - "Le secret vient du .env."
+          - "`POSTGRES_PASSWORD: ${DB_PASSWORD}`"
+        solution: |
+          services:
+            bdd:
+              image: postgres:16-alpine
+              environment:
+                POSTGRES_PASSWORD: ${DB_PASSWORD}
+        explanation: "Le secret reste dans le .env."
+        xp: 10
+        payload:
+          language: yaml
+          starter: |
+            services:
+              bdd:
+                image: postgres:16-alpine
+                environment:
+                  POSTGRES_PASSWORD: motdepasse123
+          checks:
+            - pattern: 'motdepasse123'
+              absent: true
+              message: "Retire le mot de passe écrit en clair."
+            - pattern: 'POSTGRES_PASSWORD:\s*\$\{DB_PASSWORD\}'
+              message: "Écris POSTGRES_PASSWORD: ${DB_PASSWORD}."
+
+  # ===================================================================== LEÇON 3
+  - slug: dk-volumes
+    title: "Garder les données : les volumes"
+    duration: 9
+    objective: "Monter un volume nommé pour que les données de la base survivent aux conteneurs."
+    prerequisites: "Leçon « La configuration par le fichier .env »."
+    skills: [docker-deploiement]
+    xp: 15
+    memo: |
+      - `volumes:` : un espace de stockage qui **survit** aux conteneurs (indispensable pour la base).
+      - Dans le service : `- donnees-bdd:/var/lib/postgresql/data` ; en bas du fichier : `volumes:` puis `donnees-bdd:`.
+      - `docker compose down` garde les volumes ; `docker compose down -v` les **supprime**.
+    commonMistakes: |
+      - Oublier le volume : supprimer le conteneur efface toutes les données.
+      - Lancer `down -v` sans savoir qu'on efface la base.
+    blocks:
+      - type: definition
+        id: def-volume
+        term: "Volume"
+        md: |
+          Un **garde-meuble** : le conteneur (l'appartement) peut être démoli et reconstruit, les meubles (les
+          données) restent au garde-meuble et reviennent dans le nouvel appartement.
+      - type: code
+        id: code-volume
+        language: yaml
+        title: "Un volume pour PostgreSQL"
+        code: |
+          services:
+            bdd:
+              image: postgres:16-alpine
+              volumes:
+                - donnees-bdd:/var/lib/postgresql/data
+
+          volumes:
+            donnees-bdd:
+        lines:
+          - n: 5
+            note: "Les données de PostgreSQL vont dans le volume `donnees-bdd`."
+          - n: 7
+            note: "Déclaration du volume nommé, en bas du fichier."
+      - type: question
+        ref: dk-cp-q3
+        review: code-volume
+      - type: question
+        ref: dk-vo-q2
+        review: def-volume
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le volume."
+      - type: exercise
+        ref: dk-ex-volume-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un volume pour les fichiers envoyés."
+      - type: exercise
+        ref: dk-ex-volume-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un fichier Compose fragile."
+      - type: exercise
+        ref: dk-ex-compose-corriger
+      - type: quiz
+        items:
+          - ref: dk-vo-q3
+            review: code-volume
+          - ref: dk-vo-q4
+            review: def-volume
+          - ref: dk-vo-q5
+            review: code-volume
+    questions:
       - code: dk-cp-q3
         kind: VRAI_FAUX
         difficulty: 2
@@ -160,6 +589,273 @@ lessons:
             correct: false
             why: "C'est justement le rôle d'un volume."
         explanation: "`docker compose down -v` supprimerait aussi les volumes : attention !"
+      - code: dk-vo-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Sans volume, que deviennent les données de la base quand on supprime le conteneur ?"
+        choices:
+          - label: "Elles sont perdues"
+            correct: true
+            why: "Elles vivaient dans le conteneur."
+          - label: "Elles sont gardées dans l'image"
+            correct: false
+            why: "L'image est en lecture seule."
+          - label: "Elles vont dans le .env"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Base de données = toujours un volume."
+      - code: dk-vo-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Que fait `docker compose down -v` ?"
+        choices:
+          - label: "Il supprime les conteneurs ET les volumes"
+            correct: true
+            why: "Les données sont effacées."
+          - label: "Il affiche la version"
+            correct: false
+            why: "-v = volumes ici."
+          - label: "Il sauvegarde les volumes"
+            correct: false
+            why: "Il les supprime."
+        explanation: "À utiliser en connaissance de cause."
+      - code: dk-vo-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Un volume doit aussi être déclaré dans la section `volumes:` en bas du fichier."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Un volume nommé se déclare."
+          - label: "Faux"
+            correct: false
+            why: "Compose en a besoin."
+        explanation: "Monter dans le service, déclarer en bas."
+      - code: dk-vo-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Dans `- donnees-bdd:/var/lib/postgresql/data`, que représente la partie de droite ?"
+        choices:
+          - label: "Le dossier dans le conteneur où PostgreSQL range ses données"
+            correct: true
+            why: "Volume:dossier."
+          - label: "Le nom du volume"
+            correct: false
+            why: "C'est la partie de gauche."
+          - label: "Un port"
+            correct: false
+            why: "C'est un chemin."
+        explanation: "nom-du-volume:dossier-dans-le-conteneur."
+    exercises:
+      - slug: dk-ex-volume-guide
+        kind: COMPLETER
+        title: "Compléter le volume"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Complète le montage et la déclaration du volume."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot-clé : volumes."
+          - "Le nom du volume : donnees-bdd."
+          - "volumes, donnees-bdd, volumes."
+        solution: '["volumes", "donnees-bdd", "volumes"]'
+        explanation: "Monter, puis déclarer."
+        xp: 10
+        payload:
+          language: yaml
+          template: |
+            services:
+              bdd:
+                image: postgres:16-alpine
+                [[1]]:
+                  - [[2]]:/var/lib/postgresql/data
+
+            [[3]]:
+              donnees-bdd:
+          blanks:
+            - ["volumes"]
+            - ["donnees-bdd"]
+            - ["volumes"]
+      - slug: dk-ex-volume-libre
+        kind: CODE_LIBRE
+        title: "Un volume pour les fichiers envoyés"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Le service `api` enregistre les couvertures de livres dans `/app/couvertures`. Ajoute-lui un volume
+          nommé `couvertures` monté sur ce dossier, et déclare-le en bas du fichier.
+        criteria: "- couvertures:/app/couvertures et déclaration volumes: couvertures:."
+        hints:
+          - "`volumes:` puis `- couvertures:/app/couvertures` dans le service."
+          - "En bas : `volumes:` puis `couvertures:`."
+          - "Même principe que pour la base."
+        solution: |
+          services:
+            api:
+              build: ./backend
+              volumes:
+                - couvertures:/app/couvertures
+
+          volumes:
+            couvertures:
+        explanation: "Les couvertures survivent aux mises à jour."
+        xp: 15
+        payload:
+          language: yaml
+          starter: |
+            services:
+              api:
+                build: ./backend
+          checks:
+            - pattern: '-\s*couvertures:/app/couvertures'
+              message: "Monte - couvertures:/app/couvertures."
+            - pattern: '(?m)^volumes:\s*\n\s+couvertures:'
+              message: "Déclare le volume en bas : volumes: puis couvertures:."
+      - slug: dk-ex-compose-corriger
+        kind: CORRIGER_ERREUR
+        title: "Un fichier Compose fragile"
+        difficulty: INTERMEDIAIRE
+        skill: docker-deploiement
+        statement: |
+          Ce fichier Compose a trois problèmes :
+          - l'API cherche la base sur `localhost` ;
+          - le mot de passe est écrit en clair ;
+          - la base n'a pas de volume : les données disparaissent.
+          Corrige-le : URL avec le nom de service `bdd`, mot de passe `${DB_PASSWORD}` (aux deux endroits),
+          et un volume nommé `donnees-bdd` monté sur `/var/lib/postgresql/data` (déclaré en bas du fichier).
+        criteria: "URL jdbc:postgresql://bdd:5432, ${DB_PASSWORD} partout, volume monté et déclaré."
+        hints:
+          - "`DB_URL: jdbc:postgresql://bdd:5432/bibliotheque`"
+          - "Remplace `motdepasse123` par `${DB_PASSWORD}`."
+          - "Ajoute `volumes: [donnees-bdd:/var/lib/postgresql/data]` au service bdd et `volumes: { donnees-bdd: }` en bas."
+        solution: |
+          services:
+            bdd:
+              image: postgres:16-alpine
+              environment:
+                POSTGRES_PASSWORD: ${DB_PASSWORD}
+              volumes:
+                - donnees-bdd:/var/lib/postgresql/data
+            api:
+              build: ./backend
+              environment:
+                DB_URL: jdbc:postgresql://bdd:5432/bibliotheque
+                DB_PASSWORD: ${DB_PASSWORD}
+              depends_on:
+                - bdd
+
+          volumes:
+            donnees-bdd:
+        explanation: "Le bon nom réseau, des secrets hors du fichier, des données persistantes."
+        xp: 25
+        payload:
+          language: yaml
+          starter: |
+            services:
+              bdd:
+                image: postgres:16-alpine
+                environment:
+                  POSTGRES_PASSWORD: motdepasse123
+              api:
+                build: ./backend
+                environment:
+                  DB_URL: jdbc:postgresql://localhost:5432/bibliotheque
+                  DB_PASSWORD: motdepasse123
+                depends_on:
+                  - bdd
+          checks:
+            - pattern: 'jdbc:postgresql://bdd:5432/'
+              message: "L'API doit joindre la base par son nom de service : `jdbc:postgresql://bdd:5432/…`."
+            - pattern: 'localhost'
+              absent: true
+              message: "Dans un conteneur, `localhost` désigne le conteneur lui-même."
+            - pattern: 'motdepasse123'
+              absent: true
+              message: "Retire le mot de passe écrit en clair."
+            - pattern: '\A(?>[\s\S]*?\$\{DB_PASSWORD\}){2}'
+              message: "Utilise `${DB_PASSWORD}` dans les deux services."
+            - pattern: '-\s*donnees-bdd:/var/lib/postgresql/data'
+              message: "Monte le volume : `- donnees-bdd:/var/lib/postgresql/data`."
+            - pattern: '(?m)^volumes:\s*\n\s+donnees-bdd:'
+              message: "Déclare le volume en bas du fichier : `volumes:` puis `donnees-bdd:`."
+
+  # ===================================================================== LEÇON 4
+  - slug: dk-healthcheck
+    title: "Attendre que la base soit prête : healthcheck"
+    duration: 9
+    objective: "Faire démarrer l'API seulement quand la base répond, avec healthcheck et depends_on."
+    prerequisites: "Leçon « Garder les données : les volumes »."
+    skills: [docker-deploiement]
+    xp: 15
+    memo: |
+      - **Démarré ne veut pas dire prêt** : PostgreSQL met quelques secondes à accepter des connexions.
+      - `healthcheck:` : une commande qui dit si le service est **en bonne santé** (`pg_isready`).
+      - `depends_on: bdd: condition: service_healthy` : l'API attend que la base soit prête.
+    commonMistakes: |
+      - Un `depends_on` simple : l'API démarre dès que le conteneur de la base existe, trop tôt.
+      - Pas de healthcheck : aucun moyen de savoir si la base est prête.
+    blocks:
+      - type: definition
+        id: def-healthcheck
+        term: "Healthcheck"
+        md: |
+          Le **docteur** qui passe régulièrement : « tu vas bien ? ». Tant que la base ne répond pas « oui »,
+          l'API attend dans la salle d'attente.
+      - type: code
+        id: code-healthcheck
+        language: yaml
+        title: "L'API attend la base"
+        code: |
+          services:
+            bdd:
+              image: postgres:16-alpine
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U bibliotheque"]
+                interval: 5s
+                retries: 10
+            api:
+              build: ./backend
+              depends_on:
+                bdd:
+                  condition: service_healthy
+        lines:
+          - n: 5
+            note: "`pg_isready` : la base est-elle prête à accepter des connexions ?"
+          - n: 6
+            note: "Le docteur repasse régulièrement."
+          - n: 12
+            note: "L'API ne démarre que lorsque la base est **en bonne santé**."
+      - type: question
+        ref: dk-cp-q4
+        review: code-healthcheck
+      - type: question
+        ref: dk-hc-q2
+        review: def-healthcheck
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète l'attente."
+      - type: exercise
+        ref: dk-ex-healthcheck-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un fichier Compose complet."
+      - type: exercise
+        ref: dk-ex-compose-guide
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une API trop pressée."
+      - type: exercise
+        ref: dk-ex-healthcheck-bug
+      - type: quiz
+        items:
+          - ref: dk-hc-q3
+            review: code-healthcheck
+          - ref: dk-hc-q4
+            review: def-healthcheck
+          - ref: dk-hc-q5
+            review: code-healthcheck
+    questions:
       - code: dk-cp-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -176,17 +872,100 @@ lessons:
             correct: false
             why: "Aucun rapport."
         explanation: "Démarré ne veut pas dire prêt."
-      - code: dk-cp-q5
-        kind: TEXTE
+      - code: dk-hc-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Un conteneur démarré est forcément prêt à répondre."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "La base a besoin de quelques secondes."
+          - label: "Faux"
+            correct: true
+            why: "D'où le healthcheck."
+        explanation: "Démarré ≠ prêt."
+      - code: dk-hc-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Quelle commande vérifie que PostgreSQL accepte les connexions ?"
+        choices:
+          - label: "pg_isready"
+            correct: true
+            why: "« Es-tu prêt ? »"
+          - label: "pg_dump"
+            correct: false
+            why: "Elle sauvegarde."
+          - label: "psql -c DROP"
+            correct: false
+            why: "Surtout pas."
+        explanation: "pg_isready dans le healthcheck."
+      - code: dk-hc-q4
+        kind: CHOIX_UNIQUE
         difficulty: 2
         skill: docker-deploiement
-        prompt: "Quel fichier, non versionné, Docker Compose lit-il automatiquement pour remplacer `${DB_PASSWORD}` ? (son nom exact)"
-        answers: [".env", "env"]
-        explanation: "Le fichier `.env` à côté de `compose.yaml`, listé dans `.gitignore`."
+        prompt: "Avec un simple `depends_on: - bdd` (sans condition), que se passe-t-il ?"
+        choices:
+          - label: "L'API démarre dès que le conteneur de la base existe, peut-être trop tôt"
+            correct: true
+            why: "L'ordre est respecté, mais pas la préparation."
+          - label: "L'API attend que la base soit prête"
+            correct: false
+            why: "Il faut la condition service_healthy."
+          - label: "L'API ne démarre jamais"
+            correct: false
+            why: "Elle démarre."
+        explanation: "Ordre ≠ préparation."
+      - code: dk-hc-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Où se place le `healthcheck` ?"
+        choices:
+          - label: "Dans le service qu'on surveille (bdd)"
+            correct: true
+            why: "Le docteur examine la base."
+          - label: "Dans le service api"
+            correct: false
+            why: "L'API attend, c'est la base qu'on examine."
+          - label: "Dans le .env"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "healthcheck côté bdd, condition côté api."
     exercises:
+      - slug: dk-ex-healthcheck-guide
+        kind: COMPLETER
+        title: "Compléter l'attente"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Complète : la commande de santé et la condition d'attente."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le bloc de santé : healthcheck."
+          - "La commande PostgreSQL : pg_isready ; la condition : service_healthy."
+          - "healthcheck, pg_isready, service_healthy."
+        solution: '["healthcheck", "pg_isready", "service_healthy"]'
+        explanation: "Examiner, puis attendre."
+        xp: 10
+        payload:
+          language: yaml
+          template: |
+            bdd:
+              image: postgres:16-alpine
+              [[1]]:
+                test: ["CMD-SHELL", "[[2]] -U bibliotheque"]
+            api:
+              depends_on:
+                bdd:
+                  condition: [[3]]
+          blanks:
+            - ["healthcheck"]
+            - ["pg_isready"]
+            - ["service_healthy"]
       - slug: dk-ex-compose-guide
         kind: COMPLETER
-        title: "Compléter le fichier Compose"
+        title: "Un fichier Compose complet"
         difficulty: FACILE
         skill: docker-deploiement
         statement: "Complète : l'image, le volume, la variable secrète et la dépendance."
@@ -217,104 +996,69 @@ lessons:
             - ["volumes"]
             - ["${DB_PASSWORD}"]
             - ["depends_on"]
-      - slug: dk-ex-compose-corriger
+      - slug: dk-ex-healthcheck-bug
         kind: CORRIGER_ERREUR
-        title: "Un fichier Compose fragile"
-        difficulty: INTERMEDIAIRE
+        title: "Une API trop pressée"
+        difficulty: FACILE
         skill: docker-deploiement
         statement: |
-          Ce fichier Compose a trois problèmes :
-          - l'API cherche la base sur `localhost` ;
-          - le mot de passe est écrit en clair ;
-          - la base n'a pas de volume : les données disparaissent.
-          Corrige-le : URL avec le nom de service `bdd`, mot de passe `${DB_PASSWORD}` (aux deux endroits),
-          et un volume nommé `donnees-bdd` monté sur `/var/lib/postgresql/data` (déclaré en bas du fichier).
-        criteria: "URL jdbc:postgresql://bdd:5432, ${DB_PASSWORD} partout, volume monté et déclaré."
+          L'API démarre avant que la base soit prête et plante. La base a déjà un healthcheck : remplace le
+          `depends_on` simple par une attente de `service_healthy`.
+        criteria: "depends_on: bdd: condition: service_healthy."
         hints:
-          - "`DB_URL: jdbc:postgresql://bdd:5432/boutique`"
-          - "Remplace `motdepasse123` par `${DB_PASSWORD}`."
-          - "Ajoute `volumes: [donnees-bdd:/var/lib/postgresql/data]` au service bdd et `volumes: { donnees-bdd: }` en bas."
+          - "Le simple depends_on n'attend pas la préparation."
+          - "Il faut une condition."
+          - "`depends_on:` puis `bdd:` puis `condition: service_healthy`."
         solution: |
-          services:
-            bdd:
-              image: postgres:16-alpine
-              environment:
-                POSTGRES_PASSWORD: ${DB_PASSWORD}
-              volumes:
-                - donnees-bdd:/var/lib/postgresql/data
-            api:
-              build: ./backend
-              environment:
-                DB_URL: jdbc:postgresql://bdd:5432/boutique
-                DB_PASSWORD: ${DB_PASSWORD}
-              depends_on:
-                - bdd
-
-          volumes:
-            donnees-bdd:
-        explanation: "Le bon nom réseau, des secrets hors du fichier, des données persistantes."
-        xp: 25
+          api:
+            build: ./backend
+            depends_on:
+              bdd:
+                condition: service_healthy
+        explanation: "L'API attend le feu vert."
+        xp: 10
         payload:
           language: yaml
           starter: |
-            services:
-              bdd:
-                image: postgres:16-alpine
-                environment:
-                  POSTGRES_PASSWORD: motdepasse123
-              api:
-                build: ./backend
-                environment:
-                  DB_URL: jdbc:postgresql://localhost:5432/boutique
-                  DB_PASSWORD: motdepasse123
-                depends_on:
-                  - bdd
+            api:
+              build: ./backend
+              depends_on:
+                - bdd
           checks:
-            - pattern: 'jdbc:postgresql://bdd:5432/'
-              message: "L'API doit joindre la base par son nom de service : `jdbc:postgresql://bdd:5432/…`."
-            - pattern: 'localhost'
+            - pattern: 'depends_on:\s*\n\s*-\s*bdd'
               absent: true
-              message: "Dans un conteneur, `localhost` désigne le conteneur lui-même."
-            - pattern: 'motdepasse123'
-              absent: true
-              message: "Retire le mot de passe écrit en clair."
-            - pattern: '\A(?>[\s\S]*?\$\{DB_PASSWORD\}){2}'
-              message: "Utilise `${DB_PASSWORD}` dans les deux services."
-            - pattern: '-\s*donnees-bdd:/var/lib/postgresql/data'
-              message: "Monte le volume : `- donnees-bdd:/var/lib/postgresql/data`."
-            - pattern: '(?m)^volumes:\s*\n\s+donnees-bdd:'
-              message: "Déclare le volume en bas du fichier : `volumes:` puis `donnees-bdd:`."
+              message: "Le depends_on simple n'attend pas."
+            - pattern: 'depends_on:\s*\n\s*bdd:\s*\n\s*condition:\s*service_healthy'
+              message: "Écris depends_on: bdd: condition: service_healthy."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 5
   - slug: dk-nginx-angular
     title: "Servir Angular avec Nginx"
-    duration: 14
-    objective: "Construire Angular dans une image, le servir avec Nginx, gérer les routes de l'application et relayer /api vers le backend."
-    prerequisites: "Leçon « Lancer toute l'application avec Docker Compose »."
+    duration: 11
+    objective: "Construire Angular dans une image et le servir avec Nginx, en gardant les routes de l'application."
+    prerequisites: "Leçon « Attendre que la base soit prête : healthcheck »."
     skills: [docker-deploiement, angular-routage]
-    xp: 25
+    xp: 15
     memo: |
-      - `ng build` produit des **fichiers statiques** (HTML, JS, CSS) : il n'y a plus besoin de Node pour les servir.
+      - `ng build` produit des **fichiers statiques** (HTML, JS, CSS) : plus besoin de Node pour les servir.
       - **Nginx** : un serveur web léger et rapide qui envoie ces fichiers.
       - `try_files $uri $uri/ /index.html;` : toute adresse inconnue renvoie `index.html`, pour que le **routeur Angular** prenne le relais.
-      - **Proxy inverse** : `location /api/ { proxy_pass http://api:8080; }` → même origine pour le frontend et l'API, plus de souci CORS.
       - Dockerfile en deux étapes : `node` pour construire, `nginx:alpine` pour servir.
     commonMistakes: |
       - Servir Angular avec `ng serve` en production (serveur de développement lent et non sécurisé).
-      - Oublier `try_files … /index.html` : une page rechargée sur `/produits/12` renvoie 404.
-      - Écrire l'adresse `http://localhost:8080` en dur dans le code Angular.
+      - Oublier `try_files … /index.html` : une page rechargée sur `/livres/12` renvoie 404.
     blocks:
       - type: text
         md: |
           En production, Angular n'est plus qu'un dossier de fichiers. Il suffit d'un serveur web pour les
-          distribuer. Nginx le fait très bien, et peut aussi transmettre les appels `/api` au backend.
+          distribuer : Nginx.
       - type: definition
-        id: def-proxy
-        term: "Proxy inverse (reverse proxy)"
+        id: def-nginx
+        term: "Nginx et try_files"
         md: |
-          Le **standard d'accueil** d'une entreprise : le visiteur appelle un seul numéro, et le standard
-          transfère l'appel au bon service. Le navigateur parle uniquement à Nginx, qui transmet les demandes
-          `/api` à Spring Boot.
+          Un **réceptionniste** qui connaît tous les bureaux : si on lui demande un bureau qui n'existe pas, il
+          renvoie vers l'**accueil** (`index.html`), où le plan de l'immeuble (le routeur Angular) indique le bon
+          chemin.
       - type: code
         id: code-nginx
         language: text
@@ -323,10 +1067,6 @@ lessons:
           server {
             listen 80;
             root /usr/share/nginx/html;
-
-            location /api/ {
-              proxy_pass http://api:8080;
-            }
 
             location / {
               try_files $uri $uri/ /index.html;
@@ -337,11 +1077,7 @@ lessons:
             note: "Nginx écoute sur le port 80 du conteneur."
           - n: 3
             note: "Le dossier où se trouvent les fichiers construits par Angular."
-          - n: 5
-            note: "Tout ce qui commence par `/api/`…"
           - n: 6
-            note: "… est transmis au service `api` de Docker Compose."
-          - n: 10
             note: "Le fichier existe ? on l'envoie. Sinon : `index.html`, et le routeur Angular affiche la bonne page."
       - type: code
         id: code-dockerfile-front
@@ -357,7 +1093,7 @@ lessons:
 
           FROM nginx:alpine
           COPY nginx.conf /etc/nginx/conf.d/default.conf
-          COPY --from=construction /app/dist/boutique/browser /usr/share/nginx/html
+          COPY --from=construction /app/dist/bibliotheque/browser /usr/share/nginx/html
           EXPOSE 80
         lines:
           - n: 3
@@ -372,76 +1108,49 @@ lessons:
         ref: dk-ng-q1
         review: code-nginx
       - type: question
-        ref: dk-ng-q2
-        review: def-proxy
+        ref: dk-ng-q4
+        review: code-dockerfile-front
       - type: text
-        md: "Exercice guidé : complète la configuration Nginx."
+        md: "**Exercice 1 (guidé)** : complète la configuration."
       - type: exercise
-        ref: dk-ex-nginx-guide
+        ref: dk-ex-nginx-base-guide
       - type: text
-        md: "En autonomie : écris le Dockerfile du frontend."
+        md: "**Exercice 2 (en autonomie)** : le Dockerfile du frontend."
       - type: exercise
         ref: dk-ex-dockerfile-front
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une page rechargée en 404."
+      - type: exercise
+        ref: dk-ex-nginx-bug
       - type: jury
         items:
           - q: "Comment est servi votre frontend en production ?"
-            a: "Angular est construit en fichiers statiques avec ng build dans une première étape Docker basée sur Node, puis servi par Nginx dans une image légère. Nginx renvoie index.html pour les routes inconnues afin que le routeur Angular fonctionne au rechargement, et relaie /api vers le conteneur Spring Boot."
-          - q: "Pourquoi un proxy inverse ?"
-            a: "Le navigateur ne voit qu'une seule origine : les appels /api partent vers le même domaine, donc pas de configuration CORS complexe. C'est aussi l'endroit idéal pour gérer HTTPS, la compression et les en-têtes de sécurité."
+            a: "Angular est construit en fichiers statiques avec ng build dans une première étape Docker basée sur Node, puis servi par Nginx dans une image légère. Nginx renvoie index.html pour les routes inconnues afin que le routeur Angular fonctionne au rechargement."
       - type: quiz
         items:
           - ref: dk-ng-q3
+            review: def-nginx
+          - ref: dk-nx-q4
             review: code-nginx
-          - ref: dk-ng-q4
+          - ref: dk-nx-q5
             review: code-dockerfile-front
-          - ref: dk-ng-q5
-            review: def-proxy
     questions:
       - code: dk-ng-q1
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: docker-deploiement
-        prompt: "L'utilisatrice recharge la page `/produits/12` et reçoit une erreur 404 de Nginx. Que manque-t-il ?"
+        prompt: "L'utilisatrice recharge la page `/livres/12` et reçoit une erreur 404 de Nginx. Que manque-t-il ?"
         choices:
           - label: "`try_files $uri $uri/ /index.html;`"
             correct: true
             why: "Nginx doit renvoyer index.html pour que le routeur Angular prenne le relais."
-          - label: "Un fichier produits/12.html"
+          - label: "Un fichier livres/12.html"
             correct: false
             why: "Angular n'en crée pas : une seule page HTML."
           - label: "Redémarrer le conteneur"
             correct: false
             why: "La configuration serait toujours la même."
         explanation: "C'est le réglage indispensable d'une SPA."
-      - code: dk-ng-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: docker-deploiement
-        prompt: "Avec `location /api/ { proxy_pass http://api:8080; }`, que devient un appel du navigateur à `/api/produits` ?"
-        choices:
-          - label: "Nginx le transmet au conteneur `api` sur le port 8080"
-            correct: true
-            why: "C'est le rôle du proxy inverse."
-          - label: "Nginx cherche un fichier api/produits"
-            correct: false
-            why: "Ce bloc transmet au lieu de servir un fichier."
-          - label: "Le navigateur appelle directement le port 8080"
-            correct: false
-            why: "Le navigateur ne parle qu'à Nginx."
-        explanation: "Une seule origine pour le navigateur."
-      - code: dk-ng-q3
-        kind: VRAI_FAUX
-        difficulty: 1
-        skill: docker-deploiement
-        prompt: "En production, on sert Angular avec `ng serve`."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "C'est un serveur de développement."
-          - label: "Faux"
-            correct: true
-            why: "On construit avec ng build et on sert avec Nginx (ou un CDN)."
-        explanation: "`ng serve` recompile à la volée : lent et non prévu pour la production."
       - code: dk-ng-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -458,39 +1167,77 @@ lessons:
             correct: false
             why: "Il est utilisé à la première étape."
         explanation: "Même principe que pour l'API : on livre le résultat, pas l'atelier."
-      - code: dk-ng-q5
-        kind: TEXTE
-        difficulty: 2
+      - code: dk-ng-q3
+        kind: VRAI_FAUX
+        difficulty: 1
         skill: docker-deploiement
-        prompt: "Quelle directive Nginx transmet une requête à un autre serveur ? (un mot)"
-        answers: ["proxy_pass"]
-        explanation: "`proxy_pass http://api:8080;`"
+        prompt: "En production, on sert Angular avec `ng serve`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "C'est un serveur de développement."
+          - label: "Faux"
+            correct: true
+            why: "On construit avec ng build et on sert avec Nginx (ou un CDN)."
+        explanation: "`ng serve` recompile à la volée : lent et non prévu pour la production."
+      - code: dk-nx-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Sur quel port Nginx écoute-t-il dans le conteneur, d'après la configuration ?"
+        choices:
+          - label: "80"
+            correct: true
+            why: "`listen 80;`"
+          - label: "8080"
+            correct: false
+            why: "C'est le port de l'API."
+          - label: "4200"
+            correct: false
+            why: "C'est ng serve en développement."
+        explanation: "listen = port d'écoute."
+      - code: dk-nx-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Que produit `npm run build` pour Angular ?"
+        choices:
+          - label: "Des fichiers statiques (HTML, JS, CSS)"
+            correct: true
+            why: "Prêts à être servis par Nginx."
+          - label: "Un serveur Node"
+            correct: false
+            why: "Plus besoin de Node pour servir."
+          - label: "Une base de données"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "ng build = des fichiers."
     exercises:
-      - slug: dk-ex-nginx-guide
+      - slug: dk-ex-nginx-base-guide
         kind: COMPLETER
-        title: "Compléter nginx.conf"
+        title: "Compléter la configuration"
         difficulty: FACILE
         skill: docker-deploiement
-        statement: "Complète la configuration : port, transmission vers l'API, repli sur index.html."
+        statement: "Complète : le port, le dossier des fichiers et le repli sur index.html."
         criteria: "Les trois trous sont corrects."
         hints:
           - "Nginx écoute sur le port 80."
-          - "La directive de transmission : proxy_pass."
-          - "80, proxy_pass, index.html."
-        solution: '["80", "proxy_pass", "/index.html"]'
-        explanation: "Écouter, relayer l'API, laisser le routeur Angular gérer le reste."
+          - "Le dossier : /usr/share/nginx/html ; le repli : /index.html."
+          - "80, /usr/share/nginx/html, /index.html."
+        solution: '["80", "/usr/share/nginx/html", "/index.html"]'
+        explanation: "Écouter, servir, laisser le routeur Angular gérer le reste."
         xp: 10
         payload:
           language: text
           template: |
             server {
               listen [[1]];
-              location /api/ { [[2]] http://api:8080; }
+              root [[2]];
               location / { try_files $uri $uri/ [[3]]; }
             }
           blanks:
             - ["80"]
-            - ["proxy_pass"]
+            - ["/usr/share/nginx/html"]
             - ["/index.html", "index.html"]
       - slug: dk-ex-dockerfile-front
         kind: CODE_LIBRE
@@ -520,7 +1267,7 @@ lessons:
           COPY nginx.conf /etc/nginx/conf.d/default.conf
           COPY --from=construction /app/dist/agenda/browser /usr/share/nginx/html
           EXPOSE 80
-        explanation: "Construction avec Node, livraison avec Nginx : une image de quelques dizaines de Mo."
+        explanation: "Construction avec Node, livraison avec Nginx : une image très légère."
         xp: 30
         payload:
           language: dockerfile
@@ -541,37 +1288,300 @@ lessons:
               message: "Copie `nginx.conf` dans `/etc/nginx/conf.d/default.conf`."
             - pattern: '(?im)^\s*COPY\s+--from=construction\s+/app/dist/agenda/browser/?\s+/usr/share/nginx/html/?\s*$'
               message: "Copie `/app/dist/agenda/browser` depuis l'étape de construction vers `/usr/share/nginx/html`."
+      - slug: dk-ex-nginx-bug
+        kind: CORRIGER_ERREUR
+        title: "Une page rechargée en 404"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Recharger `/livres/12` renvoie 404 : Nginx cherche un fichier qui n'existe pas. Ajoute le repli vers
+          `index.html` : `try_files $uri $uri/ /index.html;`.
+        criteria: "try_files avec /index.html."
+        hints:
+          - "Angular n'a qu'une page."
+          - "Nginx doit renvoyer index.html."
+          - "`location / { try_files $uri $uri/ /index.html; }`"
+        solution: |
+          server {
+            listen 80;
+            root /usr/share/nginx/html;
+            location / {
+              try_files $uri $uri/ /index.html;
+            }
+          }
+        explanation: "Le routeur Angular reprend la main."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            server {
+              listen 80;
+              root /usr/share/nginx/html;
+            }
+          checks:
+            - pattern: 'try_files\s+\$uri\s+\$uri/\s+/?index\.html\s*;'
+              message: "Ajoute try_files $uri $uri/ /index.html;"
+
+  # ===================================================================== LEÇON 6
+  - slug: dk-proxy
+    title: "Relayer l'API : le proxy inverse"
+    duration: 10
+    objective: "Faire transmettre par Nginx les appels /api au conteneur Spring Boot."
+    prerequisites: "Leçon « Servir Angular avec Nginx »."
+    skills: [docker-deploiement]
+    xp: 15
+    memo: |
+      - **Proxy inverse** : `location /api/ { proxy_pass http://api:8080; }`.
+      - Le navigateur ne parle qu'à **Nginx** : même origine pour le frontend et l'API, plus de souci CORS.
+      - C'est aussi l'endroit idéal pour gérer HTTPS et les en-têtes de sécurité.
+    commonMistakes: |
+      - Écrire l'adresse `http://localhost:8080` en dur dans le code Angular.
+      - Publier le port de la base en production.
+    blocks:
+      - type: definition
+        id: def-proxy
+        term: "Proxy inverse (reverse proxy)"
+        md: |
+          Le **standard d'accueil** d'une entreprise : le visiteur appelle un seul numéro, et le standard
+          transfère l'appel au bon service. Le navigateur parle uniquement à Nginx, qui transmet les demandes
+          `/api` à Spring Boot.
+      - type: code
+        id: code-proxy
+        language: text
+        title: "frontend/nginx.conf (avec le proxy)"
+        code: |
+          server {
+            listen 80;
+            root /usr/share/nginx/html;
+
+            location /api/ {
+              proxy_pass http://api:8080;
+            }
+
+            location / {
+              try_files $uri $uri/ /index.html;
+            }
+          }
+        lines:
+          - n: 5
+            note: "Tout ce qui commence par `/api/`…"
+          - n: 6
+            note: "… est transmis au service `api` de Docker Compose."
+      - type: question
+        ref: dk-ng-q2
+        review: code-proxy
+      - type: question
+        ref: dk-ng-q5
+        review: def-proxy
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète nginx.conf."
+      - type: exercise
+        ref: dk-ex-nginx-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : relayer une deuxième API."
+      - type: exercise
+        ref: dk-ex-proxy-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une adresse en dur."
+      - type: exercise
+        ref: dk-ex-proxy-bug
+      - type: jury
+        items:
+          - q: "Pourquoi un proxy inverse ?"
+            a: "Le navigateur ne voit qu'une seule origine : les appels /api partent vers le même domaine, donc pas de configuration CORS complexe. C'est aussi l'endroit idéal pour gérer HTTPS, la compression et les en-têtes de sécurité."
+      - type: quiz
+        items:
+          - ref: dk-c2-b2
+            review: def-proxy
+          - ref: dk-px-q4
+            review: code-proxy
+          - ref: dk-px-q5
+            review: def-proxy
+    questions:
+      - code: dk-ng-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Avec `location /api/ { proxy_pass http://api:8080; }`, que devient un appel du navigateur à `/api/livres` ?"
+        choices:
+          - label: "Nginx le transmet au conteneur `api` sur le port 8080"
+            correct: true
+            why: "C'est le rôle du proxy inverse."
+          - label: "Nginx cherche un fichier api/livres"
+            correct: false
+            why: "Ce bloc transmet au lieu de servir un fichier."
+          - label: "Le navigateur appelle directement le port 8080"
+            correct: false
+            why: "Le navigateur ne parle qu'à Nginx."
+        explanation: "Une seule origine pour le navigateur."
+      - code: dk-ng-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Quelle directive Nginx transmet une requête à un autre serveur ? (un mot)"
+        answers: ["proxy_pass"]
+        explanation: "`proxy_pass http://api:8080;`"
+      - code: dk-c2-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Pourquoi ne pas publier le port 5432 de PostgreSQL en production ?"
+        choices:
+          - label: "Seule l'API a besoin de la base : l'exposer à Internet ouvrirait une porte aux attaques"
+            correct: true
+            why: "Moindre exposition : la base reste sur le réseau interne de Compose."
+          - label: "PostgreSQL ne fonctionne pas avec un port publié"
+            correct: false
+            why: "Il fonctionne, mais c'est dangereux."
+          - label: "Cela ralentit la base"
+            correct: false
+            why: "C'est une question de sécurité."
+        explanation: "Les services se parlent en interne sans publier de port."
+      - code: dk-px-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Avec le proxy, Angular peut appeler simplement `/api/livres`, sans écrire l'adresse du serveur."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Même origine que la page."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement l'intérêt du proxy."
+        explanation: "Des adresses relatives, valables partout."
+      - code: dk-px-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Pourquoi le proxy évite-t-il les soucis CORS ?"
+        choices:
+          - label: "Le navigateur voit le frontend et l'API sur la même origine"
+            correct: true
+            why: "Pas d'appel vers un autre domaine."
+          - label: "Il désactive la sécurité du navigateur"
+            correct: false
+            why: "Il ne désactive rien."
+          - label: "Il chiffre les requêtes"
+            correct: false
+            why: "C'est le rôle de HTTPS."
+        explanation: "Une seule porte d'entrée."
+    exercises:
+      - slug: dk-ex-nginx-guide
+        kind: COMPLETER
+        title: "Compléter nginx.conf"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Complète la configuration : port, transmission vers l'API, repli sur index.html."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Nginx écoute sur le port 80."
+          - "La directive de transmission : proxy_pass."
+          - "80, proxy_pass, index.html."
+        solution: '["80", "proxy_pass", "/index.html"]'
+        explanation: "Écouter, relayer l'API, laisser le routeur Angular gérer le reste."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            server {
+              listen [[1]];
+              location /api/ { [[2]] http://api:8080; }
+              location / { try_files $uri $uri/ [[3]]; }
+            }
+          blanks:
+            - ["80"]
+            - ["proxy_pass"]
+            - ["/index.html", "index.html"]
+      - slug: dk-ex-proxy-libre
+        kind: CODE_LIBRE
+        title: "Relayer une deuxième API"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Un service `notifications` (port 8090) doit recevoir tout ce qui commence par `/notifications/`.
+          Écris le bloc `location` correspondant.
+        criteria: "location /notifications/ { proxy_pass http://notifications:8090; }"
+        hints:
+          - "Un bloc location par préfixe."
+          - "La directive : proxy_pass."
+          - "`location /notifications/ { proxy_pass http://notifications:8090; }`"
+        solution: |
+          location /notifications/ {
+            proxy_pass http://notifications:8090;
+          }
+        explanation: "Un préfixe, un service."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            location {
+            }
+          checks:
+            - pattern: 'location\s+/notifications/\s*\{\s*proxy_pass\s+http://notifications:8090\s*;'
+              message: "Écris location /notifications/ { proxy_pass http://notifications:8090; }"
+      - slug: dk-ex-proxy-bug
+        kind: CORRIGER_ERREUR
+        title: "Une adresse en dur"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Le service Angular appelle `http://localhost:8080/api/livres` : en production, cette adresse ne
+          marchera pas. Grâce au proxy, remplace-la par l'adresse relative `/api/livres`.
+        criteria: "http.get('/api/livres'), plus de localhost."
+        hints:
+          - "Le navigateur parle à Nginx."
+          - "Nginx relaie /api."
+          - "`this.http.get<Livre[]>('/api/livres')`"
+        solution: |
+          lister(): Observable<Livre[]> {
+            return this.http.get<Livre[]>('/api/livres');
+          }
+        explanation: "Une adresse valable partout."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            lister(): Observable<Livre[]> {
+              return this.http.get<Livre[]>('http://localhost:8080/api/livres');
+            }
+          checks:
+            - pattern: 'localhost'
+              absent: true
+              message: "Pas d'adresse en dur."
+            - pattern: "http\\.get\\s*(?:<[^>]*>)?\\s*\\(\\s*['\"]/api/livres['\"]\\s*\\)"
+              message: "Écris this.http.get<Livre[]>('/api/livres')."
 
 bank:
-  - code: dk-c2-b1
+  - code: dk-c2-b3
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: docker-deploiement
-    prompt: "Quelle commande affiche les journaux du service `api` défini dans Compose ?"
+    prompt: "Quelle commande arrête et supprime les conteneurs d'un fichier Compose (en gardant les volumes) ?"
     choices:
-      - label: "docker compose logs api"
+      - label: "docker compose down"
         correct: true
-        why: "Ajouter `-f` pour suivre en direct."
-      - label: "docker compose ps api"
+        why: "Sans -v, les volumes restent."
+      - label: "docker compose up"
         correct: false
-        why: "Elle liste l'état des services."
-      - label: "docker compose build api"
+        why: "Elle démarre."
+      - label: "docker compose down -v"
         correct: false
-        why: "Elle construit l'image."
-    explanation: "`docker compose logs -f api` pour suivre en temps réel."
-  - code: dk-c2-b2
+        why: "Elle supprime aussi les volumes."
+    explanation: "down garde les données, down -v les efface."
+  - code: dk-c2-b4
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: docker-deploiement
-    prompt: "Pourquoi ne pas publier le port 5432 de PostgreSQL en production ?"
+    prompt: "Qu'est-ce que Nginx ?"
     choices:
-      - label: "Seule l'API a besoin de la base : l'exposer à Internet ouvrirait une porte aux attaques"
+      - label: "Un serveur web léger qui sert des fichiers et relaie des requêtes"
         correct: true
-        why: "Moindre exposition : la base reste sur le réseau interne de Compose."
-      - label: "PostgreSQL ne fonctionne pas avec un port publié"
+        why: "Serveur + proxy."
+      - label: "Une base de données"
         correct: false
-        why: "Il fonctionne, mais c'est dangereux."
-      - label: "Cela ralentit la base"
+        why: "C'est PostgreSQL."
+      - label: "Un framework JavaScript"
         correct: false
-        why: "C'est une question de sécurité."
-    explanation: "Les services se parlent en interne sans publier de port."
+        why: "C'est Angular."
+    explanation: "Il sert le frontend et relaie l'API."

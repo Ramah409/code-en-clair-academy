@@ -1,5 +1,5 @@
 slug: docker-deploiement
-version: 1
+version: 2
 position: 10
 title: "Docker et déploiement"
 summary: "Mettre son application dans des conteneurs, tout lancer avec Docker Compose, servir Angular avec Nginx, déployer automatiquement et surveiller la production."

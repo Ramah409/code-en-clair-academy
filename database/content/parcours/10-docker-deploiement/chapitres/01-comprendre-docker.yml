@@ -2,29 +2,26 @@ slug: dk-comprendre-docker
 position: 1
 level: DEBUTANT
 title: "Comprendre Docker"
-summary: "Image, conteneur, registre : les notions de base, les commandes essentielles, puis un Dockerfile pour l'API Spring Boot."
-quizQuestionCount: 10
+summary: "Image, conteneur et registre, les commandes du quotidien, la publication de port, un premier Dockerfile, puis la construction en plusieurs étapes. Une seule notion par leçon."
+quizQuestionCount: 14
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: dk-conteneurs
-    title: "Images et conteneurs"
-    duration: 12
-    objective: "Distinguer image, conteneur et registre, et utiliser les commandes Docker de base."
+    title: "Image, conteneur, registre"
+    duration: 9
+    objective: "Distinguer image, conteneur et registre."
     prerequisites: "Parcours « Spring Boot » (chapitre 1)."
     skills: [docker-deploiement]
-    xp: 20
+    xp: 15
     memo: |
-      - **Image** : un modèle en lecture seule (le système, les outils, ton application). Comme une **recette**.
-      - **Conteneur** : une image **en train de tourner**. Comme le **plat** cuisiné à partir de la recette. On peut en lancer plusieurs.
+      - **Image** : un modèle en lecture seule (le système, les outils, ton application). Comme un **moule**.
+      - **Conteneur** : une image **en train de tourner**. Comme le **gâteau** sorti du moule. On peut en lancer plusieurs.
       - **Registre** : l'endroit où l'on range et partage les images (Docker Hub, GitHub Container Registry).
-      - `docker run -d -p 8080:8080 --name api mon-api:1.0` : lancer un conteneur en arrière-plan.
-      - `docker ps` (lister), `docker logs api` (journaux), `docker stop api` (arrêter), `docker exec -it api sh` (entrer dedans).
-      - **Port** `-p 5433:5432` : le port 5433 de ta machine mène au port 5432 du conteneur.
+      - Un conteneur partage le noyau de la machine : ce n'est **pas** une machine virtuelle.
     commonMistakes: |
       - Confondre image et conteneur.
-      - Oublier `-p` : l'application tourne mais personne ne peut l'atteindre.
-      - Stocker des données importantes dans un conteneur sans volume : elles disparaissent avec lui.
+      - Croire qu'un conteneur est une machine virtuelle complète.
     blocks:
       - type: text
         md: |
@@ -36,53 +33,37 @@ lessons:
         md: |
           L'**image**, c'est le **moule à gâteau** : il ne change pas. Le **conteneur**, c'est le **gâteau**
           sorti du moule : on peut en faire plusieurs, les manger (les supprimer), et en refaire des neufs à
-          partir du même moule.
+          partir du même moule. Le **registre**, c'est la **boutique** où l'on range les moules.
       - type: code
-        id: code-commandes
+        id: code-image
         language: bash
-        title: "Les commandes de base"
+        title: "Du registre au conteneur"
         code: |
           docker pull postgres:16-alpine
-          docker run -d --name bdd -p 5433:5432 -e POSTGRES_PASSWORD=secret-local postgres:16-alpine
-          docker ps
-          docker logs bdd
-          docker exec -it bdd psql -U postgres
-          docker stop bdd
-          docker rm bdd
+          docker run -d --name bdd postgres:16-alpine
         lines:
           - n: 1
-            note: "Télécharge l'image depuis le registre Docker Hub."
+            note: "Télécharge l'**image** depuis le registre Docker Hub."
           - n: 2
-            note: "`-d` : en arrière-plan ; `--name` : un nom facile ; `-p` : ouvre le port ; `-e` : une variable d'environnement."
-          - n: 3
-            note: "Liste les conteneurs qui tournent."
-          - n: 4
-            note: "Affiche ce que le conteneur a écrit : indispensable pour comprendre une erreur."
-          - n: 5
-            note: "Ouvre `psql` **à l'intérieur** du conteneur."
-          - n: 7
-            note: "Supprime le conteneur arrêté. L'image, elle, reste."
+            note: "Crée et lance un **conteneur** à partir de cette image."
       - type: question
         ref: dk-ct-q1
         review: def-image-conteneur
-      - type: definition
-        id: def-port
-        term: "Publication de port"
-        md: |
-          Le conteneur est un **appartement** dans un immeuble. `-p 5433:5432` pose une **boîte aux lettres**
-          sur la façade (port 5433 de ta machine) qui transmet le courrier à l'appartement (port 5432 dans
-          le conteneur).
       - type: question
-        ref: dk-ct-q2
-        review: def-port
+        ref: dk-ct-q5
+        review: def-image-conteneur
       - type: text
-        md: "Exercice guidé : complète les commandes."
+        md: "**Exercice 1 (guidé)** : image, conteneur ou registre ?"
       - type: exercise
-        ref: dk-ex-commandes-guide
+        ref: dk-ex-notions-guide
       - type: text
-        md: "En autonomie : lance un conteneur Nginx."
+        md: "**Exercice 2 (en autonomie)** : expliquer avec ses mots."
       - type: exercise
-        ref: dk-ex-run
+        ref: dk-ex-notions-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une confusion."
+      - type: exercise
+        ref: dk-ex-notions-bug
       - type: jury
         items:
           - q: "Quelle différence entre une image et un conteneur ?"
@@ -91,12 +72,12 @@ lessons:
             a: "Non : une machine virtuelle embarque un système d'exploitation complet. Un conteneur partage le noyau de la machine hôte et n'isole que les processus, le réseau et les fichiers. Il est donc beaucoup plus léger et démarre en quelques secondes."
       - type: quiz
         items:
-          - ref: dk-ct-q3
-            review: code-commandes
-          - ref: dk-ct-q4
-            review: code-commandes
-          - ref: dk-ct-q5
+          - ref: dk-ic-q3
             review: def-image-conteneur
+          - ref: dk-ic-q4
+            review: code-image
+          - ref: dk-c1-b2
+            review: code-image
     questions:
       - code: dk-ct-q1
         kind: CHOIX_UNIQUE
@@ -114,22 +95,212 @@ lessons:
             correct: false
             why: "C'est un registre."
         explanation: "Image = modèle ; conteneur = instance qui tourne."
-      - code: dk-ct-q2
+      - code: dk-ct-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Comment appelle-t-on le service où l'on stocke et partage des images Docker ? (un mot)"
+        answers: ["registre", "registry", "Registre"]
+        explanation: "Docker Hub, GitHub Container Registry (ghcr.io)…"
+      - code: dk-ic-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "On peut lancer plusieurs conteneurs à partir d'une même image."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Plusieurs gâteaux, un seul moule."
+          - label: "Faux"
+            correct: false
+            why: "L'image est un modèle réutilisable."
+        explanation: "Une image, autant de conteneurs qu'on veut."
+      - code: dk-ic-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Que fait `docker pull postgres:16-alpine` ?"
+        choices:
+          - label: "Il télécharge l'image depuis le registre"
+            correct: true
+            why: "Il ne lance rien."
+          - label: "Il lance un conteneur"
+            correct: false
+            why: "C'est docker run."
+          - label: "Il supprime l'image"
+            correct: false
+            why: "C'est docker rmi."
+        explanation: "pull = récupérer le moule."
+      - code: dk-c1-b2
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: docker-deploiement
-        prompt: "Avec `-p 5433:5432`, sur quel port ta machine atteint-elle PostgreSQL ?"
+        prompt: "Pourquoi préciser une version d'image (`postgres:16-alpine`) plutôt que `postgres:latest` ?"
         choices:
-          - label: "5433"
+          - label: "Pour que tout le monde utilise exactement la même version, sans surprise lors d'une mise à jour"
             correct: true
-            why: "Le premier nombre est le port de ta machine."
-          - label: "5432"
+            why: "Des environnements reproductibles."
+          - label: "latest n'existe pas"
             correct: false
-            why: "C'est le port à l'intérieur du conteneur."
-          - label: "8080"
+            why: "Il existe, mais il change avec le temps."
+          - label: "Pour que l'image soit plus rapide"
             correct: false
-            why: "Il n'apparaît pas dans la commande."
-        explanation: "`-p machine:conteneur`."
+            why: "La vitesse n'est pas en jeu."
+        explanation: "La même version en développement, en CI et en production."
+    exercises:
+      - slug: dk-ex-notions-guide
+        kind: COMPLETER
+        title: "Image, conteneur ou registre ?"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Complète avec : image, conteneur, registre."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le modèle en lecture seule : image."
+          - "Ce qui tourne : conteneur ; où l'on partage : registre."
+          - "image, conteneur, registre."
+        solution: '["image", "conteneur", "registre"]'
+        explanation: "Moule, gâteau, boutique."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Le modèle qui ne change pas : l'[[1]]
+            Ce qui tourne à partir du modèle : le [[2]]
+            L'endroit où l'on partage les modèles : le [[3]]
+          blanks:
+            - ["image"]
+            - ["conteneur"]
+            - ["registre", "registry"]
+      - slug: dk-ex-notions-libre
+        kind: CODE_LIBRE
+        title: "Expliquer avec ses mots"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: |
+          En deux phrases, explique la différence entre une image et un conteneur. Utilise les mots **image**,
+          **conteneur** et **modèle** (ou **moule**).
+        criteria: "Les trois mots sont présents dans une explication."
+        hints:
+          - "L'image est un modèle qui ne change pas."
+          - "Le conteneur, c'est l'image qui tourne."
+          - "On peut lancer plusieurs conteneurs à partir d'une image."
+        solution: |
+          Une image est un modèle en lecture seule qui contient l'application et son environnement.
+          Un conteneur est cette image en train de tourner ; on peut en lancer plusieurs à partir du même modèle.
+        explanation: "Moule et gâteaux."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Une image
+          checks:
+            - pattern: '(?i)\bimage'
+              message: "Parle de l'image."
+            - pattern: '(?i)\bconteneur'
+              message: "Parle du conteneur."
+            - pattern: '(?i)mod[èe]le|moule'
+              message: "Utilise le mot modèle (ou moule)."
+      - slug: dk-ex-notions-bug
+        kind: CORRIGER_ERREUR
+        title: "Une confusion"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Cette phrase inverse image et conteneur. Corrige-la : « Le conteneur est l'image en train de tourner. »
+        criteria: "Le conteneur est l'image en train de tourner."
+        hints:
+          - "Qu'est-ce qui tourne ?"
+          - "Le conteneur."
+          - "« Le conteneur est l'image en train de tourner. »"
+        solution: |
+          Le conteneur est l'image en train de tourner.
+        explanation: "Le gâteau sort du moule, pas l'inverse."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            L'image est le conteneur en train de tourner.
+          checks:
+            - pattern: "(?i)l'image est le conteneur"
+              absent: true
+              message: "C'est l'inverse."
+            - pattern: "(?i)le conteneur est l'image en train de tourner"
+              message: "Écris : Le conteneur est l'image en train de tourner."
+
+  # ===================================================================== LEÇON 2
+  - slug: dk-commandes
+    title: "Les commandes du quotidien"
+    duration: 10
+    objective: "Lancer, lister, lire les journaux, entrer dans un conteneur, l'arrêter et le supprimer."
+    prerequisites: "Leçon « Image, conteneur, registre »."
+    skills: [docker-deploiement]
+    xp: 15
+    memo: |
+      - `docker run -d --name api mon-api:1.0` : lancer un conteneur en arrière-plan, avec un nom.
+      - `docker ps` : lister ; `docker logs api` : lire les journaux ; `docker exec -it api sh` : entrer dedans.
+      - `docker stop api` : arrêter ; `docker rm api` : supprimer le conteneur (l'image reste).
+      - En cas de problème : **les logs d'abord**.
+    commonMistakes: |
+      - Supprimer le conteneur avant d'avoir lu ses logs.
+      - Croire que `docker rm` supprime l'image.
+    blocks:
+      - type: definition
+        id: def-commandes
+        term: "Le cycle de vie d'un conteneur"
+        md: |
+          Comme un **appareil électrique** : on l'allume (`run`), on vérifie qu'il marche (`ps`), on lit son
+          écran d'erreur (`logs`), on l'éteint (`stop`), puis on le range (`rm`).
+      - type: code
+        id: code-commandes
+        language: bash
+        title: "Les commandes de base"
+        code: |
+          docker run -d --name bdd -e POSTGRES_PASSWORD=secret-local postgres:16-alpine
+          docker ps
+          docker logs bdd
+          docker exec -it bdd psql -U postgres
+          docker stop bdd
+          docker rm bdd
+        lines:
+          - n: 1
+            note: "`-d` : en arrière-plan ; `--name` : un nom facile ; `-e` : une variable d'environnement."
+          - n: 2
+            note: "Liste les conteneurs qui tournent."
+          - n: 3
+            note: "Affiche ce que le conteneur a écrit : indispensable pour comprendre une erreur."
+          - n: 4
+            note: "Ouvre `psql` **à l'intérieur** du conteneur."
+          - n: 6
+            note: "Supprime le conteneur arrêté. L'image, elle, reste."
+      - type: question
+        ref: dk-ct-q3
+        review: code-commandes
+      - type: question
+        ref: dk-ct-q4
+        review: def-commandes
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les commandes."
+      - type: exercise
+        ref: dk-ex-commandes-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : lancer et inspecter."
+      - type: exercise
+        ref: dk-ex-commandes-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des indices supprimés."
+      - type: exercise
+        ref: dk-ex-commandes-bug
+      - type: quiz
+        items:
+          - ref: dk-cm-q3
+            review: code-commandes
+          - ref: dk-cm-q4
+            review: code-commandes
+          - ref: dk-cm-q5
+            review: def-commandes
+    questions:
       - code: dk-ct-q3
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -159,13 +330,54 @@ lessons:
             correct: true
             why: "L'image se supprime avec `docker rmi`."
         explanation: "Le moule reste quand on mange le gâteau."
-      - code: dk-ct-q5
-        kind: TEXTE
+      - code: dk-cm-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Que fait l'option `-d` de `docker run` ?"
+        choices:
+          - label: "Elle lance le conteneur en arrière-plan"
+            correct: true
+            why: "Le terminal reste libre."
+          - label: "Elle supprime le conteneur"
+            correct: false
+            why: "C'est docker rm."
+          - label: "Elle télécharge l'image"
+            correct: false
+            why: "C'est docker pull."
+        explanation: "-d = detached."
+      - code: dk-cm-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Quelle commande liste les conteneurs qui tournent ?"
+        choices:
+          - label: "docker ps"
+            correct: true
+            why: "Comme ps sous Linux."
+          - label: "docker logs"
+            correct: false
+            why: "Elle affiche les journaux."
+          - label: "docker stop"
+            correct: false
+            why: "Elle arrête."
+        explanation: "ps = processus."
+      - code: dk-cm-q5
+        kind: CHOIX_UNIQUE
         difficulty: 2
         skill: docker-deploiement
-        prompt: "Comment appelle-t-on le service où l'on stocke et partage des images Docker ? (un mot)"
-        answers: ["registre", "registry", "Registre"]
-        explanation: "Docker Hub, GitHub Container Registry (ghcr.io)…"
+        prompt: "À quoi sert `docker exec -it bdd psql -U postgres` ?"
+        choices:
+          - label: "À ouvrir psql à l'intérieur du conteneur bdd"
+            correct: true
+            why: "On entre dans le conteneur."
+          - label: "À créer le conteneur bdd"
+            correct: false
+            why: "C'est docker run."
+          - label: "À supprimer la base"
+            correct: false
+            why: "Il ouvre seulement une console."
+        explanation: "exec = exécuter une commande dans un conteneur qui tourne."
     exercises:
       - slug: dk-ex-commandes-guide
         kind: COMPLETER
@@ -184,7 +396,7 @@ lessons:
         payload:
           language: bash
           template: |
-            docker [[1]] -d --name api -p 8080:8080 mon-api:1.0
+            docker [[1]] -d --name api mon-api:1.0
             docker [[2]]
             docker [[3]] api
             docker [[4]] api
@@ -193,6 +405,229 @@ lessons:
             - ["ps"]
             - ["logs"]
             - ["stop"]
+      - slug: dk-ex-commandes-libre
+        kind: CODE_LIBRE
+        title: "Lancer et inspecter"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Écris trois commandes, une par ligne :
+          1. lancer en arrière-plan un conteneur nommé `cache` à partir de l'image `redis:7-alpine` ;
+          2. lister les conteneurs qui tournent ;
+          3. lire les journaux du conteneur `cache`.
+        criteria: "docker run -d --name cache redis:7-alpine, docker ps, docker logs cache."
+        hints:
+          - "`docker run -d --name cache redis:7-alpine`"
+          - "`docker ps`"
+          - "`docker logs cache`"
+        solution: |
+          docker run -d --name cache redis:7-alpine
+          docker ps
+          docker logs cache
+        explanation: "Lancer, vérifier, lire."
+        xp: 15
+        payload:
+          language: bash
+          starter: |
+            docker
+          checks:
+            - pattern: 'docker\s+run\s+(?=[^\n]*-d\b)(?=[^\n]*--name[\s=]+cache\b)[^\n]*redis:7-alpine'
+              message: "Lance : docker run -d --name cache redis:7-alpine."
+            - pattern: '(?m)^\s*docker\s+ps\s*$'
+              message: "Liste avec docker ps."
+            - pattern: '(?m)^\s*docker\s+logs\s+cache\s*$'
+              message: "Lis les journaux avec docker logs cache."
+      - slug: dk-ex-commandes-bug
+        kind: CORRIGER_ERREUR
+        title: "Des indices supprimés"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Le conteneur `api` plante. Ces commandes le suppriment tout de suite, sans lire ce qui s'est passé.
+          Remplace `docker rm api` par `docker logs api`.
+        criteria: "docker logs api, plus de docker rm."
+        hints:
+          - "Où se trouve le message d'erreur ?"
+          - "Dans les journaux."
+          - "`docker logs api`"
+        solution: |
+          docker ps -a
+          docker logs api
+        explanation: "Les logs d'abord."
+        xp: 10
+        payload:
+          language: bash
+          starter: |
+            docker ps -a
+            docker rm api
+          checks:
+            - pattern: 'docker\s+rm\b'
+              absent: true
+              message: "Ne supprime pas les indices."
+            - pattern: 'docker\s+logs\s+api'
+              message: "Écris docker logs api."
+
+  # ===================================================================== LEÇON 3
+  - slug: dk-ports
+    title: "Ouvrir un port : -p"
+    duration: 9
+    objective: "Publier le port d'un conteneur pour l'atteindre depuis sa machine."
+    prerequisites: "Leçon « Les commandes du quotidien »."
+    skills: [docker-deploiement]
+    xp: 15
+    memo: |
+      - Sans `-p`, l'application tourne dans le conteneur mais **personne** ne peut l'atteindre.
+      - `-p 5433:5432` : le port **5433 de ta machine** mène au port **5432 du conteneur**.
+      - L'ordre : `-p machine:conteneur`.
+    commonMistakes: |
+      - Oublier `-p` : l'application tourne mais personne ne peut l'atteindre.
+      - Inverser les deux ports.
+    blocks:
+      - type: definition
+        id: def-port
+        term: "Publication de port"
+        md: |
+          Le conteneur est un **appartement** dans un immeuble. `-p 5433:5432` pose une **boîte aux lettres**
+          sur la façade (port 5433 de ta machine) qui transmet le courrier à l'appartement (port 5432 dans
+          le conteneur).
+      - type: code
+        id: code-port
+        language: bash
+        title: "PostgreSQL accessible depuis ta machine"
+        code: |
+          docker run -d --name bdd -p 5433:5432 -e POSTGRES_PASSWORD=secret-local postgres:16-alpine
+          psql -h localhost -p 5433 -U postgres
+        lines:
+          - n: 1
+            note: "`-p 5433:5432` : à gauche ta machine, à droite le conteneur."
+          - n: 2
+            note: "Depuis ta machine, on se connecte sur le port 5433."
+      - type: question
+        ref: dk-ct-q2
+        review: def-port
+      - type: question
+        ref: dk-po-q2
+        review: code-port
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la publication."
+      - type: exercise
+        ref: dk-ex-port-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : lancer un serveur web."
+      - type: exercise
+        ref: dk-ex-run
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une application injoignable."
+      - type: exercise
+        ref: dk-ex-port-bug
+      - type: quiz
+        items:
+          - ref: dk-po-q3
+            review: def-port
+          - ref: dk-po-q4
+            review: code-port
+          - ref: dk-po-q5
+            review: def-port
+    questions:
+      - code: dk-ct-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Avec `-p 5433:5432`, sur quel port ta machine atteint-elle PostgreSQL ?"
+        choices:
+          - label: "5433"
+            correct: true
+            why: "Le premier nombre est le port de ta machine."
+          - label: "5432"
+            correct: false
+            why: "C'est le port à l'intérieur du conteneur."
+          - label: "8080"
+            correct: false
+            why: "Il n'apparaît pas dans la commande."
+        explanation: "`-p machine:conteneur`."
+      - code: dk-po-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Sans l'option `-p`, on peut quand même ouvrir l'application depuis son navigateur."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Le port n'est pas publié."
+          - label: "Faux"
+            correct: true
+            why: "Il faut publier le port avec -p."
+        explanation: "Pas de boîte aux lettres, pas de courrier."
+      - code: dk-po-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Dans `-p 8081:80`, que représente 80 ?"
+        choices:
+          - label: "Le port à l'intérieur du conteneur"
+            correct: true
+            why: "À droite : le conteneur."
+          - label: "Le port de ta machine"
+            correct: false
+            why: "C'est 8081, à gauche."
+          - label: "Le nombre de conteneurs"
+            correct: false
+            why: "C'est un port."
+        explanation: "machine:conteneur."
+      - code: dk-po-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Pourquoi publier PostgreSQL sur 5433 plutôt que 5432 sur ta machine ?"
+        choices:
+          - label: "Pour ne pas entrer en conflit avec un PostgreSQL déjà installé sur le port 5432"
+            correct: true
+            why: "Deux programmes ne peuvent pas écouter le même port."
+          - label: "Parce que 5432 est interdit"
+            correct: false
+            why: "Il est permis s'il est libre."
+          - label: "Pour aller plus vite"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Un port = une seule application à la fois."
+      - code: dk-po-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Quelle option publie le port d'un conteneur ?"
+        choices:
+          - label: "-p"
+            correct: true
+            why: "publish."
+          - label: "-d"
+            correct: false
+            why: "Arrière-plan."
+          - label: "-e"
+            correct: false
+            why: "Variable d'environnement."
+        explanation: "-p machine:conteneur."
+    exercises:
+      - slug: dk-ex-port-guide
+        kind: COMPLETER
+        title: "Compléter la publication"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "L'API écoute sur 8080 dans le conteneur ; on veut l'atteindre sur 8080 de la machine. Complète."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "L'option : -p."
+          - "machine:conteneur."
+          - "-p, 8080:8080."
+        solution: '["-p", "8080:8080"]'
+        explanation: "La boîte aux lettres est posée."
+        xp: 10
+        payload:
+          language: bash
+          template: |
+            docker run -d --name api [[1]] [[2]] mon-api:1.0
+          blanks:
+            - ["-p", "--publish"]
+            - ["8080:8080"]
       - slug: dk-ex-run
         kind: CODE_LIBRE
         title: "Lancer un serveur web"
@@ -227,30 +662,288 @@ lessons:
               message: "Publie le port avec `-p 8081:80`."
             - pattern: 'nginx:alpine\s*$'
               message: "L'image `nginx:alpine` se place à la fin de la commande."
+      - slug: dk-ex-port-bug
+        kind: CORRIGER_ERREUR
+        title: "Une application injoignable"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          L'API tourne, mais `http://localhost:8080` ne répond pas : le port n'est pas publié. Ajoute
+          `-p 8080:8080`.
+        criteria: "-p 8080:8080 dans la commande."
+        hints:
+          - "Il manque la boîte aux lettres."
+          - "L'option -p."
+          - "`docker run -d --name api -p 8080:8080 mon-api:1.0`"
+        solution: |
+          docker run -d --name api -p 8080:8080 mon-api:1.0
+        explanation: "Le port est maintenant ouvert."
+        xp: 10
+        payload:
+          language: bash
+          starter: |
+            docker run -d --name api mon-api:1.0
+          checks:
+            - pattern: '(?:-p|--publish)[\s=]+8080:8080\b'
+              message: "Ajoute -p 8080:8080."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 4
   - slug: dk-dockerfile
-    title: "Écrire un Dockerfile pour l'API"
-    duration: 14
-    objective: "Écrire un Dockerfile en deux étapes pour une application Spring Boot, construire l'image et la lancer."
-    prerequisites: "Leçon « Images et conteneurs »."
-    skills: [docker-deploiement, spring-structure]
-    xp: 25
+    title: "Écrire un Dockerfile"
+    duration: 11
+    objective: "Écrire les instructions de base d'un Dockerfile, construire l'image et la lancer."
+    prerequisites: "Leçon « Ouvrir un port : -p »."
+    skills: [docker-deploiement]
+    xp: 15
     memo: |
       - **Dockerfile** : la recette de l'image, instruction par instruction.
       - `FROM` (image de départ), `WORKDIR` (dossier de travail), `COPY` (copier des fichiers), `RUN` (exécuter pendant la construction), `EXPOSE` (port documenté), `ENTRYPOINT`/`CMD` (commande au démarrage).
-      - **Multi-étapes** : une étape « construction » avec Maven et le JDK, une étape « exécution » légère avec seulement le JRE.
-      - `docker build -t mon-api:1.0 .` construit ; `docker run` lance.
-      - Ne jamais copier de secret dans l'image ; utiliser un utilisateur non-root ; un `.dockerignore`.
+      - `docker build -t mon-api:1.0 .` construit l'image ; `docker run` la lance.
+      - Docker garde en **cache** les étapes qui n'ont pas changé.
     commonMistakes: |
-      - Une image finale de 800 Mo qui contient Maven, le JDK et le code source.
+      - Confondre RUN (à la construction) et ENTRYPOINT (au démarrage).
       - `COPY . .` avant de télécharger les dépendances : le cache Docker ne sert plus à rien.
+    blocks:
+      - type: definition
+        id: def-dockerfile
+        term: "Dockerfile"
+        md: |
+          La **recette** de l'image : chaque ligne est une étape (prendre une base, poser les ingrédients,
+          cuire), et la dernière dit comment servir le plat (la commande de démarrage).
+      - type: code
+        id: code-dockerfile-simple
+        language: dockerfile
+        title: "Un Dockerfile simple pour un jar déjà construit"
+        code: |
+          FROM eclipse-temurin:21-jre-alpine
+          WORKDIR /app
+          COPY target/app.jar app.jar
+          EXPOSE 8080
+          ENTRYPOINT ["java", "-jar", "app.jar"]
+        lines:
+          - n: 1
+            note: "L'image de départ : Java 21 (JRE), sur Alpine."
+          - n: 2
+            note: "Le dossier de travail dans l'image."
+          - n: 3
+            note: "Copie le jar dans l'image."
+          - n: 4
+            note: "Documente le port de l'application."
+          - n: 5
+            note: "La commande lancée au démarrage du conteneur."
+      - type: question
+        ref: dk-df-q3
+        review: code-dockerfile-simple
+      - type: question
+        ref: dk-dk-q2
+        review: code-dockerfile-simple
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le Dockerfile."
+      - type: exercise
+        ref: dk-ex-dockerfile-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : construire et lancer."
+      - type: exercise
+        ref: dk-ex-build-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une commande de démarrage mal placée."
+      - type: exercise
+        ref: dk-ex-dockerfile-bug
+      - type: jury
+        items:
+          - q: "Comment passez-vous la configuration au conteneur ?"
+            a: "Par des variables d'environnement au lancement (docker run -e, ou le fichier .env lu par Docker Compose). L'image ne contient aucun secret : la même image sert en recette et en production."
+      - type: quiz
+        items:
+          - ref: dk-dk-q3
+            review: code-dockerfile-simple
+          - ref: dk-dk-q4
+            review: def-dockerfile
+          - ref: dk-dk-q5
+            review: code-dockerfile-simple
+    questions:
+      - code: dk-df-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Quelle instruction définit la commande exécutée au démarrage du conteneur ?"
+        choices:
+          - label: "ENTRYPOINT (ou CMD)"
+            correct: true
+            why: "Elle s'exécute à chaque lancement."
+          - label: "RUN"
+            correct: false
+            why: "RUN s'exécute pendant la construction de l'image."
+          - label: "FROM"
+            correct: false
+            why: "FROM choisit l'image de départ."
+        explanation: "RUN = à la construction ; ENTRYPOINT/CMD = au démarrage."
+      - code: dk-dk-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Que fait `WORKDIR /app` ?"
+        choices:
+          - label: "Il choisit le dossier de travail dans l'image"
+            correct: true
+            why: "Les commandes suivantes s'exécutent dans /app."
+          - label: "Il crée un conteneur nommé app"
+            correct: false
+            why: "C'est docker run --name."
+          - label: "Il copie le dossier app"
+            correct: false
+            why: "C'est COPY."
+        explanation: "WORKDIR = se placer dans un dossier."
+      - code: dk-dk-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Quelle instruction choisit l'image de départ ?"
+        choices:
+          - label: "FROM"
+            correct: true
+            why: "Toujours la première."
+          - label: "COPY"
+            correct: false
+            why: "Elle copie des fichiers."
+          - label: "EXPOSE"
+            correct: false
+            why: "Elle documente un port."
+        explanation: "FROM = la base de la recette."
+      - code: dk-dk-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Quelle commande construit l'image à partir du Dockerfile ?"
+        choices:
+          - label: "`docker build -t mon-api:1.0 .`"
+            correct: true
+            why: "Le point = le dossier courant."
+          - label: "`docker run mon-api:1.0`"
+            correct: false
+            why: "Elle lance un conteneur."
+          - label: "`docker pull mon-api:1.0`"
+            correct: false
+            why: "Elle télécharge une image existante."
+        explanation: "build = fabriquer le moule."
+      - code: dk-dk-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "`RUN` s'exécute à chaque démarrage du conteneur."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "RUN s'exécute une fois, à la construction."
+          - label: "Faux"
+            correct: true
+            why: "Au démarrage, c'est ENTRYPOINT ou CMD."
+        explanation: "Construction ≠ démarrage."
+    exercises:
+      - slug: dk-ex-dockerfile-guide
+        kind: COMPLETER
+        title: "Compléter le Dockerfile"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Complète les instructions du Dockerfile."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "L'image de départ : FROM. Le dossier : WORKDIR."
+          - "Copier un fichier : COPY."
+          - "FROM, WORKDIR, COPY, ENTRYPOINT."
+        solution: '["FROM", "WORKDIR", "COPY", "ENTRYPOINT"]'
+        explanation: "Départ, dossier, copie, démarrage."
+        xp: 10
+        payload:
+          language: dockerfile
+          template: |
+            [[1]] eclipse-temurin:21-jre-alpine
+            [[2]] /app
+            [[3]] target/app.jar app.jar
+            EXPOSE 8080
+            [[4]] ["java", "-jar", "app.jar"]
+          blanks:
+            - ["FROM"]
+            - ["WORKDIR"]
+            - ["COPY"]
+            - ["ENTRYPOINT", "CMD"]
+      - slug: dk-ex-build-libre
+        kind: CODE_LIBRE
+        title: "Construire et lancer"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Écris deux commandes : construire l'image `bibliotheque-api:1.0` à partir du dossier courant, puis la
+          lancer en arrière-plan, nommée `api`, sur le port 8080.
+        criteria: "docker build -t bibliotheque-api:1.0 . puis docker run -d --name api -p 8080:8080 bibliotheque-api:1.0."
+        hints:
+          - "`docker build -t bibliotheque-api:1.0 .`"
+          - "N'oublie pas le point final."
+          - "`docker run -d --name api -p 8080:8080 bibliotheque-api:1.0`"
+        solution: |
+          docker build -t bibliotheque-api:1.0 .
+          docker run -d --name api -p 8080:8080 bibliotheque-api:1.0
+        explanation: "Fabriquer le moule, puis le gâteau."
+        xp: 15
+        payload:
+          language: bash
+          starter: |
+            docker build
+          checks:
+            - pattern: 'docker\s+build\s+-t\s+bibliotheque-api:1\.0\s+\.\s*$'
+              message: "Construis : docker build -t bibliotheque-api:1.0 ."
+            - pattern: 'docker\s+run\s+(?=[^\n]*-d\b)(?=[^\n]*--name[\s=]+api\b)(?=[^\n]*-p[\s=]+8080:8080)[^\n]*bibliotheque-api:1\.0'
+              message: "Lance : docker run -d --name api -p 8080:8080 bibliotheque-api:1.0."
+      - slug: dk-ex-dockerfile-bug
+        kind: CORRIGER_ERREUR
+        title: "Une commande de démarrage mal placée"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Ce Dockerfile lance l'application avec `RUN` : elle démarre pendant la construction, puis rien au
+          démarrage du conteneur. Remplace cette ligne par `ENTRYPOINT ["java", "-jar", "app.jar"]`.
+        criteria: "ENTRYPOINT, plus de RUN java -jar."
+        hints:
+          - "RUN = à la construction."
+          - "Au démarrage : ENTRYPOINT."
+          - "`ENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]`"
+        solution: |
+          FROM eclipse-temurin:21-jre-alpine
+          WORKDIR /app
+          COPY target/app.jar app.jar
+          ENTRYPOINT ["java", "-jar", "app.jar"]
+        explanation: "Construire d'un côté, démarrer de l'autre."
+        xp: 10
+        payload:
+          language: dockerfile
+          starter: |
+            FROM eclipse-temurin:21-jre-alpine
+            WORKDIR /app
+            COPY target/app.jar app.jar
+            RUN java -jar app.jar
+          checks:
+            - pattern: 'RUN\s+java\s+-jar'
+              absent: true
+              message: "RUN s'exécute à la construction."
+            - pattern: 'ENTRYPOINT\s*\[\s*"java"\s*,\s*"-jar"\s*,\s*"app\.jar"\s*\]'
+              message: "Écris ENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]."
+
+  # ===================================================================== LEÇON 5
+  - slug: dk-multi-etapes
+    title: "Une image légère : les étapes multiples"
+    duration: 12
+    objective: "Écrire un Dockerfile en deux étapes pour Spring Boot, sans code source, sans secret et sans root."
+    prerequisites: "Leçon « Écrire un Dockerfile »."
+    skills: [docker-deploiement, spring-structure]
+    xp: 15
+    memo: |
+      - **Multi-étapes** : une étape « construction » avec Maven et le JDK, une étape « exécution » légère avec seulement le JRE.
+      - `COPY --from=construction …` récupère seulement le jar.
+      - Ne jamais copier de secret dans l'image ; utiliser un utilisateur **non-root** (`USER app`) ; un `.dockerignore`.
+    commonMistakes: |
+      - Une image finale très lourde qui contient Maven, le JDK et le code source.
       - Copier le fichier `.env` dans l'image.
     blocks:
-      - type: text
-        md: |
-          Pour que Docker sache fabriquer l'image de ton API, tu écris sa **recette** : le Dockerfile. Chaque
-          ligne est une étape, et Docker garde en **cache** les étapes qui n'ont pas changé.
       - type: definition
         id: def-multi-etapes
         term: "Construction en plusieurs étapes"
@@ -293,53 +986,39 @@ lessons:
             note: "Un utilisateur sans privilèges : si l'application est piratée, les dégâts restent limités."
           - n: 12
             note: "On récupère **seulement** le `.jar` de l'étape 1."
-          - n: 15
-            note: "La commande lancée au démarrage du conteneur."
-      - type: question
-        ref: dk-df-q1
-        review: code-dockerfile
       - type: question
         ref: dk-df-q2
         review: def-multi-etapes
+      - type: question
+        ref: dk-df-q4
+        review: code-dockerfile
       - type: text
-        md: "Exercice guidé : complète le Dockerfile."
+        md: "**Exercice 1 (guidé)** : complète les deux étapes."
       - type: exercise
-        ref: dk-ex-dockerfile-guide
+        ref: dk-ex-multi-guide
       - type: text
-        md: "En autonomie : corrige ce Dockerfile trop lourd et dangereux."
+        md: "**Exercice 2 (en autonomie)** : un .dockerignore."
+      - type: exercise
+        ref: dk-ex-dockerignore-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un Dockerfile à alléger."
       - type: exercise
         ref: dk-ex-dockerfile-corriger
       - type: jury
         items:
           - q: "Expliquez votre Dockerfile."
             a: "Il a deux étapes. La première part d'une image JDK, télécharge les dépendances Maven (étape mise en cache) puis construit le jar. La seconde part d'une image JRE Alpine légère, crée un utilisateur non root, copie uniquement le jar et le lance. L'image finale est petite et ne contient ni le code source ni Maven."
-          - q: "Comment passez-vous la configuration au conteneur ?"
-            a: "Par des variables d'environnement au lancement (docker run -e, ou le fichier .env lu par Docker Compose). L'image ne contient aucun secret : la même image sert en recette et en production."
       - type: quiz
         items:
-          - ref: dk-df-q3
-            review: code-dockerfile
-          - ref: dk-df-q4
-            review: code-dockerfile
           - ref: dk-df-q5
             review: def-multi-etapes
+          - ref: dk-c1-b1
+            review: def-multi-etapes
+          - ref: dk-me-q5
+            review: code-dockerfile
+          - ref: dk-df-q1
+            review: code-dockerfile
     questions:
-      - code: dk-df-q1
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: docker-deploiement
-        prompt: "Pourquoi copier `pom.xml` et télécharger les dépendances **avant** de copier `src` ?"
-        choices:
-          - label: "Pour que Docker réutilise le cache des dépendances quand seul le code change"
-            correct: true
-            why: "Les constructions suivantes sont bien plus rapides."
-          - label: "Parce que Maven l'exige"
-            correct: false
-            why: "C'est une optimisation pour Docker."
-          - label: "Pour réduire la taille du code"
-            correct: false
-            why: "La taille du code ne change pas."
-        explanation: "Ce qui change rarement en haut, ce qui change souvent en bas."
       - code: dk-df-q2
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -356,22 +1035,6 @@ lessons:
             correct: false
             why: "Il ne produit qu'une image."
         explanation: "On livre le meuble, pas l'atelier."
-      - code: dk-df-q3
-        kind: CHOIX_UNIQUE
-        difficulty: 1
-        skill: docker-deploiement
-        prompt: "Quelle instruction définit la commande exécutée au démarrage du conteneur ?"
-        choices:
-          - label: "ENTRYPOINT (ou CMD)"
-            correct: true
-            why: "Elle s'exécute à chaque lancement."
-          - label: "RUN"
-            correct: false
-            why: "RUN s'exécute pendant la construction de l'image."
-          - label: "FROM"
-            correct: false
-            why: "FROM choisit l'image de départ."
-        explanation: "RUN = à la construction ; ENTRYPOINT/CMD = au démarrage."
       - code: dk-df-q4
         kind: VRAI_FAUX
         difficulty: 2
@@ -392,42 +1055,118 @@ lessons:
         prompt: "Quel fichier liste ce que Docker ne doit pas copier dans le contexte de construction (target, node_modules, .env) ? (son nom exact)"
         answers: [".dockerignore", "dockerignore"]
         explanation: "Comme `.gitignore`, mais pour `docker build`."
+      - code: dk-c1-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Que se passe-t-il pour les données écrites dans un conteneur sans volume quand on le supprime ?"
+        choices:
+          - label: "Elles sont perdues"
+            correct: true
+            why: "Elles vivaient dans le conteneur."
+          - label: "Elles sont sauvegardées dans l'image"
+            correct: false
+            why: "L'image est en lecture seule."
+          - label: "Elles sont envoyées au registre"
+            correct: false
+            why: "Rien n'est envoyé automatiquement."
+        explanation: "Pour une base de données, on utilise toujours un volume (voir le chapitre suivant)."
+      - code: dk-df-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: docker-deploiement
+        prompt: "Pourquoi copier `pom.xml` et télécharger les dépendances **avant** de copier `src` ?"
+        choices:
+          - label: "Pour que Docker réutilise le cache des dépendances quand seul le code change"
+            correct: true
+            why: "Les constructions suivantes sont bien plus rapides."
+          - label: "Parce que Maven l'exige"
+            correct: false
+            why: "C'est une optimisation pour Docker."
+          - label: "Pour réduire la taille du code"
+            correct: false
+            why: "La taille du code ne change pas."
+        explanation: "Ce qui change rarement en haut, ce qui change souvent en bas."
+      - code: dk-me-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: docker-deploiement
+        prompt: "Que fait `COPY --from=construction /app/target/*.jar app.jar` ?"
+        choices:
+          - label: "Il récupère seulement le jar fabriqué à l'étape construction"
+            correct: true
+            why: "Le reste de l'atelier reste derrière."
+          - label: "Il copie tout le projet"
+            correct: false
+            why: "Seulement le jar."
+          - label: "Il télécharge le jar sur Internet"
+            correct: false
+            why: "Il vient de l'étape précédente."
+        explanation: "On livre le meuble."
     exercises:
-      - slug: dk-ex-dockerfile-guide
+      - slug: dk-ex-multi-guide
         kind: COMPLETER
-        title: "Compléter le Dockerfile"
+        title: "Compléter les deux étapes"
         difficulty: FACILE
         skill: docker-deploiement
-        statement: "Complète les instructions du Dockerfile."
-        criteria: "Les quatre trous sont corrects."
+        statement: "Complète le nom de la première étape, la copie depuis cette étape, et l'utilisateur."
+        criteria: "Les trois trous sont corrects."
         hints:
-          - "L'image de départ : FROM. Le dossier : WORKDIR."
-          - "Récupérer un fichier d'une autre étape : COPY --from."
-          - "FROM, WORKDIR, COPY, ENTRYPOINT."
-        solution: '["FROM", "WORKDIR", "COPY", "ENTRYPOINT"]'
-        explanation: "Départ, dossier, copie, démarrage."
+          - "On nomme l'étape avec AS."
+          - "On copie depuis l'étape avec --from ; l'utilisateur avec USER."
+          - "construction, construction, USER."
+        solution: '["construction", "construction", "USER"]'
+        explanation: "Nommer, récupérer, sécuriser."
         xp: 10
         payload:
           language: dockerfile
           template: |
-            [[1]] eclipse-temurin:21-jre-alpine
-            [[2]] /app
-            [[3]] --from=construction /app/target/*.jar app.jar
-            EXPOSE 8080
-            [[4]] ["java", "-jar", "app.jar"]
+            FROM eclipse-temurin:21-jdk AS [[1]]
+            …
+            FROM eclipse-temurin:21-jre-alpine
+            COPY --from=[[2]] /app/target/*.jar app.jar
+            [[3]] app
           blanks:
-            - ["FROM"]
-            - ["WORKDIR"]
-            - ["COPY"]
-            - ["ENTRYPOINT", "CMD"]
+            - ["construction"]
+            - ["construction"]
+            - ["USER"]
+      - slug: dk-ex-dockerignore-libre
+        kind: CODE_LIBRE
+        title: "Un .dockerignore"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Écris un `.dockerignore` qui exclut `target/`, `node_modules/` et `.env`, une ligne chacun.
+        criteria: "Trois lignes : target/, node_modules/, .env."
+        hints:
+          - "Une ligne par élément à exclure."
+          - "Comme un .gitignore."
+          - "`target/`, `node_modules/`, `.env`."
+        solution: |
+          target/
+          node_modules/
+          .env
+        explanation: "Plus léger, et aucun secret dans le contexte."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            target/
+          checks:
+            - pattern: '(?m)^\s*target/?\s*$'
+              message: "Exclus target/."
+            - pattern: '(?m)^\s*node_modules/?\s*$'
+              message: "Exclus node_modules/."
+            - pattern: '(?m)^\s*\.env\s*$'
+              message: "Exclus .env."
       - slug: dk-ex-dockerfile-corriger
         kind: CORRIGER_ERREUR
         title: "Un Dockerfile à alléger"
         difficulty: DIFFICILE
         skill: docker-deploiement
         statement: |
-          Ce Dockerfile fonctionne, mais l'image fait 750 Mo, contient le code source et le fichier `.env`, et
-          tourne en root. Réécris-le en **deux étapes** :
+          Ce Dockerfile fonctionne, mais l'image est très lourde, contient le code source et le fichier `.env`,
+          et tourne en root. Réécris-le en **deux étapes** :
           - étape `construction` à partir de `eclipse-temurin:21-jdk` qui construit le jar ;
           - étape finale à partir de `eclipse-temurin:21-jre-alpine` qui copie seulement le jar ;
           - plus de `COPY .env` ;
@@ -482,35 +1221,35 @@ lessons:
               message: "L'étape finale ne doit pas copier tout le projet (`COPY . .`)."
 
 bank:
-  - code: dk-c1-b1
+  - code: dk-c1-b3
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: docker-deploiement
-    prompt: "Que se passe-t-il pour les données écrites dans un conteneur sans volume quand on le supprime ?"
+    prompt: "Quelle commande supprime une image ?"
     choices:
-      - label: "Elles sont perdues"
+      - label: "docker rmi"
         correct: true
-        why: "Elles vivaient dans le conteneur."
-      - label: "Elles sont sauvegardées dans l'image"
+        why: "rm image."
+      - label: "docker rm"
         correct: false
-        why: "L'image est en lecture seule."
-      - label: "Elles sont envoyées au registre"
+        why: "Elle supprime un conteneur."
+      - label: "docker stop"
         correct: false
-        why: "Rien n'est envoyé automatiquement."
-    explanation: "Pour une base de données, on utilise toujours un volume."
-  - code: dk-c1-b2
+        why: "Elle arrête un conteneur."
+    explanation: "rm pour les conteneurs, rmi pour les images."
+  - code: dk-c1-b4
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: docker-deploiement
-    prompt: "Pourquoi préciser une version d'image (`postgres:16-alpine`) plutôt que `postgres:latest` ?"
+    prompt: "Pourquoi Docker règle-t-il le problème du « ça marche sur ma machine » ?"
     choices:
-      - label: "Pour que tout le monde utilise exactement la même version, sans surprise lors d'une mise à jour"
+      - label: "L'application voyage avec tout son environnement"
         correct: true
-        why: "Des environnements reproductibles."
-      - label: "latest n'existe pas"
+        why: "La même image partout."
+      - label: "Il rend les ordinateurs identiques"
         correct: false
-        why: "Il existe, mais il change avec le temps."
-      - label: "Pour que l'image soit plus rapide"
+        why: "Il isole seulement l'application."
+      - label: "Il corrige les bugs"
         correct: false
-        why: "La vitesse n'est pas en jeu."
-    explanation: "La même version en développement, en CI et en production."
+        why: "Aucun rapport."
+    explanation: "Même image en développement, en CI et en production."
