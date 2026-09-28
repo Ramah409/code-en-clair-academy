@@ -87,6 +87,10 @@ lessons:
           connexion.
       - type: exercise
         ref: sor-ex-postman-login
+      - type: text
+        md: "**Trouver l'erreur** : un test Postman qui attend le mauvais code."
+      - type: exercise
+        ref: sor-ex-postman-bug
       - type: jury
         items:
           - q: "Comment avez-vous testé votre API ?"
@@ -241,6 +245,38 @@ lessons:
               message: "Enregistre le jeton : pm.environment.set(\"token\", data.token);"
 
   # ===================================================================== LEÇON 2
+      - slug: sor-ex-postman-bug
+        kind: CORRIGER_ERREUR
+        title: "Un test qui attend le mauvais code"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: |
+          Ce test de l'inscription échoue alors que l'inscription fonctionne : il attend **200**, mais une
+          inscription crée un compte et répond **201**. Corrige le code attendu.
+        criteria: "Le test vérifie le statut 201."
+        hints:
+          - "Quel code répond Soramfr après une création ?"
+          - "201 Created."
+          - "pm.response.to.have.status(201);"
+        solution: |
+          pm.test("Statut 201 Created", function () {
+              pm.response.to.have.status(201);
+          });
+        explanation: "Un test doit attendre ce que l'API promet : 201 pour une création."
+        xp: 10
+        payload:
+          language: javascript
+          starter: |
+            pm.test("Statut 201 Created", function () {
+                pm.response.to.have.status(200);
+            });
+          checks:
+            - pattern: 'status\(\s*200\s*\)'
+              absent: true
+              message: "L'inscription ne répond pas 200."
+            - pattern: 'pm\.response\.to\.have\.status\(\s*201\s*\)'
+              message: "Attends le statut 201."
+
   - slug: sor-junit
     title: "Du test manuel au test unitaire : JUnit et Mockito"
     duration: 15
@@ -281,19 +317,18 @@ lessons:
       - type: code
         id: code-test-simple
         language: java
-        title: "Exemple simple : tester une méthode de calcul"
+        title: "Exemple simple : tester l'ajout au panier"
         code: |
           class PanierTest {
 
               @Test
-              void totalAdditionneLesLignes() {
+              void ajouterUnProduitLeMetDansLePanier() {
                   Panier panier = new Panier();
-                  panier.ajouter(new Ligne(20, 2));
-                  panier.ajouter(new Ligne(15, 1));
+                  Produit alarme = new Produit("Alarme de poche");
 
-                  int total = panier.total();
+                  panier.ajouter(alarme);
 
-                  assertEquals(55, total);
+                  assertTrue(panier.contient(alarme));
               }
           }
         lines:
@@ -302,11 +337,11 @@ lessons:
           - n: 4
             note: "Le nom décrit le comportement attendu, en français si tu veux."
           - n: 5
-            note: "**Arrange** : on prépare un panier avec deux lignes."
-          - n: 9
+            note: "**Arrange** : on prépare un panier vide et un produit."
+          - n: 8
             note: "**Act** : on appelle la méthode testée."
-          - n: 11
-            note: "**Assert** : on vérifie le résultat. Si `total` ne vaut pas 55, le test échoue et affiche la différence."
+          - n: 10
+            note: "**Assert** : on vérifie le résultat. Si l'alarme n'est pas dans le panier, le test échoue."
       - type: question
         ref: sor-ju-q1
         review: def-test-unitaire
@@ -360,6 +395,10 @@ lessons:
         md: "En autonomie : écris un test unitaire complet."
       - type: exercise
         ref: sor-ex-junit-doublon
+      - type: text
+        md: "**Trouver l'erreur** : une vérification à l'envers."
+      - type: exercise
+        ref: sor-ex-junit-bug
       - type: jury
         items:
           - q: "Quelle différence entre un test unitaire et un test d'intégration ?"
@@ -538,6 +577,35 @@ lessons:
               message: "Vérifie qu'aucune sauvegarde n'a eu lieu : verify(userRepository, never()).save(any());"
 
   # ===================================================================== LEÇON 3
+      - slug: sor-ex-junit-bug
+        kind: CORRIGER_ERREUR
+        title: "Une vérification à l'envers"
+        difficulty: FACILE
+        skill: java-tests
+        statement: |
+          Ce test veut prouver que le mot de passe est **haché** avant d'être enregistré. Mais il vérifie que le
+          hash est **égal** au mot de passe en clair ! Corrige la vérification pour qu'il vérifie qu'ils sont
+          **différents**.
+        criteria: "assertNotEquals remplace assertEquals."
+        hints:
+          - "Un hash n'est jamais égal au mot de passe."
+          - "Le contraire de assertEquals ?"
+          - "assertNotEquals(\"Soleil2025!\", captor.getValue().getPasswordHash());"
+        solution: |
+          assertNotEquals("Soleil2025!", captor.getValue().getPasswordHash());
+        explanation: "Le test dit ce qu'on attend : le hash est différent du mot de passe."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            assertEquals("Soleil2025!", captor.getValue().getPasswordHash());
+          checks:
+            - pattern: '\bassertEquals\('
+              absent: true
+              message: "Le hash ne doit pas être égal au mot de passe."
+            - pattern: 'assertNotEquals\(\s*"Soleil2025!"\s*,\s*captor\.getValue\(\)\.getPasswordHash\(\)\s*\)\s*;'
+              message: "Utilise assertNotEquals(\"Soleil2025!\", captor.getValue().getPasswordHash());"
+
   - slug: sor-mockmvc
     title: "Tester la sécurité avec MockMvc"
     duration: 13
@@ -629,6 +697,10 @@ lessons:
         md: "En autonomie : écris le test qui vérifie qu'une cliente reçoit **403** sur la liste des comptes."
       - type: exercise
         ref: sor-ex-mockmvc-403
+      - type: text
+        md: "**Trouver l'erreur** : un test de sécurité qui accepte tout."
+      - type: exercise
+        ref: sor-ex-mockmvc-bug
       - type: jury
         items:
           - q: "Comment vérifiez-vous que vos routes sont bien protégées ?"
@@ -772,6 +844,42 @@ lessons:
               message: "Attends 403 : .andExpect(status().isForbidden());"
 
   # ===================================================================== LEÇON 4
+      - slug: sor-ex-mockmvc-bug
+        kind: CORRIGER_ERREUR
+        title: "Un test de sécurité trop gentil"
+        difficulty: FACILE
+        skill: spring-tests
+        statement: |
+          Ce test appelle `/api/users` **sans jeton** et attend 200 OK. Il valide donc une faille ! Corrige-le
+          pour attendre **401 Unauthorized**.
+        criteria: "Le test attend status().isUnauthorized()."
+        hints:
+          - "Sans jeton, on n'est pas connecté."
+          - "Pas connecté : 401."
+          - ".andExpect(status().isUnauthorized());"
+        solution: |
+          @Test
+          void listeDesComptesSansJetonRepond401() throws Exception {
+              mockMvc.perform(get("/api/users"))
+                     .andExpect(status().isUnauthorized());
+          }
+        explanation: "Un test de sécurité vérifie le refus, pas l'accès."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @Test
+            void listeDesComptesSansJetonRepond401() throws Exception {
+                mockMvc.perform(get("/api/users"))
+                       .andExpect(status().isOk());
+            }
+          checks:
+            - pattern: 'isOk\(\)'
+              absent: true
+              message: "Sans jeton, la réponse ne doit pas être 200."
+            - pattern: '\.andExpect\(\s*status\(\)\.isUnauthorized\(\)\s*\)'
+              message: "Attends status().isUnauthorized()."
+
   - slug: sor-debug
     title: "Déboguer : lire une trace d'erreur et écrire de bons logs"
     duration: 12
@@ -856,6 +964,10 @@ lessons:
         md: "**Améliorer la sécurité et la qualité** : remplace les `System.out` du login par de vrais logs, sans donnée sensible."
       - type: exercise
         ref: sor-ex-logs
+      - type: text
+        md: "**En autonomie** : choisir le niveau d'un log et ce qu'on n'y écrit jamais."
+      - type: exercise
+        ref: sor-ex-logs-expliquer
       - type: jury
         items:
           - q: "Comment déboguez-vous une erreur 500 ?"
@@ -1037,6 +1149,40 @@ lessons:
             - pattern: 'log\.\w+\([^;]*password'
               absent: true
               message: "Aucun mot de passe dans les logs !"
+      - slug: sor-ex-logs-expliquer
+        kind: CODE_LIBRE
+        title: "Choisir le bon niveau de log"
+        difficulty: INTERMEDIAIRE
+        skill: java-exceptions
+        statement: |
+          Écris trois lignes :
+          - `Base inaccessible :` le niveau de log pour « la base de données ne répond plus » ;
+          - `Connexion réussie :` le niveau de log pour « une cliente s'est connectée » ;
+          - `Jamais :` ce qu'on n'écrit jamais dans un log.
+        criteria: "ERROR ; INFO ; mot de passe ou jeton."
+        hints:
+          - "Une panne grave : ERROR."
+          - "Un événement normal : INFO."
+          - "Jamais de mot de passe ni de jeton."
+        solution: |
+          Base inaccessible : ERROR
+          Connexion réussie : INFO
+          Jamais : un mot de passe, un jeton ou une donnée sensible.
+        explanation: "Le niveau dit l'importance ; le contenu ne doit rien révéler."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Base inaccessible :
+            Connexion réussie :
+            Jamais :
+          checks:
+            - pattern: '(?im)^\s*Base inaccessible\s*:[ \t]*ERROR'
+              message: "Une panne grave se note en ERROR."
+            - pattern: '(?im)^\s*Connexion r[ée]ussie\s*:[ \t]*INFO'
+              message: "Un événement normal se note en INFO."
+            - pattern: '(?im)^\s*Jamais\s*:[^\n]*(?:mot de passe|jeton|token|sensible)'
+              message: "Cite le mot de passe ou le jeton."
 
 bank:
   - code: sor-c6-b1

@@ -171,6 +171,10 @@ lessons:
           Ta requête est exécutée pour de vrai dans le laboratoire, puis annulée.
       - type: exercise
         ref: sor-ex-table-utilisateurs
+      - type: text
+        md: "**Trouver l'erreur** : deux comptes avec le même e-mail."
+      - type: exercise
+        ref: sor-ex-email-unique-bug
       - type: jury
         items:
           - q: "Pourquoi la colonne password_hash fait-elle 60 caractères ?"
@@ -378,6 +382,33 @@ lessons:
             ORDER BY 1, 2
 
   # ===================================================================== LEÇON 2
+      - slug: sor-ex-email-unique-bug
+        kind: CORRIGER_ERREUR
+        title: "Deux comptes avec le même e-mail"
+        difficulty: FACILE
+        skill: spring-jpa
+        statement: |
+          Avec cette entité, deux clientes pourraient créer un compte avec **le même e-mail**. Ajoute la règle
+          qui l'interdit dans l'annotation `@Column` du champ `email`.
+        criteria: "Le champ email a unique = true (et reste nullable = false)."
+        hints:
+          - "Quelle contrainte interdit les doublons ?"
+          - "UNIQUE, qui s'écrit unique = true dans @Column."
+          - "@Column(nullable = false, unique = true)"
+        solution: |
+          @Column(nullable = false, unique = true)
+          private String email;
+        explanation: "unique = true devient UNIQUE dans la table : PostgreSQL refuse le doublon."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @Column(nullable = false)
+            private String email;
+          checks:
+            - pattern: '@Column\((?=[^)]*nullable\s*=\s*false)(?=[^)]*unique\s*=\s*true)[^)]*\)\s*private\s+String\s+email\s*;'
+              message: "Ajoute unique = true dans le @Column du champ email (en gardant nullable = false)."
+
   - slug: sor-relations
     title: "Relier deux tables : les commandes des clientes"
     duration: 13
@@ -478,6 +509,10 @@ lessons:
           écrite dans l'éditeur ; ajoute `soram_commandes` en dessous.
       - type: exercise
         ref: sor-ex-relation-commandes
+      - type: text
+        md: "**Trouver l'erreur** : une commande qui peut pointer n'importe où."
+      - type: exercise
+        ref: sor-ex-fk-bug
       - type: jury
         items:
           - q: "Qu'est-ce qu'une clé étrangère ?"
@@ -658,6 +693,39 @@ lessons:
             ORDER BY 1, 2
 
   # ===================================================================== LEÇON 3
+      - slug: sor-ex-fk-bug
+        kind: CORRIGER_ERREUR
+        title: "Une clé étrangère oubliée"
+        difficulty: FACILE
+        skill: sql-ddl
+        statement: |
+          Dans cette table, `utilisateur_id` peut contenir un numéro d'utilisatrice qui **n'existe pas**. Ajoute
+          ce qui oblige PostgreSQL à vérifier que l'utilisatrice existe dans `soram_utilisateurs`.
+        criteria: "utilisateur_id référence soram_utilisateurs (id)."
+        hints:
+          - "Quel mot relie une colonne à une autre table ?"
+          - "REFERENCES."
+          - "utilisateur_id BIGINT NOT NULL REFERENCES soram_utilisateurs (id)"
+        solution: |
+          CREATE TABLE soram_commandes (
+            id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            statut         VARCHAR(20) NOT NULL DEFAULT 'EN_COURS',
+            utilisateur_id BIGINT NOT NULL REFERENCES soram_utilisateurs (id)
+          );
+        explanation: "La clé étrangère garantit que chaque commande appartient à une utilisatrice réelle."
+        xp: 10
+        payload:
+          language: sql
+          starter: |
+            CREATE TABLE soram_commandes (
+              id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+              statut         VARCHAR(20) NOT NULL DEFAULT 'EN_COURS',
+              utilisateur_id BIGINT NOT NULL
+            );
+          checks:
+            - pattern: '(?i)utilisateur_id\s+BIGINT\s+NOT\s+NULL\s+REFERENCES\s+soram_utilisateurs\s*\(\s*id\s*\)'
+              message: "Ajoute REFERENCES soram_utilisateurs (id) à la colonne utilisateur_id."
+
   - slug: sor-mcd-merise
     title: "Corriger le MCD du rapport en notation Merise"
     duration: 15
@@ -755,6 +823,10 @@ lessons:
         md: "En autonomie : traduis ce MCD en MLD dans l'éditeur de tables."
       - type: exercise
         ref: sor-ex-mld-soramfr
+      - type: text
+        md: "**Exercice guidé** : complète l'association PASSER."
+      - type: exercise
+        ref: sor-ex-cardinalites-guide
       - type: jury
         items:
           - q: "Votre MCD utilise des pattes de corbeau. Est-ce du Merise ?"
@@ -1115,6 +1187,32 @@ lessons:
                   - { name: id_commande, pk: true, fk: commande }
                   - { name: id_produit, pk: true, fk: produit }
                   - { name: quantite, pk: false, fk: "" }
+      - slug: sor-ex-cardinalites-guide
+        kind: COMPLETER
+        title: "Compléter l'association PASSER"
+        difficulty: FACILE
+        skill: merise-mcd
+        statement: |
+          Complète l'association entre UTILISATEUR et COMMANDE : les cardinalités de chaque côté et le verbe.
+          Rappel : une utilisatrice passe **zéro ou plusieurs** commandes ; une commande est passée par **une
+          seule** utilisatrice.
+        criteria: "0,n — PASSER — 1,1."
+        hints:
+          - "Côté UTILISATEUR : zéro ou plusieurs commandes."
+          - "Côté COMMANDE : exactement une utilisatrice."
+          - "0,n ; PASSER ; 1,1."
+        solution: '["0,n", "PASSER", "1,1"]'
+        explanation: "La cardinalité se lit depuis l'entité : « une utilisatrice passe 0 ou n commandes »."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            UTILISATEUR [[1]] — [[2]] — [[3]] COMMANDE
+          blanks:
+            - ["0,n", "0,N"]
+            - ["PASSER"]
+            - ["1,1"]
 
 bank:
   - code: sor-c2-b1

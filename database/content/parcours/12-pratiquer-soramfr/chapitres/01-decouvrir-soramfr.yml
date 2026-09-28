@@ -94,6 +94,10 @@ lessons:
           jusqu'à la validation de son panier.
       - type: exercise
         ref: sor-ex-parcours-cliente
+      - type: text
+        md: "**Trouver l'erreur** : une présentation qui commence par la technique."
+      - type: exercise
+        ref: sor-ex-pitch-bug
       - type: jury
         items:
           - q: "Présentez votre projet en une minute."
@@ -257,6 +261,38 @@ lessons:
             - "Elle valide son panier."
 
   # ===================================================================== LEÇON 2
+      - slug: sor-ex-pitch-bug
+        kind: CORRIGER_ERREUR
+        title: "Une présentation dans le mauvais ordre"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: |
+          Cette présentation commence par la technique. Réécris la première phrase pour dire d'abord **à quoi
+          sert** Soramfr et **pour qui** (une boutique en ligne pour les clientes). Garde la phrase sur la
+          technique en deuxième ligne.
+        criteria: "La première ligne parle de la boutique ; la technique vient ensuite."
+        hints:
+          - "Le jury veut d'abord savoir à quoi sert l'application."
+          - "Commence par « Soramfr est une boutique en ligne… »."
+          - "Soramfr est une boutique en ligne d'accessoires de sécurité pour les clientes. / Elle est construite avec Angular, Spring Boot et PostgreSQL."
+        solution: |
+          Soramfr est une boutique en ligne d'accessoires de sécurité : les clientes achètent, l'administratrice gère les comptes.
+          Elle est construite avec Angular, Spring Boot et PostgreSQL.
+        explanation: "À quoi ça sert et pour qui, puis comment c'est construit."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Soramfr est construite avec Angular, Spring Boot et PostgreSQL.
+          checks:
+            - pattern: '\A\s*[^\n]*(?:Angular|Spring|PostgreSQL)'
+              absent: true
+              message: "La première ligne ne doit pas parler de technique."
+            - pattern: '\A\s*[^\n]*(?:boutique|acheter|ach[èe]tent|clientes)'
+              message: "Commence par dire à quoi sert Soramfr et pour qui."
+            - pattern: '(?i)angular'
+              message: "Garde la phrase sur la technique, en deuxième."
+
   - slug: sor-trois-etages
     title: "Les trois étages : Angular, Spring Boot, PostgreSQL"
     duration: 12
@@ -400,6 +436,10 @@ lessons:
         md: "En autonomie : écris toi-même le JSON d'une inscription."
       - type: exercise
         ref: sor-ex-json-inscription
+      - type: text
+        md: "**Trouver l'erreur** : un JSON mal écrit."
+      - type: exercise
+        ref: sor-ex-json-bug
       - type: jury
         items:
           - q: "Décrivez l'architecture de votre application."
@@ -596,6 +636,45 @@ lessons:
               message: "En JSON, les textes s'écrivent entre guillemets doubles \" et non simples '."
 
   # ===================================================================== LEÇON 3
+      - slug: sor-ex-json-bug
+        kind: CORRIGER_ERREUR
+        title: "Réparer un JSON de connexion"
+        difficulty: FACILE
+        skill: web-fondamentaux
+        statement: |
+          Ce JSON de connexion contient deux erreurs : un nom de champ **sans guillemets** et une **virgule en
+          trop** après le dernier champ. Corrige-les.
+        criteria: "Tous les noms de champs entre guillemets, pas de virgule avant l'accolade fermante."
+        hints:
+          - "En JSON, chaque nom de champ est entre guillemets doubles."
+          - "Le dernier champ n'est pas suivi d'une virgule."
+          - "{ \"identifier\": \"mai\", \"password\": \"MotDePasse2025\" }"
+        solution: |
+          {
+            "identifier": "mai",
+            "password": "MotDePasse2025"
+          }
+        explanation: "Le JSON est strict : guillemets partout, pas de virgule finale. Sinon le backend répond 400."
+        xp: 10
+        payload:
+          language: json
+          starter: |
+            {
+              identifier: "mai",
+              "password": "MotDePasse2025",
+            }
+          checks:
+            - pattern: '(?m)^\s*identifier\s*:'
+              absent: true
+              message: "Mets le nom du champ entre guillemets : \"identifier\"."
+            - pattern: ',\s*\}'
+              absent: true
+              message: "Enlève la virgule après le dernier champ."
+            - pattern: '"identifier"\s*:\s*"mai"'
+              message: "Garde le champ \"identifier\": \"mai\"."
+            - pattern: '"password"\s*:\s*"MotDePasse2025"'
+              message: "Garde le champ \"password\"."
+
   - slug: sor-voyage-requete
     title: "Le voyage d'une inscription, d'Angular à PostgreSQL"
     duration: 14
@@ -699,6 +778,10 @@ lessons:
         md: "En autonomie : associe chaque situation au bon code de statut HTTP renvoyé par Soramfr."
       - type: exercise
         ref: sor-ex-codes-statut
+      - type: text
+        md: "**Trouver l'erreur** : le mauvais code de statut."
+      - type: exercise
+        ref: sor-ex-statut-bug
       - type: jury
         items:
           - q: "Expliquez ce qui se passe quand un utilisateur clique sur « Créer mon compte »."
@@ -879,6 +962,39 @@ lessons:
             - ["409"]
             - ["400"]
             - ["404"]
+      - slug: sor-ex-statut-bug
+        kind: CORRIGER_ERREUR
+        title: "Le mauvais code de statut"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          Ce contrôleur répond **200 OK** après une inscription. Une inscription **crée** un compte : corrige le
+          statut pour répondre **201 Created**.
+        criteria: "Le contrôleur utilise HttpStatus.CREATED."
+        hints:
+          - "Quel code signifie « créé » ?"
+          - "201, c'est HttpStatus.CREATED."
+          - "ResponseEntity.status(HttpStatus.CREATED)"
+        solution: |
+          @PostMapping("/register")
+          public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest req){
+              return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(req));
+          }
+        explanation: "201 dit à Angular qu'une ressource a été créée : c'est plus précis que 200."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @PostMapping("/register")
+            public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest req){
+                return ResponseEntity.status(HttpStatus.OK).body(authService.register(req));
+            }
+          checks:
+            - pattern: 'HttpStatus\.OK'
+              absent: true
+              message: "200 OK n'est pas le bon code pour une création."
+            - pattern: 'ResponseEntity\.status\(\s*HttpStatus\.CREATED\s*\)'
+              message: "Utilise HttpStatus.CREATED."
 
 bank:
   - code: sor-c1-b1

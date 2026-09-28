@@ -1,5 +1,5 @@
 slug: pratiquer-soramfr
-version: 2
+version: 3
 position: 12
 title: "Pratiquer avec mon projet Soramfr"
 category: PROJET
@@ -15,7 +15,7 @@ description: |
 
   1. comprendre l'idée avec des mots simples et une comparaison de tous les jours ;
   2. regarder un **exemple plus simple**, puis le **vrai extrait de Soramfr**, expliqué ligne par ligne ;
-  3. faire un **exercice guidé**, puis un **exercice en autonomie**, directement dans l'éditeur de code ;
+  3. faire un **exercice guidé**, un **exercice en autonomie** et un **exercice « trouver l'erreur »**, directement dans l'éditeur ;
   4. répondre à un **QCM de fin de leçon** ;
   5. relire la **fiche de révision**, les **erreurs fréquentes** et les **questions possibles du jury**.
 

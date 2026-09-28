@@ -67,6 +67,10 @@ lessons:
         md: "En autonomie : corrige les phrases du dossier."
       - type: exercise
         ref: sor-ex-phrases-dossier
+      - type: text
+        md: "**Trouver l'erreur** : une phrase du dossier avec trois fautes techniques."
+      - type: exercise
+        ref: sor-ex-dossier-bug
       - type: jury
         items:
           - q: "Pourquoi trouve-t-on trois noms différents dans votre dossier ?"
@@ -218,6 +222,37 @@ lessons:
             - ["BCrypt"]
 
   # ===================================================================== LEÇON 2
+      - slug: sor-ex-dossier-bug
+        kind: CORRIGER_ERREUR
+        title: "Trois fautes techniques dans une phrase"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: |
+          Cette phrase du dossier contient trois erreurs : le mot de passe n'est pas **chiffré** mais **haché**,
+          l'outil s'écrit **BCrypt**, et une connexion ratée répond **401**, pas 400. Réécris la phrase.
+        criteria: "haché, BCrypt, 401 ; plus de chiffré, BCcrypt ni 400."
+        hints:
+          - "Un mot de passe se hache."
+          - "BCrypt, avec un seul c après le B."
+          - "Le mot de passe est haché avec BCrypt ; une connexion ratée renvoie 401."
+        solution: |
+          Le mot de passe est haché avec BCrypt ; une connexion ratée renvoie 401.
+        explanation: "Le jury remarque ces détails : ils montrent que tu comprends ce que tu as fait."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Le mot de passe est chiffré avec BCcrypt ; une connexion ratée renvoie 400.
+          checks:
+            - pattern: '(?i)chiffr'
+              absent: true
+              message: "Un mot de passe ne se chiffre pas."
+            - pattern: 'BCcrypt|\b400\b'
+              absent: true
+              message: "Corrige BCcrypt et le code 400."
+            - pattern: '(?i)hach[ée][^\n]*BCrypt[^\n]*401'
+              message: "Écris : haché avec BCrypt… renvoie 401."
+
   - slug: sor-expliquer-code
     title: "Expliquer son code comme devant le jury"
     duration: 14
@@ -290,6 +325,10 @@ lessons:
           cites les notions essentielles.
       - type: exercise
         ref: sor-ex-expliquer-securityconfig
+      - type: text
+        md: "**Trouver l'erreur** : une explication qui oublie un temps."
+      - type: exercise
+        ref: sor-ex-explication-bug
       - type: jury
         items:
           - q: "Expliquez-nous le rôle de la classe AuthService."
@@ -461,6 +500,40 @@ lessons:
               message: "Distingue 401 (pas de jeton) et 403 (rôle insuffisant)."
 
   # ===================================================================== LEÇON 3
+      - slug: sor-ex-explication-bug
+        kind: CORRIGER_ERREUR
+        title: "Une explication sans limite"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: |
+          Cette explication de `JwtAuthFilter` oublie le temps **Limite**. Ajoute une ligne `Limite :` avant
+          `Amélioration :`.
+        criteria: "Une ligne Limite remplie, avant Amélioration."
+        hints:
+          - "Qu'est-ce qui pourrait être mieux ?"
+          - "Un jeton reste valable jusqu'à son expiration."
+          - "Limite : un jeton reste valable jusqu'à son expiration, même après la déconnexion."
+        solution: |
+          Contexte : un filtre Spring Security, exécuté avant chaque contrôleur.
+          Rôle : il reconnaît l'utilisateur grâce au jeton JWT.
+          Lecture : il lit l'en-tête Authorization, vérifie le jeton et dépose l'identité.
+          Choix : un jeton sans état, pour ne pas stocker de session.
+          Limite : un jeton reste valable jusqu'à son expiration, même après la déconnexion.
+          Amélioration : des jetons courts et un jeton de rafraîchissement révocable.
+        explanation: "Dire une limite montre du recul : le jury l'apprécie."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Contexte : un filtre Spring Security, exécuté avant chaque contrôleur.
+            Rôle : il reconnaît l'utilisateur grâce au jeton JWT.
+            Lecture : il lit l'en-tête Authorization, vérifie le jeton et dépose l'identité.
+            Choix : un jeton sans état, pour ne pas stocker de session.
+            Amélioration : des jetons courts et un jeton de rafraîchissement révocable.
+          checks:
+            - pattern: '(?im)^\s*Limite\s*:[ \t]*\S[^\n]{10,}\n[\s\S]*^\s*Am[ée]lioration\s*:'
+              message: "Ajoute une ligne « Limite : … » avant Amélioration."
+
   - slug: sor-questions-jury
     title: "Les questions techniques du jury sur Soramfr"
     duration: 15
@@ -482,6 +555,10 @@ lessons:
         md: |
           Voici les questions techniques les plus probables pour Soramfr. Réponds à voix haute **avant**
           d'ouvrir chaque réponse. Chronomètre-toi : une réponse dure 30 secondes à 1 minute.
+      - type: text
+        md: "**Trouver l'erreur** : une réponse inventée."
+      - type: exercise
+        ref: sor-ex-jury-bug
       - type: jury
         id: jury-architecture
         title: "Architecture et conception"
@@ -679,6 +756,37 @@ lessons:
               message: "Développe un peu plus : trois à six phrases."
 
   # ===================================================================== LEÇON 4
+      - slug: sor-ex-jury-bug
+        kind: CORRIGER_ERREUR
+        title: "Une réponse inventée"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: |
+          Question du jury : « Utilisez-vous un cache dans Soramfr ? ». Cette réponse invente : Soramfr n'a pas
+          de cache. Réécris-la honnêtement, puis dis comment tu chercherais (par exemple la documentation de
+          Spring sur le cache).
+        criteria: "Plus d'invention ; une réponse honnête et une méthode de recherche."
+        hints:
+          - "Soramfr n'utilise pas de cache."
+          - "Dis-le simplement, puis ce que tu ferais."
+          - "Non, Soramfr n'utilise pas de cache ; je chercherais dans la documentation de Spring."
+        solution: |
+          Non, Soramfr n'utilise pas de cache pour l'instant ; pour en ajouter un, je chercherais dans la documentation de Spring (Spring Cache).
+        explanation: "L'honnêteté rassure le jury plus qu'une réponse inventée."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Oui, Soramfr utilise Redis pour mettre les produits en cache.
+          checks:
+            - pattern: '(?i)utilise Redis'
+              absent: true
+              message: "N'invente pas : Soramfr n'a pas de cache."
+            - pattern: "(?i)(?:n'utilise pas|pas de cache|ne suis pas s[uû]re)"
+              message: "Dis honnêtement que Soramfr n'a pas de cache."
+            - pattern: '(?i)(?:cherch|documentation|doc)'
+              message: "Explique comment tu chercherais."
+
   - slug: sor-plan-amelioration
     title: "Le plan d'amélioration de Soramfr"
     duration: 12
@@ -737,6 +845,10 @@ lessons:
         md: "En autonomie : associe chaque faiblesse à son niveau de priorité."
       - type: exercise
         ref: sor-ex-priorites-niveaux
+      - type: text
+        md: "**Trouver l'erreur** : une faille mal classée."
+      - type: exercise
+        ref: sor-ex-priorite-bug
       - type: jury
         items:
           - q: "Si vous aviez une semaine de plus, que feriez-vous ?"
@@ -881,6 +993,35 @@ lessons:
             - ["haute"]
             - ["moyenne"]
             - ["moyenne"]
+      - slug: sor-ex-priorite-bug
+        kind: CORRIGER_ERREUR
+        title: "Une faille mal classée"
+        difficulty: FACILE
+        skill: securite-owasp
+        statement: |
+          Le secret JWT publié dans Git permet à n'importe qui de fabriquer un jeton ADMIN. Il a été classé
+          « moyenne ». Corrige sa priorité.
+        criteria: "Secret JWT publié : critique."
+        hints:
+          - "Que peut faire quelqu'un qui connaît le secret ?"
+          - "Fabriquer un jeton administrateur."
+          - "Secret JWT publié : critique"
+        solution: |
+          Secret JWT publié : critique
+          URL en dur dans Angular : moyenne
+        explanation: "Critique = à corriger avant toute mise en ligne."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Secret JWT publié : moyenne
+            URL en dur dans Angular : moyenne
+          checks:
+            - pattern: '(?im)^\s*Secret JWT publi[ée]\s*:\s*moyenne'
+              absent: true
+              message: "Ce n'est pas une faille moyenne."
+            - pattern: '(?im)^\s*Secret JWT publi[ée]\s*:\s*critique\s*$'
+              message: "Classe le secret JWT publié en critique."
 
 bank:
   - code: sor-c8-b1

@@ -115,6 +115,10 @@ lessons:
           et un message d'erreur accessible.
       - type: exercise
         ref: sor-ex-inscription-html
+      - type: text
+        md: "**Trouver l'erreur** : un champ sans étiquette."
+      - type: exercise
+        ref: sor-ex-label-bug
       - type: jury
         items:
           - q: "Qu'est-ce qu'un composant Angular ?"
@@ -321,6 +325,32 @@ lessons:
               message: "Affiche l'erreur seulement si elle existe : @if (error) { <p role=\"alert\">{{ error }}</p> }."
 
   # ===================================================================== LEÇON 2
+      - slug: sor-ex-label-bug
+        kind: CORRIGER_ERREUR
+        title: "Un champ sans étiquette"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Ce champ n'a qu'un `placeholder` : il disparaît dès qu'on écrit, et un lecteur d'écran ne l'annonce
+          pas toujours. Ajoute une étiquette `<label for="email">E-mail</label>` juste avant le champ.
+        criteria: "Un label for=\"email\" relié au champ id=\"email\"."
+        hints:
+          - "Le label se relie au champ avec for et id."
+          - "for=\"email\" et id=\"email\"."
+          - "<label for=\"email\">E-mail</label>"
+        solution: |
+          <label for="email">E-mail</label>
+          <input id="email" type="email" name="email" [(ngModel)]="email" required />
+        explanation: "Chaque champ a une étiquette lisible : c'est plus clair et plus accessible."
+        xp: 10
+        payload:
+          language: html
+          starter: |
+            <input id="email" type="email" name="email" [(ngModel)]="email" placeholder="E-mail" required />
+          checks:
+            - pattern: '<label\s+for="email"\s*>[^<]*\S[^<]*</label>\s*<input\b[^>]*\bid="email"'
+              message: "Ajoute <label for=\"email\">E-mail</label> juste avant le champ."
+
   - slug: sor-service-http
     title: "Appeler l'API : services, HttpClient et Observables"
     duration: 12
@@ -408,6 +438,10 @@ lessons:
         md: "**Trouver et corriger un bug** : remplace l'adresse en dur et supprime l'en-tête en double."
       - type: exercise
         ref: sor-ex-userapi-env
+      - type: text
+        md: "**En autonomie** : explique le service avec tes mots."
+      - type: exercise
+        ref: sor-ex-service-expliquer
       - type: jury
         items:
           - q: "Comment votre frontend communique-t-il avec le backend ?"
@@ -614,6 +648,36 @@ lessons:
               message: "getAll : return this.http.get<UserDto[]>(this.usersUrl);"
 
   # ===================================================================== LEÇON 3
+      - slug: sor-ex-service-expliquer
+        kind: CODE_LIBRE
+        title: "Expliquer UserApiService"
+        difficulty: INTERMEDIAIRE
+        skill: angular-services
+        statement: |
+          Explique en deux lignes :
+          - `Observable :` ce que renvoie `register()` et quand la requête part vraiment ;
+          - `Adresse :` pourquoi l'adresse de l'API doit venir de `environment.apiUrl` et pas de `localhost` écrit en dur.
+        criteria: "Observable = réponse plus tard, envoyée au subscribe ; l'adresse change entre local et production."
+        hints:
+          - "Un Observable, c'est une réponse qui arrivera plus tard."
+          - "Rien ne part sans subscribe."
+          - "En production, l'API n'est plus sur localhost."
+        solution: |
+          Observable : register() renvoie une réponse qui arrivera plus tard ; la requête part seulement quand on appelle subscribe.
+          Adresse : en production l'API n'est pas sur localhost ; environment.apiUrl change selon l'environnement sans toucher au code.
+        explanation: "Comprendre le « quand » et le « où » d'un appel HTTP."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Observable :
+            Adresse :
+          checks:
+            - pattern: '(?im)^\s*Observable\s*:[^\n]*subscribe'
+              message: "Dis que la requête part au subscribe."
+            - pattern: '(?im)^\s*Adresse\s*:[^\n]*(?:production|en ligne|d[ée]ploi|environnement|change)'
+              message: "Explique que l'adresse change en production."
+
   - slug: sor-guards
     title: "Routes et gardes : le bug du roleGuard"
     duration: 13
@@ -711,6 +775,10 @@ lessons:
         md: "**Trouver et corriger un bug** : répare `roleGuard`."
       - type: exercise
         ref: sor-ex-role-guard
+      - type: text
+        md: "**En autonomie** : explique le bug du garde."
+      - type: exercise
+        ref: sor-ex-guard-expliquer
       - type: jury
         items:
           - q: "Comment protégez-vous les pages côté Angular ?"
@@ -884,6 +952,39 @@ lessons:
               message: "Garde la comparaison expected.includes(role)."
 
   # ===================================================================== LEÇON 4
+      - slug: sor-ex-guard-expliquer
+        kind: CODE_LIBRE
+        title: "Expliquer le bug de roleGuard"
+        difficulty: INTERMEDIAIRE
+        skill: angular-routage
+        statement: |
+          Relis les routes et le garde de la leçon. Explique en trois lignes :
+          `Bug :`, `Conséquence :`, `Vraie sécurité :` (où se trouve la protection qui compte vraiment).
+        criteria: "Le bug : roles/role ; la conséquence : tout le monde entre ; la vraie sécurité : le serveur."
+        hints:
+          - "Les routes écrivent roles, le garde lit role."
+          - "La liste attendue est toujours vide."
+          - "La vraie sécurité est côté serveur (Spring Security)."
+        solution: |
+          Bug : les routes écrivent la clé roles, mais le garde lit role ; il récupère donc une liste vide.
+          Conséquence : avec une liste vide, le garde laisse passer tout le monde, même sur /admin.
+          Vraie sécurité : le serveur (Spring Security) doit refuser l'accès ; le garde ne sert qu'au confort.
+        explanation: "Un seul caractère d'écart, et la règle ne s'applique plus."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Bug :
+            Conséquence :
+            Vraie sécurité :
+          checks:
+            - pattern: '(?im)^\s*Bug\s*:[^\n]*roles?\b[^\n]*\brole'
+              message: "Explique l'écart entre roles et role."
+            - pattern: '(?im)^\s*Cons[ée]quence\s*:[^\n]*(?:tout le monde|passe|entre|vide)'
+              message: "Dis que tout le monde passe."
+            - pattern: '(?im)^\s*Vraie s[ée]curit[ée]\s*:[^\n]*(?:serveur|backend|Spring)'
+              message: "La vraie sécurité est côté serveur."
+
   - slug: sor-intercepteur
     title: "L'intercepteur, le jeton et la déconnexion"
     duration: 12
@@ -983,6 +1084,10 @@ lessons:
         md: "**Trouver et corriger un bug** : répare la déconnexion de la page produits."
       - type: exercise
         ref: sor-ex-logout
+      - type: text
+        md: "**En autonomie** : explique les deux rôles de l'intercepteur."
+      - type: exercise
+        ref: sor-ex-intercepteur-expliquer
       - type: jury
         items:
           - q: "À quoi sert votre intercepteur ?"
@@ -1153,10 +1258,39 @@ lessons:
               message: "Le composant ne doit plus toucher lui-même à localStorage."
 
   # ===================================================================== LEÇON 5
+      - slug: sor-ex-intercepteur-expliquer
+        kind: CODE_LIBRE
+        title: "Expliquer l'intercepteur"
+        difficulty: INTERMEDIAIRE
+        skill: angular-services
+        statement: |
+          L'intercepteur agit à l'aller et au retour. Explique en deux lignes : `Aller :` (ce qu'il ajoute à
+          chaque requête) et `Retour 401 :` (ce qu'il fait quand le serveur répond 401).
+        criteria: "Aller : l'en-tête Authorization Bearer ; retour 401 : déconnexion."
+        hints:
+          - "À l'aller : l'en-tête Authorization avec le jeton."
+          - "Au retour : si 401, le jeton n'est plus valable."
+          - "Il appelle logout() et renvoie vers la connexion."
+        solution: |
+          Aller : il ajoute l'en-tête Authorization: Bearer <jeton> à chaque requête, s'il y a un jeton.
+          Retour 401 : le jeton est expiré ou invalide, il appelle auth.logout() qui efface tout et renvoie vers la connexion.
+        explanation: "Un seul endroit pour le jeton, à l'aller comme au retour."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Aller :
+            Retour 401 :
+          checks:
+            - pattern: '(?im)^\s*Aller\s*:[^\n]*(?:Authorization|Bearer|jeton)'
+              message: "Dis qu'il ajoute le jeton (Authorization: Bearer)."
+            - pattern: '(?im)^\s*Retour 401\s*:[^\n]*(?:d[ée]connect|logout)'
+              message: "Dis qu'il déconnecte."
+
   - slug: sor-panier
-    title: "Le panier : un bug d'ajout et un total calculé"
+    title: "Le panier : un bug d'ajout"
     duration: 12
-    objective: "Lire le composant panier, comprendre le getter total et corriger la méthode add."
+    objective: "Lire le composant panier, comprendre pourquoi le total est toujours à jour et corriger la méthode add."
     prerequisites: "Leçon « L'intercepteur, le jeton et la déconnexion »."
     skills: [angular-composants, typescript]
     xp: 25
@@ -1185,8 +1319,8 @@ lessons:
         id: def-reduce
         term: "reduce"
         md: |
-          Parcourt une liste en **accumulant** un résultat. Comme passer à la caisse : on part de 0, et à chaque
-          article on ajoute prix × quantité.
+          Parcourt une liste en **accumulant** un résultat. Comme passer à la caisse : la caisse part de zéro et
+          ajoute chaque article au montant. Tu n'as rien à compter toi-même : c'est le travail de `reduce`.
       - type: code
         id: code-panier
         language: typescript
@@ -1218,13 +1352,17 @@ lessons:
         ref: sor-pa-q1
         review: code-panier
       - type: text
-        md: "Exercice guidé : complète le calcul du total."
+        md: "**Exercice guidé** : complète les deux cas de `add()`."
       - type: exercise
-        ref: sor-ex-total-guide
+        ref: sor-ex-add-guide
       - type: text
         md: "**Trouver et corriger un bug** : répare `add()`."
       - type: exercise
         ref: sor-ex-panier-add
+      - type: text
+        md: "**En autonomie** : explique le panier avec tes mots."
+      - type: exercise
+        ref: sor-ex-panier-expliquer
       - type: jury
         items:
           - q: "Pourquoi le total n'est-il pas stocké ?"
@@ -1273,25 +1411,21 @@ lessons:
             why: "`get` est un mot-clé de déclaration, pas un objet."
         explanation: "`get total()` se lit `total`."
       - code: sor-pa-q3
-        kind: RESULTAT_CODE
+        kind: CHOIX_UNIQUE
         difficulty: 2
         skill: typescript
-        prompt: "Que renvoie ce code ?"
-        snippet: |
-          const lignes = [{ prix: 20, quantite: 2 }, { prix: 15, quantite: 1 }];
-          lignes.reduce((s, l) => s + l.prix * l.quantite, 0);
-        language: typescript
+        prompt: "Pourquoi le total du panier est-il un getter plutôt qu'une variable qu'on met à jour ?"
         choices:
-          - label: "55"
+          - label: "Il est recalculé à chaque lecture à partir des lignes : il est toujours juste"
             correct: true
-            why: "0 + 20 × 2 + 15 × 1 = 55."
-          - label: "35"
+            why: "Aucun risque d'oublier une mise à jour."
+          - label: "Pour que le panier soit plus rapide à charger"
             correct: false
-            why: "C'est la somme des prix sans les quantités."
-          - label: "3"
+            why: "Ce n'est pas la raison."
+          - label: "Parce qu'une variable ne peut pas contenir un nombre"
             correct: false
-            why: "C'est le nombre d'articles."
-        explanation: "`reduce` part de 0 et ajoute prix × quantité de chaque ligne."
+            why: "Elle le peut, mais il faudrait penser à la modifier partout."
+        explanation: "On ne stocke pas ce qui se déduit des autres données : c'est la même idée qu'en base."
       - code: sor-pa-q4
         kind: VRAI_FAUX
         difficulty: 2
@@ -1306,30 +1440,38 @@ lessons:
             why: "`find` ne lève pas d'erreur : il renvoie `undefined`."
         explanation: "Après un `find`, on gère toujours le cas `undefined`."
     exercises:
-      - slug: sor-ex-total-guide
+      - slug: sor-ex-add-guide
         kind: COMPLETER
-        title: "Compléter le calcul du total"
+        title: "Compléter les deux cas de add()"
         difficulty: FACILE
         skill: typescript
-        statement: "Complète le getter du total."
+        statement: |
+          Complète `add()` : si le produit est déjà là, sa quantité augmente ; **sinon**, on ajoute une nouvelle
+          ligne. Puis on sauvegarde.
         criteria: "Les trois trous sont corrects."
         hints:
-          - "La méthode qui accumule un résultat sur une liste."
-          - "On multiplie le prix par la quantité."
-          - "reduce, quantite, 0."
-        solution: '["reduce", "quantite", "0"]'
-        explanation: "`reduce((somme, ligne) => somme + prix × quantité, 0)` : le `0` est la valeur de départ."
+          - "Le cas « sinon » s'écrit else."
+          - "Ajouter à la fin d'une liste : push ; sauvegarder : save."
+          - "else, push, save."
+        solution: '["else", "push", "save"]'
+        explanation: "Deux cas, puis la sauvegarde : la fonction n'oublie plus le nouveau produit."
         xp: 10
         payload:
           language: typescript
           template: |
-            get total(): number {
-              return this.panier.[[1]]((s, it) => s + it.produits.price * it.[[2]], [[3]]);
+            add(produits: Product): void {
+              const x = this.panier.find(i => i.produits.id === produits.id);
+              if (x) {
+                x.quantite++;
+              } [[1]] {
+                this.panier.[[2]]({ produits, quantite: 1 });
+              }
+              this.[[3]]();
             }
           blanks:
-            - ["reduce"]
-            - ["quantite"]
-            - ["0"]
+            - ["else"]
+            - ["push"]
+            - ["save"]
       - slug: sor-ex-panier-add
         kind: CORRIGER_ERREUR
         title: "Réparer l'ajout au panier"
@@ -1372,6 +1514,35 @@ lessons:
               message: "Utilise un else pour le cas où le produit n'est pas encore dans le panier."
             - pattern: 'this\.save\(\)'
               message: "Sauvegarde le panier à la fin : this.save();"
+      - slug: sor-ex-panier-expliquer
+        kind: CODE_LIBRE
+        title: "Expliquer le panier"
+        difficulty: INTERMEDIAIRE
+        skill: typescript
+        statement: |
+          Explique en deux lignes :
+          - `Deux cas :` les deux situations que `add()` doit traiter ;
+          - `Total :` pourquoi le total est toujours juste sans jamais être enregistré.
+        criteria: "Deux cas : déjà présent / nouveau produit ; total : recalculé à chaque lecture (getter)."
+        hints:
+          - "Le produit est déjà dans le panier… ou pas."
+          - "Le total est un getter."
+          - "Il est recalculé à chaque affichage à partir des lignes."
+        solution: |
+          Deux cas : si le produit est déjà dans le panier, sa quantité augmente ; sinon, on ajoute une nouvelle ligne.
+          Total : c'est un getter, recalculé à chaque lecture à partir des lignes du panier, donc toujours à jour.
+        explanation: "Tu expliques la logique, sans rien calculer toi-même."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Deux cas :
+            Total :
+          checks:
+            - pattern: '(?im)^\s*Deux cas\s*:[^\n]*(?:d[ée]j[àa]|existe)[^\n]*(?:sinon|nouveau|nouvelle|ajout|push)'
+              message: "Décris les deux cas : déjà présent, sinon ajout."
+            - pattern: '(?im)^\s*Total\s*:[^\n]*(?:getter|recalcul|chaque lecture|chaque affichage|jamais stock)'
+              message: "Explique que le total est recalculé à chaque lecture (getter)."
 
 bank:
   - code: sor-c5-b1

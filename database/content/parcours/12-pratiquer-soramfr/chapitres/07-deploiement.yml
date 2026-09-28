@@ -90,6 +90,10 @@ lessons:
         md: "En autonomie : écris le fichier `.env.example` de Soramfr."
       - type: exercise
         ref: sor-ex-env-example
+      - type: text
+        md: "**Trouver l'erreur** : un secret écrit dans la configuration."
+      - type: exercise
+        ref: sor-ex-secret-bug
       - type: jury
         items:
           - q: "Comment gérez-vous les secrets ?"
@@ -247,6 +251,34 @@ lessons:
               message: "Ajoute CORS_ORIGINS avec l'adresse locale d'Angular."
 
   # ===================================================================== LEÇON 2
+      - slug: sor-ex-secret-bug
+        kind: CORRIGER_ERREUR
+        title: "Un secret avec une valeur par défaut"
+        difficulty: FACILE
+        skill: rgpd-secrets
+        statement: |
+          Cette ligne donne une **valeur par défaut** au secret JWT : si la variable est oubliée, l'application
+          démarre avec un secret connu de tous (il est dans Git). Supprime la valeur par défaut.
+        criteria: "app.jwt.secret=${JWT_SECRET}, sans valeur après deux-points."
+        hints:
+          - "Après les deux-points vient la valeur par défaut."
+          - "Un secret n'a pas de valeur par défaut."
+          - "app.jwt.secret=${JWT_SECRET}"
+        solution: |
+          app.jwt.secret=${JWT_SECRET}
+        explanation: "Sans valeur par défaut, l'application refuse de démarrer si le secret manque : c'est voulu."
+        xp: 10
+        payload:
+          language: properties
+          starter: |
+            app.jwt.secret=${JWT_SECRET:monSecretSoramfr2025}
+          checks:
+            - pattern: 'JWT_SECRET:'
+              absent: true
+              message: "Le secret ne doit pas avoir de valeur par défaut."
+            - pattern: '(?m)^app\.jwt\.secret=\$\{JWT_SECRET\}\s*$'
+              message: "Écris app.jwt.secret=${JWT_SECRET}."
+
   - slug: sor-dockerfile
     title: "TP — Un Dockerfile propre en deux étapes"
     duration: 15
@@ -340,6 +372,10 @@ lessons:
         md: "TP en autonomie : réécris le Dockerfile de Soramfr."
       - type: exercise
         ref: sor-ex-dockerfile
+      - type: text
+        md: "**Exercice guidé** : complète les deux étapes."
+      - type: exercise
+        ref: sor-ex-dockerfile-guide
       - type: jury
         items:
           - q: "Quelle différence entre une image et un conteneur ?"
@@ -543,6 +579,36 @@ lessons:
               message: "mon-app.jar n'existe pas : utilise /app/app.jar."
 
   # ===================================================================== LEÇON 3
+      - slug: sor-ex-dockerfile-guide
+        kind: COMPLETER
+        title: "Compléter le Dockerfile en deux étapes"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: "Complète : le nom de la première étape, l'image d'exécution (JRE) et la copie depuis l'étape de construction."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Nommer une étape : AS."
+          - "Pour exécuter seulement : jre."
+          - "AS, jre, build."
+        solution: '["AS", "jre", "build"]'
+        explanation: "Étape 1 construit avec le JDK ; étape 2 exécute avec le JRE et ne garde que le .jar."
+        xp: 10
+        payload:
+          language: dockerfile
+          template: |
+            FROM eclipse-temurin:21-jdk [[1]] build
+            WORKDIR /app
+            COPY . .
+            RUN ./mvnw -B clean package
+
+            FROM eclipse-temurin:21-[[2]]
+            COPY --from=[[3]] /app/target/*.jar app.jar
+            CMD ["java", "-jar", "app.jar"]
+          blanks:
+            - ["AS"]
+            - ["jre"]
+            - ["build"]
+
   - slug: sor-compose
     title: "Docker Compose et mise en ligne"
     duration: 14
@@ -652,6 +718,10 @@ lessons:
         md: "En autonomie : écris le service `db` du fichier Compose."
       - type: exercise
         ref: sor-ex-compose-db
+      - type: text
+        md: "**Trouver l'erreur** : le backend cherche la base au mauvais endroit."
+      - type: exercise
+        ref: sor-ex-compose-bug
       - type: jury
         items:
           - q: "Comment avez-vous déployé votre application ?"
@@ -834,6 +904,39 @@ lessons:
               message: "Déclare le volume en bas du fichier : volumes: puis donnees:"
             - pattern: 'healthcheck:[\s\S]*pg_isready'
               message: "Ajoute un healthcheck qui utilise pg_isready."
+      - slug: sor-ex-compose-bug
+        kind: CORRIGER_ERREUR
+        title: "Le backend cherche la base sur localhost"
+        difficulty: FACILE
+        skill: docker-deploiement
+        statement: |
+          Dans un conteneur, `localhost` désigne **le conteneur lui-même**, pas la base. Corrige `DB_URL` pour
+          appeler la base par le **nom de son service** : `db`.
+        criteria: "DB_URL pointe vers db:5432."
+        hints:
+          - "Entre conteneurs, on s'appelle par le nom du service."
+          - "Le service de la base s'appelle db."
+          - "jdbc:postgresql://db:5432/soramfr"
+        solution: |
+          backend:
+            build: .
+            environment:
+              DB_URL: jdbc:postgresql://db:5432/soramfr
+        explanation: "Compose crée un réseau où chaque service est joignable par son nom."
+        xp: 10
+        payload:
+          language: yaml
+          starter: |
+            backend:
+              build: .
+              environment:
+                DB_URL: jdbc:postgresql://localhost:5432/soramfr
+          checks:
+            - pattern: 'localhost'
+              absent: true
+              message: "localhost désigne le conteneur du backend lui-même."
+            - pattern: 'DB_URL:\s*jdbc:postgresql://db:5432/soramfr'
+              message: "Utilise jdbc:postgresql://db:5432/soramfr."
 
 bank:
   - code: sor-c7-b1

@@ -102,6 +102,10 @@ lessons:
         md: "En autonomie : écris un DTO de sortie pour les produits, sous forme de record."
       - type: exercise
         ref: sor-ex-produit-dto
+      - type: text
+        md: "**Trouver l'erreur** : un contrôleur qui saute une couche."
+      - type: exercise
+        ref: sor-ex-couches-bug
       - type: jury
         items:
           - q: "Pourquoi séparer contrôleur, service et repository ?"
@@ -267,6 +271,40 @@ lessons:
               message: "Un record se termine par un bloc { } (même vide)."
 
   # ===================================================================== LEÇON 2
+      - slug: sor-ex-couches-bug
+        kind: CORRIGER_ERREUR
+        title: "Un contrôleur qui saute le service"
+        difficulty: FACILE
+        skill: spring-structure
+        statement: |
+          Ce contrôleur parle **directement** au repository. Dans Soramfr, le contrôleur passe toujours par le
+          service. Corrige la ligne pour appeler `userService.getAll()`.
+        criteria: "Le contrôleur appelle userService.getAll() et plus le repository."
+        hints:
+          - "Sens des appels : controller → service → repository."
+          - "Le contrôleur ne connaît que le service."
+          - "return userService.getAll();"
+        solution: |
+          @GetMapping
+          public List<UserDto> getAll(){
+              return userService.getAll();
+          }
+        explanation: "Chaque couche a son métier : les règles et la conversion en DTO restent dans le service."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @GetMapping
+            public List<UserDto> getAll(){
+                return userRepository.findAll();
+            }
+          checks:
+            - pattern: 'userRepository'
+              absent: true
+              message: "Le contrôleur ne doit pas utiliser le repository."
+            - pattern: 'return\s+userService\.getAll\(\)\s*;'
+              message: "Appelle le service : return userService.getAll();"
+
   - slug: sor-entite-produit
     title: "TP — Créer une entité et sa table"
     duration: 13
@@ -374,6 +412,10 @@ lessons:
             note: "`BigDecimal` + `precision = 10, scale = 2` : 10 chiffres dont 2 après la virgule."
           - n: 6
             note: "`imageUrl` en Java devient `image_url` : Spring Boot convertit les noms en snake_case."
+      - type: text
+        md: "**Trouver l'erreur** : une entité sans clé primaire."
+      - type: exercise
+        ref: sor-ex-entite-bug
       - type: jury
         items:
           - q: "Pourquoi JPA a-t-il besoin d'un constructeur sans paramètre ?"
@@ -579,6 +621,54 @@ lessons:
               message: "N'utilise pas double pour un prix : les arrondis seraient faux. Utilise BigDecimal."
 
   # ===================================================================== LEÇON 3
+      - slug: sor-ex-entite-bug
+        kind: CORRIGER_ERREUR
+        title: "Une entité sans clé primaire"
+        difficulty: FACILE
+        skill: spring-jpa
+        statement: |
+          Au démarrage, Spring refuse cette entité : « No identifier specified for entity ». Il manque
+          l'annotation qui désigne la **clé primaire**. Ajoute-la au-dessus de `@GeneratedValue`.
+        criteria: "Le champ id porte @Id."
+        hints:
+          - "Quelle annotation marque la clé primaire ?"
+          - "@Id."
+          - "@Id puis @GeneratedValue(strategy = GenerationType.IDENTITY) puis private Long id;"
+        solution: |
+          @Entity
+          @Table(name = "produits")
+          public class ProduitEntity {
+              @Id
+              @GeneratedValue(strategy = GenerationType.IDENTITY)
+              private Long id;
+
+              @Column(nullable = false, length = 150)
+              private String nom;
+
+              public ProduitEntity() {
+              }
+          }
+        explanation: "Chaque table a une clé primaire : @Id la désigne pour JPA."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @Entity
+            @Table(name = "produits")
+            public class ProduitEntity {
+                @GeneratedValue(strategy = GenerationType.IDENTITY)
+                private Long id;
+
+                @Column(nullable = false, length = 150)
+                private String nom;
+
+                public ProduitEntity() {
+                }
+            }
+          checks:
+            - pattern: '@Id\s+@GeneratedValue\(\s*strategy\s*=\s*GenerationType\.IDENTITY\s*\)\s*private\s+Long\s+id\s*;'
+              message: "Ajoute @Id juste au-dessus de @GeneratedValue."
+
   - slug: sor-repository
     title: "Le repository : parler à la base sans écrire de SQL"
     duration: 11
@@ -674,6 +764,10 @@ lessons:
         md: "En autonomie : écris un repository avec deux méthodes dérivées."
       - type: exercise
         ref: sor-ex-produit-repository
+      - type: text
+        md: "**Trouver l'erreur** : un nom de méthode que Spring ne comprend pas."
+      - type: exercise
+        ref: sor-ex-repo-bug
       - type: jury
         items:
           - q: "Vous n'avez écrit aucun SQL pour les utilisateurs. Comment la base est-elle interrogée ?"
@@ -826,6 +920,38 @@ lessons:
               message: "Un repository Spring Data est une interface, pas une classe."
 
   # ===================================================================== LEÇON 4
+      - slug: sor-ex-repo-bug
+        kind: CORRIGER_ERREUR
+        title: "Un nom de méthode qui ne correspond à rien"
+        difficulty: FACILE
+        skill: spring-jpa
+        statement: |
+          Dans `ProduitEntity`, le champ s'appelle `nom`. Spring refuse de démarrer : « No property 'name'
+          found ». Corrige le **nom** de la méthode pour qu'il parle du bon champ.
+        criteria: "La méthode s'appelle findByNomContainingIgnoreCase."
+        hints:
+          - "Spring lit le nom de la méthode pour écrire le SQL."
+          - "Le champ est nom, pas name."
+          - "findByNomContainingIgnoreCase(String mot)"
+        solution: |
+          public interface ProduitRepository extends JpaRepository<ProduitEntity, Long> {
+              List<ProduitEntity> findByNomContainingIgnoreCase(String mot);
+          }
+        explanation: "Dans une méthode dérivée, chaque mot après findBy doit être un vrai champ de l'entité."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public interface ProduitRepository extends JpaRepository<ProduitEntity, Long> {
+                List<ProduitEntity> findByNameContainingIgnoreCase(String mot);
+            }
+          checks:
+            - pattern: 'findByName'
+              absent: true
+              message: "Le champ ne s'appelle pas name."
+            - pattern: 'List<ProduitEntity>\s+findByNomContainingIgnoreCase\s*\(\s*String\s+\w+\s*\)\s*;'
+              message: "Renomme en findByNomContainingIgnoreCase(String mot)."
+
   - slug: sor-service-inscription
     title: "TP — Reconstruire l'inscription dans le service"
     duration: 15
@@ -933,6 +1059,10 @@ lessons:
           classe est fourni ; écris le corps de `register`.
       - type: exercise
         ref: sor-ex-register-service
+      - type: text
+        md: "**Trouver l'erreur** : un mot de passe enregistré en clair."
+      - type: exercise
+        ref: sor-ex-register-bug
       - type: jury
         items:
           - q: "Détaillez votre méthode d'inscription."
@@ -1148,6 +1278,34 @@ lessons:
               message: "Les doublons doivent être vérifiés AVANT la sauvegarde."
 
   # ===================================================================== LEÇON 5
+      - slug: sor-ex-register-bug
+        kind: CORRIGER_ERREUR
+        title: "Un mot de passe en clair"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          Cette ligne enregistre le mot de passe **tel quel** dans la base. Corrige-la pour ne stocker que le
+          **hash**, avec `encoder.encode(...)`.
+        criteria: "setPasswordHash reçoit encoder.encode(req.password)."
+        hints:
+          - "Le temps 4 de register : hacher."
+          - "encoder.encode(req.password)"
+          - "nouvelutilisateur.setPasswordHash(encoder.encode(req.password));"
+        solution: |
+          nouvelutilisateur.setPasswordHash(encoder.encode(req.password));
+        explanation: "Si la base fuit, un hash ne révèle pas le mot de passe."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            nouvelutilisateur.setPasswordHash(req.password);
+          checks:
+            - pattern: 'setPasswordHash\(\s*req\.password\s*\)'
+              absent: true
+              message: "Ne stocke jamais le mot de passe en clair."
+            - pattern: 'setPasswordHash\(\s*encoder\.encode\(\s*req\.password\s*\)\s*\)\s*;'
+              message: "Utilise encoder.encode(req.password)."
+
   - slug: sor-endpoint-rest
     title: "TP — Créer et tester un endpoint REST"
     duration: 14
@@ -1250,6 +1408,10 @@ lessons:
           - "Clique sur **Send** : tu dois voir le code **200** et un tableau JSON."
           - "Essaie `GET /api/produits/999` : tu dois obtenir **404**, pas 500."
           - "Retire le jeton et recommence : tu dois obtenir **401**."
+      - type: text
+        md: "**Trouver l'erreur** : le mauvais verbe HTTP."
+      - type: exercise
+        ref: sor-ex-endpoint-bug
       - type: jury
         items:
           - q: "Quelle différence entre @PathVariable et @RequestBody ?"
@@ -1434,6 +1596,42 @@ lessons:
               message: "Le contrôleur ne parle pas au repository : passe par le service."
 
   # ===================================================================== LEÇON 6
+      - slug: sor-ex-endpoint-bug
+        kind: CORRIGER_ERREUR
+        title: "Une suppression avec GET"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          Cette méthode **supprime** une utilisatrice, mais elle répond au verbe GET. Corrige l'annotation pour
+          utiliser le verbe de la suppression.
+        criteria: "La méthode delete porte @DeleteMapping(\"/{id}\")."
+        hints:
+          - "GET sert à lire."
+          - "Supprimer : DELETE."
+          - "@DeleteMapping(\"/{id}\")"
+        solution: |
+          @DeleteMapping("/{id}")
+          public ResponseEntity<Void> delete(@PathVariable Long id){
+              userService.delete(id);
+              return ResponseEntity.noContent().build();
+          }
+        explanation: "Un lien ou un robot qui fait un simple GET ne doit jamais pouvoir supprimer des données."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @GetMapping("/{id}")
+            public ResponseEntity<Void> delete(@PathVariable Long id){
+                userService.delete(id);
+                return ResponseEntity.noContent().build();
+            }
+          checks:
+            - pattern: '@GetMapping'
+              absent: true
+              message: "GET sert à lire, pas à supprimer."
+            - pattern: '@DeleteMapping\(\s*"/\{id\}"\s*\)\s*public\s+ResponseEntity<Void>\s+delete'
+              message: "Utilise @DeleteMapping(\"/{id}\")."
+
   - slug: sor-erreurs
     title: "Gérer les erreurs sans en dire trop"
     duration: 13
@@ -1546,6 +1744,10 @@ lessons:
           service **et** le gestionnaire d'erreurs.
       - type: exercise
         ref: sor-ex-login-erreurs
+      - type: text
+        md: "**En autonomie** : explique la réponse de connexion avec tes mots."
+      - type: exercise
+        ref: sor-ex-erreurs-expliquer
       - type: jury
         items:
           - q: "Comment gérez-vous les erreurs dans votre API ?"
@@ -1738,6 +1940,41 @@ lessons:
               message: "Le gestionnaire doit répondre 401 : ResponseEntity.status(HttpStatus.UNAUTHORIZED)."
             - pattern: 'unauthorized\s*\([^)]*\)\s*\{[\s\S]*return\s+ResponseEntity'
               message: "Le gestionnaire doit renvoyer une ResponseEntity."
+      - slug: sor-ex-erreurs-expliquer
+        kind: CODE_LIBRE
+        title: "Expliquer la réponse d'une connexion ratée"
+        difficulty: INTERMEDIAIRE
+        skill: securite-owasp
+        statement: |
+          Explique, comme devant le jury, ce que Soramfr (corrigé) répond quand une connexion échoue. Écris trois
+          lignes :
+          - `Statut :` le code de statut renvoyé ;
+          - `Message :` le message affiché ;
+          - `Pourquoi :` pourquoi c'est **le même** que le compte existe ou non.
+        criteria: "Statut 401, le message commun, et une raison liée à l'énumération des comptes."
+        hints:
+          - "Statut : 401."
+          - "Message : Identifiant ou mot de passe incorrect."
+          - "Pourquoi : pour qu'un attaquant ne puisse pas deviner quels comptes existent."
+        solution: |
+          Statut : 401 Unauthorized
+          Message : Identifiant ou mot de passe incorrect
+          Pourquoi : si la réponse changeait, un attaquant pourrait deviner quels e-mails ont un compte.
+        explanation: "Une seule réponse pour tous les échecs : on ne révèle rien."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Statut :
+            Message :
+            Pourquoi :
+          checks:
+            - pattern: '(?im)^\s*Statut\s*:[ \t]*401'
+              message: "Le statut d'une connexion ratée est 401."
+            - pattern: '(?im)^\s*Message\s*:[^\n]*identifiant ou mot de passe incorrect'
+              message: "Le message : Identifiant ou mot de passe incorrect."
+            - pattern: '(?im)^\s*Pourquoi\s*:[^\n]*(?:devin|existe|attaqu|[ée]num[ée]r|pirate)'
+              message: "Explique que cela empêche de deviner quels comptes existent."
 
 bank:
   - code: sor-c3-b1

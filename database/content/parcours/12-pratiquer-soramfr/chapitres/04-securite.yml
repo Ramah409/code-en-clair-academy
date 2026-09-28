@@ -100,6 +100,10 @@ lessons:
         md: "**Trouver et corriger un bug** : supprime la fuite du hash dans `UserDto` et `toDto`."
       - type: exercise
         ref: sor-ex-userdto-hash
+      - type: text
+        md: "**En autonomie** : explique BCrypt avec tes mots."
+      - type: exercise
+        ref: sor-ex-bcrypt-expliquer
       - type: jury
         items:
           - q: "Comment stockez-vous les mots de passe ?"
@@ -276,6 +280,41 @@ lessons:
               message: "toDto : return new UserDto(e.getId(), e.getName(), e.getEmail(), e.getUsername());"
 
   # ===================================================================== LEÇON 2
+      - slug: sor-ex-bcrypt-expliquer
+        kind: CODE_LIBRE
+        title: "Expliquer BCrypt avec mes mots"
+        difficulty: INTERMEDIAIRE
+        skill: securite-owasp
+        statement: |
+          Explique, comme devant le jury, comment Soramfr protège les mots de passe. Écris trois lignes :
+          - `Hacher :` ce que veut dire hacher (et la différence avec chiffrer) ;
+          - `Sel :` à quoi sert le sel ;
+          - `Connexion :` quelle méthode vérifie le mot de passe à la connexion.
+        criteria: "Hacher = sans retour ; le sel rend les hash différents ; matches à la connexion."
+        hints:
+          - "Hacher : une empreinte sans retour possible, contrairement au chiffrement."
+          - "Sel : un morceau aléatoire, pour que deux mots de passe identiques donnent deux hash différents."
+          - "Connexion : encoder.matches(motDePasse, hash)."
+        solution: |
+          Hacher : transformer le mot de passe en empreinte, sans retour possible (on ne peut pas le retrouver, contrairement au chiffrement).
+          Sel : un morceau aléatoire ajouté par BCrypt, pour que deux mots de passe identiques donnent deux hash différents.
+          Connexion : encoder.matches(motDePasse, hash) compare le mot de passe tapé avec le hash enregistré.
+        explanation: "Tu expliques l'idée, pas une ligne apprise par cœur."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Hacher :
+            Sel :
+            Connexion :
+          checks:
+            - pattern: '(?im)^\s*Hacher\s*:[^\n]*(?:sans retour|irr[ée]versible|retrouver|empreinte)'
+              message: "Explique que le hachage est une empreinte sans retour possible."
+            - pattern: '(?im)^\s*Sel\s*:[^\n]*(?:al[ée]atoire|diff[ée]rent)'
+              message: "Explique que le sel est aléatoire et rend les hash différents."
+            - pattern: '(?im)^\s*Connexion\s*:[^\n]*matches'
+              message: "Cite la méthode matches."
+
   - slug: sor-jwt
     title: "Le jeton JWT : fabriquer, signer, vérifier"
     duration: 14
@@ -389,6 +428,10 @@ lessons:
         md: "**Améliorer la sécurité** : nettoie le fichier de configuration de Soramfr."
       - type: exercise
         ref: sor-ex-properties
+      - type: text
+        md: "**En autonomie** : explique les trois parties d'un jeton."
+      - type: exercise
+        ref: sor-ex-jwt-expliquer
       - type: jury
         items:
           - q: "Comment fonctionne votre authentification ?"
@@ -601,6 +644,40 @@ lessons:
               message: "Ne renvoie plus les détails techniques : app.errors.include-details=false"
 
   # ===================================================================== LEÇON 3
+      - slug: sor-ex-jwt-expliquer
+        kind: CODE_LIBRE
+        title: "Expliquer les trois parties d'un jeton"
+        difficulty: INTERMEDIAIRE
+        skill: auth-jwt
+        statement: |
+          Regarde le jeton découpé en trois dans la leçon. Explique chaque partie en une ligne :
+          `En-tête :`, `Contenu :`, `Signature :`. Pour le contenu, dis s'il est secret ou lisible ; pour la
+          signature, dis à quoi elle sert.
+        criteria: "Contenu lisible (pas chiffré) ; signature qui empêche la modification."
+        hints:
+          - "En-tête : l'algorithme utilisé (HS256)."
+          - "Contenu : les claims (id, pseudo, rôle, expiration), lisibles par tout le monde."
+          - "Signature : prouve que personne n'a modifié le jeton, grâce au secret du serveur."
+        solution: |
+          En-tête : l'algorithme de signature utilisé (HS256).
+          Contenu : l'id, le pseudo, le rôle et l'expiration ; il est lisible par tout le monde, pas chiffré.
+          Signature : calculée avec le secret du serveur, elle prouve que personne n'a modifié le jeton.
+        explanation: "Comme le contenu est lisible, on n'y met jamais de mot de passe."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            En-tête :
+            Contenu :
+            Signature :
+          checks:
+            - pattern: '(?im)^\s*En-t[êe]te\s*:[ \t]*\S[^\n]{5,}'
+              message: "Décris l'en-tête."
+            - pattern: '(?im)^\s*Contenu\s*:[^\n]*(?:lisible|pas chiffr|non chiffr|base64)'
+              message: "Dis que le contenu est lisible (pas chiffré)."
+            - pattern: '(?im)^\s*Signature\s*:[^\n]*(?:modifi|falsifi|chang|secret)'
+              message: "Explique que la signature empêche de modifier le jeton."
+
   - slug: sor-proteger-routes
     title: "TP — Protéger une route avec JWT"
     duration: 15
@@ -719,6 +796,10 @@ lessons:
           - "Connexion avec un compte USER, puis `GET /api/users` avec son jeton → attendu **403**."
           - "Connexion avec un compte ADMIN, puis `GET /api/users` avec son jeton → attendu **200**."
           - "`POST /api/auth/login` sans jeton → toujours **200** (route publique)."
+      - type: text
+        md: "**Exercice guidé** : complète les règles de sécurité."
+      - type: exercise
+        ref: sor-ex-regles-guide
       - type: jury
         items:
           - q: "Comment protégez-vous les routes d'administration ?"
@@ -911,6 +992,33 @@ lessons:
               message: "Ne laisse pas passer toutes les requêtes : anyRequest() doit rester authenticated()."
 
   # ===================================================================== LEÇON 4
+      - slug: sor-ex-regles-guide
+        kind: COMPLETER
+        title: "Compléter les règles de sécurité"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: "Complète les trois règles : ouvert à tous, réservé à ADMIN, connecté."
+        criteria: "permitAll, hasRole, authenticated."
+        hints:
+          - "Ouvert à tous : permitAll."
+          - "Réservé à un rôle : hasRole."
+          - "permitAll, hasRole, authenticated."
+        solution: '["permitAll", "hasRole", "authenticated"]'
+        explanation: "Du plus précis au plus général : la première règle qui correspond gagne."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").[[1]]()
+                .requestMatchers("/api/users/**").[[2]]("ADMIN")
+                .anyRequest().[[3]]()
+            );
+          blanks:
+            - ["permitAll"]
+            - ["hasRole"]
+            - ["authenticated"]
+
   - slug: sor-roles
     title: "Un rôle décidé par le serveur, stocké en base"
     duration: 12
@@ -1000,6 +1108,10 @@ lessons:
         md: "**Améliorer la sécurité** : corrige le calcul du rôle."
       - type: exercise
         ref: sor-ex-role-serveur
+      - type: text
+        md: "**En autonomie** : explique le risque et la solution."
+      - type: exercise
+        ref: sor-ex-role-expliquer
       - type: jury
         items:
           - q: "Comment un compte devient-il administrateur ?"
@@ -1178,6 +1290,35 @@ lessons:
               message: "Dans login : String role = user.getRole();"
 
   # ===================================================================== LEÇON 5
+      - slug: sor-ex-role-expliquer
+        kind: CODE_LIBRE
+        title: "Expliquer le problème du rôle"
+        difficulty: INTERMEDIAIRE
+        skill: auth-jwt
+        statement: |
+          Explique au jury, en deux lignes, pourquoi le calcul du rôle de Soramfr est dangereux et comment tu
+          le corriges : `Risque :` puis `Solution :`.
+        criteria: "Le risque parle du pseudo admin (ou de l'adresse dans le code) ; la solution parle d'une colonne role en base."
+        hints:
+          - "Que se passe-t-il si quelqu'un s'inscrit avec le pseudo admin ?"
+          - "Où doit être stocké le rôle ?"
+          - "Solution : une colonne role en base, USER par défaut, lue par le serveur."
+        solution: |
+          Risque : n'importe qui peut s'inscrire avec le pseudo admin et devenir administratrice (élévation de privilèges).
+          Solution : une colonne role en base, USER par défaut ; le serveur lit user.getRole() et le met dans le jeton signé.
+        explanation: "Le rôle est une donnée, décidée par le serveur, jamais par le nom choisi."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Risque :
+            Solution :
+          checks:
+            - pattern: '(?im)^\s*Risque\s*:[^\n]*(?:admin|pseudo|n.importe qui|adresse|privil)'
+              message: "Explique le risque (pseudo admin, adresse écrite dans le code…)."
+            - pattern: '(?im)^\s*Solution\s*:[^\n]*(?:base|colonne|getRole)'
+              message: "Explique que le rôle est stocké en base (colonne role)."
+
   - slug: sor-owasp
     title: "CORS, CSRF, XSS et injection SQL dans Soramfr"
     duration: 15
@@ -1282,6 +1423,10 @@ lessons:
         md: "**Améliorer la sécurité** : réécris `CorsConfig` proprement."
       - type: exercise
         ref: sor-ex-cors
+      - type: text
+        md: "**En autonomie** : une protection pour chaque attaque, expliquée."
+      - type: exercise
+        ref: sor-ex-owasp-expliquer
       - type: jury
         items:
           - q: "Pourquoi avez-vous désactivé la protection CSRF ?"
@@ -1500,6 +1645,38 @@ lessons:
               message: "Aucun domaine ne doit rester écrit en dur dans le code."
             - pattern: 'allowCredentials\(\s*true\s*\)'
               message: "Garde .allowCredentials(true)."
+      - slug: sor-ex-owasp-expliquer
+        kind: CODE_LIBRE
+        title: "Expliquer les protections de Soramfr"
+        difficulty: INTERMEDIAIRE
+        skill: securite-owasp
+        statement: |
+          Écris trois lignes, une par attaque, et dis ce qui protège Soramfr :
+          `Injection SQL :`, `XSS :`, `CORS :`.
+        criteria: "Injection : requêtes paramétrées / JPA ; XSS : Angular échappe ; CORS : origines autorisées."
+        hints:
+          - "Injection SQL : Spring Data JPA envoie les valeurs en paramètres."
+          - "XSS : Angular échappe ce qu'il affiche avec {{ }}."
+          - "CORS : seules les origines listées (localhost:4200, le site Netlify) peuvent appeler l'API."
+        solution: |
+          Injection SQL : Spring Data JPA utilise des requêtes paramétrées, les valeurs ne deviennent jamais du SQL.
+          XSS : Angular échappe tout ce qu'il affiche avec {{ }}.
+          CORS : seules les origines autorisées (le front local et le site Netlify) peuvent appeler l'API.
+        explanation: "Une attaque, une protection, une phrase."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Injection SQL :
+            XSS :
+            CORS :
+          checks:
+            - pattern: '(?im)^\s*Injection SQL\s*:[^\n]*(?:param|JPA|\?)'
+              message: "Injection SQL : parle des requêtes paramétrées (JPA)."
+            - pattern: '(?im)^\s*XSS\s*:[^\n]*(?:[ée]chapp|Angular)'
+              message: "XSS : Angular échappe l'affichage."
+            - pattern: '(?im)^\s*CORS\s*:[^\n]*(?:origin|domaine|autoris)'
+              message: "CORS : seules les origines autorisées peuvent appeler l'API."
 
 bank:
   - code: sor-c4-b1
