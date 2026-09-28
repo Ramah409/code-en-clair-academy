@@ -2,34 +2,31 @@ slug: gp-titre-dossier
 position: 3
 level: AVANCE
 title: "Le titre CDA et le dossier de projet"
-summary: "Connaître les trois blocs de compétences du titre, relier chaque partie de son projet à une compétence et rédiger un dossier de projet clair."
-quizQuestionCount: 10
+summary: "Connaître les trois blocs du titre, relier chaque compétence à une preuve, construire le plan du dossier, écrire des extraits utiles et le résumé en anglais. Une seule notion par leçon."
+quizQuestionCount: 14
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: gp-competences-cda
-    title: "Les compétences du titre CDA"
-    duration: 14
-    objective: "Citer les trois blocs de compétences du titre Concepteur Développeur d'Applications et montrer, pour chacune, une preuve tirée de son projet."
+    title: "Les trois blocs du titre CDA"
+    duration: 10
+    objective: "Citer les trois blocs de compétences du titre Concepteur Développeur d'Applications et ce que chacun contient."
     prerequisites: "Chapitre « Organiser le travail en mode agile »."
-    skills: [oral-cda, gestion-projet]
-    xp: 25
+    skills: [oral-cda]
+    xp: 15
     memo: |
-      - Le titre professionnel **CDA** (niveau 6) comporte **trois blocs** de compétences (activités types).
+      - Le titre professionnel **CDA** (niveau 6) comporte **trois blocs** de compétences.
       - **Bloc 1 — Développer une application sécurisée** : environnement de travail, interfaces utilisateur, composants métier, contribution à la gestion de projet.
-      - **Bloc 2 — Concevoir et développer une application sécurisée organisée en couches** : analyse du besoin et maquettes, architecture logicielle, base de données relationnelle, composants d'accès aux données (SQL et NoSQL).
-      - **Bloc 3 — Préparer le déploiement d'une application sécurisée** : plans de tests, documentation du déploiement, mise en production dans une démarche DevOps.
-      - Pour chaque compétence : **une preuve** dans ton projet (code, diagramme, test, capture).
+      - **Bloc 2 — Concevoir et développer une application sécurisée organisée en couches** : besoin et maquettes, architecture, base de données, accès aux données (SQL et NoSQL).
+      - **Bloc 3 — Préparer le déploiement d'une application sécurisée** : plans de tests, documentation du déploiement, mise en production DevOps.
       - Référence officielle : le **REAC** et le **RC** du titre sur France Compétences ; vérifie la version de ta session.
     commonMistakes: |
-      - Présenter son projet sans jamais nommer les compétences.
       - Oublier la sécurité, présente dans le nom des trois blocs.
-      - Ne rien montrer pour le NoSQL ou le déploiement.
+      - Ne rien prévoir pour le NoSQL ou le déploiement.
     blocks:
       - type: text
         md: |
           Le jury évalue des **compétences**, pas un logiciel. Ton projet est la **preuve** que tu les as.
-          Il faut donc savoir quelle partie du projet démontre quelle compétence.
       - type: definition
         id: def-bloc
         term: "Bloc de compétences"
@@ -37,56 +34,46 @@ lessons:
           Un **chapitre du permis de conduire** : le code, la conduite en ville, la conduite sur autoroute.
           Chaque bloc regroupe des compétences proches, et il faut les valider tous pour obtenir le titre.
       - type: code
-        id: code-matrice
+        id: code-blocs
         language: text
-        title: "Une matrice compétences → preuves (extrait)"
+        title: "Les trois blocs en une phrase"
         code: |
-          Compétence                                         Preuve dans mon projet
-          Bloc 1 · Développer des interfaces utilisateur    Composants Angular, formulaires réactifs, accessibilité
-          Bloc 1 · Développer des composants métier          Services Spring (règles de réservation) + tests JUnit
-          Bloc 1 · Contribuer à la gestion de projet         Backlog MoSCoW, sprints, GitHub Projects
-          Bloc 2 · Analyser les besoins et maquetter         User stories, wireframes Figma
-          Bloc 2 · Définir l'architecture logicielle         Architecture en couches, diagrammes UML
-          Bloc 2 · Concevoir la base de données              MCD, MLD, script SQL, migrations Flyway
-          Bloc 2 · Composants d'accès aux données            Repositories JPA, requête SQL optimisée, NoSQL (journal)
-          Bloc 3 · Plans de tests                            Pyramide, Testcontainers, cahier de recette
-          Bloc 3 · Documenter le déploiement                 Dockerfile, compose.yaml, README de déploiement
-          Bloc 3 · Mise en production DevOps                 GitHub Actions : CI puis déploiement
+          Bloc 1 : je développe  (interfaces, composants métier, gestion de projet)
+          Bloc 2 : je conçois    (besoin, architecture, base de données, accès aux données)
+          Bloc 3 : je livre      (tests, documentation du déploiement, mise en production)
         lines:
+          - n: 1
+            note: "Écrire le code de l'application."
           - n: 2
-            note: "Pour chaque compétence, une preuve concrète que tu peux **montrer** au jury."
-          - n: 8
-            note: "Le NoSQL est attendu : même un petit usage (MongoDB, Redis, JSONB) doit être expliqué."
-          - n: 11
-            note: "Le bloc 3 se prouve avec des fichiers réels : workflow, Dockerfile, résultats de tests."
+            note: "Réfléchir à sa structure et à ses données."
+          - n: 3
+            note: "La tester et la mettre en ligne."
       - type: question
         ref: gp-cd-q1
-        review: code-matrice
+        review: code-blocs
       - type: question
         ref: gp-cd-q2
         review: def-bloc
       - type: text
-        md: "Exercice guidé : associe chaque preuve à son bloc."
+        md: "**Exercice 1 (guidé)** : quel bloc ?"
       - type: exercise
         ref: gp-ex-blocs-guide
       - type: text
-        md: "En autonomie : prépare ta propre matrice."
+        md: "**Exercice 2 (en autonomie)** : résume chaque bloc."
       - type: exercise
-        ref: gp-ex-matrice
-      - type: jury
-        items:
-          - q: "Quelles compétences votre projet couvre-t-il ?"
-            a: "Les trois blocs : le développement sécurisé (interfaces Angular, composants métier Spring, gestion de projet agile), la conception en couches (besoin et maquettes, architecture, base PostgreSQL, accès aux données SQL et NoSQL) et la préparation du déploiement (plan de tests, Docker, CI/CD avec GitHub Actions). J'ai une preuve concrète pour chaque compétence."
-          - q: "Où utilisez-vous du NoSQL ?"
-            a: "Donner l'usage réel : par exemple un journal d'événements dans MongoDB, un cache Redis, ou une colonne JSONB dans PostgreSQL. Expliquer pourquoi ce choix convient mieux qu'une table classique pour ces données peu structurées."
+        ref: gp-ex-blocs-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un bloc mal rangé."
+      - type: exercise
+        ref: gp-ex-blocs-bug
       - type: quiz
         items:
-          - ref: gp-cd-q3
-            review: code-matrice
-          - ref: gp-cd-q4
-            review: code-matrice
           - ref: gp-cd-q5
             review: def-bloc
+          - ref: gp-bl-q4
+            review: code-blocs
+          - ref: gp-bl-q5
+            review: code-blocs
     questions:
       - code: gp-cd-q1
         kind: CHOIX_UNIQUE
@@ -117,6 +104,203 @@ lessons:
             correct: false
             why: "Le titre complet exige les trois."
         explanation: "Un bloc peut aussi être validé séparément (certificat de compétences)."
+      - code: gp-cd-q5
+        kind: TEXTE
+        difficulty: 3
+        skill: oral-cda
+        prompt: "Quel sigle désigne le référentiel qui décrit les activités et compétences d'un titre professionnel ? (quatre lettres)"
+        answers: ["REAC"]
+        explanation: "Référentiel Emploi Activités Compétences ; le RC décrit, lui, les modalités d'évaluation."
+      - code: gp-bl-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Quel mot est présent dans le nom des trois blocs ?"
+        choices:
+          - label: "Sécurisée"
+            correct: true
+            why: "La sécurité est partout."
+          - label: "Mobile"
+            correct: false
+            why: "Non."
+          - label: "Rapide"
+            correct: false
+            why: "Non."
+        explanation: "Une application sécurisée, à chaque bloc."
+      - code: gp-bl-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Dans quel bloc se trouve « développer des interfaces utilisateur » ?"
+        choices:
+          - label: "Bloc 1"
+            correct: true
+            why: "Je développe."
+          - label: "Bloc 2"
+            correct: false
+            why: "Il concerne la conception."
+          - label: "Bloc 3"
+            correct: false
+            why: "Il concerne le déploiement."
+        explanation: "Développer (1), concevoir (2), livrer (3)."
+    exercises:
+      - slug: gp-ex-blocs-guide
+        kind: COMPLETER
+        title: "Quel bloc ?"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Indique le bloc (1, 2 ou 3) de chaque preuve."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Un formulaire Angular : je développe."
+          - "Un MCD : je conçois ; un workflow de déploiement : je livre."
+          - "1, 2, 3."
+        solution: '["1", "2", "3"]'
+        explanation: "Développer (1), concevoir en couches (2), préparer le déploiement (3)."
+        xp: 10
+        payload:
+          language: text
+          template: |
+            Formulaire Angular accessible avec validation     → bloc [[1]]
+            MCD, MLD et migrations Flyway                    → bloc [[2]]
+            Workflow GitHub Actions qui teste et déploie      → bloc [[3]]
+          blanks:
+            - ["1"]
+            - ["2"]
+            - ["3"]
+      - slug: gp-ex-blocs-libre
+        kind: CODE_LIBRE
+        title: "Résumer chaque bloc"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: |
+          Écris trois lignes `Bloc 1 :`, `Bloc 2 :`, `Bloc 3 :` et résume chaque bloc avec ses mots-clés
+          (développer, concevoir, déployer).
+        criteria: "Bloc 1 développer, bloc 2 concevoir, bloc 3 déployer."
+        hints:
+          - "Bloc 1 : développer."
+          - "Bloc 2 : concevoir en couches."
+          - "Bloc 3 : préparer le déploiement."
+        solution: |
+          Bloc 1 : développer une application sécurisée.
+          Bloc 2 : concevoir et développer une application organisée en couches.
+          Bloc 3 : préparer le déploiement d'une application sécurisée.
+        explanation: "Trois verbes à retenir en les comprenant : développer, concevoir, livrer."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Bloc 1 :
+            Bloc 2 :
+            Bloc 3 :
+          checks:
+            - pattern: '(?im)^\s*Bloc\s*1\s*:[^\n]*d[ée]velopp'
+              message: "Le bloc 1 : développer."
+            - pattern: '(?im)^\s*Bloc\s*2\s*:[^\n]*con[çc]e'
+              message: "Le bloc 2 : concevoir."
+            - pattern: '(?im)^\s*Bloc\s*3\s*:[^\n]*(?:d[ée]ploi|mise en production|livr)'
+              message: "Le bloc 3 : préparer le déploiement."
+      - slug: gp-ex-blocs-bug
+        kind: CORRIGER_ERREUR
+        title: "Un bloc mal rangé"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Le MCD a été rangé dans le bloc 3. Corrige le numéro du bloc."
+        criteria: "Le MCD est dans le bloc 2."
+        hints:
+          - "Le MCD sert à concevoir la base."
+          - "Concevoir : bloc 2."
+          - "MCD → bloc 2"
+        solution: |
+          MCD → bloc 2
+        explanation: "La base de données se conçoit dans le bloc 2."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            MCD → bloc 3
+          checks:
+            - pattern: '(?i)MCD\s*(?:→|->)\s*bloc\s*3'
+              absent: true
+              message: "Le MCD n'est pas dans le bloc 3."
+            - pattern: '(?i)MCD\s*(?:→|->)\s*bloc\s*2'
+              message: "Écris : MCD → bloc 2."
+
+  # ===================================================================== LEÇON 2
+  - slug: gp-matrice-preuves
+    title: "Une preuve pour chaque compétence"
+    duration: 10
+    objective: "Relier chaque compétence à une preuve concrète de son projet dans une matrice."
+    prerequisites: "Leçon « Les trois blocs du titre CDA »."
+    skills: [oral-cda]
+    xp: 15
+    memo: |
+      - Une **preuve** est un élément concret que tu peux montrer : un fichier, un composant, un diagramme, un test, une capture.
+      - La **matrice compétences → preuves** structure ton dossier et ta présentation.
+      - Le NoSQL et le bloc 3 aussi ont besoin d'une preuve.
+    commonMistakes: |
+      - Une preuve vague (« j'ai fait du Java »).
+      - Présenter son projet sans jamais nommer les compétences.
+    blocks:
+      - type: definition
+        id: def-preuve
+        term: "Preuve"
+        md: |
+          Au permis, dire « je sais faire un créneau » ne suffit pas : l'examinateur veut te **voir** le faire.
+          Au titre CDA, la preuve est un morceau de ton projet que le jury peut regarder.
+      - type: code
+        id: code-matrice
+        language: text
+        title: "Une matrice compétences → preuves (extrait)"
+        code: |
+          Bloc 1 · Développer des interfaces utilisateur    → Composants Angular, formulaires réactifs, accessibilité
+          Bloc 1 · Développer des composants métier          → Services Spring (règles de réservation) + tests JUnit
+          Bloc 1 · Contribuer à la gestion de projet         → Backlog MoSCoW, sprints, GitHub Projects
+          Bloc 2 · Analyser les besoins et maquetter         → User stories, wireframes Figma
+          Bloc 2 · Concevoir la base de données              → MCD, MLD, script SQL, migrations Flyway
+          Bloc 2 · Composants d'accès aux données            → Repositories JPA, NoSQL (journal)
+          Bloc 3 · Plans de tests                            → Testcontainers, cahier de recette
+          Bloc 3 · Mise en production DevOps                 → GitHub Actions : CI puis déploiement
+        lines:
+          - n: 1
+            note: "Pour chaque compétence, une preuve concrète que tu peux **montrer**."
+          - n: 6
+            note: "Le NoSQL est attendu : même un petit usage (MongoDB, Redis, JSONB) doit être expliqué."
+          - n: 8
+            note: "Le bloc 3 se prouve avec des fichiers réels : workflow, Dockerfile, résultats de tests."
+      - type: question
+        ref: gp-cd-q3
+        review: code-matrice
+      - type: question
+        ref: gp-mx-q2
+        review: def-preuve
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la matrice."
+      - type: exercise
+        ref: gp-ex-matrice-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : ta propre matrice."
+      - type: exercise
+        ref: gp-ex-matrice
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une preuve trop vague."
+      - type: exercise
+        ref: gp-ex-matrice-bug
+      - type: jury
+        items:
+          - q: "Quelles compétences votre projet couvre-t-il ?"
+            a: "Les trois blocs : le développement sécurisé (interfaces Angular, composants métier Spring, gestion de projet agile), la conception en couches (besoin et maquettes, architecture, base PostgreSQL, accès aux données SQL et NoSQL) et la préparation du déploiement (plan de tests, Docker, CI/CD avec GitHub Actions). J'ai une preuve concrète pour chaque compétence."
+          - q: "Où utilisez-vous du NoSQL ?"
+            a: "Donner l'usage réel : par exemple un journal d'événements dans MongoDB, un cache Redis, ou une colonne JSONB dans PostgreSQL. Expliquer pourquoi ce choix convient mieux qu'une table classique pour ces données peu structurées."
+      - type: quiz
+        items:
+          - ref: gp-cd-q4
+            review: code-matrice
+          - ref: gp-mx-q4
+            review: def-preuve
+          - ref: gp-mx-q5
+            review: code-matrice
+    questions:
       - code: gp-cd-q3
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -133,6 +317,19 @@ lessons:
             correct: false
             why: "Il prouve la préparation du déploiement."
         explanation: "Montre aussi les résultats (CI verte, rapport de recette)."
+      - code: gp-mx-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: oral-cda
+        prompt: "« J'ai fait du Java » est une bonne preuve de compétence."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Trop vague : le jury ne peut rien regarder."
+          - label: "Faux"
+            correct: true
+            why: "Il faut un élément précis : un service, un test, un fichier."
+        explanation: "Une preuve se montre."
       - code: gp-cd-q4
         kind: CHOIX_MULTIPLE
         difficulty: 2
@@ -152,40 +349,64 @@ lessons:
             correct: false
             why: "Il appartient au bloc 2."
         explanation: "Tests, documentation du déploiement, mise en production."
-      - code: gp-cd-q5
-        kind: TEXTE
-        difficulty: 3
+      - code: gp-mx-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
         skill: oral-cda
-        prompt: "Quel sigle désigne le référentiel qui décrit les activités et compétences d'un titre professionnel ? (quatre lettres)"
-        answers: ["REAC"]
-        explanation: "Référentiel Emploi Activités Compétences ; le RC décrit, lui, les modalités d'évaluation."
+        prompt: "À quoi sert la matrice compétences → preuves ?"
+        choices:
+          - label: "À montrer où chaque compétence est démontrée dans le projet"
+            correct: true
+            why: "Une carte pour le jury."
+          - label: "À lister les bugs"
+            correct: false
+            why: "Non."
+          - label: "À remplacer le code"
+            correct: false
+            why: "Non."
+        explanation: "Elle structure le dossier et la présentation."
+      - code: gp-mx-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Quelle preuve convient à « contribuer à la gestion de projet » ?"
+        choices:
+          - label: "Le backlog priorisé et le tableau GitHub Projects"
+            correct: true
+            why: "On voit l'organisation."
+          - label: "Le fichier application.properties"
+            correct: false
+            why: "C'est de la configuration."
+          - label: "Une capture de la page d'accueil"
+            correct: false
+            why: "Elle prouve une interface."
+        explanation: "Chaque compétence a sa preuve."
     exercises:
-      - slug: gp-ex-blocs-guide
+      - slug: gp-ex-matrice-guide
         kind: COMPLETER
-        title: "Quel bloc ?"
+        title: "Compléter la matrice"
         difficulty: FACILE
         skill: oral-cda
-        statement: "Indique le numéro du bloc (1, 2 ou 3) de chaque preuve."
-        criteria: "Les quatre trous sont corrects."
+        statement: "Complète avec la bonne preuve : JUnit, Figma, Actions."
+        criteria: "Les trois trous sont corrects."
         hints:
-          - "Interfaces et composants métier : bloc 1."
-          - "Base de données et architecture : bloc 2."
-          - "1, 2, 3, 2."
-        solution: '["1", "2", "3", "2"]'
-        explanation: "Développer (1), concevoir en couches (2), préparer le déploiement (3)."
+          - "Des tests du service : JUnit."
+          - "Des maquettes : Figma ; un déploiement automatique : GitHub Actions."
+          - "JUnit, Figma, Actions."
+        solution: '["JUnit", "Figma", "Actions"]'
+        explanation: "Une preuve concrète par compétence."
         xp: 10
         payload:
           language: text
+          caseSensitive: false
           template: |
-            Formulaire Angular accessible avec validation            → bloc [[1]]
-            MCD, MLD et migrations Flyway                           → bloc [[2]]
-            Workflow GitHub Actions qui teste et déploie             → bloc [[3]]
-            Diagramme d'architecture en couches                      → bloc [[4]]
+            Composants métier       → ReservationService et ses tests [[1]]
+            Maquetter               → wireframes réalisés dans [[2]]
+            Mise en production      → workflow GitHub [[3]]
           blanks:
-            - ["1"]
-            - ["2"]
-            - ["3"]
-            - ["2"]
+            - ["JUnit"]
+            - ["Figma"]
+            - ["Actions"]
       - slug: gp-ex-matrice
         kind: CODE_LIBRE
         title: "Ma matrice de preuves"
@@ -197,11 +418,11 @@ lessons:
         criteria: "Trois lignes Bloc 1, Bloc 2, Bloc 3, chacune avec une flèche et une preuve."
         hints:
           - "Bloc 1 : développer des composants métier → ReservationService et ses tests JUnit."
-          - "Bloc 2 : concevoir la base de données → MCD, MLD et migrations Flyway V1 à V5."
+          - "Bloc 2 : concevoir la base de données → MCD, MLD et migrations Flyway."
           - "Bloc 3 : mise en production DevOps → workflow GitHub Actions deploiement.yml."
         solution: |
           Bloc 1 : développer des composants métier → ReservationService et ses tests JUnit.
-          Bloc 2 : concevoir la base de données → MCD, MLD et migrations Flyway V1 à V5.
+          Bloc 2 : concevoir la base de données → MCD, MLD et migrations Flyway.
           Bloc 3 : mise en production DevOps → workflow GitHub Actions deploiement.yml.
         explanation: "Complète ensuite la matrice pour toutes les compétences : elle structure ton dossier et ta présentation."
         xp: 20
@@ -212,50 +433,74 @@ lessons:
             Bloc 2 :
             Bloc 3 :
           checks:
-            - pattern: '(?im)^\s*Bloc\s*1\s*:\s*\S[^\n]*(?:→|->|=>)\s*\S{3,}'
+            - pattern: '(?im)^\s*Bloc\s*1\s*:[ \t]*\S[^\n]*(?:→|->|=>)[ \t]*\S{3,}'
               message: "Ligne « Bloc 1 : compétence → preuve »."
-            - pattern: '(?im)^\s*Bloc\s*2\s*:\s*\S[^\n]*(?:→|->|=>)\s*\S{3,}'
+            - pattern: '(?im)^\s*Bloc\s*2\s*:[ \t]*\S[^\n]*(?:→|->|=>)[ \t]*\S{3,}'
               message: "Ligne « Bloc 2 : compétence → preuve »."
-            - pattern: '(?im)^\s*Bloc\s*3\s*:\s*\S[^\n]*(?:→|->|=>)\s*\S{3,}'
+            - pattern: '(?im)^\s*Bloc\s*3\s*:[ \t]*\S[^\n]*(?:→|->|=>)[ \t]*\S{3,}'
               message: "Ligne « Bloc 3 : compétence → preuve »."
+      - slug: gp-ex-matrice-bug
+        kind: CORRIGER_ERREUR
+        title: "Une preuve trop vague"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: |
+          « j'ai fait du Java » ne prouve rien. Remplace-le par un élément précis, par exemple un service et
+          ses tests JUnit.
+        criteria: "Plus de « j'ai fait du Java » ; une preuve précise (service, test…)."
+        hints:
+          - "Quel fichier peux-tu montrer ?"
+          - "Un service Spring et ses tests."
+          - "→ ReservationService et ses tests JUnit"
+        solution: |
+          Bloc 1 : développer des composants métier → ReservationService et ses tests JUnit
+        explanation: "Le jury peut ouvrir le fichier."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Bloc 1 : développer des composants métier → j'ai fait du Java
+          checks:
+            - pattern: "(?i)j'ai fait du Java"
+              absent: true
+              message: "C'est trop vague."
+            - pattern: '(?i)(?:→|->)[^\n]*(?:Service|test|JUnit|Controller|Repository)'
+              message: "Donne une preuve précise : un service, un test…"
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 3
   - slug: gp-dossier-projet
-    title: "Rédiger le dossier de projet"
-    duration: 14
-    objective: "Construire le plan du dossier de projet, écrire des parties claires avec captures et extraits de code, et préparer le résumé en anglais."
-    prerequisites: "Leçon « Les compétences du titre CDA »."
-    skills: [oral-cda, gestion-projet]
-    xp: 25
+    title: "Le plan du dossier de projet"
+    duration: 10
+    objective: "Construire le plan du dossier de projet, du besoin au bilan."
+    prerequisites: "Leçon « Une preuve pour chaque compétence »."
+    skills: [oral-cda]
+    xp: 15
     memo: |
-      - Le **dossier de projet** présente ton projet au jury **avant** la soutenance : il doit donner envie et prouver tes compétences.
-      - Plan type : compétences couvertes, contexte et besoin, gestion de projet, spécifications, conception (UML, MCD), réalisations commentées, sécurité, tests, déploiement, veille, bilan.
-      - Chaque extrait de code est **court**, **commenté** et relié à une compétence.
-      - Un **résumé en anglais** est demandé (vérifie le format exact dans le RC de ta session).
-      - Le **dossier professionnel** (DP) est un document distinct : il décrit tes pratiques professionnelles par compétence.
-      - Relire : orthographe, numéros de pages, sommaire, légendes des figures.
+      - Le **dossier de projet** présente ton projet au jury **avant** la soutenance.
+      - Plan type : compétences couvertes, contexte et besoin, gestion de projet, conception, réalisations, tests et déploiement, veille et bilan.
+      - Le **dossier professionnel** (DP) est un document distinct : il décrit tes pratiques par compétence.
+      - Relire : orthographe, sommaire, légendes des figures.
     commonMistakes: |
-      - Copier des pages entières de code.
-      - Écrire « on » partout : le jury veut savoir ce que **tu** as fait.
       - Oublier la veille technologique et de sécurité.
+      - Un bilan qui ne parle que des réussites.
     blocks:
       - type: text
         md: |
           Le jury lit ton dossier avant de te rencontrer. Un dossier clair, c'est une soutenance qui commence
-          bien : le jury arrive avec des questions précises au lieu de chercher à comprendre ton projet.
+          bien : le jury arrive avec des questions précises.
       - type: definition
         id: def-dossier
         term: "Dossier de projet"
         md: |
-          La **bande-annonce** et le **dossier de presse** de ton projet : il raconte l'histoire (le besoin),
-          montre les meilleurs moments (tes réalisations) et prouve la qualité (tests, sécurité, déploiement).
+          La **bande-annonce** de ton projet : il raconte l'histoire (le besoin), montre les meilleurs moments
+          (tes réalisations) et prouve la qualité (tests, sécurité, déploiement).
       - type: steps
         id: etapes-plan
         title: "Un plan qui fonctionne"
         items:
           - "**Compétences couvertes** : la matrice compétences → preuves, dès les premières pages."
           - "**Contexte et besoin** : l'entreprise, le client, le problème, le périmètre (MoSCoW)."
-          - "**Gestion de projet** : méthode, planning, outils, organisation."
+          - "**Gestion de projet** : méthode, outils, organisation."
           - "**Conception** : maquettes, architecture, UML, MCD/MLD, choix techniques justifiés."
           - "**Réalisations** : extraits de code commentés (front, back, données), sécurité."
           - "**Tests et déploiement** : stratégie, résultats, Docker, CI/CD."
@@ -263,44 +508,33 @@ lessons:
       - type: question
         ref: gp-dp-q1
         review: etapes-plan
-      - type: compare
-        left:
-          title: "Extrait peu utile"
-          code: |
-            (3 pages de code du contrôleur, sans commentaire)
-          language: text
-        right:
-          title: "Extrait utile"
-          code: |
-            Figure 12 – Vérification de propriété (bloc 1, composants métier)
-            10 lignes du service + 3 phrases :
-            le problème (IDOR), la solution, le test qui la prouve.
-          language: text
       - type: question
-        ref: gp-dp-q2
-        review: def-dossier
+        ref: gp-dp-q5
+        review: etapes-plan
       - type: text
-        md: "Exercice guidé : remets le plan du dossier dans l'ordre."
+        md: "**Exercice 1 (guidé)** : remets le plan dans l'ordre."
       - type: exercise
         ref: gp-ex-plan-ordre
       - type: text
-        md: "En autonomie : rédige le résumé en anglais."
+        md: "**Exercice 2 (en autonomie)** : ton bilan."
       - type: exercise
-        ref: gp-ex-summary
+        ref: gp-ex-bilan-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une partie oubliée."
+      - type: exercise
+        ref: gp-ex-plan-bug
       - type: jury
         items:
-          - q: "Pourquoi avoir choisi ces technologies ?"
-            a: "Répondre avec des critères : besoin du projet, compétences visées, écosystème et documentation, sécurité, maintenabilité, et contexte de l'entreprise. Par exemple : Spring Boot pour Spring Security et JPA, Angular pour TypeScript et une architecture structurée, PostgreSQL pour la fiabilité et les contraintes relationnelles."
           - q: "Comment faites-vous votre veille ?"
             a: "Des sources régulières et fiables : blogs officiels d'Angular et Spring, notes de version, CERT-FR et OWASP pour la sécurité, newsletters, conférences en ligne. Donner un exemple concret : une nouveauté ou une faille découverte grâce à la veille et ce qu'elle a changé dans mon projet."
       - type: quiz
         items:
-          - ref: gp-dp-q3
+          - ref: gp-c3-b1
             review: etapes-plan
-          - ref: gp-dp-q4
+          - ref: gp-c3-b2
             review: def-dossier
-          - ref: gp-dp-q5
-            review: etapes-plan
+          - ref: gp-pl-q5
+            review: def-dossier
     questions:
       - code: gp-dp-q1
         kind: CHOIX_UNIQUE
@@ -318,6 +552,225 @@ lessons:
             correct: false
             why: "Elle est utile dès le début."
         explanation: "Une carte pour guider la lecture."
+      - code: gp-dp-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Que doit contenir la partie « bilan » du dossier ?"
+        choices:
+          - label: "Les difficultés rencontrées, les solutions, les améliorations possibles et ce que tu as appris"
+            correct: true
+            why: "Elle montre ton recul."
+          - label: "Uniquement les réussites"
+            correct: false
+            why: "Le jury apprécie l'honnêteté."
+          - label: "La liste des fichiers du projet"
+            correct: false
+            why: "Ce n'est pas un bilan."
+        explanation: "Un bilan honnête est un signe de maturité professionnelle."
+      - code: gp-c3-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Qu'est-ce que la veille technologique ?"
+        choices:
+          - label: "Se tenir informé régulièrement des évolutions techniques et des failles de sécurité"
+            correct: true
+            why: "Pour garder ses compétences et ses projets à jour."
+          - label: "Travailler la nuit"
+            correct: false
+            why: "Aucun rapport."
+          - label: "Surveiller les serveurs"
+            correct: false
+            why: "C'est la supervision."
+        explanation: "Sources : documentation officielle, CERT-FR, OWASP, notes de version, blogs techniques."
+      - code: gp-c3-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Quelle différence entre le dossier de projet et le dossier professionnel ?"
+        choices:
+          - label: "Le dossier de projet présente un projet ; le dossier professionnel décrit des pratiques par compétence"
+            correct: true
+            why: "Deux documents distincts, tous deux lus par le jury."
+          - label: "Ce sont deux noms pour le même document"
+            correct: false
+            why: "Ils ont des rôles différents."
+          - label: "Le dossier professionnel est facultatif"
+            correct: false
+            why: "Il fait partie du dossier de candidature au titre."
+        explanation: "Vérifie les consignes exactes de ton centre et de ta session."
+      - code: gp-pl-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Le jury lit le dossier de projet avant la soutenance."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Il arrive avec des questions."
+          - label: "Faux"
+            correct: false
+            why: "Il le lit avant."
+        explanation: "Le dossier prépare la rencontre."
+    exercises:
+      - slug: gp-ex-plan-ordre
+        kind: REMETTRE_ORDRE
+        title: "Le plan du dossier"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Remets les parties du dossier de projet dans un ordre logique."
+        criteria: "Compétences, contexte, gestion, conception, réalisations, tests et déploiement, veille et bilan."
+        hints:
+          - "On commence par les compétences couvertes."
+          - "La conception vient avant les réalisations."
+          - "La veille et le bilan terminent le dossier."
+        solution: |
+          Compétences couvertes par le projet
+          Contexte, besoin et périmètre
+          Gestion de projet
+          Conception : maquettes, architecture, UML, base de données
+          Réalisations commentées et sécurité
+          Tests et déploiement
+          Veille et bilan
+        explanation: "Du pourquoi au comment, puis la preuve de la qualité et le recul."
+        xp: 10
+        payload:
+          language: text
+          lines:
+            - "Compétences couvertes par le projet"
+            - "Contexte, besoin et périmètre"
+            - "Gestion de projet"
+            - "Conception : maquettes, architecture, UML, base de données"
+            - "Réalisations commentées et sécurité"
+            - "Tests et déploiement"
+            - "Veille et bilan"
+      - slug: gp-ex-bilan-libre
+        kind: CODE_LIBRE
+        title: "Mon bilan"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Écris ton bilan en trois lignes : `Difficulté :`, `Solution :`, `Appris :`.
+        criteria: "Trois lignes remplies."
+        hints:
+          - "Difficulté : une requête trop lente sur la liste des réservations."
+          - "Solution : j'ai analysé le plan avec EXPLAIN et ajouté un index."
+          - "Appris : vérifier les requêtes importantes avant la mise en production."
+        solution: |
+          Difficulté : la liste des réservations s'affichait lentement.
+          Solution : j'ai analysé la requête avec EXPLAIN et ajouté un index sur la date.
+          Appris : je vérifie maintenant les requêtes importantes avant la mise en production.
+        explanation: "Une vraie difficulté, racontée honnêtement, montre ton recul."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Difficulté :
+            Solution :
+            Appris :
+          checks:
+            - pattern: '(?im)^\s*Difficult[ée]\s*:[ \t]*\S[^\n]{10,}'
+              message: "Décris une difficulté."
+            - pattern: '(?im)^\s*Solution\s*:[ \t]*\S[^\n]{10,}'
+              message: "Décris la solution."
+            - pattern: '(?im)^\s*Appris\s*:[ \t]*\S[^\n]{10,}'
+              message: "Dis ce que tu as appris."
+      - slug: gp-ex-plan-bug
+        kind: CORRIGER_ERREUR
+        title: "Une partie oubliée"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Ce plan oublie la dernière partie. Ajoute-la à la fin : `Veille et bilan`."
+        criteria: "La ligne Veille et bilan est présente, après Tests et déploiement."
+        hints:
+          - "Qu'est-ce qui termine le dossier ?"
+          - "Le recul et les sources d'information."
+          - "Veille et bilan"
+        solution: |
+          Conception
+          Réalisations
+          Tests et déploiement
+          Veille et bilan
+        explanation: "La veille et le bilan montrent ton recul."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Conception
+            Réalisations
+            Tests et déploiement
+          checks:
+            - pattern: '(?is)Tests et d[ée]ploiement.*Veille et bilan'
+              message: "Ajoute « Veille et bilan » à la fin."
+
+  # ===================================================================== LEÇON 4
+  - slug: gp-extraits-code
+    title: "Un extrait de code utile"
+    duration: 9
+    objective: "Présenter un extrait de code court, légendé, expliqué et relié à une compétence, en disant « je »."
+    prerequisites: "Leçon « Le plan du dossier de projet »."
+    skills: [oral-cda]
+    xp: 15
+    memo: |
+      - Un extrait est **court**, **légendé** (Figure N – titre) et **expliqué** : le problème, la solution, la preuve.
+      - Il est relié à une **compétence**.
+      - Écris « **j'ai** fait » pour ta part : le jury évalue tes compétences à toi.
+    commonMistakes: |
+      - Copier des pages entières de code.
+      - Écrire « on » partout.
+      - Laisser un mot de passe dans une capture.
+    blocks:
+      - type: definition
+        id: def-extrait
+        term: "Extrait utile"
+        md: |
+          Une **photo de vacances avec sa légende** : on ne montre pas les deux mille photos, on choisit la
+          meilleure et on dit où et quand elle a été prise.
+      - type: compare
+        left:
+          title: "Extrait peu utile"
+          code: |
+            (3 pages de code du contrôleur, sans commentaire)
+          language: text
+        right:
+          title: "Extrait utile"
+          code: |
+            Figure 12 – Vérification de propriété (bloc 1, composants métier)
+            10 lignes du service + 3 phrases :
+            le problème (IDOR), la solution, le test qui la prouve.
+          language: text
+      - type: question
+        ref: gp-dp-q2
+        review: def-extrait
+      - type: question
+        ref: gp-dp-q3
+        review: def-extrait
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la légende."
+      - type: exercise
+        ref: gp-ex-extrait-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : explique un extrait."
+      - type: exercise
+        ref: gp-ex-extrait-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : « on »."
+      - type: exercise
+        ref: gp-ex-extrait-bug
+      - type: jury
+        items:
+          - q: "Pourquoi avoir choisi ces technologies ?"
+            a: "Répondre avec des critères : besoin du projet, compétences visées, écosystème et documentation, sécurité, maintenabilité, et contexte de l'entreprise. Par exemple : Spring Boot pour Spring Security et JPA, Angular pour TypeScript et une architecture structurée, PostgreSQL pour la fiabilité et les contraintes relationnelles."
+      - type: quiz
+        items:
+          - ref: gp-dp-q4
+            review: def-extrait
+          - ref: gp-ext-q4
+            review: def-extrait
+          - ref: gp-ext-q5
+            review: def-extrait
+    questions:
       - code: gp-dp-q2
         kind: VRAI_FAUX
         difficulty: 1
@@ -366,54 +819,297 @@ lessons:
             correct: false
             why: "Jamais de secret dans un document."
         explanation: "Court, commenté, relié."
-      - code: gp-dp-q5
+      - code: gp-ext-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Que contient une bonne légende d'extrait ?"
+        choices:
+          - label: "Un numéro de figure, un titre et la compétence concernée"
+            correct: true
+            why: "Le jury s'y retrouve."
+          - label: "Le nom de l'ordinateur"
+            correct: false
+            why: "Inutile."
+          - label: "Rien"
+            correct: false
+            why: "Une légende aide la lecture."
+        explanation: "Figure 12 – titre (bloc, compétence)."
+      - code: gp-ext-q5
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: oral-cda
-        prompt: "Que doit contenir la partie « bilan » du dossier ?"
+        prompt: "Dans les trois phrases qui expliquent un extrait, que dit-on ?"
         choices:
-          - label: "Les difficultés rencontrées, les solutions, les améliorations possibles et ce que tu as appris"
+          - label: "Le problème, la solution, et le test qui la prouve"
             correct: true
-            why: "Elle montre ton recul."
-          - label: "Uniquement les réussites"
+            why: "Une petite histoire complète."
+          - label: "Le nombre de lignes du fichier"
             correct: false
-            why: "Le jury apprécie l'honnêteté."
-          - label: "La liste des fichiers du projet"
+            why: "Sans intérêt."
+          - label: "Le prix de l'ordinateur"
             correct: false
-            why: "Ce n'est pas un bilan."
-        explanation: "Un bilan honnête est un signe de maturité professionnelle."
+            why: "Aucun rapport."
+        explanation: "Problème, solution, preuve."
     exercises:
-      - slug: gp-ex-plan-ordre
-        kind: REMETTRE_ORDRE
-        title: "Le plan du dossier"
+      - slug: gp-ex-extrait-guide
+        kind: COMPLETER
+        title: "Compléter la légende"
         difficulty: FACILE
         skill: oral-cda
-        statement: "Remets les parties du dossier de projet dans un ordre logique."
-        criteria: "Compétences, contexte, gestion, conception, réalisations, tests et déploiement, veille et bilan."
+        statement: "Complète la légende et l'explication de l'extrait."
+        criteria: "Les trois trous sont corrects."
         hints:
-          - "On commence par les compétences couvertes."
-          - "La conception vient avant les réalisations."
-          - "La veille et le bilan terminent le dossier."
-        solution: |
-          Compétences couvertes par le projet
-          Contexte, besoin et périmètre
-          Gestion de projet
-          Conception : maquettes, architecture, UML, base de données
-          Réalisations commentées et sécurité
-          Tests et déploiement
-          Veille et bilan
-        explanation: "Du pourquoi au comment, puis la preuve de la qualité et le recul."
+          - "Une légende commence par Figure."
+          - "Ce qu'on corrige : le problème ; ce qui prouve : le test."
+          - "Figure, problème, test."
+        solution: '["Figure", "problème", "test"]'
+        explanation: "Légende, problème, solution, preuve."
         xp: 10
         payload:
           language: text
-          lines:
-            - "Compétences couvertes par le projet"
-            - "Contexte, besoin et périmètre"
-            - "Gestion de projet"
-            - "Conception : maquettes, architecture, UML, base de données"
-            - "Réalisations commentées et sécurité"
-            - "Tests et déploiement"
-            - "Veille et bilan"
+          caseSensitive: false
+          template: |
+            [[1]] 12 – Vérification de propriété (bloc 1, composants métier)
+            Le [[2]] : une utilisatrice pouvait annuler la réservation d'une autre.
+            La solution : le service vérifie la propriétaire avant d'annuler.
+            La preuve : un [[3]] JUnit vérifie qu'une autre utilisatrice reçoit un refus.
+          blanks:
+            - ["Figure"]
+            - ["problème", "probleme"]
+            - ["test"]
+      - slug: gp-ex-extrait-libre
+        kind: CODE_LIBRE
+        title: "Expliquer un extrait"
+        difficulty: INTERMEDIAIRE
+        skill: oral-cda
+        statement: |
+          Choisis une partie de ton projet (ou une validation de formulaire) et écris quatre lignes :
+          `Figure :`, `Problème :`, `Solution :`, `Preuve :`.
+        criteria: "Quatre lignes remplies."
+        hints:
+          - "Figure : Validation de l'e-mail (bloc 1, interfaces)."
+          - "Problème : des adresses invalides étaient enregistrées."
+          - "Solution : @Email et @NotBlank ; Preuve : un test renvoie 400."
+        solution: |
+          Figure : Validation de l'e-mail à l'inscription (bloc 1, composants métier)
+          Problème : des adresses invalides étaient enregistrées.
+          Solution : j'ai ajouté @Email et @NotBlank sur le DTO et @Valid dans le contrôleur.
+          Preuve : un test MockMvc vérifie qu'un e-mail invalide renvoie une erreur 400.
+        explanation: "Une petite histoire complète que le jury comprend en quelques secondes."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            Figure :
+            Problème :
+            Solution :
+            Preuve :
+          checks:
+            - pattern: '(?im)^\s*Figure\s*:[ \t]*\S[^\n]{5,}'
+              message: "Donne un titre à la figure."
+            - pattern: '(?im)^\s*Probl[èe]me\s*:[ \t]*\S[^\n]{10,}'
+              message: "Décris le problème."
+            - pattern: '(?im)^\s*Solution\s*:[ \t]*\S[^\n]{10,}'
+              message: "Décris la solution."
+            - pattern: '(?im)^\s*Preuve\s*:[ \t]*\S[^\n]{10,}'
+              message: "Décris la preuve (un test, une capture)."
+      - slug: gp-ex-extrait-bug
+        kind: CORRIGER_ERREUR
+        title: "« On »"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Cette phrase utilise « on ». Réécris-la en disant « j'ai »."
+        criteria: "Plus de « on » ; la phrase commence par « J'ai »."
+        hints:
+          - "Le jury veut savoir ce que tu as fait."
+          - "Remplace « On a » par « J'ai »."
+          - "J'ai ajouté une vérification de propriété dans le service."
+        solution: |
+          J'ai ajouté une vérification de propriété dans le service.
+        explanation: "Ta contribution devient claire."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            On a ajouté une vérification de propriété dans le service.
+          checks:
+            - pattern: '(?i)\bon a\b'
+              absent: true
+              message: "Évite « on »."
+            - pattern: "(?i)j'ai\\s+\\S"
+              message: "Commence par « J'ai »."
+
+  # ===================================================================== LEÇON 5
+  - slug: gp-resume-anglais
+    title: "Le résumé en anglais"
+    duration: 11
+    objective: "Écrire un court résumé de son projet en anglais, avec des phrases simples."
+    prerequisites: "Leçon « Un extrait de code utile »."
+    skills: [oral-cda]
+    xp: 20
+    memo: |
+      - Un **résumé en anglais** est demandé (vérifie le format exact dans le RC de ta session).
+      - Il présente : le **besoin**, les **technologies**, la **sécurité**, les **tests** ou le **déploiement**.
+      - Des phrases simples : sujet, verbe, complément.
+    commonMistakes: |
+      - Des phrases trop longues traduites mot à mot.
+      - Oublier la sécurité.
+    blocks:
+      - type: definition
+        id: def-summary
+        term: "Summary"
+        md: |
+          La **quatrième de couverture** d'un livre, en anglais : quelques phrases qui disent de quoi parle
+          le projet, sans entrer dans les détails.
+      - type: code
+        id: code-summary
+        language: text
+        title: "Des phrases modèles"
+        code: |
+          This project is a web application that allows members to book a room online.
+          The front end is built with Angular and the back end with Spring Boot and PostgreSQL.
+          Security relies on hashed passwords and JWT authentication.
+          The application is tested with JUnit and deployed with Docker.
+        lines:
+          - n: 1
+            note: "Le besoin : « allows … to … »."
+          - n: 2
+            note: "Les technologies : « is built with »."
+          - n: 3
+            note: "La sécurité : « relies on »."
+          - n: 4
+            note: "Tests et déploiement."
+      - type: question
+        ref: gp-en-q1
+        review: code-summary
+      - type: question
+        ref: gp-en-q2
+        review: code-summary
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le résumé."
+      - type: exercise
+        ref: gp-ex-summary-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : rédige ton résumé."
+      - type: exercise
+        ref: gp-ex-summary
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une phrase restée en français."
+      - type: exercise
+        ref: gp-ex-summary-bug
+      - type: quiz
+        items:
+          - ref: gp-en-q3
+            review: def-summary
+          - ref: gp-en-q4
+            review: code-summary
+          - ref: gp-en-q5
+            review: code-summary
+    questions:
+      - code: gp-en-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Quelle phrase présente le besoin ?"
+        choices:
+          - label: "This project allows members to book a room online."
+            correct: true
+            why: "« allows … to … » dit à quoi sert le projet."
+          - label: "The front end is built with Angular."
+            correct: false
+            why: "C'est la technique."
+          - label: "The application is deployed with Docker."
+            correct: false
+            why: "C'est le déploiement."
+        explanation: "Besoin, technique, sécurité, tests."
+      - code: gp-en-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Que veut dire « is built with » ?"
+        choices:
+          - label: "Est construit avec"
+            correct: true
+            why: "Pour présenter les technologies."
+          - label: "Est testé par"
+            correct: false
+            why: "C'est « is tested with »."
+          - label: "Est déployé sur"
+            correct: false
+            why: "C'est « is deployed on »."
+        explanation: "The front end is built with Angular."
+      - code: gp-en-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Des phrases simples (sujet, verbe, complément) conviennent parfaitement au résumé."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Clair et correct."
+          - label: "Faux"
+            correct: false
+            why: "Le jury attend de la clarté, pas de la complexité."
+        explanation: "Simple et juste."
+      - code: gp-en-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: oral-cda
+        prompt: "Comment dire « les mots de passe sont hachés » ?"
+        choices:
+          - label: "Passwords are hashed."
+            correct: true
+            why: "Hash = hacher."
+          - label: "Passwords are hidden."
+            correct: false
+            why: "Caché, ce n'est pas haché."
+          - label: "Passwords are deleted."
+            correct: false
+            why: "Supprimés."
+        explanation: "Security relies on hashed passwords."
+      - code: gp-en-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Quelles parties doit couvrir le résumé ?"
+        choices:
+          - label: "Le besoin, les technologies, la sécurité, les tests ou le déploiement"
+            correct: true
+            why: "Tout le projet en quelques phrases."
+          - label: "Uniquement la liste des fichiers"
+            correct: false
+            why: "Non."
+          - label: "Uniquement les couleurs de l'interface"
+            correct: false
+            why: "Non."
+        explanation: "Une vue d'ensemble."
+    exercises:
+      - slug: gp-ex-summary-guide
+        kind: COMPLETER
+        title: "Compléter le résumé"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Complète avec : allows, built, hashed."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le besoin : allows … to."
+          - "Les technologies : is built with."
+          - "allows, built, hashed."
+        solution: '["allows", "built", "hashed"]'
+        explanation: "Trois phrases modèles."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            This project [[1]] readers to borrow books online.
+            The front end is [[2]] with Angular.
+            Security relies on [[3]] passwords and JWT authentication.
+          blanks:
+            - ["allows"]
+            - ["built"]
+            - ["hashed"]
       - slug: gp-ex-summary
         kind: CODE_LIBRE
         title: "Le résumé en anglais"
@@ -421,7 +1117,7 @@ lessons:
         skill: oral-cda
         statement: |
           Écris un court résumé **en anglais** (au moins quatre phrases) d'une application de réservation.
-          Il doit présenter : le **besoin** (the need / the goal), la **technique** (Angular, Spring Boot,
+          Il doit présenter : le **besoin** (the goal, allows…), la **technique** (Angular, Spring Boot,
           PostgreSQL), la **sécurité** (security, JWT…) et le **déploiement** ou les **tests** (Docker, tests,
           CI). Utilise des phrases simples : sujet, verbe, complément.
         criteria: "Au moins quatre phrases en anglais couvrant besoin, technologies, sécurité, tests ou déploiement."
@@ -455,37 +1151,31 @@ lessons:
             - pattern: '(?i)\b(?:le|la|les|des|est|avec|pour)\b'
               absent: true
               message: "Écris le résumé en anglais."
-
-bank:
-  - code: gp-c3-b1
-    kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: oral-cda
-    prompt: "Qu'est-ce que la veille technologique ?"
-    choices:
-      - label: "Se tenir informé régulièrement des évolutions techniques et des failles de sécurité"
-        correct: true
-        why: "Pour garder ses compétences et ses projets à jour."
-      - label: "Travailler la nuit"
-        correct: false
-        why: "Aucun rapport."
-      - label: "Surveiller les serveurs"
-        correct: false
-        why: "C'est la supervision."
-    explanation: "Sources : documentation officielle, CERT-FR, OWASP, notes de version, blogs techniques."
-  - code: gp-c3-b2
-    kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: oral-cda
-    prompt: "Quelle différence entre le dossier de projet et le dossier professionnel ?"
-    choices:
-      - label: "Le dossier de projet présente un projet ; le dossier professionnel décrit des pratiques par compétence"
-        correct: true
-        why: "Deux documents distincts, tous deux lus par le jury."
-      - label: "Ce sont deux noms pour le même document"
-        correct: false
-        why: "Ils ont des rôles différents."
-      - label: "Le dossier professionnel est facultatif"
-        correct: false
-        why: "Il fait partie du dossier de candidature au titre."
-    explanation: "Vérifie les consignes exactes de ton centre et de ta session."
+      - slug: gp-ex-summary-bug
+        kind: CORRIGER_ERREUR
+        title: "Une phrase restée en français"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: |
+          La deuxième phrase est restée en français. Traduis-la : « The application is tested with JUnit. »
+        criteria: "Plus de français ; la phrase est en anglais."
+        hints:
+          - "« est testée avec » = « is tested with »."
+          - "L'application = The application."
+          - "The application is tested with JUnit."
+        solution: |
+          This project allows members to book a room online.
+          The application is tested with JUnit.
+        explanation: "Tout le résumé en anglais."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            This project allows members to book a room online.
+            L'application est testée avec JUnit.
+          checks:
+            - pattern: "(?i)l'application est"
+              absent: true
+              message: "Cette phrase est encore en français."
+            - pattern: '(?i)the application is tested with JUnit'
+              message: "Écris : The application is tested with JUnit."

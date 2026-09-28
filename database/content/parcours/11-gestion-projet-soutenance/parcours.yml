@@ -1,5 +1,5 @@
 slug: gestion-projet-soutenance
-version: 1
+version: 2
 position: 11
 title: "Gestion de projet et soutenance CDA"
 summary: "Recueillir le besoin, maquetter, organiser le travail en agile, rédiger le dossier de projet et préparer chaque épreuve de la soutenance du titre CDA."
@@ -14,7 +14,7 @@ description: |
   l'entretien avec le jury.
 
   **Au programme** : cahier des charges et user stories, maquettes et accessibilité, Scrum et Kanban,
-  estimation et risques, les trois blocs de compétences du titre, le dossier de projet, la soutenance et
+  estimation par comparaison et risques, les trois blocs de compétences du titre, le dossier de projet, la soutenance et
   les questions du jury.
 
   **Conseil** : fais ce parcours en parallèle de ton projet, et termine par les examens blancs et les

@@ -2,32 +2,29 @@ slug: gp-comprendre-besoin
 position: 1
 level: DEBUTANT
 title: "Comprendre et formaliser le besoin"
-summary: "Transformer une demande floue en user stories avec critères d'acceptation, prioriser, puis maquetter des écrans accessibles."
-quizQuestionCount: 10
+summary: "Écrire une user story, lui donner des critères d'acceptation, prioriser avec MoSCoW, maquetter un écran puis le rendre accessible. Une seule notion par leçon."
+quizQuestionCount: 14
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: gp-user-stories
-    title: "Du besoin aux user stories"
-    duration: 13
-    objective: "Écrire des user stories au bon format, avec des critères d'acceptation vérifiables, et les prioriser avec la méthode MoSCoW."
+    title: "La user story"
+    duration: 9
+    objective: "Écrire une user story au format « En tant que… je veux… afin de… »."
     prerequisites: "Aucun : ce parcours peut commencer à tout moment du projet."
     skills: [gestion-projet]
-    xp: 20
+    xp: 15
     memo: |
-      - **Cahier des charges** : le document qui décrit le besoin, le contexte, les contraintes (délais, budget, technique).
+      - **Cahier des charges** : le document qui décrit le besoin, le contexte et les contraintes.
       - **User story** : « En tant que **<qui>**, je veux **<quoi>** afin de **<pourquoi>** ».
-      - **Critères d'acceptation** : les conditions précises pour dire « c'est terminé », souvent au format **Étant donné / Quand / Alors**.
-      - **MoSCoW** : **M**ust (indispensable), **S**hould (important), **C**ould (bonus), **W**on't (pas cette fois).
-      - Une bonne story est petite, indépendante, testable et apporte de la valeur.
+      - Une bonne story est petite, testable et apporte de la valeur à une personne précise.
     commonMistakes: |
       - Écrire une story technique (« Créer la table users ») au lieu d'un besoin utilisateur.
       - Oublier le « afin de » : on ne sait plus pourquoi on la fait.
-      - Des critères vagues (« ça doit être rapide »).
     blocks:
       - type: text
         md: |
-          Un client dit rarement « je veux une API REST avec JWT ». Il dit « mes clients doivent pouvoir
+          Un client dit rarement « je veux une API REST avec JWT ». Il dit « mes adhérents doivent pouvoir
           réserver en ligne ». Ton travail : **traduire** ce besoin en petites tâches claires.
       - type: definition
         id: def-user-story
@@ -38,63 +35,48 @@ lessons:
       - type: code
         id: code-story
         language: text
-        title: "Une user story complète"
+        title: "Une user story"
         code: |
-          US-04 — Réserver un créneau                                   Priorité : Must
+          US-04 — Réserver une salle
 
-          En tant que cliente connectée,
-          je veux réserver un créneau libre chez mon coiffeur,
+          En tant qu'adhérente connectée,
+          je veux réserver une salle libre,
           afin de ne plus avoir à téléphoner.
-
-          Critères d'acceptation
-          - Étant donné un créneau libre, quand je le réserve, alors il devient indisponible pour les autres.
-          - Étant donné un créneau déjà pris, quand je tente de le réserver, alors un message m'indique qu'il n'est plus libre.
-          - Étant donné une réservation confirmée, alors je reçois un e-mail récapitulatif.
         lines:
           - n: 1
-            note: "Un identifiant et une priorité MoSCoW."
+            note: "Un identifiant et un titre court."
           - n: 3
-            note: "**Qui** : un type d'utilisateur précis (un rôle, un persona)."
+            note: "**Qui** : un type d'utilisateur précis."
           - n: 4
             note: "**Quoi** : l'action, sans parler de technique."
           - n: 5
             note: "**Pourquoi** : la valeur apportée."
-          - n: 8
-            note: "Chaque critère est **vérifiable** : il deviendra un cas de test."
       - type: question
         ref: gp-us-q1
         review: code-story
-      - type: definition
-        id: def-moscow
-        term: "Priorisation MoSCoW"
-        md: |
-          Faire ses **courses avec un petit budget** : d'abord le **pain et le lait** (Must), puis les fruits
-          (Should), le chocolat si il reste de l'argent (Could), et pas le champagne cette fois (Won't).
       - type: question
-        ref: gp-us-q2
-        review: def-moscow
+        ref: gp-us-q3
+        review: def-user-story
       - type: text
-        md: "Exercice guidé : complète la user story."
+        md: "**Exercice 1 (guidé)** : complète la story."
       - type: exercise
-        ref: gp-ex-story-guide
+        ref: gp-ex-story-base-guide
       - type: text
-        md: "En autonomie : écris une user story avec ses critères."
+        md: "**Exercice 2 (en autonomie)** : une story pour les bénévoles."
       - type: exercise
-        ref: gp-ex-story
-      - type: jury
-        items:
-          - q: "Comment avez-vous recueilli et formalisé le besoin ?"
-            a: "Par des entretiens avec le client et l'analyse de l'existant, puis un cahier des charges. J'ai découpé le besoin en user stories avec des critères d'acceptation au format Étant donné / Quand / Alors, priorisées avec MoSCoW pour définir un produit minimum viable."
-          - q: "Qu'est-ce qu'un MVP ?"
-            a: "Le produit minimum viable : la plus petite version utile de l'application, qui contient seulement les stories Must. Il permet de livrer vite, d'avoir des retours réels, puis d'améliorer."
+        ref: gp-ex-story-base-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une story technique."
+      - type: exercise
+        ref: gp-ex-story-bug
       - type: quiz
         items:
-          - ref: gp-us-q3
-            review: def-user-story
-          - ref: gp-us-q4
+          - ref: gp-st-q3
             review: code-story
-          - ref: gp-us-q5
-            review: def-moscow
+          - ref: gp-st-q4
+            review: def-user-story
+          - ref: gp-c1-b1
+            review: def-user-story
     questions:
       - code: gp-us-q1
         kind: CHOIX_UNIQUE
@@ -112,6 +94,438 @@ lessons:
             correct: false
             why: "C'est un détail de maquette."
         explanation: "Une story parle du besoin de l'utilisateur."
+      - code: gp-us-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "« Créer l'entité JPA Reservation » est une bonne user story."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "C'est une tâche technique, pas un besoin utilisateur."
+          - label: "Faux"
+            correct: true
+            why: "Elle ne dit ni qui, ni pourquoi."
+        explanation: "Les tâches techniques découlent des stories, elles n'en sont pas."
+      - code: gp-st-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Dans une story, à quoi sert « afin de… » ?"
+        choices:
+          - label: "À dire pourquoi : la valeur apportée"
+            correct: true
+            why: "On sait pourquoi on la fait."
+          - label: "À dire qui"
+            correct: false
+            why: "C'est « en tant que »."
+          - label: "À dire comment coder"
+            correct: false
+            why: "Une story ne parle pas de technique."
+        explanation: "Qui, quoi, pourquoi."
+      - code: gp-st-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Qu'est-ce qu'un cahier des charges ?"
+        choices:
+          - label: "Le document qui décrit le besoin, le contexte et les contraintes"
+            correct: true
+            why: "Le point de départ."
+          - label: "Le code source"
+            correct: false
+            why: "Il vient après."
+          - label: "La liste des bugs"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Du cahier des charges naissent les stories."
+      - code: gp-c1-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Qu'est-ce qu'un persona ?"
+        choices:
+          - label: "Un portrait fictif mais réaliste d'un utilisateur type, pour guider la conception"
+            correct: true
+            why: "Besoins, habitudes, frustrations…"
+          - label: "Un compte administrateur"
+            correct: false
+            why: "Aucun rapport."
+          - label: "Un membre de l'équipe de développement"
+            correct: false
+            why: "Il représente un utilisateur."
+        explanation: "« Awa réserve depuis son téléphone dans le bus » aide à faire les bons choix."
+    exercises:
+      - slug: gp-ex-story-base-guide
+        kind: COMPLETER
+        title: "Compléter la story"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: "Complète les trois mots du format."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "En … que : tant."
+          - "je … : veux ; … de : afin."
+          - "tant, veux, afin."
+        solution: '["tant", "veux", "afin"]'
+        explanation: "Qui, quoi, pourquoi."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            En [[1]] que bibliothécaire, je [[2]] voir les livres en retard [[3]] de relancer les lecteurs.
+          blanks:
+            - ["tant"]
+            - ["veux"]
+            - ["afin"]
+      - slug: gp-ex-story-base-libre
+        kind: CODE_LIBRE
+        title: "Une story pour les bénévoles"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: |
+          Une association veut que ses bénévoles puissent **s'inscrire à une distribution alimentaire** en ligne.
+          Écris la user story au format « En tant que… je veux… afin de… ».
+        criteria: "Format complet, avec les bénévoles."
+        hints:
+          - "Qui ? Un bénévole."
+          - "Quoi ? S'inscrire à une distribution."
+          - "Pourquoi ? Que l'association sache qui sera présent."
+        solution: |
+          En tant que bénévole, je veux m'inscrire à une distribution alimentaire afin que l'association sache qui sera présent.
+        explanation: "Une phrase, trois informations."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            En tant que
+          checks:
+            - pattern: "(?i)en\\s+tant\\s+qu[e']\\s*\\S[\\s\\S]*?je\\s+(?:veux|souhaite|voudrais)\\s+\\S[\\s\\S]*?afin\\s+(?:de|d'|que)"
+              message: "Écris la story au format « En tant que…, je veux… afin de… »."
+            - pattern: '(?i)b[ée]n[ée]vole'
+              message: "La story doit parler des bénévoles."
+      - slug: gp-ex-story-bug
+        kind: CORRIGER_ERREUR
+        title: "Une story technique"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: |
+          « Créer la table emprunts » n'est pas une user story. Réécris-la du point de vue de l'adhérente :
+          « En tant qu'adhérente, je veux emprunter un livre en ligne afin de … ».
+        criteria: "Une story au bon format, sans parler de table."
+        hints:
+          - "Qui utilise la fonctionnalité ?"
+          - "Une adhérente, qui veut emprunter."
+          - "En tant qu'adhérente, je veux emprunter un livre en ligne afin de le réserver sans me déplacer."
+        solution: |
+          En tant qu'adhérente, je veux emprunter un livre en ligne afin de le réserver sans me déplacer.
+        explanation: "La table viendra ensuite, comme tâche technique."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Créer la table emprunts
+          checks:
+            - pattern: '(?i)cr[ée]er\s+la\s+table'
+              absent: true
+              message: "Pas de tâche technique dans une story."
+            - pattern: "(?i)en\\s+tant\\s+qu[e']\\s*\\S[\\s\\S]*?je\\s+veux\\s+\\S[\\s\\S]*?afin\\s+(?:de|d'|que)"
+              message: "Écris « En tant qu'adhérente, je veux … afin de … »."
+
+  # ===================================================================== LEÇON 2
+  - slug: gp-criteres
+    title: "Les critères d'acceptation"
+    duration: 9
+    objective: "Écrire des critères d'acceptation vérifiables au format Étant donné / Quand / Alors."
+    prerequisites: "Leçon « La user story »."
+    skills: [gestion-projet]
+    xp: 15
+    memo: |
+      - **Critères d'acceptation** : les conditions précises pour dire « c'est terminé ».
+      - Format : **Étant donné** (le contexte), **quand** (l'action), **alors** (le résultat).
+      - Chaque critère deviendra un **cas de test**.
+    commonMistakes: |
+      - Des critères vagues (« ça doit être rapide », « ça doit bien marcher »).
+      - Oublier le cas d'erreur.
+    blocks:
+      - type: definition
+        id: def-criteres
+        term: "Critère d'acceptation"
+        md: |
+          La **liste de contrôle à la livraison d'un meuble** : « étant donné le meuble monté, quand j'ouvre le
+          tiroir, alors il glisse sans bruit ». On coche ou on ne coche pas : pas de discussion.
+      - type: code
+        id: code-criteres
+        language: text
+        title: "Les critères de US-04"
+        code: |
+          Étant donné une salle libre, quand je la réserve, alors elle devient indisponible pour les autres.
+          Étant donné une salle déjà prise, quand je tente de la réserver, alors un message m'indique qu'elle n'est plus libre.
+          Étant donné une réservation confirmée, alors je reçois un e-mail récapitulatif.
+        lines:
+          - n: 1
+            note: "Le cas normal."
+          - n: 2
+            note: "Le cas d'erreur."
+          - n: 3
+            note: "Un effet attendu : l'e-mail."
+      - type: question
+        ref: gp-us-q4
+        review: code-criteres
+      - type: question
+        ref: gp-cr-q2
+        review: def-criteres
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le critère."
+      - type: exercise
+        ref: gp-ex-critere-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une story avec ses critères."
+      - type: exercise
+        ref: gp-ex-story
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un critère trop vague."
+      - type: exercise
+        ref: gp-ex-critere-bug
+      - type: quiz
+        items:
+          - ref: gp-cr-q3
+            review: code-criteres
+          - ref: gp-cr-q4
+            review: def-criteres
+          - ref: gp-cr-q5
+            review: code-criteres
+    questions:
+      - code: gp-us-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Quel critère d'acceptation est le mieux écrit ?"
+        choices:
+          - label: "Étant donné une liste de favoris vide, quand je l'ouvre, alors le message « Aucun favori » s'affiche"
+            correct: true
+            why: "Précis et vérifiable."
+          - label: "Les favoris doivent bien marcher"
+            correct: false
+            why: "Impossible à vérifier."
+          - label: "La page des favoris doit être jolie"
+            correct: false
+            why: "Subjectif."
+        explanation: "Étant donné (contexte) / Quand (action) / Alors (résultat)."
+      - code: gp-cr-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Chaque critère d'acceptation peut devenir un cas de test."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Il est précis et vérifiable."
+          - label: "Faux"
+            correct: false
+            why: "C'est son rôle."
+        explanation: "Critère → test."
+      - code: gp-cr-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Dans « Étant donné… quand… alors… », que décrit « alors » ?"
+        choices:
+          - label: "Le résultat attendu"
+            correct: true
+            why: "Ce qu'on doit constater."
+          - label: "Le contexte"
+            correct: false
+            why: "C'est « étant donné »."
+          - label: "L'action"
+            correct: false
+            why: "C'est « quand »."
+        explanation: "Contexte, action, résultat."
+      - code: gp-cr-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Pourquoi écrire aussi un critère pour le cas d'erreur ?"
+        choices:
+          - label: "Pour que le comportement en cas de problème soit prévu et testé"
+            correct: true
+            why: "La salle déjà prise, l'e-mail invalide…"
+          - label: "Pour allonger la story"
+            correct: false
+            why: "Ce n'est pas le but."
+          - label: "Ce n'est pas utile"
+            correct: false
+            why: "Les erreurs arrivent toujours."
+        explanation: "Cas normal + cas d'erreur."
+      - code: gp-cr-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Dans le deuxième critère de US-04, quelle est l'action ?"
+        choices:
+          - label: "Je tente de réserver la salle"
+            correct: true
+            why: "C'est ce qui suit « quand »."
+          - label: "La salle est déjà prise"
+            correct: false
+            why: "C'est le contexte."
+          - label: "Un message s'affiche"
+            correct: false
+            why: "C'est le résultat."
+        explanation: "Quand = l'action."
+    exercises:
+      - slug: gp-ex-critere-guide
+        kind: COMPLETER
+        title: "Compléter le critère"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: "Complète les mots du format Étant donné / quand / alors."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le contexte : Étant donné."
+          - "L'action : quand ; le résultat : alors."
+          - "donné, quand, alors."
+        solution: '["donné", "quand", "alors"]'
+        explanation: "Contexte, action, résultat."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Étant [[1]] un livre rendu après sa date, [[2]] j'ouvre la liste des retards, [[3]] ce livre y apparaît.
+          blanks:
+            - ["donné", "donne"]
+            - ["quand"]
+            - ["alors"]
+      - slug: gp-ex-story
+        kind: CODE_LIBRE
+        title: "Une story avec ses critères"
+        difficulty: INTERMEDIAIRE
+        skill: gestion-projet
+        statement: |
+          Une association veut que ses bénévoles puissent **s'inscrire à une distribution alimentaire** en ligne.
+          Écris la user story au format « En tant que… je veux… afin de… », puis **deux** critères
+          d'acceptation au format « Étant donné… quand… alors… ».
+        criteria: "Format complet de la story, deux critères Étant donné/quand/alors."
+        hints:
+          - "En tant que bénévole, je veux m'inscrire à une distribution afin que l'association sache qui sera présent."
+          - "Étant donné une distribution avec des places libres, quand je m'inscris, alors mon nom apparaît dans la liste."
+          - "Étant donné une distribution complète, quand je tente de m'inscrire, alors un message m'indique qu'elle est complète."
+        solution: |
+          En tant que bénévole, je veux m'inscrire à une distribution alimentaire afin que l'association sache qui sera présent.
+          Étant donné une distribution avec des places libres, quand je m'inscris, alors mon nom apparaît dans la liste des participants.
+          Étant donné une distribution complète, quand je tente de m'inscrire, alors un message m'indique qu'il n'y a plus de place.
+        explanation: "Qui, quoi, pourquoi, et deux critères qui deviendront des cas de test."
+        xp: 20
+        payload:
+          language: text
+          starter: |
+            En tant que
+          checks:
+            - pattern: "(?i)en\\s+tant\\s+qu[e']\\s*\\S[\\s\\S]*?je\\s+(?:veux|souhaite|voudrais)\\s+\\S[\\s\\S]*?afin\\s+(?:de|d'|que)"
+              message: "Écris la story au format « En tant que…, je veux… afin de… »."
+            - pattern: '(?i)\A(?>[\s\S]*?[ÉEée]tant\s+donn[ée]e?s?\s[^\n]*?\bquand\b[^\n]*?\balors\b){2}'
+              message: "Écris deux critères au format « Étant donné…, quand…, alors… » (chacun sur une ligne)."
+            - pattern: '(?i)b[ée]n[ée]vole'
+              message: "La story doit parler des bénévoles."
+      - slug: gp-ex-critere-bug
+        kind: CORRIGER_ERREUR
+        title: "Un critère trop vague"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: |
+          Le critère « La recherche doit bien marcher » n'est pas vérifiable. Réécris-le au format Étant donné /
+          quand / alors, pour une recherche par auteur.
+        criteria: "Un critère au format Étant donné / quand / alors."
+        hints:
+          - "Quel est le contexte ?"
+          - "Quelle action ? Quel résultat visible ?"
+          - "Étant donné des livres de Victor Hugo, quand je cherche « Hugo », alors ses livres s'affichent."
+        solution: |
+          Étant donné des livres de Victor Hugo au catalogue, quand je cherche « Hugo », alors ses livres s'affichent.
+        explanation: "Vérifiable par oui ou non."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            La recherche doit bien marcher.
+          checks:
+            - pattern: '(?i)bien\s+marcher'
+              absent: true
+              message: "« Bien marcher » n'est pas vérifiable."
+            - pattern: '(?i)[ÉEée]tant\s+donn[ée]e?s?\s[^\n]*?\bquand\b[^\n]*?\balors\b'
+              message: "Écris : Étant donné…, quand…, alors…"
+
+  # ===================================================================== LEÇON 3
+  - slug: gp-moscow
+    title: "Prioriser avec MoSCoW"
+    duration: 9
+    objective: "Classer les stories avec MoSCoW et définir un produit minimum viable (MVP)."
+    prerequisites: "Leçon « Les critères d'acceptation »."
+    skills: [gestion-projet]
+    xp: 15
+    memo: |
+      - **MoSCoW** : **M**ust (indispensable), **S**hould (important), **C**ould (bonus), **W**on't (pas cette fois).
+      - **MVP** (produit minimum viable) : la plus petite version utile, avec les stories **Must**.
+      - On livre d'abord le Must, puis on améliore avec les retours.
+    commonMistakes: |
+      - Tout mettre en Must.
+      - Commencer par les bonus avant l'indispensable.
+    blocks:
+      - type: definition
+        id: def-moscow
+        term: "Priorisation MoSCoW"
+        md: |
+          Faire ses **courses avec un petit budget** : d'abord le **pain et le lait** (Must), puis les fruits
+          (Should), le chocolat s'il reste de l'argent (Could), et pas le champagne cette fois (Won't).
+      - type: code
+        id: code-moscow
+        language: text
+        title: "Les stories d'une bibliothèque"
+        code: |
+          Must   : se connecter, voir le catalogue, emprunter un livre
+          Should : recevoir un rappel avant la date de retour
+          Could  : noter un livre
+          Won't  : application mobile native (pas cette version)
+        lines:
+          - n: 1
+            note: "Le MVP : sans ça, l'application ne sert à rien."
+          - n: 4
+            note: "Pas maintenant : on le dit clairement."
+      - type: question
+        ref: gp-us-q2
+        review: def-moscow
+      - type: question
+        ref: gp-us-q5
+        review: code-moscow
+      - type: text
+        md: "**Exercice 1 (guidé)** : classer les stories."
+      - type: exercise
+        ref: gp-ex-moscow-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : le MVP d'une application de réservation."
+      - type: exercise
+        ref: gp-ex-moscow-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : tout en Must."
+      - type: exercise
+        ref: gp-ex-moscow-bug
+      - type: jury
+        items:
+          - q: "Comment avez-vous recueilli et formalisé le besoin ?"
+            a: "Par des entretiens avec le client et l'analyse de l'existant, puis un cahier des charges. J'ai découpé le besoin en user stories avec des critères d'acceptation au format Étant donné / Quand / Alors, priorisées avec MoSCoW pour définir un produit minimum viable."
+          - q: "Qu'est-ce qu'un MVP ?"
+            a: "Le produit minimum viable : la plus petite version utile de l'application, qui contient seulement les stories Must. Il permet de livrer vite, d'avoir des retours réels, puis d'améliorer."
+      - type: quiz
+        items:
+          - ref: gp-mo-q3
+            review: def-moscow
+          - ref: gp-mo-q4
+            review: code-moscow
+          - ref: gp-mo-q5
+            review: def-moscow
+    questions:
       - code: gp-us-q2
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -128,35 +542,6 @@ lessons:
             correct: false
             why: "Won't = pas cette fois, peut-être plus tard."
         explanation: "Must, Should, Could, Won't."
-      - code: gp-us-q3
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: gestion-projet
-        prompt: "« Créer l'entité JPA Reservation » est une bonne user story."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "C'est une tâche technique, pas un besoin utilisateur."
-          - label: "Faux"
-            correct: true
-            why: "Elle ne dit ni qui, ni pourquoi."
-        explanation: "Les tâches techniques découlent des stories, elles n'en sont pas."
-      - code: gp-us-q4
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: gestion-projet
-        prompt: "Quel critère d'acceptation est le mieux écrit ?"
-        choices:
-          - label: "Étant donné un panier vide, quand j'ouvre le panier, alors le message « Votre panier est vide » s'affiche"
-            correct: true
-            why: "Précis et vérifiable."
-          - label: "Le panier doit bien marcher"
-            correct: false
-            why: "Impossible à vérifier."
-          - label: "Le panier doit être joli"
-            correct: false
-            why: "Subjectif."
-        explanation: "Étant donné (contexte) / Quand (action) / Alors (résultat)."
       - code: gp-us-q5
         kind: TEXTE
         difficulty: 2
@@ -164,151 +549,211 @@ lessons:
         prompt: "Quel sigle désigne la plus petite version utile d'un produit ? (trois lettres)"
         answers: ["MVP", "PMV"]
         explanation: "Minimum Viable Product (produit minimum viable) : les stories Must."
+      - code: gp-mo-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Mettre toutes les stories en Must aide à bien prioriser."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Si tout est prioritaire, rien ne l'est."
+          - label: "Faux"
+            correct: true
+            why: "Il faut choisir."
+        explanation: "Prioriser = choisir."
+      - code: gp-mo-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: gestion-projet
+        prompt: "Que signifie « Won't » ?"
+        choices:
+          - label: "Pas dans cette version"
+            correct: true
+            why: "Peut-être plus tard."
+          - label: "Indispensable"
+            correct: false
+            why: "C'est Must."
+          - label: "Important"
+            correct: false
+            why: "C'est Should."
+        explanation: "Dire clairement ce qu'on ne fera pas."
+      - code: gp-mo-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: gestion-projet
+        prompt: "Pourquoi livrer d'abord le MVP ?"
+        choices:
+          - label: "Pour avoir vite une version utile et des retours réels"
+            correct: true
+            why: "On améliore avec les retours."
+          - label: "Pour éviter les tests"
+            correct: false
+            why: "Le MVP est testé."
+          - label: "Parce que les bonus sont interdits"
+            correct: false
+            why: "Ils viennent après."
+        explanation: "Utile d'abord, parfait ensuite."
     exercises:
-      - slug: gp-ex-story-guide
+      - slug: gp-ex-moscow-guide
         kind: COMPLETER
-        title: "Compléter une user story"
+        title: "Classer les stories"
         difficulty: FACILE
         skill: gestion-projet
-        statement: "Complète la story et son critère d'acceptation."
-        criteria: "Les cinq trous sont corrects."
+        statement: "Complète avec Must, Should, Could ou Won't."
+        criteria: "Les trois trous sont corrects."
         hints:
-          - "Format : En tant que… je veux… afin de…"
-          - "Critère : Étant donné… quand… alors…"
-          - "tant, veux, afin, quand, alors."
-        solution: '["tant", "veux", "afin", "quand", "alors"]'
-        explanation: "Qui, quoi, pourquoi ; puis contexte, action, résultat."
+          - "Sans connexion, rien ne marche : Must."
+          - "Un rappel est important : Should ; noter un livre est un bonus : Could."
+          - "Must, Should, Could."
+        solution: '["Must", "Should", "Could"]'
+        explanation: "Indispensable, important, bonus."
         xp: 10
         payload:
           language: text
           caseSensitive: false
           template: |
-            En [[1]] que bibliothécaire, je [[2]] voir les livres en retard [[3]] de relancer les lecteurs.
-
-            Étant donné un livre rendu après sa date, [[4]] j'ouvre la liste des retards, [[5]] ce livre y apparaît.
+            Se connecter : [[1]]
+            Recevoir un rappel avant la date de retour : [[2]]
+            Noter un livre : [[3]]
           blanks:
-            - ["tant"]
-            - ["veux"]
-            - ["afin"]
-            - ["quand"]
-            - ["alors"]
-      - slug: gp-ex-story
+            - ["Must"]
+            - ["Should"]
+            - ["Could"]
+      - slug: gp-ex-moscow-libre
         kind: CODE_LIBRE
-        title: "Écrire une user story"
-        difficulty: INTERMEDIAIRE
+        title: "Le MVP d'une application de réservation"
+        difficulty: FACILE
         skill: gestion-projet
         statement: |
-          Une association veut que ses bénévoles puissent **s'inscrire à une distribution alimentaire** en ligne.
-          Écris la user story au format « En tant que… je veux… afin de… », puis **deux** critères
-          d'acceptation au format « Étant donné… quand… alors… », et indique sa priorité MoSCoW
-          (`Priorité : Must`, `Should`, `Could` ou `Won't`).
-        criteria: "Format complet de la story, deux critères Étant donné/quand/alors, une priorité MoSCoW."
+          Classe ces stories d'une application de réservation de salles, une par ligne sous la forme
+          `story : priorité` : `réserver une salle`, `se connecter`, `choisir une couleur de thème`.
+        criteria: "réserver : Must, se connecter : Must, thème : Could (ou Won't)."
         hints:
-          - "En tant que bénévole, je veux m'inscrire à une distribution afin que l'association sache combien nous serons."
-          - "Étant donné une distribution avec des places libres, quand je m'inscris, alors mon nom apparaît dans la liste."
-          - "Étant donné une distribution complète, quand je tente de m'inscrire, alors un message m'indique qu'elle est complète."
+          - "Sans réservation, l'application ne sert à rien."
+          - "Sans connexion, on ne sait pas qui réserve."
+          - "La couleur du thème est un bonus."
         solution: |
-          Priorité : Must
-          En tant que bénévole, je veux m'inscrire à une distribution alimentaire afin que l'association sache combien de personnes seront présentes.
-          Étant donné une distribution avec des places libres, quand je m'inscris, alors mon nom apparaît dans la liste des participants.
-          Étant donné une distribution complète, quand je tente de m'inscrire, alors un message m'indique qu'il n'y a plus de place.
-        explanation: "Qui, quoi, pourquoi, et deux critères qui deviendront des cas de test."
-        xp: 20
+          réserver une salle : Must
+          se connecter : Must
+          choisir une couleur de thème : Could
+        explanation: "Le MVP : se connecter et réserver."
+        xp: 15
         payload:
           language: text
           starter: |
-            Priorité :
-            En tant que
+            réserver une salle :
+            se connecter :
+            choisir une couleur de thème :
           checks:
-            - pattern: '(?i)en\s+tant\s+qu[e'']\s*\S[\s\S]*?je\s+(?:veux|souhaite|voudrais)\s+\S[\s\S]*?afin\s+(?:de|d''|que)'
-              message: "Écris la story au format « En tant que…, je veux… afin de… »."
-            - pattern: '(?i)\A(?>[\s\S]*?[ÉEée]tant\s+donn[ée]e?s?\s[^\n]*?\bquand\b[^\n]*?\balors\b){2}'
-              message: "Écris deux critères au format « Étant donné…, quand…, alors… » (chacun sur une ligne)."
-            - pattern: '(?i)priorit[ée]\s*:\s*(?:must|should|could|won.?t)\b'
-              message: "Indique la priorité : `Priorité : Must` (ou Should, Could, Won't)."
-            - pattern: '(?i)b[ée]n[ée]vole'
-              message: "La story doit parler des bénévoles."
+            - pattern: '(?mi)^\s*r[ée]server une salle\s*:\s*Must\s*$'
+              message: "Réserver une salle est indispensable."
+            - pattern: '(?mi)^\s*se connecter\s*:\s*Must\s*$'
+              message: "Se connecter est indispensable."
+            - pattern: "(?mi)^\\s*choisir une couleur de th[èe]me\\s*:\\s*(?:Could|Won't|Wont)\\s*$"
+              message: "La couleur du thème est un bonus."
+      - slug: gp-ex-moscow-bug
+        kind: CORRIGER_ERREUR
+        title: "Tout en Must"
+        difficulty: FACILE
+        skill: gestion-projet
+        statement: |
+          Toutes les stories ont été classées Must. Corrige la dernière : « partager un livre sur les réseaux
+          sociaux » est un bonus (Could).
+        criteria: "partager sur les réseaux : Could."
+        hints:
+          - "L'application fonctionne-t-elle sans partage ?"
+          - "Oui : c'est un bonus."
+          - "Could."
+        solution: |
+          emprunter un livre : Must
+          partager un livre sur les réseaux sociaux : Could
+        explanation: "Si tout est Must, rien ne l'est."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            emprunter un livre : Must
+            partager un livre sur les réseaux sociaux : Must
+          checks:
+            - pattern: '(?mi)^\s*partager[^\n]*:\s*Must'
+              absent: true
+              message: "Le partage n'est pas indispensable."
+            - pattern: '(?mi)^\s*partager[^\n]*:\s*Could\s*$'
+              message: "Classe le partage en Could."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 4
   - slug: gp-maquettes
-    title: "Maquettes, ergonomie et accessibilité"
-    duration: 13
-    objective: "Passer du zoning à la maquette, appliquer les règles d'ergonomie de base et les principes d'accessibilité (RGAA/WCAG)."
-    prerequisites: "Leçon « Du besoin aux user stories »."
-    skills: [ux-ui, accessibilite]
-    xp: 25
+    title: "Du zoning à la maquette"
+    duration: 10
+    objective: "Passer du zoning au wireframe, puis à la maquette et au prototype, en concevant mobile d'abord."
+    prerequisites: "Leçon « Prioriser avec MoSCoW »."
+    skills: [ux-ui]
+    xp: 15
     memo: |
       - **Zoning** → **wireframe** (maquette fil de fer, sans couleur) → **maquette** graphique → **prototype** cliquable (Figma).
       - **Mobile d'abord** : concevoir le petit écran, puis l'agrandir.
       - Ergonomie : cohérence, retours visibles (chargement, succès, erreur), messages d'erreur utiles, peu de clics.
-      - **Accessibilité** (RGAA en France, basé sur les WCAG) : contrastes suffisants, textes alternatifs, navigation au clavier, labels de formulaire, titres hiérarchisés.
-      - L'accessibilité est une **obligation légale** pour de nombreux services, et elle profite à tout le monde.
     commonMistakes: |
-      - Coder directement sans maquette : on refait trois fois les écrans.
-      - Indiquer une erreur **seulement** par une couleur rouge.
-      - Des boutons sans texte (seulement une icône) et sans `aria-label`.
+      - Coder directement sans maquette : on refait plusieurs fois les écrans.
+      - Parler de couleurs avant d'avoir validé l'organisation.
     blocks:
       - type: text
         md: |
-          Avant de coder un écran, on le **dessine**. Un dessin se corrige en deux minutes ; un écran codé, en
-          deux heures.
+          Avant de coder un écran, on le **dessine**. Un dessin se corrige en quelques minutes ; un écran codé,
+          en quelques heures.
       - type: definition
         id: def-wireframe
         term: "Wireframe"
         md: |
           Le **plan d'architecte** d'un écran : on place les murs et les portes (zones, boutons, champs), sans
           choisir la peinture. On valide l'organisation avec le client avant de parler de couleurs.
+      - type: code
+        id: code-etapes-maquette
+        language: text
+        title: "De l'idée à l'écran"
+        code: |
+          Zoning      : grandes zones (en-tête, liste, pied de page)
+          Wireframe   : les éléments placés, en gris
+          Maquette    : couleurs, typographies, images
+          Prototype   : écrans reliés, cliquables
+        lines:
+          - n: 1
+            note: "On commence large."
+          - n: 2
+            note: "On valide l'organisation avec le client."
+          - n: 4
+            note: "On teste le parcours avant de coder."
       - type: question
         ref: gp-mq-q1
         review: def-wireframe
-      - type: definition
-        id: def-accessibilite
-        term: "Accessibilité numérique"
-        md: |
-          Une **rampe à côté des escaliers** : indispensable pour certains, pratique pour tous (poussettes,
-          valises). Un site accessible est utilisable au clavier, avec un lecteur d'écran, par une personne
-          daltonienne ou malvoyante… et il est aussi plus clair pour tout le monde.
-      - type: compare
-        left:
-          title: "Pas accessible"
-          code: |
-            <input placeholder="E-mail">
-            <span class="rouge">Erreur</span>
-            <div (click)="envoyer()">➤</div>
-          language: html
-        right:
-          title: "Accessible"
-          code: |
-            <label for="email">E-mail</label>
-            <input id="email" type="email" aria-describedby="err-email">
-            <p id="err-email">Erreur : l'e-mail doit contenir un @.</p>
-            <button type="submit">Envoyer</button>
-          language: html
       - type: question
-        ref: gp-mq-q2
-        review: def-accessibilite
+        ref: gp-mq-q4
+        review: code-etapes-maquette
       - type: text
-        md: "Exercice guidé : remets les étapes de conception dans l'ordre."
+        md: "**Exercice 1 (guidé)** : remets les étapes dans l'ordre."
       - type: exercise
         ref: gp-ex-maquette-ordre
       - type: text
-        md: "En autonomie : rends ce formulaire accessible."
+        md: "**Exercice 2 (en autonomie)** : décrire un wireframe."
       - type: exercise
-        ref: gp-ex-accessible
+        ref: gp-ex-wireframe-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des couleurs trop tôt."
+      - type: exercise
+        ref: gp-ex-maquette-bug
       - type: jury
         items:
           - q: "Comment avez-vous conçu vos interfaces ?"
             a: "À partir des user stories, j'ai fait un zoning puis des wireframes validés avec le client, puis des maquettes dans Figma avec une charte graphique. J'ai conçu en mobile d'abord, avec des composants réutilisables et des retours clairs (chargement, succès, erreur)."
-          - q: "Comment avez-vous pris en compte l'accessibilité ?"
-            a: "Labels liés à chaque champ, contrastes vérifiés, navigation complète au clavier avec un focus visible, textes alternatifs, titres hiérarchisés, messages d'erreur en texte et pas seulement en couleur. J'ai vérifié avec Lighthouse et un lecteur d'écran, en m'appuyant sur le RGAA."
       - type: quiz
         items:
-          - ref: gp-mq-q3
-            review: def-accessibilite
-          - ref: gp-mq-q4
+          - ref: gp-mm-q3
             review: def-wireframe
-          - ref: gp-mq-q5
-            review: def-accessibilite
+          - ref: gp-mm-q4
+            review: code-etapes-maquette
+          - ref: gp-mm-q5
+            review: def-wireframe
     questions:
       - code: gp-mq-q1
         kind: CHOIX_UNIQUE
@@ -326,38 +771,6 @@ lessons:
             correct: false
             why: "C'est un MCD ou un MPD."
         explanation: "Zoning → wireframe → maquette → prototype."
-      - code: gp-mq-q2
-        kind: VRAI_FAUX
-        difficulty: 1
-        skill: accessibilite
-        prompt: "Indiquer une erreur seulement par une bordure rouge suffit pour l'accessibilité."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "Une personne daltonienne ou aveugle ne la percevra pas."
-          - label: "Faux"
-            correct: true
-            why: "Il faut un texte explicite, relié au champ."
-        explanation: "L'information ne doit jamais reposer uniquement sur la couleur."
-      - code: gp-mq-q3
-        kind: CHOIX_MULTIPLE
-        difficulty: 2
-        skill: accessibilite
-        prompt: "Quelles pratiques rendent un site plus accessible ? (plusieurs réponses)"
-        choices:
-          - label: "Un label relié à chaque champ de formulaire"
-            correct: true
-            why: "Le lecteur d'écran l'annonce."
-          - label: "Une navigation possible au clavier, avec un focus visible"
-            correct: true
-            why: "Indispensable sans souris."
-          - label: "Un texte alternatif sur les images utiles"
-            correct: true
-            why: "Il décrit l'image."
-          - label: "Du texte gris clair sur fond blanc"
-            correct: false
-            why: "Contraste insuffisant."
-        explanation: "Référentiel français : RGAA."
       - code: gp-mq-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -374,13 +787,51 @@ lessons:
             correct: false
             why: "Aucun rapport."
         explanation: "Le petit écran oblige à prioriser."
-      - code: gp-mq-q5
-        kind: TEXTE
+      - code: gp-mm-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: ux-ui
+        prompt: "On valide le wireframe avec le client avant de choisir les couleurs."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "L'organisation d'abord."
+          - label: "Faux"
+            correct: false
+            why: "On valide tôt, là où c'est peu coûteux."
+        explanation: "Les murs avant la peinture."
+      - code: gp-mm-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: ux-ui
+        prompt: "À quoi sert un prototype cliquable ?"
+        choices:
+          - label: "À tester le parcours entre les écrans avant de coder"
+            correct: true
+            why: "On voit les problèmes tôt."
+          - label: "À remplacer l'application"
+            correct: false
+            why: "Il ne fonctionne pas vraiment."
+          - label: "À stocker les données"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Figma relie les écrans."
+      - code: gp-mm-q5
+        kind: CHOIX_UNIQUE
         difficulty: 2
-        skill: accessibilite
-        prompt: "Quel est le sigle du référentiel français d'accessibilité numérique ? (quatre lettres)"
-        answers: ["RGAA"]
-        explanation: "Référentiel général d'amélioration de l'accessibilité, basé sur les WCAG."
+        skill: ux-ui
+        prompt: "Quelle règle d'ergonomie est respectée ?"
+        choices:
+          - label: "Afficher un message clair après chaque action (chargement, succès, erreur)"
+            correct: true
+            why: "L'utilisatrice sait ce qui se passe."
+          - label: "Changer la place des boutons à chaque écran"
+            correct: false
+            why: "Incohérent."
+          - label: "Cacher les erreurs"
+            correct: false
+            why: "L'utilisatrice resterait bloquée."
+        explanation: "Cohérence et retours visibles."
     exercises:
       - slug: gp-ex-maquette-ordre
         kind: REMETTRE_ORDRE
@@ -413,6 +864,262 @@ lessons:
             - "Créer la maquette graphique (couleurs, typographies)"
             - "Relier les écrans dans un prototype cliquable"
             - "Développer l'écran dans Angular"
+      - slug: gp-ex-wireframe-libre
+        kind: CODE_LIBRE
+        title: "Décrire un wireframe"
+        difficulty: FACILE
+        skill: ux-ui
+        statement: |
+          Décris en trois lignes (`En-tête :`, `Contenu :`, `Pied de page :`) le wireframe de la page « Mes
+          emprunts » sur mobile, sans parler de couleurs.
+        criteria: "Trois zones décrites, sans couleur."
+        hints:
+          - "En-tête : logo et menu."
+          - "Contenu : la liste des emprunts avec leur date de retour."
+          - "Pied de page : contact et mentions légales."
+        solution: |
+          En-tête : le logo et un bouton menu.
+          Contenu : la liste des emprunts, chacun avec son titre et sa date de retour.
+          Pied de page : le contact et les mentions légales.
+        explanation: "L'organisation d'abord."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            En-tête :
+            Contenu :
+            Pied de page :
+          checks:
+            - pattern: '(?im)^\s*En-t[êe]te\s*:[ \t]*\S[^\n]{5,}'
+              message: "Décris l'en-tête."
+            - pattern: '(?im)^\s*Contenu\s*:[ \t]*\S[^\n]{10,}'
+              message: "Décris le contenu."
+            - pattern: '(?im)^\s*Pied de page\s*:[ \t]*\S[^\n]{5,}'
+              message: "Décris le pied de page."
+            - pattern: '(?i)\b(?:rouge|bleu|vert|jaune|violet|orange|couleur)'
+              absent: true
+              message: "Pas de couleurs dans un wireframe."
+      - slug: gp-ex-maquette-bug
+        kind: CORRIGER_ERREUR
+        title: "Des couleurs trop tôt"
+        difficulty: FACILE
+        skill: ux-ui
+        statement: |
+          Ce plan de travail choisit les couleurs avant de valider le wireframe. Remets l'ordre : wireframe
+          validé, puis maquette graphique.
+        criteria: "Le wireframe validé vient avant la maquette graphique."
+        hints:
+          - "Les murs avant la peinture."
+          - "Le wireframe d'abord."
+          - "1. Wireframe validé  2. Maquette graphique."
+        solution: |
+          1. Valider le wireframe avec le client
+          2. Créer la maquette graphique (couleurs)
+        explanation: "On valide l'organisation avant le style."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            1. Créer la maquette graphique (couleurs)
+            2. Valider le wireframe avec le client
+          checks:
+            - pattern: '(?i)1\.\s*Valider le wireframe[\s\S]*2\.\s*Cr[ée]er la maquette'
+              message: "Le wireframe validé d'abord, puis la maquette."
+
+  # ===================================================================== LEÇON 5
+  - slug: gp-accessibilite
+    title: "L'accessibilité numérique"
+    duration: 11
+    objective: "Rendre un écran utilisable par tous : labels, texte alternatif, clavier, contrastes, erreurs en texte."
+    prerequisites: "Leçon « Du zoning à la maquette »."
+    skills: [accessibilite]
+    xp: 15
+    memo: |
+      - **Accessibilité** (RGAA en France, basé sur les WCAG) : contrastes suffisants, textes alternatifs, navigation au clavier, labels de formulaire, titres hiérarchisés.
+      - Une information ne repose **jamais** seulement sur la couleur.
+      - C'est une **obligation légale** pour de nombreux services, et elle profite à tout le monde.
+    commonMistakes: |
+      - Indiquer une erreur **seulement** par une couleur rouge.
+      - Des boutons sans texte (seulement une icône) et sans `aria-label`.
+    blocks:
+      - type: definition
+        id: def-accessibilite
+        term: "Accessibilité numérique"
+        md: |
+          Une **rampe à côté des escaliers** : indispensable pour certains, pratique pour tous (poussettes,
+          valises). Un site accessible est utilisable au clavier, avec un lecteur d'écran, par une personne
+          daltonienne ou malvoyante… et il est aussi plus clair pour tout le monde.
+      - type: compare
+        left:
+          title: "Pas accessible"
+          code: |
+            <input placeholder="E-mail">
+            <span class="rouge">Erreur</span>
+            <div (click)="envoyer()">➤</div>
+          language: html
+        right:
+          title: "Accessible"
+          code: |
+            <label for="email">E-mail</label>
+            <input id="email" type="email" aria-describedby="err-email">
+            <p id="err-email">Erreur : l'e-mail doit contenir un @.</p>
+            <button type="submit">Envoyer</button>
+          language: html
+      - type: question
+        ref: gp-mq-q2
+        review: def-accessibilite
+      - type: question
+        ref: gp-mq-q5
+        review: def-accessibilite
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète le formulaire accessible."
+      - type: exercise
+        ref: gp-ex-a11y-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une image et un bouton accessibles."
+      - type: exercise
+        ref: gp-ex-a11y-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un formulaire à rendre accessible."
+      - type: exercise
+        ref: gp-ex-accessible
+      - type: jury
+        items:
+          - q: "Comment avez-vous pris en compte l'accessibilité ?"
+            a: "Labels liés à chaque champ, contrastes vérifiés, navigation complète au clavier avec un focus visible, textes alternatifs, titres hiérarchisés, messages d'erreur en texte et pas seulement en couleur. J'ai vérifié avec Lighthouse et un lecteur d'écran, en m'appuyant sur le RGAA."
+      - type: quiz
+        items:
+          - ref: gp-mq-q3
+            review: def-accessibilite
+          - ref: gp-c1-b2
+            review: def-accessibilite
+          - ref: gp-ac-q5
+            review: def-accessibilite
+    questions:
+      - code: gp-mq-q2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: accessibilite
+        prompt: "Indiquer une erreur seulement par une bordure rouge suffit pour l'accessibilité."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Une personne daltonienne ou aveugle ne la percevra pas."
+          - label: "Faux"
+            correct: true
+            why: "Il faut un texte explicite, relié au champ."
+        explanation: "L'information ne doit jamais reposer uniquement sur la couleur."
+      - code: gp-mq-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: accessibilite
+        prompt: "Quel est le sigle du référentiel français d'accessibilité numérique ? (quatre lettres)"
+        answers: ["RGAA"]
+        explanation: "Référentiel général d'amélioration de l'accessibilité, basé sur les WCAG."
+      - code: gp-mq-q3
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: accessibilite
+        prompt: "Quelles pratiques rendent un site plus accessible ? (plusieurs réponses)"
+        choices:
+          - label: "Un label relié à chaque champ de formulaire"
+            correct: true
+            why: "Le lecteur d'écran l'annonce."
+          - label: "Une navigation possible au clavier, avec un focus visible"
+            correct: true
+            why: "Indispensable sans souris."
+          - label: "Un texte alternatif sur les images utiles"
+            correct: true
+            why: "Il décrit l'image."
+          - label: "Du texte gris clair sur fond blanc"
+            correct: false
+            why: "Contraste insuffisant."
+        explanation: "Référentiel français : RGAA."
+      - code: gp-c1-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: accessibilite
+        prompt: "Quel outil intégré à Chrome donne un score d'accessibilité à une page ?"
+        choices:
+          - label: "Lighthouse"
+            correct: true
+            why: "Onglet des outils de développement."
+          - label: "Postman"
+            correct: false
+            why: "Il sert à tester des API."
+          - label: "Git"
+            correct: false
+            why: "Il gère les versions."
+        explanation: "Un bon score ne remplace pas un test avec un lecteur d'écran et au clavier."
+      - code: gp-ac-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: accessibilite
+        prompt: "Pourquoi un vrai `<button>` plutôt qu'une `<div>` cliquable ?"
+        choices:
+          - label: "Il est utilisable au clavier et annoncé comme bouton par le lecteur d'écran"
+            correct: true
+            why: "Accessible sans effort."
+          - label: "Il est plus joli"
+            correct: false
+            why: "Le style est le même."
+          - label: "La div ne peut pas être cliquée"
+            correct: false
+            why: "Elle se clique à la souris, pas au clavier."
+        explanation: "Le bon élément HTML fait la moitié du travail."
+    exercises:
+      - slug: gp-ex-a11y-guide
+        kind: COMPLETER
+        title: "Compléter le formulaire accessible"
+        difficulty: FACILE
+        skill: accessibilite
+        statement: "Complète : le lien du label, le type du bouton, et le texte alternatif."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le label se relie avec for."
+          - "Un vrai bouton d'envoi : submit ; le texte alternatif : alt."
+          - "for, submit, alt."
+        solution: '["for", "submit", "alt"]'
+        explanation: "Relier, utiliser le bon élément, décrire."
+        xp: 10
+        payload:
+          language: html
+          template: |
+            <label [[1]]="email">E-mail</label>
+            <input id="email" type="email">
+            <button type="[[2]]">S'inscrire</button>
+            <img src="logo.svg" [[3]]="Médiathèque de Lyon">
+          blanks:
+            - ["for"]
+            - ["submit"]
+            - ["alt"]
+      - slug: gp-ex-a11y-libre
+        kind: CODE_LIBRE
+        title: "Une image et un bouton accessibles"
+        difficulty: FACILE
+        skill: accessibilite
+        statement: |
+          Écris une image `couverture.jpg` avec le texte alternatif « Couverture du Petit Prince », puis un bouton
+          `<button type="button">` avec le texte « Ajouter aux favoris ».
+        criteria: "alt non vide et bouton avec du texte."
+        hints:
+          - "`<img src=\"couverture.jpg\" alt=\"…\">`"
+          - "Le bouton contient son texte."
+          - "`<button type=\"button\">Ajouter aux favoris</button>`"
+        solution: |
+          <img src="couverture.jpg" alt="Couverture du Petit Prince">
+          <button type="button">Ajouter aux favoris</button>
+        explanation: "Tout est annoncé correctement."
+        xp: 15
+        payload:
+          language: html
+          starter: |
+            <img src="couverture.jpg">
+          checks:
+            - pattern: '<img\b[^>]*src="couverture\.jpg"[^>]*alt="Couverture du Petit Prince"'
+              message: "Ajoute alt=\"Couverture du Petit Prince\"."
+            - pattern: '<button\b[^>]*type="button"[^>]*>\s*Ajouter aux favoris\s*</button>'
+              message: "Écris <button type=\"button\">Ajouter aux favoris</button>."
       - slug: gp-ex-accessible
         kind: CORRIGER_ERREUR
         title: "Un formulaire accessible"
@@ -459,35 +1166,35 @@ lessons:
               message: "Ajoute un texte alternatif non vide à l'image : `alt=\"…\"`."
 
 bank:
-  - code: gp-c1-b1
+  - code: gp-c1-b3
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: gestion-projet
-    prompt: "Qu'est-ce qu'un persona ?"
+    prompt: "Qui écrit en priorité le besoin exprimé dans les user stories ?"
     choices:
-      - label: "Un portrait fictif mais réaliste d'un utilisateur type, pour guider la conception"
+      - label: "Le client, aidé par le développeur qui le formalise"
         correct: true
-        why: "Âge, besoins, habitudes, frustrations…"
-      - label: "Un compte administrateur"
+        why: "Le besoin vient du client."
+      - label: "Le serveur"
         correct: false
         why: "Aucun rapport."
-      - label: "Un membre de l'équipe de développement"
+      - label: "La base de données"
         correct: false
-        why: "Il représente un utilisateur."
-    explanation: "« Awa, 34 ans, réserve depuis son téléphone dans le bus » aide à faire les bons choix."
-  - code: gp-c1-b2
+        why: "Aucun rapport."
+    explanation: "Le développeur traduit, le client valide."
+  - code: gp-c1-b4
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: accessibilite
-    prompt: "Quel outil intégré à Chrome donne un score d'accessibilité à une page ?"
+    prompt: "À quoi sert l'attribut `alt` d'une image ?"
     choices:
-      - label: "Lighthouse"
+      - label: "À décrire l'image pour ceux qui ne la voient pas"
         correct: true
-        why: "Onglet des outils de développement."
-      - label: "Postman"
+        why: "Le lecteur d'écran le lit."
+      - label: "À changer sa taille"
         correct: false
-        why: "Il sert à tester des API."
-      - label: "Git"
+        why: "C'est width/height."
+      - label: "À l'animer"
         correct: false
-        why: "Il gère les versions."
-    explanation: "Un bon score ne remplace pas un test avec un lecteur d'écran et au clavier."
+        why: "Aucun rapport."
+    explanation: "Un texte alternatif utile, ou vide pour une image décorative."
