@@ -2,93 +2,72 @@ slug: sec-authentification
 position: 2
 level: INTERMEDIAIRE
 title: "Authentification et autorisation"
-summary: "Prouver qui on est avec un jeton JWT, puis décider qui a le droit de faire quoi avec Spring Security."
-quizQuestionCount: 10
+summary: "Distinguer qui on est et ce qu'on a le droit de faire, lire puis fabriquer un jeton JWT, écrire les règles de Spring Security et vérifier à qui appartient une ressource. Une seule notion par leçon."
+quizQuestionCount: 14
 
 lessons:
   # ===================================================================== LEÇON 1
-  - slug: sec-jwt
-    title: "Le jeton JWT"
-    duration: 14
-    objective: "Distinguer authentification et autorisation, décrire les trois parties d'un JWT et expliquer comment il est vérifié."
+  - slug: sec-authn-authz
+    title: "Authentification ou autorisation ?"
+    duration: 9
+    objective: "Distinguer l'authentification (qui es-tu ?) de l'autorisation (qu'as-tu le droit de faire ?) et leurs statuts 401 et 403."
     prerequisites: "Chapitre « Les bases de la sécurité »."
     skills: [auth-jwt]
-    xp: 25
+    xp: 15
     memo: |
-      - **Authentification** : prouver **qui** on est (e-mail + mot de passe). **Autorisation** : savoir **ce qu'on a le droit** de faire.
-      - Un **JWT** a trois parties séparées par des points : **en-tête**.**contenu**.**signature**.
-      - Le contenu est seulement **encodé** (Base64), pas chiffré : **tout le monde peut le lire**. Jamais de secret dedans.
-      - La **signature** (HS256 + secret du serveur) prouve que personne n'a modifié le jeton.
-      - Toujours une **expiration** courte (`exp`), par exemple 1 heure.
-      - Le frontend l'envoie dans `Authorization: Bearer <jeton>`.
+      - **Authentification** : prouver **qui** on est (e-mail + mot de passe, puis jeton). Échec → **401**.
+      - **Autorisation** : savoir **ce qu'on a le droit** de faire (rôle, propriétaire). Refus → **403**.
+      - On s'authentifie une fois ; l'autorisation est vérifiée à **chaque** action.
     commonMistakes: |
-      - Mettre le mot de passe ou des données sensibles dans le JWT.
-      - Un secret de signature court ou écrit dans le code.
-      - Un jeton sans date d'expiration.
+      - Répondre 401 à une personne connectée qui n'a pas le droit (c'est 403).
+      - Croire qu'être connecté donne accès à tout.
     blocks:
-      - type: text
-        md: |
-          Après la connexion, l'utilisatrice ne va pas retaper son mot de passe à chaque clic. Le serveur lui
-          donne un **jeton** : une sorte de badge qu'elle montrera à chaque requête.
       - type: definition
         id: def-authn-authz
         term: "Authentification et autorisation"
         md: |
           À l'entrée d'un **concert** : le vigile vérifie ta **pièce d'identité** (authentification : qui es-tu ?),
           puis ton **bracelet** dit si tu as accès à l'espace VIP (autorisation : qu'as-tu le droit de faire ?).
+      - type: compare
+        left:
+          title: "401 : identité inconnue"
+          code: |
+            GET /api/emprunts
+            (aucun jeton)
+            → 401 Unauthorized
+          language: text
+        right:
+          title: "403 : droit refusé"
+          code: |
+            DELETE /api/livres/3
+            (jeton d'une adhérente USER)
+            → 403 Forbidden
+          language: text
       - type: question
         ref: sec-jwt-q1
         review: def-authn-authz
-      - type: definition
-        id: def-jwt
-        term: "JWT (JSON Web Token)"
-        md: |
-          Un **bracelet de festival** avec un **sceau officiel**. N'importe qui peut lire ce qui est écrit
-          dessus (nom, rôle, date de fin), mais personne ne peut le falsifier sans casser le sceau. Le serveur
-          vérifie le sceau à chaque passage.
-      - type: code
-        id: code-jwt
-        language: text
-        title: "Un JWT décodé"
-        code: |
-          eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhd2FAZXhlbXBsZS5mciIsInJvbGUiOiJVU0VSIiwiZXhwIjoxNzg5MDAwMDAwfQ.k3Jx…
-
-          En-tête   : { "alg": "HS256" }
-          Contenu   : { "sub": "awa@exemple.fr", "role": "USER", "exp": 1789000000 }
-          Signature : HMAC-SHA256(en-tête + "." + contenu, SECRET_DU_SERVEUR)
-        lines:
-          - n: 1
-            note: "Trois morceaux séparés par des points."
-          - n: 3
-            note: "L'algorithme de signature."
-          - n: 4
-            note: "`sub` : qui ; `role` : ses droits ; `exp` : date d'expiration. **Lisible par tous.**"
-          - n: 5
-            note: "Calculée avec un secret que seul le serveur connaît. Si on change le rôle en ADMIN, la signature ne correspond plus."
       - type: question
-        ref: sec-jwt-q2
-        review: code-jwt
+        ref: sec-ss-q5
+        review: def-authn-authz
       - type: text
-        md: "Exercice guidé : remets le parcours du jeton dans l'ordre."
+        md: "**Exercice 1 (guidé)** : authentification ou autorisation ?"
       - type: exercise
-        ref: sec-ex-jwt-ordre
+        ref: sec-ex-authn-guide
       - type: text
-        md: "En autonomie : génère un jeton avec la bibliothèque jjwt."
+        md: "**Exercice 2 (en autonomie)** : le bon statut."
       - type: exercise
-        ref: sec-ex-jwt-generer
-      - type: jury
-        items:
-          - q: "Comment fonctionne l'authentification dans votre application ?"
-            a: "L'utilisatrice envoie e-mail et mot de passe à /api/auth/login. Le serveur vérifie l'empreinte BCrypt et renvoie un JWT signé en HS256, qui contient l'e-mail, le rôle et une expiration. Angular l'envoie ensuite dans l'en-tête Authorization grâce à un intercepteur ; un filtre Spring Security vérifie la signature et l'expiration à chaque requête."
-          - q: "Un JWT est-il chiffré ?"
-            a: "Non, il est seulement encodé en Base64 et signé. Tout le monde peut lire son contenu, mais personne ne peut le modifier sans le secret. Je n'y mets donc aucune donnée sensible."
+        ref: sec-ex-authn-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une confusion de statut."
+      - type: exercise
+        ref: sec-ex-authn-bug
       - type: quiz
         items:
-          - ref: sec-jwt-q3
-            review: def-jwt
-          - ref: sec-jwt-q4
-            review: code-jwt
-          - ref: sec-jwt-q5
+          - ref: sec-aa-q3
+            review: def-authn-authz
+          - ref: sec-aa-q4
+            review: def-authn-authz
+          - ref: sec-aa-q5
             review: def-authn-authz
     questions:
       - code: sec-jwt-q1
@@ -107,6 +86,233 @@ lessons:
             correct: false
             why: "Aucun rapport."
         explanation: "Qui es-tu ? (authentification) puis Que peux-tu faire ? (autorisation)."
+      - code: sec-ss-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: auth-jwt
+        prompt: "Une requête sans jeton arrive sur une route qui exige d'être connecté. Quel statut ?"
+        choices:
+          - label: "401"
+            correct: true
+            why: "Identité inconnue."
+          - label: "403"
+            correct: false
+            why: "403 = identité connue mais droit refusé."
+          - label: "200"
+            correct: false
+            why: "La requête est refusée."
+        explanation: "Pas de badge : 401. Mauvais badge : 403."
+      - code: sec-aa-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: auth-jwt
+        prompt: "Saisir son e-mail et son mot de passe, c'est…"
+        choices:
+          - label: "de l'authentification"
+            correct: true
+            why: "On prouve qui on est."
+          - label: "de l'autorisation"
+            correct: false
+            why: "On ne parle pas encore des droits."
+          - label: "du hachage"
+            correct: false
+            why: "Le hachage sert à stocker."
+        explanation: "Identité d'abord."
+      - code: sec-aa-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: auth-jwt
+        prompt: "Être connectée donne automatiquement accès à toutes les pages d'administration."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Il faut aussi le bon rôle."
+          - label: "Faux"
+            correct: true
+            why: "L'autorisation est vérifiée à chaque action."
+        explanation: "Connecté ≠ autorisé."
+      - code: sec-aa-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "À quel moment l'autorisation est-elle vérifiée ?"
+        choices:
+          - label: "À chaque action demandée"
+            correct: true
+            why: "Chaque route a ses règles."
+          - label: "Une seule fois, à la connexion"
+            correct: false
+            why: "C'est l'authentification."
+          - label: "Jamais côté serveur"
+            correct: false
+            why: "C'est justement le serveur qui décide."
+        explanation: "S'identifier une fois, être contrôlé à chaque porte."
+    exercises:
+      - slug: sec-ex-authn-guide
+        kind: COMPLETER
+        title: "Authentification ou autorisation ?"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: "Complète chaque ligne avec authentification ou autorisation."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Qui es-tu ? → authentification."
+          - "Qu'as-tu le droit de faire ? → autorisation."
+          - "authentification, autorisation, autorisation."
+        solution: '["authentification", "autorisation", "autorisation"]'
+        explanation: "Identité, puis droits."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            Vérifier l'e-mail et le mot de passe : [[1]]
+            Exiger le rôle ADMIN pour supprimer un livre : [[2]]
+            Refuser l'accès à l'emprunt d'une autre adhérente : [[3]]
+          blanks:
+            - ["authentification"]
+            - ["autorisation"]
+            - ["autorisation"]
+      - slug: sec-ex-authn-libre
+        kind: CODE_LIBRE
+        title: "Le bon statut"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: |
+          Écris le statut (401 ou 403) pour chaque situation, sous la forme `lettre : statut` :
+          - `a` : un jeton expiré ;
+          - `b` : une adhérente connectée essaie de supprimer un livre ;
+          - `c` : aucun jeton envoyé.
+        criteria: "a : 401, b : 403, c : 401."
+        hints:
+          - "Un jeton expiré ne prouve plus l'identité."
+          - "Une personne connectée sans le droit : 403."
+          - "401, 403, 401."
+        solution: |
+          a : 401
+          b : 403
+          c : 401
+        explanation: "Identité inconnue : 401 ; droit refusé : 403."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            a :
+            b :
+            c :
+          checks:
+            - pattern: '(?m)^\s*a\s*:\s*401\s*$'
+              message: "a : le jeton expiré ne prouve plus rien."
+            - pattern: '(?m)^\s*b\s*:\s*403\s*$'
+              message: "b : elle est connue, mais n'a pas le droit."
+            - pattern: '(?m)^\s*c\s*:\s*401\s*$'
+              message: "c : sans jeton, identité inconnue."
+      - slug: sec-ex-authn-bug
+        kind: CORRIGER_ERREUR
+        title: "Une confusion de statut"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: |
+          Aucun jeton n'est envoyé, mais l'API répond 403. Corrige le statut.
+        criteria: "401."
+        hints:
+          - "Le serveur sait-il qui fait la demande ?"
+          - "Non : identité inconnue."
+          - "401 Unauthorized."
+        solution: |
+          HTTP/1.1 401 Unauthorized
+        explanation: "Sans jeton : 401."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            HTTP/1.1 403 Forbidden
+          checks:
+            - pattern: '\b403\b'
+              absent: true
+              message: "403 veut dire « identité connue, droit refusé »."
+            - pattern: 'HTTP/1\.1\s+401\b'
+              message: "Écris HTTP/1.1 401 Unauthorized."
+
+  # ===================================================================== LEÇON 2
+  - slug: sec-jwt
+    title: "Lire un jeton JWT"
+    duration: 11
+    objective: "Décrire les trois parties d'un JWT, savoir ce qui est lisible par tous et comment la signature le protège."
+    prerequisites: "Leçon « Authentification ou autorisation ? »."
+    skills: [auth-jwt]
+    xp: 15
+    memo: |
+      - Un **JWT** a trois parties séparées par des points : **en-tête**.**contenu**.**signature**.
+      - Le contenu est seulement **encodé** (Base64), pas chiffré : **tout le monde peut le lire**. Jamais de secret dedans.
+      - La **signature** (HS256 + secret du serveur) prouve que personne n'a modifié le jeton.
+      - Toujours une **expiration** courte (`exp`).
+      - Le frontend l'envoie dans `Authorization: Bearer <jeton>`.
+    commonMistakes: |
+      - Mettre le mot de passe ou des données sensibles dans le JWT.
+      - Un jeton sans date d'expiration.
+    blocks:
+      - type: text
+        md: |
+          Après la connexion, l'utilisatrice ne va pas retaper son mot de passe à chaque clic. Le serveur lui
+          donne un **jeton** : une sorte de badge qu'elle montrera à chaque requête.
+      - type: definition
+        id: def-jwt
+        term: "JWT (JSON Web Token)"
+        md: |
+          Un **bracelet de festival** avec un **sceau officiel**. N'importe qui peut lire ce qui est écrit
+          dessus (nom, rôle, date de fin), mais personne ne peut le falsifier sans casser le sceau. Le serveur
+          vérifie le sceau à chaque passage.
+      - type: code
+        id: code-jwt
+        language: text
+        title: "Un JWT décodé"
+        code: |
+          eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhd2FAZXhlbXBsZS5mciIsInJvbGUiOiJVU0VSIn0.k3Jx…
+
+          En-tête   : { "alg": "HS256" }
+          Contenu   : { "sub": "awa@exemple.fr", "role": "USER", "exp": … }
+          Signature : produite avec le SECRET_DU_SERVEUR
+        lines:
+          - n: 1
+            note: "Trois morceaux séparés par des points."
+          - n: 3
+            note: "L'algorithme de signature."
+          - n: 4
+            note: "`sub` : qui ; `role` : ses droits ; `exp` : date d'expiration. **Lisible par tous.**"
+          - n: 5
+            note: "Produite avec un secret que seul le serveur connaît. Si on change le rôle en ADMIN, la signature ne correspond plus."
+      - type: question
+        ref: sec-jwt-q2
+        review: code-jwt
+      - type: question
+        ref: sec-jwt-q3
+        review: def-jwt
+      - type: text
+        md: "**Exercice 1 (guidé)** : le voyage du jeton."
+      - type: exercise
+        ref: sec-ex-jwt-ordre
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : les trois parties."
+      - type: exercise
+        ref: sec-ex-jwt-parties
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un secret dans le jeton."
+      - type: exercise
+        ref: sec-ex-jwt-bug
+      - type: jury
+        items:
+          - q: "Un JWT est-il chiffré ?"
+            a: "Non, il est seulement encodé en Base64 et signé. Tout le monde peut lire son contenu, mais personne ne peut le modifier sans le secret. Je n'y mets donc aucune donnée sensible."
+      - type: quiz
+        items:
+          - ref: sec-jwt-q4
+            review: code-jwt
+          - ref: sec-jwt-q5
+            review: def-jwt
+          - ref: sec-c2-b1
+            review: def-jwt
+    questions:
       - code: sec-jwt-q2
         kind: VRAI_FAUX
         difficulty: 2
@@ -159,6 +365,22 @@ lessons:
         prompt: "Dans quel en-tête HTTP le frontend envoie-t-il le JWT ? (un mot)"
         answers: ["Authorization"]
         explanation: "`Authorization: Bearer eyJhbGciOi…`"
+      - code: sec-c2-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Où garder le JWT côté Angular pour limiter le risque en cas de faille XSS ?"
+        choices:
+          - label: "En mémoire (un signal d'un service), avec une expiration courte"
+            correct: true
+            why: "Un script injecté aura plus de mal à le récupérer durablement."
+          - label: "Dans le code source d'Angular"
+            correct: false
+            why: "Le jeton change à chaque connexion."
+          - label: "Dans l'URL de chaque page"
+            correct: false
+            why: "Il apparaîtrait dans l'historique et les logs."
+        explanation: "Le localStorage est pratique mais lisible par tout script de la page : c'est un compromis à justifier."
     exercises:
       - slug: sec-ex-jwt-ordre
         kind: REMETTRE_ORDRE
@@ -189,6 +411,252 @@ lessons:
             - "Angular garde le jeton en mémoire"
             - "L'intercepteur ajoute Authorization: Bearer à chaque requête"
             - "Le filtre JWT vérifie la signature et l'expiration"
+      - slug: sec-ex-jwt-parties
+        kind: CODE_LIBRE
+        title: "Les trois parties"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: |
+          Écris le rôle de chaque partie d'un JWT, une ligne par partie :
+          `En-tête : …`, `Contenu : …`, `Signature : …`. Tu dois parler de l'**algorithme**, de qui est la
+          personne (**e-mail** ou **rôle**) et du **secret**.
+        criteria: "Trois lignes : algorithme, e-mail/rôle, secret."
+        hints:
+          - "L'en-tête dit quel algorithme signe."
+          - "Le contenu dit qui est la personne et son rôle."
+          - "La signature est produite avec le secret du serveur."
+        solution: |
+          En-tête : l'algorithme de signature, par exemple HS256.
+          Contenu : l'e-mail, le rôle et la date d'expiration, lisibles par tous.
+          Signature : produite avec le secret du serveur, elle empêche toute modification.
+        explanation: "Qui signe, ce qui est dit, la preuve."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            En-tête :
+            Contenu :
+            Signature :
+          checks:
+            - pattern: '(?mi)^\s*En-t[êe]te\s*:[^\n]*algorithme'
+              message: "En-tête : parle de l'algorithme."
+            - pattern: '(?mi)^\s*Contenu\s*:[^\n]*(e-mail|email|r[ôo]le)'
+              message: "Contenu : parle de l'e-mail ou du rôle."
+            - pattern: '(?mi)^\s*Signature\s*:[^\n]*secret'
+              message: "Signature : parle du secret du serveur."
+      - slug: sec-ex-jwt-bug
+        kind: CORRIGER_ERREUR
+        title: "Un secret dans le jeton"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: |
+          Ce contenu de jeton contient le mot de passe, lisible par tous. Retire ce champ.
+        criteria: "Plus de motDePasse dans le contenu."
+        hints:
+          - "Le contenu d'un JWT est lisible par tous."
+          - "Aucun secret dedans."
+          - "`{ \"sub\": \"awa@exemple.fr\", \"role\": \"USER\" }`"
+        solution: |
+          { "sub": "awa@exemple.fr", "role": "USER" }
+        explanation: "Signé ne veut pas dire secret."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            { "sub": "awa@exemple.fr", "role": "USER", "motDePasse": "Soleil2024" }
+          checks:
+            - pattern: '(?i)motDePasse|Soleil2024'
+              absent: true
+              message: "Retire le mot de passe du jeton."
+            - pattern: '"sub"\s*:\s*"awa@exemple\.fr"'
+              message: "Garde le sujet awa@exemple.fr."
+
+  # ===================================================================== LEÇON 3
+  - slug: sec-jwt-generer
+    title: "Fabriquer un jeton avec jjwt"
+    duration: 11
+    objective: "Écrire la méthode qui génère un JWT signé avec un sujet, un rôle et une expiration."
+    prerequisites: "Leçon « Lire un jeton JWT »."
+    skills: [auth-jwt]
+    xp: 15
+    memo: |
+      - `Jwts.builder()` … `.compact()` : on construit le jeton, puis on obtient son texte.
+      - `.subject(email)` : qui ; `.claim("role", role)` : une information de plus.
+      - `.issuedAt(...)` et `.expiration(...)` : quand il a été émis, jusqu'à quand il vaut.
+      - `.signWith(cle)` : la clé vient d'un **secret long** placé dans une variable d'environnement.
+    commonMistakes: |
+      - Oublier l'expiration.
+      - Un secret court ou écrit dans le code.
+    blocks:
+      - type: definition
+        id: def-jjwt
+        term: "Fabriquer un jeton"
+        md: |
+          Remplir un **bracelet** : écrire le nom, le rôle, la date de fin, puis apposer le **sceau** (la
+          signature). `compact()` donne le bracelet prêt à porter.
+      - type: code
+        id: code-jjwt
+        language: java
+        title: "JwtService.java"
+        code: |
+          public String generer(Utilisateur u) {
+              Instant maintenant = Instant.now();
+              return Jwts.builder()
+                      .subject(u.getEmail())
+                      .claim("role", u.getRole().name())
+                      .issuedAt(Date.from(maintenant))
+                      .expiration(Date.from(maintenant.plus(1, ChronoUnit.HOURS)))
+                      .signWith(cle)
+                      .compact();
+          }
+        lines:
+          - n: 3
+            note: "On commence la construction."
+          - n: 4
+            note: "Le sujet : qui est la personne."
+          - n: 5
+            note: "Une information supplémentaire : son rôle."
+          - n: 7
+            note: "Valable une heure."
+          - n: 8
+            note: "Le sceau, avec la clé construite à partir du secret."
+          - n: 9
+            note: "Le jeton, en texte."
+      - type: question
+        ref: sec-c2-b2
+        review: code-jjwt
+      - type: question
+        ref: sec-jg-q2
+        review: def-jjwt
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la construction."
+      - type: exercise
+        ref: sec-ex-jjwt-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : générer un jeton."
+      - type: exercise
+        ref: sec-ex-jwt-generer
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un jeton éternel."
+      - type: exercise
+        ref: sec-ex-jjwt-bug
+      - type: jury
+        items:
+          - q: "Comment fonctionne l'authentification dans votre application ?"
+            a: "L'utilisatrice envoie e-mail et mot de passe à /api/auth/login. Le serveur vérifie l'empreinte BCrypt et renvoie un JWT signé en HS256, qui contient l'e-mail, le rôle et une expiration. Angular l'envoie ensuite dans l'en-tête Authorization grâce à un intercepteur ; un filtre Spring Security vérifie la signature et l'expiration à chaque requête."
+      - type: quiz
+        items:
+          - ref: sec-jg-q3
+            review: code-jjwt
+          - ref: sec-jg-q4
+            review: code-jjwt
+          - ref: sec-jg-q5
+            review: def-jjwt
+    questions:
+      - code: sec-c2-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Comment choisir le secret qui signe les jetons HS256 ?"
+        choices:
+          - label: "Un long secret aléatoire (au moins 256 bits), dans une variable d'environnement"
+            correct: true
+            why: "La bibliothèque jjwt refuse une clé trop courte."
+          - label: "Un mot court et facile à retenir"
+            correct: false
+            why: "On pourrait le deviner et fabriquer de faux jetons."
+          - label: "Peu importe"
+            correct: false
+            why: "Un secret faible casse toute la sécurité."
+        explanation: "Exemple : `openssl rand -base64 48`, stocké dans une variable d'environnement."
+      - code: sec-jg-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: auth-jwt
+        prompt: "Que renvoie `.compact()` ?"
+        choices:
+          - label: "Le jeton sous forme de texte"
+            correct: true
+            why: "Prêt à être envoyé au frontend."
+          - label: "Le mot de passe"
+            correct: false
+            why: "Jamais."
+          - label: "Rien"
+            correct: false
+            why: "Il renvoie le jeton."
+        explanation: "builder() … compact()."
+      - code: sec-jg-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: auth-jwt
+        prompt: "Quelle méthode place l'e-mail dans le jeton ?"
+        choices:
+          - label: "`.subject(u.getEmail())`"
+            correct: true
+            why: "Le sujet = qui."
+          - label: "`.signWith(u.getEmail())`"
+            correct: false
+            why: "signWith prend la clé."
+          - label: "`.compact(u.getEmail())`"
+            correct: false
+            why: "compact ne prend rien."
+        explanation: "subject pour l'identité, claim pour le reste."
+      - code: sec-jg-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: auth-jwt
+        prompt: "Un jeton sans `.expiration(...)` reste valable pour toujours."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Rien ne l'arrête."
+          - label: "Faux"
+            correct: false
+            why: "Sans date de fin, il ne périme pas."
+        explanation: "Toujours une expiration courte."
+      - code: sec-jg-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "Où ranger le secret de signature ?"
+        choices:
+          - label: "Dans une variable d'environnement (JWT_SECRET)"
+            correct: true
+            why: "Jamais dans le code ni dans Git."
+          - label: "Dans le code Java, en constante"
+            correct: false
+            why: "Il serait visible dans le dépôt."
+          - label: "Dans le jeton lui-même"
+            correct: false
+            why: "Le contenu est lisible par tous."
+        explanation: "Secret = environnement."
+    exercises:
+      - slug: sec-ex-jjwt-guide
+        kind: COMPLETER
+        title: "Compléter la construction"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: "Complète : le sujet, l'expiration et la signature."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "L'identité : subject."
+          - "La date de fin : expiration ; le sceau : signWith."
+          - "subject, expiration, signWith."
+        solution: '["subject", "expiration", "signWith"]'
+        explanation: "Qui, jusqu'à quand, signé."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            return Jwts.builder()
+                    .[[1]](u.getEmail())
+                    .[[2]](Date.from(maintenant.plus(1, ChronoUnit.HOURS)))
+                    .[[3]](cle)
+                    .compact();
+          blanks:
+            - ["subject"]
+            - ["expiration"]
+            - ["signWith"]
       - slug: sec-ex-jwt-generer
         kind: CODE_LIBRE
         title: "Générer un jeton"
@@ -199,13 +667,13 @@ lessons:
           - `subject` : l'e-mail de l'utilisateur (`u.getEmail()`) ;
           - une information `role` : `u.getRole().name()` ;
           - date d'émission : maintenant ;
-          - expiration : dans **une heure** (`Instant.now().plus(1, ChronoUnit.HOURS)` ou `plusSeconds(3600)`) ;
+          - expiration : dans **une heure** (`maintenant.plus(1, ChronoUnit.HOURS)`) ;
           - signé avec le champ `cle` (déjà construit à partir du secret de l'environnement).
-        criteria: "Jwts.builder, subject, claim role, issuedAt, expiration à +1 h, signWith(cle), compact."
+        criteria: "Jwts.builder, subject, claim role, issuedAt, expiration à une heure, signWith(cle), compact."
         hints:
           - "Commence par `return Jwts.builder()` et termine par `.compact();`."
           - "`.subject(u.getEmail()).claim(\"role\", u.getRole().name())`"
-          - "`.issuedAt(Date.from(maintenant)).expiration(Date.from(maintenant.plusSeconds(3600))).signWith(cle)`"
+          - "`.issuedAt(Date.from(maintenant)).expiration(Date.from(maintenant.plus(1, ChronoUnit.HOURS))).signWith(cle)`"
         solution: |
           public String generer(Utilisateur u) {
               Instant maintenant = Instant.now();
@@ -213,7 +681,7 @@ lessons:
                       .subject(u.getEmail())
                       .claim("role", u.getRole().name())
                       .issuedAt(Date.from(maintenant))
-                      .expiration(Date.from(maintenant.plusSeconds(3600)))
+                      .expiration(Date.from(maintenant.plus(1, ChronoUnit.HOURS)))
                       .signWith(cle)
                       .compact();
           }
@@ -235,36 +703,63 @@ lessons:
             - pattern: '\.(?:issuedAt|setIssuedAt)\s*\('
               message: "Indique la date d'émission avec `.issuedAt(…)`."
             - pattern: '\.(?:expiration|setExpiration)\s*\([^;]*(?:plusSeconds\s*\(\s*3600\s*\)|plus\s*\(\s*1\s*,\s*ChronoUnit\.HOURS\s*\)|plus\s*\(\s*Duration\.ofHours\s*\(\s*1\s*\)\s*\)|3600000|3_600_000)'
-              message: "L'expiration doit être dans une heure."
+              message: "L'expiration doit être dans une heure : `maintenant.plus(1, ChronoUnit.HOURS)`."
             - pattern: '\.signWith\s*\(\s*cle\s*\)'
               message: "Signe avec `.signWith(cle)`."
             - pattern: '\.compact\s*\(\s*\)'
               message: "Termine par `.compact()` pour obtenir le texte du jeton."
+      - slug: sec-ex-jjwt-bug
+        kind: CORRIGER_ERREUR
+        title: "Un jeton éternel"
+        difficulty: FACILE
+        skill: auth-jwt
+        statement: |
+          Ce jeton n'a pas d'expiration : volé, il servirait pour toujours. Ajoute
+          `.expiration(Date.from(maintenant.plus(1, ChronoUnit.HOURS)))` avant la signature.
+        criteria: "Une expiration à une heure avant signWith."
+        hints:
+          - "Il manque la date de fin."
+          - "Une heure suffit."
+          - "`.expiration(Date.from(maintenant.plus(1, ChronoUnit.HOURS)))`"
+        solution: |
+          return Jwts.builder()
+                  .subject(u.getEmail())
+                  .issuedAt(Date.from(maintenant))
+                  .expiration(Date.from(maintenant.plus(1, ChronoUnit.HOURS)))
+                  .signWith(cle)
+                  .compact();
+        explanation: "Un jeton volé ne doit servir que peu de temps."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            return Jwts.builder()
+                    .subject(u.getEmail())
+                    .issuedAt(Date.from(maintenant))
+                    .signWith(cle)
+                    .compact();
+          checks:
+            - pattern: '\.expiration\s*\(\s*Date\.from\s*\(\s*maintenant\.plus\s*\(\s*1\s*,\s*ChronoUnit\.HOURS\s*\)\s*\)\s*\)[\s\S]*\.signWith'
+              message: "Ajoute .expiration(Date.from(maintenant.plus(1, ChronoUnit.HOURS))) avant signWith."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 4
   - slug: sec-spring-security
-    title: "Spring Security : qui a le droit ?"
-    duration: 15
-    objective: "Configurer une SecurityFilterChain sans état, ouvrir les routes publiques, exiger des rôles et vérifier la propriété d'une ressource."
-    prerequisites: "Leçon « Le jeton JWT »."
+    title: "Spring Security : les règles d'accès"
+    duration: 12
+    objective: "Configurer une SecurityFilterChain sans état qui ouvre les routes publiques, exige des rôles et ferme tout le reste."
+    prerequisites: "Leçon « Fabriquer un jeton avec jjwt »."
     skills: [auth-jwt, securite-owasp]
-    xp: 30
+    xp: 15
     memo: |
       - `SecurityFilterChain` : la **liste des règles** appliquées à chaque requête.
       - `SessionCreationPolicy.STATELESS` : pas de session serveur, le JWT suffit.
-      - `requestMatchers("/api/auth/**").permitAll()` : routes publiques ; `.hasRole("ADMIN")` : réservées ; `.anyRequest().authenticated()` : tout le reste exige un jeton.
+      - `requestMatchers("/api/auth/**").permitAll()` : public ; `.hasRole("ADMIN")` : réservé ; `.anyRequest().authenticated()` : tout le reste exige un jeton.
       - Les règles sont lues **dans l'ordre** : de la plus précise à la plus générale.
-      - `@PreAuthorize("hasRole('ADMIN')")` sur une méthode : autorisation fine.
-      - **Propriété** : vérifier que la ressource appartient bien à l'utilisateur connecté (sinon 403 ou 404).
+      - `@PreAuthorize("hasRole('ADMIN')")` sur une méthode : règle plus fine.
     commonMistakes: |
       - Mettre `anyRequest().permitAll()` pour débloquer un problème.
       - Placer `anyRequest()` avant les règles précises.
-      - Vérifier le rôle mais oublier de vérifier **à qui** appartient la commande demandée.
     blocks:
-      - type: text
-        md: |
-          Le jeton dit **qui** fait la requête. Il reste à décider **ce qu'il a le droit de faire**. Spring
-          Security place une série de **contrôles** devant tous les contrôleurs.
       - type: definition
         id: def-filter-chain
         term: "Chaîne de filtres"
@@ -283,7 +778,7 @@ lessons:
                   .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                   .authorizeHttpRequests(auth -> auth
                       .requestMatchers("/api/auth/**").permitAll()
-                      .requestMatchers(HttpMethod.GET, "/api/produits/**").permitAll()
+                      .requestMatchers(HttpMethod.GET, "/api/livres/**").permitAll()
                       .requestMatchers("/api/admin/**").hasRole("ADMIN")
                       .anyRequest().authenticated())
                   .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
@@ -307,54 +802,33 @@ lessons:
       - type: question
         ref: sec-ss-q1
         review: code-security
-      - type: definition
-        id: def-idor
-        term: "Vérifier la propriété"
-        md: |
-          Avoir un badge d'hôtel valide ne donne pas accès à **toutes** les chambres, seulement à la **sienne**.
-          `GET /api/commandes/42` : l'utilisatrice est connectée, d'accord… mais la commande 42 est-elle à elle ?
-      - type: code
-        id: code-propriete
-        language: java
-        title: "Dans le service"
-        code: |
-          public CommandeDto lire(Long id, String emailConnecte) {
-              Commande c = commandes.findByIdAndClientEmail(id, emailConnecte)
-                      .orElseThrow(() -> new RessourceIntrouvableException("Commande " + id));
-              return CommandeDto.from(c);
-          }
-        lines:
-          - n: 1
-            note: "L'e-mail vient du jeton vérifié, jamais d'un paramètre envoyé par le client."
-          - n: 2
-            note: "On cherche la commande **et** son propriétaire en une seule requête."
-          - n: 3
-            note: "Une commande d'une autre personne est traitée comme introuvable (404) : on ne révèle même pas qu'elle existe."
       - type: question
-        ref: sec-ss-q2
-        review: def-idor
+        ref: sec-ss-q3
+        review: code-security
       - type: text
-        md: "Exercice guidé : complète la configuration."
+        md: "**Exercice 1 (guidé)** : complète la configuration."
       - type: exercise
         ref: sec-ex-security-guide
       - type: text
-        md: "En autonomie : corrige cette configuration dangereuse."
+        md: "**Exercice 2 (en autonomie)** : les règles d'une API de réservation."
+      - type: exercise
+        ref: sec-ex-security-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une porte grande ouverte."
       - type: exercise
         ref: sec-ex-security-corriger
       - type: jury
         items:
           - q: "Comment gérez-vous les rôles ?"
             a: "Le rôle est stocké en base et placé dans le JWT. Le filtre JWT crée l'Authentication avec l'autorité ROLE_ADMIN ou ROLE_USER. La SecurityFilterChain protège les routes par préfixe (hasRole), et @PreAuthorize permet des règles plus fines sur les méthodes."
-          - q: "Un utilisateur connecté peut-il lire la commande d'un autre ?"
-            a: "Non : le service récupère la commande avec l'identifiant ET l'e-mail extrait du jeton. Si elle ne lui appartient pas, il reçoit 404. C'est la protection contre la faille IDOR, en tête du Top 10 OWASP (contrôle d'accès défaillant)."
       - type: quiz
         items:
-          - ref: sec-ss-q3
-            review: code-security
-          - ref: sec-ss-q4
-            review: code-propriete
-          - ref: sec-ss-q5
+          - ref: sec-ss-q6
             review: def-filter-chain
+          - ref: sec-ss-q7
+            review: code-security
+          - ref: sec-ss-q8
+            review: code-security
     questions:
       - code: sec-ss-q1
         kind: CHOIX_UNIQUE
@@ -372,22 +846,6 @@ lessons:
             correct: false
             why: "Spring lève même une erreur si des règles suivent anyRequest."
         explanation: "Du plus précis au plus général."
-      - code: sec-ss-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: securite-owasp
-        prompt: "Awa, connectée, change l'URL `/api/commandes/12` en `/api/commandes/13` et voit la commande de Karim. Quelle faille ?"
-        choices:
-          - label: "Un contrôle d'accès défaillant (IDOR)"
-            correct: true
-            why: "On ne vérifie pas à qui appartient la ressource."
-          - label: "Une injection SQL"
-            correct: false
-            why: "Aucune requête n'est détournée."
-          - label: "Une faille XSS"
-            correct: false
-            why: "Aucun script n'est injecté."
-        explanation: "C'est le risque n° 1 du Top 10 OWASP 2021."
       - code: sec-ss-q3
         kind: VRAI_FAUX
         difficulty: 2
@@ -401,38 +859,51 @@ lessons:
             correct: false
             why: "CSRF exploite les cookies envoyés automatiquement ; ici il n'y en a pas."
         explanation: "Si le jeton était dans un cookie, il faudrait garder CSRF."
-      - code: sec-ss-q4
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: securite-owasp
-        prompt: "D'où doit venir l'e-mail de l'utilisateur utilisé pour filtrer ses commandes ?"
-        choices:
-          - label: "Du jeton vérifié (le SecurityContext)"
-            correct: true
-            why: "Le client ne peut pas le falsifier."
-          - label: "D'un paramètre `?email=` envoyé par Angular"
-            correct: false
-            why: "N'importe qui pourrait mettre l'e-mail d'un autre."
-          - label: "Du localStorage"
-            correct: false
-            why: "Il est contrôlé par le client."
-        explanation: "L'identité vient toujours d'une source vérifiée par le serveur."
-      - code: sec-ss-q5
+      - code: sec-ss-q6
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: auth-jwt
-        prompt: "Une requête sans jeton arrive sur une route qui exige `authenticated()`. Quel statut ?"
+        prompt: "Que fait `.requestMatchers(\"/api/auth/**\").permitAll()` ?"
         choices:
-          - label: "401"
+          - label: "Il ouvre la connexion et l'inscription à tous"
             correct: true
-            why: "Identité inconnue."
-          - label: "403"
+            why: "Il faut bien pouvoir se connecter sans jeton."
+          - label: "Il ferme ces routes"
             correct: false
-            why: "403 = identité connue mais droit refusé."
-          - label: "200"
+            why: "permitAll ouvre."
+          - label: "Il exige le rôle ADMIN"
             correct: false
-            why: "La requête est refusée."
-        explanation: "Pas de badge : 401. Mauvais badge : 403."
+            why: "C'est hasRole."
+        explanation: "Public = permitAll."
+      - code: sec-ss-q7
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: auth-jwt
+        prompt: "Que signifie `SessionCreationPolicy.STATELESS` ?"
+        choices:
+          - label: "Le serveur ne garde aucune session : le jeton est vérifié à chaque requête"
+            correct: true
+            why: "Sans état."
+          - label: "Le serveur garde une session par utilisatrice"
+            correct: false
+            why: "C'est l'inverse."
+          - label: "Les requêtes sont interdites"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "API sans état + JWT."
+      - code: sec-ss-q8
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: auth-jwt
+        prompt: "`anyRequest().permitAll()` est acceptable pour débloquer rapidement un problème en production."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Toute l'API serait ouverte."
+          - label: "Faux"
+            correct: true
+            why: "On n'ouvre que le strict nécessaire."
+        explanation: "Fermé par défaut."
     exercises:
       - slug: sec-ex-security-guide
         kind: COMPLETER
@@ -461,6 +932,44 @@ lessons:
             - ["permitAll"]
             - ["hasRole"]
             - ["authenticated"]
+      - slug: sec-ex-security-libre
+        kind: CODE_LIBRE
+        title: "Les règles d'une API de réservation"
+        difficulty: INTERMEDIAIRE
+        skill: auth-jwt
+        statement: |
+          Écris le bloc `authorizeHttpRequests` :
+          - `/api/auth/**` ouvert à tous ;
+          - `GET /api/salles/**` ouvert à tous ;
+          - `/api/admin/**` réservé au rôle `ADMIN` ;
+          - tout le reste exige d'être authentifié.
+        criteria: "Quatre règles dans le bon ordre."
+        hints:
+          - "`.requestMatchers(HttpMethod.GET, \"/api/salles/**\").permitAll()`"
+          - "`.requestMatchers(\"/api/admin/**\").hasRole(\"ADMIN\")`"
+          - "Termine par `.anyRequest().authenticated()`."
+        solution: |
+          .authorizeHttpRequests(auth -> auth
+              .requestMatchers("/api/auth/**").permitAll()
+              .requestMatchers(HttpMethod.GET, "/api/salles/**").permitAll()
+              .requestMatchers("/api/admin/**").hasRole("ADMIN")
+              .anyRequest().authenticated())
+        explanation: "Du plus précis au plus général."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            .authorizeHttpRequests(auth -> auth
+            )
+          checks:
+            - pattern: 'requestMatchers\s*\(\s*"/api/auth/\*\*"\s*\)\s*\.\s*permitAll\s*\(\s*\)'
+              message: "Ouvre /api/auth/** avec permitAll()."
+            - pattern: 'requestMatchers\s*\(\s*HttpMethod\.GET\s*,\s*"/api/salles/\*\*"\s*\)\s*\.\s*permitAll\s*\(\s*\)'
+              message: "Ouvre GET /api/salles/** avec permitAll()."
+            - pattern: 'requestMatchers\s*\(\s*"/api/admin/\*\*"\s*\)\s*\.\s*hasRole\s*\(\s*"ADMIN"\s*\)'
+              message: "Réserve /api/admin/** au rôle ADMIN."
+            - pattern: 'hasRole\s*\(\s*"ADMIN"\s*\)[\s\S]*anyRequest\s*\(\s*\)\s*\.\s*authenticated\s*\(\s*\)'
+              message: "Termine par .anyRequest().authenticated()."
       - slug: sec-ex-security-corriger
         kind: CORRIGER_ERREUR
         title: "Une porte grande ouverte"
@@ -500,36 +1009,278 @@ lessons:
             - pattern: 'hasRole\s*\(\s*"ADMIN"\s*\)[\s\S]*anyRequest\s*\(\s*\)\s*\.\s*authenticated\s*\(\s*\)'
               message: "Termine par `.anyRequest().authenticated()`, après la règle administrateur."
 
+  # ===================================================================== LEÇON 5
+  - slug: sec-propriete
+    title: "Vérifier à qui appartient la ressource"
+    duration: 10
+    objective: "Empêcher une utilisatrice connectée de lire la ressource d'une autre (faille IDOR)."
+    prerequisites: "Leçon « Spring Security : les règles d'accès »."
+    skills: [securite-owasp]
+    xp: 15
+    memo: |
+      - Être connectée ne donne pas accès à **toutes** les ressources : seulement aux **siennes**.
+      - On cherche la ressource **et** son propriétaire : `findByIdAndAdherentEmail(id, emailConnecte)`.
+      - L'e-mail vient du **jeton vérifié**, jamais d'un paramètre envoyé par le client.
+      - Une ressource d'une autre personne est traitée comme **introuvable** (404).
+    commonMistakes: |
+      - Vérifier le rôle mais oublier de vérifier **à qui** appartient l'emprunt demandé.
+      - Lire l'e-mail dans un paramètre `?email=`.
+    blocks:
+      - type: definition
+        id: def-idor
+        term: "Vérifier la propriété"
+        md: |
+          Avoir un badge d'hôtel valide ne donne pas accès à **toutes** les chambres, seulement à la **sienne**.
+          `GET /api/emprunts/42` : l'adhérente est connectée, d'accord… mais l'emprunt 42 est-il à elle ?
+      - type: code
+        id: code-propriete
+        language: java
+        title: "Dans le service"
+        code: |
+          public EmpruntDto lire(Long id, String emailConnecte) {
+              Emprunt e = emprunts.findByIdAndAdherentEmail(id, emailConnecte)
+                      .orElseThrow(() -> new RessourceIntrouvableException("Emprunt " + id));
+              return EmpruntDto.from(e);
+          }
+        lines:
+          - n: 1
+            note: "L'e-mail vient du jeton vérifié, jamais d'un paramètre envoyé par le client."
+          - n: 2
+            note: "On cherche l'emprunt **et** son propriétaire en une seule requête."
+          - n: 3
+            note: "Un emprunt d'une autre personne est traité comme introuvable (404) : on ne révèle même pas qu'il existe."
+      - type: question
+        ref: sec-ss-q2
+        review: def-idor
+      - type: question
+        ref: sec-ss-q4
+        review: code-propriete
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la recherche."
+      - type: exercise
+        ref: sec-ex-propriete-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : ses propres réservations."
+      - type: exercise
+        ref: sec-ex-propriete-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : n'importe quel emprunt."
+      - type: exercise
+        ref: sec-ex-propriete-bug
+      - type: jury
+        items:
+          - q: "Un utilisateur connecté peut-il lire l'emprunt d'un autre ?"
+            a: "Non : le service récupère l'emprunt avec l'identifiant ET l'e-mail extrait du jeton. S'il ne lui appartient pas, il reçoit 404. C'est la protection contre la faille IDOR, en tête du Top 10 OWASP (contrôle d'accès défaillant)."
+      - type: quiz
+        items:
+          - ref: sec-po-q3
+            review: code-propriete
+          - ref: sec-po-q4
+            review: def-idor
+          - ref: sec-po-q5
+            review: code-propriete
+    questions:
+      - code: sec-ss-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Awa, connectée, change l'URL `/api/emprunts/12` en `/api/emprunts/13` et voit l'emprunt de Karim. Quelle faille ?"
+        choices:
+          - label: "Un contrôle d'accès défaillant (IDOR)"
+            correct: true
+            why: "On ne vérifie pas à qui appartient la ressource."
+          - label: "Une injection SQL"
+            correct: false
+            why: "Aucune requête n'est détournée."
+          - label: "Une faille XSS"
+            correct: false
+            why: "Aucun script n'est injecté."
+        explanation: "C'est le risque n° 1 du Top 10 OWASP 2021."
+      - code: sec-ss-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "D'où doit venir l'e-mail de l'utilisatrice utilisé pour filtrer ses emprunts ?"
+        choices:
+          - label: "Du jeton vérifié (le SecurityContext)"
+            correct: true
+            why: "Le client ne peut pas le falsifier."
+          - label: "D'un paramètre `?email=` envoyé par Angular"
+            correct: false
+            why: "N'importe qui pourrait mettre l'e-mail d'un autre."
+          - label: "Du localStorage"
+            correct: false
+            why: "Il est contrôlé par le client."
+        explanation: "L'identité vient toujours d'une source vérifiée par le serveur."
+      - code: sec-po-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: securite-owasp
+        prompt: "Que renvoyer si l'emprunt demandé appartient à quelqu'un d'autre ?"
+        choices:
+          - label: "404, comme s'il n'existait pas"
+            correct: true
+            why: "On ne révèle même pas son existence."
+          - label: "200 avec l'emprunt"
+            correct: false
+            why: "C'est la faille."
+          - label: "500"
+            correct: false
+            why: "Ce n'est pas une panne."
+        explanation: "403 est aussi possible, mais 404 révèle moins."
+      - code: sec-po-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: securite-owasp
+        prompt: "Vérifier le rôle USER suffit pour protéger les emprunts de chaque adhérente."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Toutes les adhérentes ont le rôle USER."
+          - label: "Faux"
+            correct: true
+            why: "Il faut aussi vérifier le propriétaire."
+        explanation: "Rôle + propriété."
+      - code: sec-po-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-jpa
+        prompt: "Quelle méthode de repository cherche un emprunt par son id ET son propriétaire ?"
+        choices:
+          - label: "`findByIdAndAdherentEmail(id, email)`"
+            correct: true
+            why: "Deux conditions dans le nom."
+          - label: "`findById(id)`"
+            correct: false
+            why: "Il ne vérifie pas le propriétaire."
+          - label: "`findAll()`"
+            correct: false
+            why: "Il renvoie tout."
+        explanation: "La méthode dérivée combine les deux critères."
+    exercises:
+      - slug: sec-ex-propriete-guide
+        kind: COMPLETER
+        title: "Compléter la recherche"
+        difficulty: FACILE
+        skill: securite-owasp
+        statement: "Complète la recherche qui vérifie le propriétaire."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "La méthode combine l'id et l'e-mail de l'adhérent."
+          - "L'e-mail vient du jeton : emailConnecte."
+          - "findByIdAndAdherentEmail, emailConnecte."
+        solution: '["findByIdAndAdherentEmail", "emailConnecte"]'
+        explanation: "L'id et le propriétaire."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            Emprunt e = emprunts.[[1]](id, [[2]])
+                    .orElseThrow(() -> new RessourceIntrouvableException("Emprunt " + id));
+          blanks:
+            - ["findByIdAndAdherentEmail"]
+            - ["emailConnecte"]
+      - slug: sec-ex-propriete-libre
+        kind: CODE_LIBRE
+        title: "Ses propres réservations"
+        difficulty: INTERMEDIAIRE
+        skill: securite-owasp
+        statement: |
+          Écris `lire(Long id, String emailConnecte)` dans `ReservationService` : cherche avec
+          `reservations.findByIdAndMembreEmail(id, emailConnecte)`, lance `RessourceIntrouvableException` si
+          rien n'est trouvé, et renvoie `ReservationDto.from(r)`.
+        criteria: "findByIdAndMembreEmail avec l'e-mail connecté, orElseThrow, DTO."
+        hints:
+          - "`reservations.findByIdAndMembreEmail(id, emailConnecte)`"
+          - "`.orElseThrow(() -> new RessourceIntrouvableException(\"Réservation \" + id))`"
+          - "`return ReservationDto.from(r);`"
+        solution: |
+          public ReservationDto lire(Long id, String emailConnecte) {
+              Reservation r = reservations.findByIdAndMembreEmail(id, emailConnecte)
+                      .orElseThrow(() -> new RessourceIntrouvableException("Réservation " + id));
+              return ReservationDto.from(r);
+          }
+        explanation: "Chacune ne voit que ses réservations."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            public ReservationDto lire(Long id, String emailConnecte) {
+
+            }
+          checks:
+            - pattern: 'reservations\.findByIdAndMembreEmail\s*\(\s*id\s*,\s*emailConnecte\s*\)'
+              message: "Cherche avec findByIdAndMembreEmail(id, emailConnecte)."
+            - pattern: '\.orElseThrow\s*\(\s*\(\s*\)\s*->\s*new\s+RessourceIntrouvableException'
+              message: "Lance RessourceIntrouvableException si rien n'est trouvé."
+            - pattern: 'return\s+ReservationDto\.from\s*\(\s*\w+\s*\)'
+              message: "Renvoie ReservationDto.from(r)."
+      - slug: sec-ex-propriete-bug
+        kind: CORRIGER_ERREUR
+        title: "N'importe quel emprunt"
+        difficulty: FACILE
+        skill: securite-owasp
+        statement: |
+          Ce service renvoie n'importe quel emprunt à n'importe quelle adhérente connectée. Remplace
+          `findById(id)` par `findByIdAndAdherentEmail(id, emailConnecte)`.
+        criteria: "findByIdAndAdherentEmail, plus de findById seul."
+        hints:
+          - "Il manque la vérification du propriétaire."
+          - "La méthode combine l'id et l'e-mail."
+          - "`emprunts.findByIdAndAdherentEmail(id, emailConnecte)`"
+        solution: |
+          public EmpruntDto lire(Long id, String emailConnecte) {
+              Emprunt e = emprunts.findByIdAndAdherentEmail(id, emailConnecte)
+                      .orElseThrow(() -> new RessourceIntrouvableException("Emprunt " + id));
+              return EmpruntDto.from(e);
+          }
+        explanation: "Vérifier à qui appartient la ressource."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public EmpruntDto lire(Long id, String emailConnecte) {
+                Emprunt e = emprunts.findById(id)
+                        .orElseThrow(() -> new RessourceIntrouvableException("Emprunt " + id));
+                return EmpruntDto.from(e);
+            }
+          checks:
+            - pattern: '\.findById\s*\(\s*id\s*\)'
+              absent: true
+              message: "findById seul ne vérifie pas le propriétaire."
+            - pattern: 'emprunts\.findByIdAndAdherentEmail\s*\(\s*id\s*,\s*emailConnecte\s*\)'
+              message: "Écris emprunts.findByIdAndAdherentEmail(id, emailConnecte)."
+
 bank:
-  - code: sec-c2-b1
+  - code: sec-c2-b3
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: auth-jwt
+    prompt: "Combien de parties compte un JWT ?"
+    choices:
+      - label: "Trois : en-tête, contenu, signature"
+        correct: true
+        why: "Séparées par des points."
+      - label: "Une seule"
+        correct: false
+        why: "Il y a trois morceaux."
+      - label: "Deux : identifiant et mot de passe"
+        correct: false
+        why: "Le mot de passe n'y figure jamais."
+    explanation: "en-tête.contenu.signature"
+  - code: sec-c2-b4
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: auth-jwt
-    prompt: "Où garder le JWT côté Angular pour limiter le risque en cas de faille XSS ?"
+    prompt: "Quelle annotation permet une règle d'accès sur une méthode précise ?"
     choices:
-      - label: "En mémoire (un signal d'un service), avec une expiration courte"
+      - label: "@PreAuthorize(\"hasRole('ADMIN')\")"
         correct: true
-        why: "Un script injecté aura plus de mal à le récupérer durablement."
-      - label: "Dans le code source d'Angular"
+        why: "Vérifiée avant l'exécution de la méthode."
+      - label: "@Transactional"
         correct: false
-        why: "Le jeton change à chaque connexion."
-      - label: "Dans l'URL de chaque page"
+        why: "Elle gère les transactions."
+      - label: "@Valid"
         correct: false
-        why: "Il apparaîtrait dans l'historique et les logs."
-    explanation: "Le localStorage est pratique mais lisible par tout script de la page : c'est un compromis à justifier."
-  - code: sec-c2-b2
-    kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: auth-jwt
-    prompt: "Quelle longueur minimale pour le secret HS256 ?"
-    choices:
-      - label: "256 bits (32 octets) générés aléatoirement"
-        correct: true
-        why: "La bibliothèque jjwt refuse une clé plus courte."
-      - label: "8 caractères"
-        correct: false
-        why: "Beaucoup trop court : on pourrait le deviner."
-      - label: "Peu importe"
-        correct: false
-        why: "Un secret faible permet de fabriquer de faux jetons."
-    explanation: "Exemple : `openssl rand -base64 48`, stocké dans une variable d'environnement."
+        why: "Elle déclenche la validation."
+    explanation: "Règles globales dans la SecurityFilterChain, règles fines avec @PreAuthorize."
