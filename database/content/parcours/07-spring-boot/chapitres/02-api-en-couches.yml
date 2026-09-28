@@ -2,124 +2,78 @@ slug: sb-api-en-couches
 position: 2
 level: INTERMEDIAIRE
 title: "Construire une API en couches"
-summary: "Recevoir des paramètres et un corps JSON, répondre avec le bon statut, échanger des DTO, et placer les règles dans un service."
-quizQuestionCount: 10
+summary: "Lire l'adresse, lire un filtre, recevoir un corps JSON, choisir le statut, échanger des DTO, placer les règles dans un service et protéger les écritures avec une transaction. Une seule notion par leçon."
+quizQuestionCount: 16
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: sb-controleur-dto
-    title: "Paramètres, corps JSON et DTO"
-    duration: 15
-    objective: "Lire un identifiant dans l'adresse, recevoir un objet JSON, répondre avec ResponseEntity et utiliser des records comme DTO."
+    title: "Lire l'identifiant dans l'adresse : @PathVariable"
+    duration: 9
+    objective: "Lire une partie variable de l'adresse avec @PathVariable."
     prerequisites: "Chapitre « Découvrir Spring Boot et REST »."
-    skills: [spring-rest, api-rest]
-    xp: 25
+    skills: [spring-rest]
+    xp: 15
     memo: |
-      - `@PathVariable Long id` : lit `{id}` dans l'adresse (`/api/produits/12`).
-      - `@RequestParam String q` : lit un paramètre après `?` (`/api/produits?q=café`).
-      - `@RequestBody ProduitRequest req` : transforme le JSON reçu en objet Java.
-      - `ResponseEntity.status(201).body(dto)` ou `ResponseEntity.created(uri).body(dto)` : choisir le statut.
-      - **DTO** (objet de transfert) : un `record` qui contient **seulement** ce qui entre ou sort de l'API.
+      - `@GetMapping("/{id}")` : `{id}` est une partie **variable** de l'adresse.
+      - `@PathVariable Long id` : copie cette partie dans le paramètre `id`.
+      - `GET /api/livres/12` → `id` vaut 12.
     commonMistakes: |
-      - Renvoyer directement l'entité JPA : on expose des champs internes (mot de passe haché, relations).
-      - Oublier `@RequestBody` : l'objet reçu reste vide.
-      - Toujours répondre 200, même après une création ou une suppression.
+      - Oublier `{id}` dans l'adresse de `@GetMapping`.
+      - Donner au paramètre un autre nom que `{id}` sans le préciser.
     blocks:
-      - type: text
+      - type: definition
+        id: def-pathvariable
+        term: "@PathVariable"
         md: |
-          Un contrôleur doit souvent **recevoir** des informations : quel produit ? quelle recherche ? quelles
-          données créer ? Spring les lit pour toi grâce à trois annotations.
+          Le **numéro de chambre** écrit sur la clé : l'adresse `/api/livres/12` désigne le livre 12, et
+          `@PathVariable` lit ce numéro pour toi.
       - type: code
         id: code-parametres
         language: java
-        title: "Lire l'adresse et le corps"
+        title: "Lire un livre par son identifiant"
         code: |
           @GetMapping("/{id}")
-          public ProduitDto lire(@PathVariable Long id) {
+          public LivreDto lire(@PathVariable Long id) {
               return service.lire(id);
-          }
-
-          @GetMapping(params = "q")
-          public List<ProduitDto> chercher(@RequestParam String q) {
-              return service.chercher(q);
-          }
-
-          @PostMapping
-          public ResponseEntity<ProduitDto> creer(@RequestBody ProduitRequest req) {
-              ProduitDto cree = service.creer(req);
-              return ResponseEntity.created(URI.create("/api/produits/" + cree.id())).body(cree);
           }
         lines:
           - n: 1
-            note: "`{id}` est une partie variable de l'adresse."
+            note: "`{id}` est une partie variable de l'adresse : `/api/livres/12`."
           - n: 2
             note: "`@PathVariable` copie cette partie dans le paramètre `id`."
-          - n: 7
-            note: "`@RequestParam` lit `?q=…` : `/api/produits?q=café`."
-          - n: 12
-            note: "`@RequestBody` : le JSON reçu devient un objet `ProduitRequest`."
-          - n: 14
-            note: "Statut **201** + en-tête `Location` vers la nouvelle ressource."
       - type: question
         ref: sb-dto-q1
         review: code-parametres
-      - type: definition
-        id: def-dto
-        term: "DTO (objet de transfert de données)"
-        md: |
-          Le **bon de livraison** de l'API : il liste seulement ce qui voyage, pas tout le contenu de
-          l'entrepôt. L'entité (la table) peut contenir un mot de passe haché ou des dates internes : le DTO,
-          lui, ne montre que ce que le frontend doit voir.
-      - type: code
-        id: code-dto
-        language: java
-        title: "Deux records : l'entrée et la sortie"
-        code: |
-          public record ProduitRequest(String nom, BigDecimal prix, Long categorieId) {}
-
-          public record ProduitDto(Long id, String nom, BigDecimal prix, String categorie) {
-              public static ProduitDto from(Produit p) {
-                  return new ProduitDto(p.getId(), p.getNom(), p.getPrix(), p.getCategorie().getNom());
-              }
-          }
-        lines:
-          - n: 1
-            note: "Ce que le frontend **envoie** : pas d'`id`, c'est la base qui le donne."
-          - n: 3
-            note: "Ce que l'API **renvoie** : le nom de la catégorie plutôt que l'objet entier."
-          - n: 4
-            note: "Une méthode pratique pour transformer l'entité en DTO."
       - type: question
-        ref: sb-dto-q2
-        review: def-dto
+        ref: sb-pv-q2
+        review: def-pathvariable
       - type: text
-        md: "Exercice guidé : complète le contrôleur."
+        md: "**Exercice 1 (guidé)** : complète la méthode."
       - type: exercise
-        ref: sb-ex-dto-guide
+        ref: sb-ex-pathvariable-guide
       - type: text
-        md: "En autonomie : écris la création et la suppression."
+        md: "**Exercice 2 (en autonomie)** : lire une salle."
       - type: exercise
-        ref: sb-ex-creer-supprimer
-      - type: jury
-        items:
-          - q: "Pourquoi utiliser des DTO plutôt que renvoyer les entités ?"
-            a: "Pour contrôler exactement ce qui entre et sort de l'API : on n'expose pas le mot de passe haché ni les champs internes, on évite les boucles de sérialisation des relations JPA, et on peut faire évoluer la base sans casser le contrat de l'API. J'utilise des records Java, immuables et concis."
-          - q: "Quelle différence entre @PathVariable et @RequestParam ?"
-            a: "@PathVariable lit une partie de l'adresse qui identifie la ressource (/produits/12). @RequestParam lit un paramètre après le point d'interrogation, souvent pour filtrer, trier ou paginer (/produits?page=2)."
+        ref: sb-ex-pathvariable-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une adresse sans partie variable."
+      - type: exercise
+        ref: sb-ex-pathvariable-bug
       - type: quiz
         items:
-          - ref: sb-dto-q3
+          - ref: sb-pv-q3
             review: code-parametres
-          - ref: sb-dto-q4
-            review: code-dto
-          - ref: sb-dto-q5
+          - ref: sb-pv-q4
+            review: def-pathvariable
+          - ref: sb-pv-q5
             review: code-parametres
     questions:
       - code: sb-dto-q1
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: spring-rest
-        prompt: "Quelle annotation lit `12` dans `GET /api/produits/12` ?"
+        prompt: "Quelle annotation lit `12` dans `GET /api/livres/12` ?"
         choices:
           - label: "@PathVariable"
             correct: true
@@ -131,27 +85,469 @@ lessons:
             correct: false
             why: "Il lit ce qui suit `?`."
         explanation: "Chemin → @PathVariable."
-      - code: sb-dto-q2
+      - code: sb-pv-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Dans `@GetMapping(\"/{id}\")`, que représente `{id}` ?"
+        choices:
+          - label: "Une partie variable de l'adresse"
+            correct: true
+            why: "12, 40, 7… selon la requête."
+          - label: "Le texte exact « {id} »"
+            correct: false
+            why: "Les accolades la rendent variable."
+          - label: "Un paramètre après le ?"
+            correct: false
+            why: "C'est le rôle de @RequestParam."
+        explanation: "{nom} = partie variable."
+      - code: sb-pv-q3
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Avec la requête `GET /api/livres/40`, que vaut `id` ?"
+        snippet: |
+          @GetMapping("/{id}")
+          public LivreDto lire(@PathVariable Long id) { … }
+        language: java
+        choices:
+          - label: "40"
+            correct: true
+            why: "La partie variable de l'adresse."
+          - label: "livres"
+            correct: false
+            why: "C'est la partie fixe."
+          - label: "null"
+            correct: false
+            why: "@PathVariable l'a rempli."
+        explanation: "L'adresse est découpée par Spring."
+      - code: sb-pv-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: spring-rest
+        prompt: "@PathVariable sert à identifier une ressource précise (le livre 12)."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "C'est son usage principal."
+          - label: "Faux"
+            correct: false
+            why: "L'identifiant est dans le chemin."
+        explanation: "/ressources/{id} → @PathVariable."
+      - code: sb-pv-q5
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: spring-rest
-        prompt: "Quel est le principal danger de renvoyer l'entité `Utilisateur` directement ?"
+        prompt: "Quelle méthode répond à `DELETE /api/livres/12` ?"
         choices:
-          - label: "Exposer des champs sensibles comme le mot de passe haché"
+          - label: "`@DeleteMapping(\"/{id}\") supprimer(@PathVariable Long id)`"
             correct: true
-            why: "Tout ce qui est dans l'entité part dans le JSON."
-          - label: "La réponse est plus lente"
+            why: "Bon verbe, bonne partie variable."
+          - label: "`@DeleteMapping supprimer(@PathVariable Long id)`"
             correct: false
-            why: "Le problème est la sécurité et le couplage."
-          - label: "Spring refuse de compiler"
+            why: "Il manque {id} dans l'adresse."
+          - label: "`@GetMapping(\"/{id}\") supprimer(@PathVariable Long id)`"
             correct: false
-            why: "Il compile, c'est justement le piège."
-        explanation: "Le DTO choisit ce qui sort."
+            why: "GET ne supprime pas."
+        explanation: "Verbe + {id} + @PathVariable."
+    exercises:
+      - slug: sb-ex-pathvariable-guide
+        kind: COMPLETER
+        title: "Compléter la méthode"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: "Complète la méthode qui lit un client par son identifiant."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Une lecture : GetMapping."
+          - "La partie variable s'écrit {id} ; on la lit avec PathVariable."
+          - "GetMapping, {id}, PathVariable."
+        solution: '["GetMapping", "{id}", "PathVariable"]'
+        explanation: "Verbe, partie variable, lecture."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @[[1]]("/[[2]]")
+            public ClientDto lire(@[[3]] Long id) {
+                return service.lire(id);
+            }
+          blanks:
+            - ["GetMapping"]
+            - ["{id}"]
+            - ["PathVariable"]
+      - slug: sb-ex-pathvariable-libre
+        kind: CODE_LIBRE
+        title: "Lire une salle"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          Écris la méthode `lire` qui répond à `GET /api/salles/{id}` (le `@RequestMapping("/api/salles")` est
+          déjà sur la classe) et renvoie `service.lire(id)` sous forme de `SalleDto`.
+        criteria: "@GetMapping(\"/{id}\") et @PathVariable Long id."
+        hints:
+          - "`@GetMapping(\"/{id}\")`"
+          - "`public SalleDto lire(@PathVariable Long id)`"
+          - "`return service.lire(id);`"
+        solution: |
+          @GetMapping("/{id}")
+          public SalleDto lire(@PathVariable Long id) {
+              return service.lire(id);
+          }
+        explanation: "L'adresse identifie la salle."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public SalleDto lire() {
+
+            }
+          checks:
+            - pattern: '@GetMapping\s*\(\s*"/\{id\}"\s*\)'
+              message: "Ajoute @GetMapping(\"/{id}\")."
+            - pattern: 'lire\s*\(\s*@PathVariable\s+(?:Long|long)\s+id\s*\)'
+              message: "Le paramètre : @PathVariable Long id."
+            - pattern: 'return\s+service\.lire\s*\(\s*id\s*\)'
+              message: "Renvoie service.lire(id)."
+      - slug: sb-ex-pathvariable-bug
+        kind: CORRIGER_ERREUR
+        title: "Une adresse sans partie variable"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          `id` ne peut pas être lu : l'adresse de `@GetMapping` n'a pas de partie variable. Corrige-la.
+        criteria: "@GetMapping(\"/{id}\")."
+        hints:
+          - "Où Spring lit-il la valeur de id ?"
+          - "Dans une partie variable de l'adresse."
+          - "`@GetMapping(\"/{id}\")`"
+        solution: |
+          @GetMapping("/{id}")
+          public LivreDto lire(@PathVariable Long id) {
+              return service.lire(id);
+          }
+        explanation: "Pas de {id}, pas de valeur à lire."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @GetMapping
+            public LivreDto lire(@PathVariable Long id) {
+                return service.lire(id);
+            }
+          checks:
+            - pattern: '@GetMapping\s*\(\s*"/\{id\}"\s*\)'
+              message: "Écris @GetMapping(\"/{id}\")."
+
+  # ===================================================================== LEÇON 2
+  - slug: sb-requestparam
+    title: "Lire un filtre : @RequestParam"
+    duration: 9
+    objective: "Lire un paramètre après le point d'interrogation avec @RequestParam, pour filtrer ou chercher."
+    prerequisites: "Leçon « Lire l'identifiant dans l'adresse : @PathVariable »."
+    skills: [spring-rest]
+    xp: 15
+    memo: |
+      - `/api/livres?auteur=Hugo` : `auteur=Hugo` est un **paramètre de requête**.
+      - `@RequestParam String auteur` : lit sa valeur.
+      - `@RequestParam(required = false)` : le paramètre est facultatif.
+      - `@PathVariable` **identifie** une ressource ; `@RequestParam` **filtre** ou **cherche**.
+    commonMistakes: |
+      - Mettre un filtre dans le chemin (`/api/livres/auteur/Hugo`).
+      - Oublier `required = false` pour un filtre facultatif : sans lui, Spring répond 400.
+    blocks:
+      - type: definition
+        id: def-requestparam
+        term: "@RequestParam"
+        md: |
+          Une **option cochée** sur un formulaire de recherche : « livres, **auteur = Hugo** ». Ce qui suit le
+          `?` précise la demande, sans désigner une ressource unique.
+      - type: code
+        id: code-requestparam
+        language: java
+        title: "Chercher par auteur"
+        code: |
+          @GetMapping(params = "auteur")
+          public List<LivreDto> parAuteur(@RequestParam String auteur) {
+              return service.parAuteur(auteur);
+          }
+        lines:
+          - n: 1
+            note: "Cette méthode répond quand l'adresse contient `?auteur=…`."
+          - n: 2
+            note: "`@RequestParam` lit la valeur : `Hugo` pour `/api/livres?auteur=Hugo`."
+      - type: question
+        ref: sb-rp-q1
+        review: code-requestparam
+      - type: question
+        ref: sb-rp-q2
+        review: def-requestparam
+      - type: text
+        md: "**Exercice 1 (guidé)** : chemin ou filtre ?"
+      - type: exercise
+        ref: sb-ex-requestparam-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : chercher des salles par ville."
+      - type: exercise
+        ref: sb-ex-requestparam-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un filtre obligatoire."
+      - type: exercise
+        ref: sb-ex-requestparam-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre @PathVariable et @RequestParam ?"
+            a: "@PathVariable lit une partie de l'adresse qui identifie la ressource (/livres/12). @RequestParam lit un paramètre après le point d'interrogation, souvent pour filtrer, trier ou paginer (/livres?page=2)."
+      - type: quiz
+        items:
+          - ref: sb-rp-q3
+            review: def-requestparam
+          - ref: sb-rp-q4
+            review: code-requestparam
+          - ref: sb-rp-q5
+            review: def-requestparam
+    questions:
+      - code: sb-rp-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Quelle annotation lit `Hugo` dans `/api/livres?auteur=Hugo` ?"
+        choices:
+          - label: "@RequestParam"
+            correct: true
+            why: "La valeur suit le ?."
+          - label: "@PathVariable"
+            correct: false
+            why: "Elle lit le chemin."
+          - label: "@RequestBody"
+            correct: false
+            why: "Il lit le corps JSON."
+        explanation: "Après le ? → @RequestParam."
+      - code: sb-rp-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "À quoi sert surtout un paramètre après le `?` ?"
+        choices:
+          - label: "À filtrer, chercher ou paginer"
+            correct: true
+            why: "Il précise la demande."
+          - label: "À identifier une ressource unique"
+            correct: false
+            why: "C'est le rôle du chemin."
+          - label: "À envoyer le mot de passe"
+            correct: false
+            why: "Jamais dans l'adresse."
+        explanation: "Chemin = qui ; paramètre = quelles options."
+      - code: sb-rp-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Sans `required = false`, un @RequestParam absent provoque une erreur 400."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Il est obligatoire par défaut."
+          - label: "Faux"
+            correct: false
+            why: "Spring exige le paramètre par défaut."
+        explanation: "required = false pour un filtre facultatif."
+      - code: sb-rp-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Quelle adresse appelle `parAuteur` de l'exemple ?"
+        choices:
+          - label: "GET /api/livres?auteur=Hugo"
+            correct: true
+            why: "Paramètre auteur après le ?."
+          - label: "GET /api/livres/Hugo"
+            correct: false
+            why: "Ce serait une partie du chemin."
+          - label: "POST /api/livres"
+            correct: false
+            why: "C'est une création."
+        explanation: "params = \"auteur\" : il faut ?auteur=…"
+      - code: sb-rp-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Où ne faut-il jamais placer un mot de passe ?"
+        choices:
+          - label: "Dans un paramètre d'adresse (?motDePasse=…)"
+            correct: true
+            why: "Les adresses sont enregistrées dans les journaux et l'historique."
+          - label: "Dans le corps d'un POST en HTTPS"
+            correct: false
+            why: "C'est l'endroit prévu."
+          - label: "Nulle part, on ne l'envoie jamais"
+            correct: false
+            why: "Il faut bien l'envoyer pour se connecter."
+        explanation: "Données sensibles : dans le corps, en HTTPS."
+    exercises:
+      - slug: sb-ex-requestparam-guide
+        kind: COMPLETER
+        title: "Chemin ou filtre ?"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: "Complète chaque méthode avec PathVariable ou RequestParam."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "`/api/salles/3` : le 3 est dans le chemin."
+          - "`/api/salles?ville=Lyon` : Lyon suit le ?."
+          - "PathVariable, RequestParam."
+        solution: '["PathVariable", "RequestParam"]'
+        explanation: "Identifier ou filtrer."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            // GET /api/salles/3
+            @GetMapping("/{id}")
+            public SalleDto lire(@[[1]] Long id) { return service.lire(id); }
+
+            // GET /api/salles?ville=Lyon
+            @GetMapping(params = "ville")
+            public List<SalleDto> parVille(@[[2]] String ville) { return service.parVille(ville); }
+          blanks:
+            - ["PathVariable"]
+            - ["RequestParam"]
+      - slug: sb-ex-requestparam-libre
+        kind: CODE_LIBRE
+        title: "Chercher des salles par ville"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          Écris `parVille` qui répond à `GET /api/salles?ville=…`, lit `ville` avec `@RequestParam` et renvoie
+          `service.parVille(ville)` (type `List<SalleDto>`).
+        criteria: "@GetMapping(params = \"ville\"), @RequestParam String ville."
+        hints:
+          - "`@GetMapping(params = \"ville\")`"
+          - "`public List<SalleDto> parVille(@RequestParam String ville)`"
+          - "`return service.parVille(ville);`"
+        solution: |
+          @GetMapping(params = "ville")
+          public List<SalleDto> parVille(@RequestParam String ville) {
+              return service.parVille(ville);
+          }
+        explanation: "Un filtre après le ?."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public List<SalleDto> parVille() {
+
+            }
+          checks:
+            - pattern: '@GetMapping\s*\(\s*params\s*=\s*"ville"\s*\)'
+              message: "Ajoute @GetMapping(params = \"ville\")."
+            - pattern: 'parVille\s*\(\s*@RequestParam\s+String\s+ville\s*\)'
+              message: "Le paramètre : @RequestParam String ville."
+            - pattern: 'return\s+service\.parVille\s*\(\s*ville\s*\)'
+              message: "Renvoie service.parVille(ville)."
+      - slug: sb-ex-requestparam-bug
+        kind: CORRIGER_ERREUR
+        title: "Un filtre obligatoire"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          `GET /api/livres` sans `?genre=…` répond 400, alors que le genre doit être facultatif. Rends le
+          paramètre facultatif.
+        criteria: "@RequestParam(required = false)."
+        hints:
+          - "Par défaut, un @RequestParam est obligatoire."
+          - "Une option le rend facultatif."
+          - "`@RequestParam(required = false) String genre`"
+        solution: |
+          @GetMapping
+          public List<LivreDto> lister(@RequestParam(required = false) String genre) {
+              return service.lister(genre);
+          }
+        explanation: "required = false : le filtre peut manquer."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @GetMapping
+            public List<LivreDto> lister(@RequestParam String genre) {
+                return service.lister(genre);
+            }
+          checks:
+            - pattern: '@RequestParam\s*\(\s*required\s*=\s*false\s*\)\s+String\s+genre'
+              message: "Écris @RequestParam(required = false) String genre."
+
+  # ===================================================================== LEÇON 3
+  - slug: sb-requestbody
+    title: "Recevoir un objet JSON : @RequestBody"
+    duration: 9
+    objective: "Recevoir le corps JSON d'un POST ou d'un PUT sous forme d'objet Java avec @RequestBody."
+    prerequisites: "Leçon « Lire un filtre : @RequestParam »."
+    skills: [spring-rest]
+    xp: 15
+    memo: |
+      - `@PostMapping` + `@RequestBody LivreRequest req` : le JSON reçu devient un objet Java.
+      - Les noms des champs JSON correspondent aux noms des champs de l'objet.
+      - Sans `@RequestBody`, l'objet reste vide.
+    commonMistakes: |
+      - Oublier `@RequestBody` : tous les champs sont null.
+      - Envoyer un JSON dont les noms ne correspondent pas aux champs.
+    blocks:
+      - type: definition
+        id: def-requestbody
+        term: "@RequestBody"
+        md: |
+          Le **déballage du colis** : le JSON arrive emballé dans le corps de la requête ; `@RequestBody`
+          l'ouvre et range chaque valeur dans le bon champ de l'objet Java.
+      - type: code
+        id: code-requestbody
+        language: java
+        title: "Créer un livre"
+        code: |
+          public record LivreRequest(String titre, String auteur) {}
+
+          @PostMapping
+          public LivreDto creer(@RequestBody LivreRequest req) {
+              return service.creer(req);
+          }
+
+          // Corps reçu : { "titre": "Dune", "auteur": "Frank Herbert" }
+        lines:
+          - n: 1
+            note: "L'objet qui recevra les données : mêmes noms que dans le JSON."
+          - n: 4
+            note: "`@RequestBody` : le JSON du corps devient un `LivreRequest`."
+      - type: question
+        ref: sb-dto-q3
+        review: code-requestbody
+      - type: question
+        ref: sb-rb-q2
+        review: def-requestbody
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la modification."
+      - type: exercise
+        ref: sb-ex-dto-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : créer une salle."
+      - type: exercise
+        ref: sb-ex-requestbody-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un objet toujours vide."
+      - type: exercise
+        ref: sb-ex-requestbody-bug
+      - type: quiz
+        items:
+          - ref: sb-rb-q3
+            review: code-requestbody
+          - ref: sb-rb-q4
+            review: def-requestbody
+          - ref: sb-c2-b1
+            review: def-requestbody
+    questions:
       - code: sb-dto-q3
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: spring-rest
-        prompt: "Le produit reçu dans `creer(ProduitRequest req)` a tous ses champs à null. Pourquoi ?"
+        prompt: "Le livre reçu dans `creer(LivreRequest req)` a tous ses champs à null. Pourquoi ?"
         choices:
           - label: "Il manque @RequestBody devant le paramètre"
             correct: true
@@ -163,19 +559,233 @@ lessons:
             correct: false
             why: "Jackson sait créer des records."
         explanation: "JSON dans le corps → @RequestBody."
-      - code: sb-dto-q4
-        kind: VRAI_FAUX
+      - code: sb-rb-q2
+        kind: CHOIX_UNIQUE
         difficulty: 1
         skill: spring-rest
-        prompt: "Un `record` Java est pratique pour un DTO car il est court et immuable."
+        prompt: "Avec quels verbes reçoit-on le plus souvent un corps JSON ?"
+        choices:
+          - label: "POST et PUT"
+            correct: true
+            why: "Créer et remplacer envoient des données."
+          - label: "GET et DELETE"
+            correct: false
+            why: "Ils n'ont généralement pas de corps."
+          - label: "Aucun"
+            correct: false
+            why: "POST et PUT en ont un."
+        explanation: "Écrire = envoyer des données."
+      - code: sb-rb-q3
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Avec le corps `{ \"titre\": \"Dune\", \"auteur\": \"Frank Herbert\" }`, que vaut `req.titre()` ?"
+        snippet: |
+          public record LivreRequest(String titre, String auteur) {}
+          public LivreDto creer(@RequestBody LivreRequest req) { … }
+        language: java
+        choices:
+          - label: "Dune"
+            correct: true
+            why: "Le champ titre du JSON."
+          - label: "Frank Herbert"
+            correct: false
+            why: "C'est l'auteur."
+          - label: "null"
+            correct: false
+            why: "@RequestBody l'a rempli."
+        explanation: "Noms JSON = noms des champs."
+      - code: sb-rb-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Si le JSON envoie `\"name\"` au lieu de `\"titre\"`, le champ titre reste vide."
         choices:
           - label: "Vrai"
             correct: true
-            why: "Constructeur, accesseurs, equals et toString sont générés."
+            why: "Les noms doivent correspondre."
           - label: "Faux"
             correct: false
-            why: "C'est justement l'usage recommandé."
-        explanation: "`public record ProduitDto(Long id, String nom) {}`"
+            why: "Spring ne devine pas les traductions."
+        explanation: "Le contrat JSON est précis."
+      - code: sb-c2-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Quel verbe HTTP convient pour modifier seulement le titre d'un livre ?"
+        choices:
+          - label: "PATCH"
+            correct: true
+            why: "Modification partielle."
+          - label: "PUT"
+            correct: false
+            why: "PUT remplace toute la ressource."
+          - label: "POST"
+            correct: false
+            why: "POST crée."
+        explanation: "PUT = tout remplacer ; PATCH = modifier une partie."
+    exercises:
+      - slug: sb-ex-dto-guide
+        kind: COMPLETER
+        title: "Compléter la modification"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: "Complète : le verbe de remplacement, la partie variable et le corps reçu."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Remplacer : PutMapping."
+          - "L'identifiant : PathVariable ; le JSON : RequestBody."
+          - "PutMapping, PathVariable, RequestBody."
+        solution: '["PutMapping", "PathVariable", "RequestBody"]'
+        explanation: "Lire l'adresse, lire le corps : deux annotations à ne pas confondre."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @[[1]]("/{id}")
+            public LivreDto modifier(@[[2]] Long id, @[[3]] LivreRequest req) {
+                return service.modifier(id, req);
+            }
+          blanks:
+            - ["PutMapping"]
+            - ["PathVariable"]
+            - ["RequestBody"]
+      - slug: sb-ex-requestbody-libre
+        kind: CODE_LIBRE
+        title: "Créer une salle"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          Écris `creer` : `@PostMapping`, reçoit un `SalleRequest` dans le corps et renvoie
+          `service.creer(req)` (type `SalleDto`).
+        criteria: "@PostMapping et @RequestBody SalleRequest."
+        hints:
+          - "`@PostMapping`"
+          - "`public SalleDto creer(@RequestBody SalleRequest req)`"
+          - "`return service.creer(req);`"
+        solution: |
+          @PostMapping
+          public SalleDto creer(@RequestBody SalleRequest req) {
+              return service.creer(req);
+          }
+        explanation: "Le JSON devient un objet."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public SalleDto creer() {
+
+            }
+          checks:
+            - pattern: '@PostMapping\s+public\s+SalleDto\s+creer'
+              message: "Annote la méthode avec @PostMapping."
+            - pattern: 'creer\s*\(\s*@RequestBody\s+SalleRequest\s+\w+\s*\)'
+              message: "Le paramètre : @RequestBody SalleRequest req."
+            - pattern: 'return\s+service\.creer\s*\(\s*\w+\s*\)'
+              message: "Renvoie service.creer(req)."
+      - slug: sb-ex-requestbody-bug
+        kind: CORRIGER_ERREUR
+        title: "Un objet toujours vide"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          Tous les champs de `req` arrivent à null. Ajoute l'annotation qui lit le corps JSON.
+        criteria: "@RequestBody devant le paramètre."
+        hints:
+          - "D'où viennent les données ?"
+          - "Du corps de la requête."
+          - "`@RequestBody LivreRequest req`"
+        solution: |
+          @PostMapping
+          public LivreDto creer(@RequestBody LivreRequest req) {
+              return service.creer(req);
+          }
+        explanation: "Sans @RequestBody, Spring ne lit pas le JSON."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @PostMapping
+            public LivreDto creer(LivreRequest req) {
+                return service.creer(req);
+            }
+          checks:
+            - pattern: 'creer\s*\(\s*@RequestBody\s+LivreRequest\s+req\s*\)'
+              message: "Ajoute @RequestBody devant LivreRequest req."
+
+  # ===================================================================== LEÇON 4
+  - slug: sb-responseentity
+    title: "Choisir le statut : ResponseEntity"
+    duration: 10
+    objective: "Répondre avec le bon statut (201, 204) grâce à ResponseEntity."
+    prerequisites: "Leçon « Recevoir un objet JSON : @RequestBody »."
+    skills: [spring-rest, api-rest]
+    xp: 15
+    memo: |
+      - Par défaut, Spring répond **200**.
+      - `ResponseEntity.status(HttpStatus.CREATED).body(dto)` : **201** avec le corps.
+      - `ResponseEntity.noContent().build()` : **204**, sans corps.
+      - Le type de retour devient `ResponseEntity<LivreDto>` (ou `ResponseEntity<Void>` sans corps).
+    commonMistakes: |
+      - Toujours répondre 200, même après une création ou une suppression.
+      - Oublier `.build()` après `noContent()`.
+    blocks:
+      - type: definition
+        id: def-responseentity
+        term: "ResponseEntity"
+        md: |
+          L'**enveloppe complète** de la réponse : on choisit le tampon (le statut) et ce qu'on met dedans (le
+          corps). Sans elle, Spring met toujours le tampon « 200 ».
+      - type: code
+        id: code-responseentity
+        language: java
+        title: "Créer et supprimer avec le bon statut"
+        code: |
+          @PostMapping
+          public ResponseEntity<LivreDto> creer(@RequestBody LivreRequest req) {
+              LivreDto cree = service.creer(req);
+              return ResponseEntity.status(HttpStatus.CREATED).body(cree);
+          }
+
+          @DeleteMapping("/{id}")
+          public ResponseEntity<Void> supprimer(@PathVariable Long id) {
+              service.supprimer(id);
+              return ResponseEntity.noContent().build();
+          }
+        lines:
+          - n: 4
+            note: "Statut **201** + le livre créé dans le corps."
+          - n: 8
+            note: "`Void` : il n'y aura pas de corps."
+          - n: 10
+            note: "Statut **204** : réussi, rien à renvoyer."
+      - type: question
+        ref: sb-dto-q5
+        review: code-responseentity
+      - type: question
+        ref: sb-rs-q2
+        review: def-responseentity
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les statuts."
+      - type: exercise
+        ref: sb-ex-responseentity-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : créer et supprimer un rendez-vous."
+      - type: exercise
+        ref: sb-ex-creer-supprimer
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une création qui répond 200."
+      - type: exercise
+        ref: sb-ex-responseentity-bug
+      - type: quiz
+        items:
+          - ref: sb-rs-q3
+            review: code-responseentity
+          - ref: sb-rs-q4
+            review: def-responseentity
+          - ref: sb-rs-q5
+            review: code-responseentity
+    questions:
       - code: sb-dto-q5
         kind: TEXTE
         difficulty: 2
@@ -183,36 +793,92 @@ lessons:
         prompt: "Quel statut renvoie `ResponseEntity.noContent().build()` ? (le nombre)"
         answers: ["204"]
         explanation: "204 No Content : réussi, rien à renvoyer. Typique après un DELETE."
+      - code: sb-rs-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Quel statut Spring renvoie-t-il si on retourne simplement un objet ?"
+        choices:
+          - label: "200"
+            correct: true
+            why: "C'est le statut par défaut."
+          - label: "201"
+            correct: false
+            why: "Il faut le demander avec ResponseEntity."
+          - label: "204"
+            correct: false
+            why: "Il faut le demander avec ResponseEntity."
+        explanation: "ResponseEntity pour choisir un autre statut."
+      - code: sb-rs-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Comment répondre 201 avec le livre créé ?"
+        choices:
+          - label: "`ResponseEntity.status(HttpStatus.CREATED).body(cree)`"
+            correct: true
+            why: "Statut + corps."
+          - label: "`ResponseEntity.noContent().build()`"
+            correct: false
+            why: "C'est 204."
+          - label: "`return cree;`"
+            correct: false
+            why: "Ce serait 200."
+        explanation: "CREATED = 201."
+      - code: sb-rs-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: spring-rest
+        prompt: "`ResponseEntity<Void>` signifie que la réponse n'a pas de corps."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Void = rien."
+          - label: "Faux"
+            correct: false
+            why: "C'est le type d'une réponse vide."
+        explanation: "Typique avec 204."
+      - code: sb-rs-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: api-rest
+        prompt: "Pourquoi répondre 201 plutôt que 200 après une création ?"
+        choices:
+          - label: "Le frontend sait précisément qu'une ressource a été créée"
+            correct: true
+            why: "Le statut porte une information exacte."
+          - label: "C'est plus rapide"
+            correct: false
+            why: "Aucune différence de vitesse."
+          - label: "200 est interdit"
+            correct: false
+            why: "Il est permis, mais moins précis."
+        explanation: "Chaque statut dit une chose précise."
     exercises:
-      - slug: sb-ex-dto-guide
+      - slug: sb-ex-responseentity-guide
         kind: COMPLETER
-        title: "Lire un produit"
+        title: "Compléter les statuts"
         difficulty: FACILE
         skill: spring-rest
-        statement: "Complète : lire un produit par son id, puis mettre à jour un produit."
-        criteria: "Les quatre trous sont corrects."
+        statement: "Complète : 201 pour la création, 204 pour la suppression."
+        criteria: "Les trois trous sont corrects."
         hints:
-          - "Une partie de l'adresse : PathVariable."
-          - "Le JSON reçu : RequestBody."
-          - "GetMapping, PathVariable, PutMapping, RequestBody."
-        solution: '["GetMapping", "PathVariable", "PutMapping", "RequestBody"]'
-        explanation: "Lire l'adresse, lire le corps : deux annotations à ne pas confondre."
+          - "201 se nomme CREATED."
+          - "204 : noContent, puis build."
+          - "CREATED, noContent, build."
+        solution: '["CREATED", "noContent", "build"]'
+        explanation: "Un statut précis pour chaque action."
         xp: 10
         payload:
           language: java
           template: |
-            @[[1]]("/{id}")
-            public ProduitDto lire(@[[2]] Long id) { return service.lire(id); }
+            return ResponseEntity.status(HttpStatus.[[1]]).body(cree);
 
-            @[[3]]("/{id}")
-            public ProduitDto modifier(@PathVariable Long id, @[[4]] ProduitRequest req) {
-                return service.modifier(id, req);
-            }
+            return ResponseEntity.[[2]]().[[3]]();
           blanks:
-            - ["GetMapping"]
-            - ["PathVariable"]
-            - ["PutMapping"]
-            - ["RequestBody"]
+            - ["CREATED"]
+            - ["noContent"]
+            - ["build"]
       - slug: sb-ex-creer-supprimer
         kind: CODE_LIBRE
         title: "Créer et supprimer un rendez-vous"
@@ -227,7 +893,7 @@ lessons:
         criteria: "@PostMapping + @RequestBody + 201 ; @DeleteMapping(\"/{id}\") + @PathVariable + 204."
         hints:
           - "`@PostMapping public ResponseEntity<RendezVousDto> creer(@RequestBody RendezVousRequest req)`"
-          - "201 : `ResponseEntity.status(HttpStatus.CREATED).body(dto)` ou `ResponseEntity.created(uri).body(dto)`."
+          - "201 : `ResponseEntity.status(HttpStatus.CREATED).body(dto)`."
           - "204 : `return ResponseEntity.noContent().build();`"
         solution: |
           @PostMapping
@@ -265,25 +931,287 @@ lessons:
               message: "Appelle `service.supprimer(id)`."
             - pattern: 'noContent\s*\(\s*\)\s*\.build\s*\(\s*\)|HttpStatus\.NO_CONTENT'
               message: "Réponds 204 : `ResponseEntity.noContent().build()`."
+      - slug: sb-ex-responseentity-bug
+        kind: CORRIGER_ERREUR
+        title: "Une création qui répond 200"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          Cette création répond 200. Fais-la répondre 201 avec `ResponseEntity.status(HttpStatus.CREATED).body(cree)`
+          (le type de retour devient `ResponseEntity<SalleDto>`).
+        criteria: "ResponseEntity<SalleDto> et HttpStatus.CREATED."
+        hints:
+          - "Il faut choisir le statut."
+          - "ResponseEntity permet de le choisir."
+          - "`return ResponseEntity.status(HttpStatus.CREATED).body(cree);`"
+        solution: |
+          @PostMapping
+          public ResponseEntity<SalleDto> creer(@RequestBody SalleRequest req) {
+              SalleDto cree = service.creer(req);
+              return ResponseEntity.status(HttpStatus.CREATED).body(cree);
+          }
+        explanation: "Une création répond 201."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            @PostMapping
+            public SalleDto creer(@RequestBody SalleRequest req) {
+                SalleDto cree = service.creer(req);
+                return cree;
+            }
+          checks:
+            - pattern: 'public\s+ResponseEntity\s*<\s*SalleDto\s*>\s+creer'
+              message: "Le type de retour : ResponseEntity<SalleDto>."
+            - pattern: 'ResponseEntity\.status\s*\(\s*HttpStatus\.CREATED\s*\)\s*\.body\s*\(\s*cree\s*\)'
+              message: "Réponds ResponseEntity.status(HttpStatus.CREATED).body(cree)."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 5
+  - slug: sb-dto
+    title: "Les DTO : ce qui entre et sort de l'API"
+    duration: 10
+    objective: "Utiliser des records comme DTO pour contrôler exactement ce qui entre et sort de l'API."
+    prerequisites: "Leçon « Choisir le statut : ResponseEntity »."
+    skills: [spring-rest]
+    xp: 15
+    memo: |
+      - **DTO** (objet de transfert) : un `record` qui contient **seulement** ce qui entre ou sort de l'API.
+      - Un DTO d'**entrée** (`LivreRequest`) n'a pas d'`id` : c'est la base qui le donne.
+      - Un DTO de **sortie** (`LivreDto`) ne contient jamais de champ sensible (mot de passe haché).
+      - `LivreDto.from(livre)` : transformer l'entité en DTO.
+    commonMistakes: |
+      - Renvoyer directement l'entité JPA : on expose des champs internes.
+      - Mettre un `id` dans le DTO d'entrée d'une création.
+    blocks:
+      - type: definition
+        id: def-dto
+        term: "DTO (objet de transfert de données)"
+        md: |
+          Le **bon de livraison** de l'API : il liste seulement ce qui voyage, pas tout le contenu de
+          l'entrepôt. L'entité (la table) peut contenir un mot de passe haché ou des dates internes : le DTO,
+          lui, ne montre que ce que le frontend doit voir.
+      - type: code
+        id: code-dto
+        language: java
+        title: "Deux records : l'entrée et la sortie"
+        code: |
+          public record LivreRequest(String titre, String auteur, Long genreId) {}
+
+          public record LivreDto(Long id, String titre, String auteur, String genre) {
+              public static LivreDto from(Livre l) {
+                  return new LivreDto(l.getId(), l.getTitre(), l.getAuteur(), l.getGenre().getNom());
+              }
+          }
+        lines:
+          - n: 1
+            note: "Ce que le frontend **envoie** : pas d'`id`, c'est la base qui le donne."
+          - n: 3
+            note: "Ce que l'API **renvoie** : le nom du genre plutôt que l'objet entier."
+          - n: 4
+            note: "Une méthode pratique pour transformer l'entité en DTO."
+      - type: question
+        ref: sb-dto-q2
+        review: def-dto
+      - type: question
+        ref: sb-dto-q4
+        review: code-dto
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les deux records."
+      - type: exercise
+        ref: sb-ex-dto-records-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : le DTO d'un utilisateur."
+      - type: exercise
+        ref: sb-ex-dto-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un mot de passe exposé."
+      - type: exercise
+        ref: sb-ex-dto-bug
+      - type: jury
+        items:
+          - q: "Pourquoi utiliser des DTO plutôt que renvoyer les entités ?"
+            a: "Pour contrôler exactement ce qui entre et sort de l'API : on n'expose pas le mot de passe haché ni les champs internes, on évite les boucles de sérialisation des relations JPA, et on peut faire évoluer la base sans casser le contrat de l'API. J'utilise des records Java, immuables et concis."
+      - type: quiz
+        items:
+          - ref: sb-dt-q3
+            review: code-dto
+          - ref: sb-dt-q4
+            review: def-dto
+          - ref: sb-dt-q5
+            review: code-dto
+    questions:
+      - code: sb-dto-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "Quel est le principal danger de renvoyer l'entité `Utilisateur` directement ?"
+        choices:
+          - label: "Exposer des champs sensibles comme le mot de passe haché"
+            correct: true
+            why: "Tout ce qui est dans l'entité part dans le JSON."
+          - label: "La réponse est plus lente"
+            correct: false
+            why: "Le problème est la sécurité et le couplage."
+          - label: "Spring refuse de compiler"
+            correct: false
+            why: "Il compile, c'est justement le piège."
+        explanation: "Le DTO choisit ce qui sort."
+      - code: sb-dto-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Un `record` Java est pratique pour un DTO car il est court et immuable."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Constructeur, accesseurs, equals et toString sont générés."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement l'usage recommandé."
+        explanation: "`public record LivreDto(Long id, String titre) {}`"
+      - code: sb-dt-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Pourquoi `LivreRequest` n'a-t-il pas d'`id` ?"
+        choices:
+          - label: "Parce que c'est la base qui attribue l'identifiant à la création"
+            correct: true
+            why: "Le frontend ne le connaît pas encore."
+          - label: "Parce que les records n'acceptent pas les nombres"
+            correct: false
+            why: "Ils acceptent tous les types."
+          - label: "Par oubli"
+            correct: false
+            why: "C'est voulu."
+        explanation: "Entrée : ce que le client sait ; sortie : ce qu'il doit voir."
+      - code: sb-dt-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-rest
+        prompt: "Que veut dire DTO ?"
+        choices:
+          - label: "Data Transfer Object : objet de transfert de données"
+            correct: true
+            why: "Il transporte les données de l'API."
+          - label: "Database Table Object"
+            correct: false
+            why: "C'est l'entité qui représente la table."
+          - label: "Direct Text Output"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Le bon de livraison."
+      - code: sb-dt-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-rest
+        prompt: "À quoi sert `LivreDto.from(livre)` ?"
+        choices:
+          - label: "À transformer l'entité en DTO de sortie"
+            correct: true
+            why: "On choisit les champs qui sortent."
+          - label: "À enregistrer le livre en base"
+            correct: false
+            why: "C'est le rôle du repository."
+          - label: "À lire le JSON reçu"
+            correct: false
+            why: "C'est le rôle de @RequestBody."
+        explanation: "Entité → DTO à la sortie du service."
+    exercises:
+      - slug: sb-ex-dto-records-guide
+        kind: COMPLETER
+        title: "Compléter les deux records"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: "Complète le mot-clé, puis le champ qui n'existe que dans la sortie."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Un DTO concis s'écrit avec record."
+          - "La sortie contient l'identifiant donné par la base."
+          - "record, record, id."
+        solution: '["record", "record", "id"]'
+        explanation: "L'entrée sans id, la sortie avec."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            public [[1]] SalleRequest(String nom, String ville) {}
+
+            public [[2]] SalleDto(Long [[3]], String nom, String ville) {}
+          blanks:
+            - ["record"]
+            - ["record"]
+            - ["id"]
+      - slug: sb-ex-dto-libre
+        kind: CODE_LIBRE
+        title: "Le DTO d'un utilisateur"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          L'entité `Utilisateur` contient `id`, `email`, `motDePasseHash` et `role`. Écris le record
+          `UtilisateurDto` qui ne contient que `Long id`, `String email` et `String role`.
+        criteria: "Un record avec id, email et role, sans motDePasseHash."
+        hints:
+          - "`public record UtilisateurDto(…) {}`"
+          - "Trois champs seulement."
+          - "Jamais le hash du mot de passe."
+        solution: |
+          public record UtilisateurDto(Long id, String email, String role) {}
+        explanation: "Le DTO ne montre que ce qui doit sortir."
+        xp: 15
+        payload:
+          language: java
+          starter: |
+            public record UtilisateurDto() {}
+          checks:
+            - pattern: 'record\s+UtilisateurDto\s*\(\s*Long\s+id\s*,\s*String\s+email\s*,\s*String\s+role\s*\)'
+              message: "Écris record UtilisateurDto(Long id, String email, String role)."
+            - pattern: '(?i)motDePasse'
+              absent: true
+              message: "Le mot de passe ne sort jamais de l'API."
+      - slug: sb-ex-dto-bug
+        kind: CORRIGER_ERREUR
+        title: "Un mot de passe exposé"
+        difficulty: FACILE
+        skill: spring-rest
+        statement: |
+          Ce DTO de sortie contient le hash du mot de passe : il partirait dans le JSON. Retire ce champ.
+        criteria: "Plus de motDePasseHash dans le record."
+        hints:
+          - "Quel champ ne doit jamais sortir ?"
+          - "Le hash du mot de passe."
+          - "`public record CompteDto(Long id, String email) {}`"
+        solution: |
+          public record CompteDto(Long id, String email) {}
+        explanation: "On ne choisit que ce qui doit sortir."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public record CompteDto(Long id, String email, String motDePasseHash) {}
+          checks:
+            - pattern: 'motDePasseHash'
+              absent: true
+              message: "Retire motDePasseHash."
+            - pattern: 'record\s+CompteDto\s*\(\s*Long\s+id\s*,\s*String\s+email\s*\)'
+              message: "Garde record CompteDto(Long id, String email)."
+
+  # ===================================================================== LEÇON 6
   - slug: sb-service
     title: "La couche service et les règles métier"
-    duration: 14
-    objective: "Placer les règles métier dans un service, signaler un problème avec une exception métier et comprendre les transactions."
-    prerequisites: "Leçon « Paramètres, corps JSON et DTO »."
+    duration: 11
+    objective: "Placer une règle métier dans un service et signaler un problème avec une exception claire."
+    prerequisites: "Leçon « Les DTO : ce qui entre et sort de l'API »."
     skills: [spring-structure]
-    xp: 25
+    xp: 15
     memo: |
       - **Contrôleur** → **Service** → **Repository** : chaque couche n'appelle que la suivante.
-      - `@Service` : la classe contient les **règles métier** (vérifier le stock, calculer un total).
-      - Quand une règle est violée, le service **lance une exception** (`throw new StockInsuffisantException(...)`).
-      - `@Transactional` : toutes les écritures de la méthode réussissent **ensemble** ou sont **toutes annulées**.
-      - Le service travaille avec des entités et renvoie des DTO.
+      - `@Service` : la classe contient les **règles métier** (un livre déjà emprunté ne peut pas être emprunté).
+      - `findById(id).orElseThrow(() -> new RessourceIntrouvableException(...))` : une absence devient une erreur claire.
+      - Quand une règle est violée, le service **lance une exception** (`throw new LivreDejaEmprunteException(...)`).
     commonMistakes: |
-      - Mettre `if (stock < quantite)` dans le contrôleur.
+      - Mettre la règle dans le contrôleur.
       - Renvoyer `null` quand un élément est introuvable au lieu de lancer une exception claire.
-      - Oublier `@Transactional` sur une méthode qui écrit dans plusieurs tables.
     blocks:
       - type: text
         md: |
@@ -299,84 +1227,73 @@ lessons:
       - type: code
         id: code-service
         language: java
-        title: "CommandeService.java"
+        title: "EmpruntService.java"
         code: |
           @Service
-          public class CommandeService {
+          public class EmpruntService {
 
-              private final ProduitRepository produits;
-              private final CommandeRepository commandes;
+              private final LivreRepository livres;
 
-              public CommandeService(ProduitRepository produits, CommandeRepository commandes) {
-                  this.produits = produits;
-                  this.commandes = commandes;
+              public EmpruntService(LivreRepository livres) {
+                  this.livres = livres;
               }
 
-              @Transactional
-              public CommandeDto commander(Long produitId, int quantite) {
-                  Produit p = produits.findById(produitId)
-                          .orElseThrow(() -> new RessourceIntrouvableException("Produit " + produitId));
-                  if (p.getStock() < quantite) {
-                      throw new StockInsuffisantException(p.getNom());
+              public LivreDto verifierDisponible(Long livreId) {
+                  Livre livre = livres.findById(livreId)
+                          .orElseThrow(() -> new RessourceIntrouvableException("Livre " + livreId));
+                  if (livre.isEmprunte()) {
+                      throw new LivreDejaEmprunteException(livre.getTitre());
                   }
-                  p.setStock(p.getStock() - quantite);
-                  Commande c = commandes.save(new Commande(p, quantite));
-                  return CommandeDto.from(c);
+                  return LivreDto.from(livre);
               }
           }
         lines:
           - n: 1
             note: "`@Service` : un bean qui porte la logique métier."
-          - n: 7
-            note: "Injection par constructeur des deux repositories."
+          - n: 6
+            note: "Injection par constructeur du repository."
           - n: 12
-            note: "`@Transactional` : baisse du stock **et** création de la commande, ensemble ou pas du tout."
-          - n: 15
-            note: "`orElseThrow` : si le produit n'existe pas, on lance une exception claire (qui deviendra un 404)."
+            note: "`orElseThrow` : si le livre n'existe pas, on lance une exception claire (qui deviendra un 404)."
+          - n: 13
+            note: "La **règle métier** : un livre déjà emprunté n'est pas disponible."
           - n: 16
-            note: "La **règle métier** : pas de commande sans stock suffisant."
-          - n: 21
             note: "On renvoie un DTO, jamais l'entité."
       - type: question
         ref: sb-sv-q1
         review: code-service
-      - type: definition
-        id: def-transaction
-        term: "Transaction"
-        md: |
-          Un **virement bancaire** : retirer d'un compte **et** créditer l'autre. Si la seconde étape échoue,
-          la première doit être **annulée**. Une transaction garantit « tout ou rien ».
       - type: question
-        ref: sb-sv-q2
-        review: def-transaction
+        ref: sb-sv-q3
+        review: def-couches
       - type: text
-        md: "Exercice guidé : remets ce service dans l'ordre."
+        md: "**Exercice 1 (guidé)** : remets ce service dans l'ordre."
       - type: exercise
         ref: sb-ex-service-ordre
       - type: text
-        md: "En autonomie : écris une règle métier."
+        md: "**Exercice 2 (en autonomie)** : une salle déjà réservée."
       - type: exercise
-        ref: sb-ex-regle-metier
+        ref: sb-ex-service-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un null au lieu d'une exception."
+      - type: exercise
+        ref: sb-ex-service-bug
       - type: jury
         items:
           - q: "Pourquoi une couche service ?"
             a: "Pour séparer les responsabilités : le contrôleur gère HTTP, le service porte les règles métier et les transactions, le repository accède aux données. Les règles sont testables avec de simples tests unitaires en simulant les repositories."
-          - q: "À quoi sert @Transactional ?"
-            a: "À exécuter plusieurs opérations en base de façon atomique : si une exception non vérifiée survient, tout est annulé (rollback). Je la place sur les méthodes de service qui écrivent, et readOnly = true sur les lectures."
       - type: quiz
         items:
-          - ref: sb-sv-q3
-            review: def-couches
           - ref: sb-sv-q4
             review: code-service
-          - ref: sb-sv-q5
-            review: def-transaction
+          - ref: sb-c2-b2
+            review: code-service
+          - ref: sb-se-q5
+            review: def-couches
     questions:
       - code: sb-sv-q1
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: spring-structure
-        prompt: "Que fait `findById(id).orElseThrow(...)` si le produit n'existe pas ?"
+        prompt: "Que fait `findById(id).orElseThrow(...)` si le livre n'existe pas ?"
         choices:
           - label: "Il lance l'exception fournie"
             correct: true
@@ -384,23 +1301,10 @@ lessons:
           - label: "Il renvoie null"
             correct: false
             why: "orElseThrow ne renvoie jamais null."
-          - label: "Il crée le produit"
+          - label: "Il crée le livre"
             correct: false
             why: "Il ne crée rien."
         explanation: "Une absence devient une erreur claire, transformée en 404."
-      - code: sb-sv-q2
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: spring-structure
-        prompt: "Avec `@Transactional`, si une exception survient après la baisse du stock, la baisse est annulée."
-        choices:
-          - label: "Vrai"
-            correct: true
-            why: "Rollback : tout ou rien."
-          - label: "Faux"
-            correct: false
-            why: "C'est exactement le rôle d'une transaction."
-        explanation: "Par défaut, le rollback a lieu sur les exceptions non vérifiées (RuntimeException)."
       - code: sb-sv-q3
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -423,12 +1327,12 @@ lessons:
         skill: spring-structure
         prompt: "Qu'est-ce qui a sa place dans un service ? (plusieurs réponses)"
         choices:
-          - label: "Vérifier qu'il reste du stock"
+          - label: "Vérifier qu'un livre n'est pas déjà emprunté"
             correct: true
             why: "Règle métier."
-          - label: "Gérer une transaction"
+          - label: "Lancer une exception quand une règle est violée"
             correct: true
-            why: "@Transactional se place sur le service."
+            why: "Le service signale le problème."
           - label: "Choisir l'annotation @GetMapping"
             correct: false
             why: "C'est le rôle du contrôleur."
@@ -436,22 +1340,35 @@ lessons:
             correct: true
             why: "Le service renvoie des DTO au contrôleur."
         explanation: "Le service décide et orchestre."
-      - code: sb-sv-q5
+      - code: sb-c2-b2
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: spring-structure
-        prompt: "Un paiement débite le client puis échoue à créer la facture. Sans transaction, que se passe-t-il ?"
+        prompt: "Pourquoi l'injection par constructeur est-elle recommandée ?"
         choices:
-          - label: "Le client est débité sans facture : données incohérentes"
+          - label: "Les dépendances sont final, obligatoires et faciles à fournir dans un test"
             correct: true
-            why: "La première écriture reste."
-          - label: "Tout est annulé automatiquement"
+            why: "On peut faire `new Service(fauxRepository)` dans un test."
+          - label: "Elle est plus rapide à l'exécution"
             correct: false
-            why: "Seulement avec une transaction."
-          - label: "La base refuse la première écriture"
+            why: "La différence n'est pas là."
+          - label: "C'est la seule possible"
             correct: false
-            why: "Elle l'a déjà acceptée."
-        explanation: "La transaction protège la cohérence."
+            why: "Il existe aussi l'injection par champ, déconseillée."
+        explanation: "Constructeur = dépendances visibles et immuables."
+      - code: sb-se-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: spring-structure
+        prompt: "Renvoyer `null` quand un livre est introuvable est une bonne pratique."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "null provoque des erreurs plus loin, sans explication."
+          - label: "Faux"
+            correct: true
+            why: "On lance une exception claire."
+        explanation: "Une exception claire devient un 404 compréhensible."
     exercises:
       - slug: sb-ex-service-ordre
         kind: REMETTRE_ORDRE
@@ -459,13 +1376,12 @@ lessons:
         difficulty: FACILE
         skill: spring-structure
         statement: "Remets dans l'ordre la méthode qui lit un livre ou lance une exception."
-        criteria: "Annotation, signature, recherche, exception, conversion en DTO."
+        criteria: "Signature, recherche, exception, conversion en DTO."
         hints:
-          - "L'annotation @Transactional vient avant la signature."
+          - "La signature vient en premier."
           - "On cherche d'abord le livre, puis on gère l'absence."
           - "On renvoie un DTO à la fin."
         solution: |
-          @Transactional(readOnly = true)
           public LivreDto lire(Long id) {
               Livre livre = livres.findById(id)
                       .orElseThrow(() -> new RessourceIntrouvableException("Livre " + id));
@@ -476,12 +1392,265 @@ lessons:
         payload:
           language: java
           lines:
-            - "@Transactional(readOnly = true)"
             - "public LivreDto lire(Long id) {"
             - "    Livre livre = livres.findById(id)"
             - "            .orElseThrow(() -> new RessourceIntrouvableException(\"Livre \" + id));"
             - "    return LivreDto.from(livre);"
             - "}"
+      - slug: sb-ex-service-libre
+        kind: CODE_LIBRE
+        title: "Une salle déjà réservée"
+        difficulty: INTERMEDIAIRE
+        skill: spring-structure
+        statement: |
+          Écris `verifierLibre(Long salleId)` dans `ReservationService` :
+          - cherche la salle avec `salles.findById(salleId)` et lance `RessourceIntrouvableException` si elle
+            n'existe pas ;
+          - si `salle.isReservee()` est vrai, lance `SalleDejaReserveeException` ;
+          - sinon renvoie `SalleDto.from(salle)`.
+        criteria: "orElseThrow, test isReservee avec exception, retour d'un DTO."
+        hints:
+          - "`Salle salle = salles.findById(salleId).orElseThrow(() -> new RessourceIntrouvableException(\"Salle\"));`"
+          - "`if (salle.isReservee()) { throw new SalleDejaReserveeException(salle.getNom()); }`"
+          - "`return SalleDto.from(salle);`"
+        solution: |
+          public SalleDto verifierLibre(Long salleId) {
+              Salle salle = salles.findById(salleId)
+                      .orElseThrow(() -> new RessourceIntrouvableException("Salle " + salleId));
+              if (salle.isReservee()) {
+                  throw new SalleDejaReserveeException(salle.getNom());
+              }
+              return SalleDto.from(salle);
+          }
+        explanation: "La règle est dans le service, l'erreur est claire."
+        xp: 20
+        payload:
+          language: java
+          starter: |
+            public SalleDto verifierLibre(Long salleId) {
+
+            }
+          checks:
+            - pattern: 'salles\.findById\s*\(\s*salleId\s*\)\s*\.orElseThrow\s*\(\s*\(\s*\)\s*->\s*new\s+RessourceIntrouvableException'
+              message: "Cherche la salle et lance RessourceIntrouvableException avec orElseThrow."
+            - pattern: 'if\s*\(\s*\w+\.isReservee\s*\(\s*\)\s*\)\s*\{?\s*throw\s+new\s+SalleDejaReserveeException'
+              message: "Si la salle est réservée, lance SalleDejaReserveeException."
+            - pattern: 'return\s+SalleDto\.from\s*\(\s*\w+\s*\)'
+              message: "Renvoie SalleDto.from(salle)."
+            - pattern: 'return\s+null'
+              absent: true
+              message: "Ne renvoie pas null : lance une exception claire."
+      - slug: sb-ex-service-bug
+        kind: CORRIGER_ERREUR
+        title: "Un null au lieu d'une exception"
+        difficulty: FACILE
+        skill: spring-structure
+        statement: |
+          Cette méthode renvoie `null` si le livre n'existe pas. Remplace ce comportement par
+          `orElseThrow(() -> new RessourceIntrouvableException("Livre " + id))`.
+        criteria: "orElseThrow, plus de null."
+        hints:
+          - "orElse(null) cache le problème."
+          - "orElseThrow le signale."
+          - "`.orElseThrow(() -> new RessourceIntrouvableException(\"Livre \" + id))`"
+        solution: |
+          public LivreDto lire(Long id) {
+              Livre livre = livres.findById(id)
+                      .orElseThrow(() -> new RessourceIntrouvableException("Livre " + id));
+              return LivreDto.from(livre);
+          }
+        explanation: "Une absence devient une erreur claire."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public LivreDto lire(Long id) {
+                Livre livre = livres.findById(id).orElse(null);
+                return LivreDto.from(livre);
+            }
+          checks:
+            - pattern: 'orElse\s*\(\s*null\s*\)'
+              absent: true
+              message: "orElse(null) cache le problème."
+            - pattern: '\.orElseThrow\s*\(\s*\(\s*\)\s*->\s*new\s+RessourceIntrouvableException'
+              message: "Utilise orElseThrow avec RessourceIntrouvableException."
+
+  # ===================================================================== LEÇON 7
+  - slug: sb-transactional
+    title: "Tout ou rien : @Transactional"
+    duration: 10
+    objective: "Protéger plusieurs écritures avec @Transactional pour qu'elles réussissent ensemble ou soient toutes annulées."
+    prerequisites: "Leçon « La couche service et les règles métier »."
+    skills: [spring-structure]
+    xp: 15
+    memo: |
+      - `@Transactional` : toutes les écritures de la méthode réussissent **ensemble** ou sont **toutes annulées** (rollback).
+      - Le rollback a lieu par défaut sur les exceptions non vérifiées (`RuntimeException`).
+      - On le place sur les méthodes de **service** qui écrivent ; `readOnly = true` pour les lectures.
+    commonMistakes: |
+      - Oublier `@Transactional` sur une méthode qui écrit dans plusieurs tables.
+      - Le mettre sur le contrôleur au lieu du service.
+    blocks:
+      - type: definition
+        id: def-transaction
+        term: "Transaction"
+        md: |
+          Un **déménagement en un seul voyage** : soit tous les cartons arrivent dans la nouvelle maison, soit on
+          ramène tout à l'ancienne. Jamais la moitié des meubles d'un côté et le reste de l'autre.
+      - type: code
+        id: code-transaction
+        language: java
+        title: "Emprunter un livre"
+        code: |
+          @Transactional
+          public void emprunter(Long livreId, Long adherentId) {
+              Livre livre = livres.findById(livreId)
+                      .orElseThrow(() -> new RessourceIntrouvableException("Livre " + livreId));
+              livre.setEmprunte(true);
+              emprunts.save(new Emprunt(livre, adherentId));
+          }
+        lines:
+          - n: 1
+            note: "`@Transactional` : les deux écritures forment un tout."
+          - n: 5
+            note: "Première écriture : le livre devient emprunté."
+          - n: 6
+            note: "Seconde écriture : l'emprunt est enregistré. Si elle échoue, la première est annulée."
+      - type: question
+        ref: sb-sv-q2
+        review: code-transaction
+      - type: question
+        ref: sb-sv-q5
+        review: def-transaction
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète les annotations."
+      - type: exercise
+        ref: sb-ex-transaction-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : la règle des emprunts."
+      - type: exercise
+        ref: sb-ex-regle-metier
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : deux écritures sans filet."
+      - type: exercise
+        ref: sb-ex-transaction-bug
+      - type: jury
+        items:
+          - q: "À quoi sert @Transactional ?"
+            a: "À exécuter plusieurs opérations en base de façon atomique : si une exception non vérifiée survient, tout est annulé (rollback). Je la place sur les méthodes de service qui écrivent, et readOnly = true sur les lectures."
+      - type: quiz
+        items:
+          - ref: sb-tx-q3
+            review: def-transaction
+          - ref: sb-tx-q4
+            review: code-transaction
+          - ref: sb-tx-q5
+            review: def-transaction
+    questions:
+      - code: sb-sv-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Avec `@Transactional`, si l'enregistrement de l'emprunt échoue, le livre redevient disponible."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Rollback : tout ou rien."
+          - label: "Faux"
+            correct: false
+            why: "C'est exactement le rôle d'une transaction."
+        explanation: "Par défaut, le rollback a lieu sur les exceptions non vérifiées (RuntimeException)."
+      - code: sb-sv-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Un livre est marqué emprunté, puis l'enregistrement de l'emprunt échoue. Sans transaction, que se passe-t-il ?"
+        choices:
+          - label: "Le livre reste marqué emprunté sans emprunt enregistré : données incohérentes"
+            correct: true
+            why: "La première écriture reste."
+          - label: "Tout est annulé automatiquement"
+            correct: false
+            why: "Seulement avec une transaction."
+          - label: "La base refuse la première écriture"
+            correct: false
+            why: "Elle l'a déjà acceptée."
+        explanation: "La transaction protège la cohérence."
+      - code: sb-tx-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-structure
+        prompt: "Où place-t-on `@Transactional` ?"
+        choices:
+          - label: "Sur les méthodes de service qui écrivent"
+            correct: true
+            why: "Le service orchestre les écritures."
+          - label: "Sur le contrôleur"
+            correct: false
+            why: "Il ne gère que HTTP."
+          - label: "Sur le record DTO"
+            correct: false
+            why: "Un DTO ne touche pas la base."
+        explanation: "Service + écritures."
+      - code: sb-tx-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: spring-structure
+        prompt: "Que veut dire « rollback » ?"
+        choices:
+          - label: "Annuler toutes les écritures de la transaction"
+            correct: true
+            why: "Retour à l'état d'avant."
+          - label: "Enregistrer deux fois"
+            correct: false
+            why: "C'est l'inverse."
+          - label: "Redémarrer le serveur"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Tout ou rien."
+      - code: sb-tx-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: spring-structure
+        prompt: "Que signifie `@Transactional(readOnly = true)` ?"
+        choices:
+          - label: "La méthode ne fait que lire"
+            correct: true
+            why: "Utile pour les lectures."
+          - label: "La méthode est interdite"
+            correct: false
+            why: "Elle fonctionne normalement."
+          - label: "La base devient en lecture seule pour tout le monde"
+            correct: false
+            why: "Seulement pour cette méthode."
+        explanation: "Écriture : @Transactional ; lecture : readOnly = true."
+    exercises:
+      - slug: sb-ex-transaction-guide
+        kind: COMPLETER
+        title: "Compléter les annotations"
+        difficulty: FACILE
+        skill: spring-structure
+        statement: "Complète : une lecture protégée en lecture seule, puis une écriture protégée."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "L'annotation s'appelle Transactional."
+          - "Pour une lecture : readOnly = true."
+          - "Transactional, readOnly, Transactional."
+        solution: '["Transactional", "readOnly", "Transactional"]'
+        explanation: "Lecture seule d'un côté, tout-ou-rien de l'autre."
+        xp: 10
+        payload:
+          language: java
+          template: |
+            @[[1]]([[2]] = true)
+            public List<SalleDto> lister() { … }
+
+            @[[3]]
+            public void reserver(Long salleId) { … }
+          blanks:
+            - ["Transactional"]
+            - ["readOnly"]
+            - ["Transactional"]
       - slug: sb-ex-regle-metier
         kind: CODE_LIBRE
         title: "La règle des emprunts"
@@ -531,37 +1700,70 @@ lessons:
             - pattern: 'return\s+null'
               absent: true
               message: "Ne renvoie pas null : lance une exception claire."
+      - slug: sb-ex-transaction-bug
+        kind: CORRIGER_ERREUR
+        title: "Deux écritures sans filet"
+        difficulty: FACILE
+        skill: spring-structure
+        statement: |
+          Cette méthode écrit deux fois en base sans transaction. Ajoute l'annotation qui garantit le
+          « tout ou rien ».
+        criteria: "@Transactional sur reserver."
+        hints:
+          - "Deux écritures doivent réussir ensemble."
+          - "Une annotation les protège."
+          - "`@Transactional`"
+        solution: |
+          @Transactional
+          public void reserver(Long salleId, Long membreId) {
+              Salle salle = salles.findById(salleId).orElseThrow();
+              salle.setReservee(true);
+              reservations.save(new Reservation(salle, membreId));
+          }
+        explanation: "Tout ou rien."
+        xp: 10
+        payload:
+          language: java
+          starter: |
+            public void reserver(Long salleId, Long membreId) {
+                Salle salle = salles.findById(salleId).orElseThrow();
+                salle.setReservee(true);
+                reservations.save(new Reservation(salle, membreId));
+            }
+          checks:
+            - pattern: '@Transactional\s+public\s+void\s+reserver'
+              message: "Ajoute @Transactional au-dessus de reserver."
 
 bank:
-  - code: sb-c2-b1
+  - code: sb-c2-b3
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: spring-rest
-    prompt: "Quelle méthode HTTP convient pour modifier seulement le prix d'un produit ?"
+    prompt: "Quelle annotation répond à une requête DELETE ?"
     choices:
-      - label: "PATCH"
+      - label: "@DeleteMapping"
         correct: true
-        why: "Modification partielle."
-      - label: "PUT"
+        why: "Un mapping par verbe."
+      - label: "@GetMapping"
         correct: false
-        why: "PUT remplace toute la ressource."
-      - label: "POST"
+        why: "Il répond aux GET."
+      - label: "@RequestBody"
         correct: false
-        why: "POST crée."
-    explanation: "PUT = tout remplacer ; PATCH = modifier une partie."
-  - code: sb-c2-b2
+        why: "Il lit le corps."
+    explanation: "@GetMapping, @PostMapping, @PutMapping, @DeleteMapping."
+  - code: sb-c2-b4
     kind: CHOIX_UNIQUE
     difficulty: 2
     skill: spring-structure
-    prompt: "Pourquoi l'injection par constructeur est-elle recommandée ?"
+    prompt: "Quelle exception deviendra un 404 dans une API bien construite ?"
     choices:
-      - label: "Les dépendances sont final, obligatoires et faciles à fournir dans un test"
+      - label: "RessourceIntrouvableException"
         correct: true
-        why: "On peut faire `new Service(fauxRepository)` dans un test."
-      - label: "Elle est plus rapide à l'exécution"
+        why: "Un gestionnaire global la transforme en 404."
+      - label: "NullPointerException"
         correct: false
-        why: "La différence n'est pas là."
-      - label: "C'est la seule possible"
+        why: "C'est un bug, pas un cas prévu."
+      - label: "Aucune"
         correct: false
-        why: "Il existe aussi l'injection par champ, déconseillée."
-    explanation: "Constructeur = dépendances visibles et immuables."
+        why: "C'est justement le rôle des exceptions métier."
+    explanation: "Tu verras le gestionnaire global au chapitre suivant."
