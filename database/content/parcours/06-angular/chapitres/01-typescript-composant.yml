@@ -2,34 +2,30 @@ slug: ng-typescript-composant
 position: 1
 level: DEBUTANT
 title: "TypeScript et premier composant"
-summary: "Donner des types à ses valeurs, décrire un objet avec une interface, puis créer son premier composant Angular."
-quizQuestionCount: 10
+summary: "Donner des types à ses valeurs, décrire un objet avec une interface, créer son premier composant Angular, puis l'utiliser dans une page. Une seule notion par leçon."
+quizQuestionCount: 14
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: ng-typescript
-    title: "TypeScript : du JavaScript avec des étiquettes"
-    duration: 12
-    objective: "Déclarer des variables typées, décrire un objet avec une interface et typer une fonction."
-    prerequisites: "Parcours « Premiers pas en programmation » (variables, fonctions, objets)."
+    title: "TypeScript : des étiquettes sur les valeurs"
+    duration: 9
+    objective: "Déclarer des variables typées avec string, number, boolean et string[]."
+    prerequisites: "Parcours « Premiers pas en programmation » (variables, listes)."
     skills: [typescript]
-    xp: 20
+    xp: 15
     memo: |
       - **TypeScript** = JavaScript + **types**. Le navigateur exécute ensuite du JavaScript normal.
       - Types de base : `string` (texte), `number` (nombre), `boolean` (vrai/faux), `string[]` (liste de textes).
-      - `interface` : la **forme** d'un objet (ses champs et leurs types). `?` = champ facultatif.
-      - Fonction typée : `function saluer(prenom: string): string { … }`.
+      - On écrit le type après le nom, derrière deux-points : `let ville: string = "Lyon";`.
       - Les erreurs de type sont signalées **avant** l'exécution, dans l'éditeur.
     commonMistakes: |
       - Écrire `String` ou `Number` avec une majuscule au lieu de `string` et `number`.
       - Utiliser `any` partout : on perd toute l'aide de TypeScript.
-      - Oublier que les types disparaissent à l'exécution : ils ne vérifient pas les données reçues d'une API.
     blocks:
       - type: text
         md: |
           En JavaScript, une variable peut contenir n'importe quoi : un texte, puis un nombre, puis une liste.
-          C'est pratique… jusqu'au jour où l'on additionne un texte et un nombre par erreur.
-
           **TypeScript** ajoute des **étiquettes** sur les valeurs. Comme les étiquettes sur des bocaux de
           cuisine : si le bocal dit « sucre », on n'y verse pas du sel.
       - type: definition
@@ -37,23 +33,23 @@ lessons:
         term: "Type"
         md: |
           Le **genre** d'une valeur : `string` pour un texte, `number` pour un nombre, `boolean` pour vrai ou
-          faux. On l'écrit après le nom, derrière deux-points : `let age: number = 30;`.
+          faux. On l'écrit après le nom, derrière deux-points.
       - type: code
         id: code-types
         language: typescript
         title: "Des variables avec des étiquettes"
         code: |
           let prenom: string = "Awa";
-          let age: number = 30;
+          let annee: number = 2024;
           let inscrite: boolean = true;
           let langues: string[] = ["français", "anglais"];
 
-          age = "trente"; // Erreur !
+          annee = "deux mille"; // Erreur !
         lines:
           - n: 1
             note: "`string` : cette variable contiendra toujours du texte."
           - n: 2
-            note: "`number` : un nombre, entier ou à virgule."
+            note: "`number` : un nombre."
           - n: 3
             note: "`boolean` : seulement `true` ou `false`."
           - n: 4
@@ -65,68 +61,37 @@ lessons:
         title: "TypeScript devine souvent tout seul"
         md: |
           Si tu écris `let ville = "Lyon";`, TypeScript comprend que `ville` est un `string`. On appelle ça
-          l'**inférence**. On écrit le type surtout pour les paramètres de fonctions et les objets.
+          l'**inférence**.
       - type: question
         ref: ng-ts-q1
         review: code-types
-      - type: definition
-        id: def-interface
-        term: "Interface"
-        md: |
-          Le **plan** d'un objet : la liste de ses champs et leurs types. Comme un formulaire papier vierge
-          qui dit quelles cases remplir. Un point d'interrogation `?` marque une case facultative.
-      - type: code
-        id: code-interface
-        language: typescript
-        title: "Décrire un produit"
-        code: |
-          interface Produit {
-            id: number;
-            nom: string;
-            prix: number;
-            enStock?: boolean;
-          }
-
-          function etiquette(produit: Produit): string {
-            return `${produit.nom} : ${produit.prix} €`;
-          }
-
-          const cafe: Produit = { id: 1, nom: "Café", prix: 2.5 };
-          console.log(etiquette(cafe)); // Café : 2.5 €
-        lines:
-          - n: 1
-            note: "`interface Produit` : le plan de tout objet « produit »."
-          - n: 5
-            note: "`enStock?` : champ facultatif, on peut ne pas le donner."
-          - n: 8
-            note: "Le paramètre doit être un `Produit`, et la fonction renvoie un texte (`string`)."
-          - n: 12
-            note: "Si on oublie `nom` ou si on écrit `prix: \"2.5\"`, TypeScript refuse."
       - type: question
-        ref: ng-ts-q2
-        review: def-interface
+        ref: ng-ts-q5
+        review: code-types
       - type: text
-        md: "Exercice guidé : donne le bon type à chaque variable."
+        md: "**Exercice 1 (guidé)** : donne le bon type à chaque variable."
       - type: exercise
         ref: ng-ex-types-guide
       - type: text
-        md: "En autonomie : écris une interface et une fonction typée."
+        md: "**Exercice 2 (en autonomie)** : déclare trois variables typées."
       - type: exercise
-        ref: ng-ex-interface
+        ref: ng-ex-types-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une majuscule de trop."
+      - type: exercise
+        ref: ng-ex-types-bug
       - type: jury
         items:
           - q: "Pourquoi utiliser TypeScript plutôt que JavaScript ?"
             a: "Les types détectent beaucoup d'erreurs pendant l'écriture du code, avant l'exécution. L'éditeur propose aussi une meilleure autocomplétion, et le code est plus lisible pour l'équipe."
-          - q: "Quelle différence entre une interface et une classe en TypeScript ?"
-            a: "L'interface décrit seulement une forme ; elle disparaît à la compilation. La classe existe à l'exécution : on peut créer des objets avec new et elle contient du code."
       - type: quiz
         items:
           - ref: ng-ts-q3
-            review: code-types
-          - ref: ng-ts-q4
-            review: code-interface
-          - ref: ng-ts-q5
             review: def-type
+          - ref: ng-c1-b1
+            review: def-type
+          - ref: ng-ty-q5
+            review: code-types
     questions:
       - code: ng-ts-q1
         kind: CHOIX_UNIQUE
@@ -144,22 +109,22 @@ lessons:
             correct: false
             why: "Ce n'est pas vrai/faux."
         explanation: "Les guillemets indiquent un texte : `string`."
-      - code: ng-ts-q2
+      - code: ng-ts-q5
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: typescript
-        prompt: "Dans une interface, que signifie `telephone?: string;` ?"
+        prompt: "Comment écrire le type « liste de textes » ?"
         choices:
-          - label: "Le champ est facultatif"
+          - label: "string[]"
             correct: true
-            why: "Le `?` rend le champ optionnel."
-          - label: "Le champ est une question"
+            why: "Le type, puis des crochets."
+          - label: "[string]list"
             correct: false
-            why: "Le `?` n'a rien à voir avec une question."
-          - label: "Le champ peut contenir n'importe quel type"
+            why: "Cette écriture n'existe pas."
+          - label: "strings"
             correct: false
-            why: "S'il est présent, c'est un `string`."
-        explanation: "`?` = on peut ne pas le fournir."
+            why: "Ce n'est pas un type TypeScript."
+        explanation: "`string[]` se lit « liste de string »."
       - code: ng-ts-q3
         kind: VRAI_FAUX
         difficulty: 2
@@ -173,42 +138,38 @@ lessons:
             correct: true
             why: "Exact : ils ne servent qu'à l'écriture du code."
         explanation: "Pour vérifier des données reçues, il faut du code de contrôle (et le backend valide aussi)."
-      - code: ng-ts-q4
-        kind: RESULTAT_CODE
-        difficulty: 2
-        skill: typescript
-        prompt: "Que se passe-t-il avec ce code ?"
-        snippet: |
-          interface Produit { nom: string; prix: number; }
-          const p: Produit = { nom: "Thé" };
-        language: typescript
-        choices:
-          - label: "Erreur : le champ prix manque"
-            correct: true
-            why: "prix n'a pas de `?` : il est obligatoire."
-          - label: "Aucune erreur"
-            correct: false
-            why: "Le plan exige prix."
-          - label: "prix vaut 0 automatiquement"
-            correct: false
-            why: "TypeScript ne remplit rien tout seul."
-        explanation: "Tous les champs sans `?` doivent être présents."
-      - code: ng-ts-q5
+      - code: ng-c1-b1
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: typescript
-        prompt: "Comment écrire le type « liste de nombres » ?"
+        prompt: "Pourquoi éviter le type `any` ?"
         choices:
-          - label: "number[]"
+          - label: "Il désactive les vérifications de TypeScript sur cette valeur"
             correct: true
-            why: "Le type, puis des crochets."
-          - label: "[number]list"
+            why: "On perd la protection."
+          - label: "Il ralentit le navigateur"
             correct: false
-            why: "Cette écriture n'existe pas."
-          - label: "numbers"
+            why: "Les types disparaissent à l'exécution."
+          - label: "Il est interdit par Angular"
             correct: false
-            why: "Ce n'est pas un type TypeScript."
-        explanation: "`number[]` se lit « liste de number »."
+            why: "Il est permis, mais déconseillé."
+        explanation: "Préfère un type précis, ou `unknown` si tu ne sais vraiment pas."
+      - code: ng-ty-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: typescript
+        prompt: "Quel type pour `let connecte = false;` ?"
+        choices:
+          - label: "boolean"
+            correct: true
+            why: "true ou false."
+          - label: "string"
+            correct: false
+            why: "Pas de guillemets : ce n'est pas un texte."
+          - label: "number"
+            correct: false
+            why: "Ce n'est pas un nombre."
+        explanation: "true/false → boolean."
     exercises:
       - slug: ng-ex-types-guide
         kind: COMPLETER
@@ -228,7 +189,7 @@ lessons:
           language: typescript
           template: |
             let nom: [[1]] = "Café";
-            let quantite: [[2]] = 3;
+            let etage: [[2]] = 3;
             let disponible: [[3]] = true;
             let tags: [[4]] = ["chaud", "boisson"];
           blanks:
@@ -236,80 +197,358 @@ lessons:
             - ["number"]
             - ["boolean"]
             - ["string[]", "Array<string>"]
+      - slug: ng-ex-types-libre
+        kind: CODE_LIBRE
+        title: "Trois variables typées"
+        difficulty: FACILE
+        skill: typescript
+        statement: |
+          Déclare avec leur type :
+          - `titre` qui vaut `"Le Petit Prince"` ;
+          - `disponible` qui vaut `true` ;
+          - `genres` qui vaut la liste `["conte", "jeunesse"]`.
+        criteria: "Trois variables avec les types string, boolean et string[]."
+        hints:
+          - "`let nom: type = valeur;`"
+          - "Une liste de textes : `string[]`."
+          - "`let titre: string = \"Le Petit Prince\";`"
+        solution: |
+          let titre: string = "Le Petit Prince";
+          let disponible: boolean = true;
+          let genres: string[] = ["conte", "jeunesse"];
+        explanation: "Chaque valeur a son étiquette."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            // Tes trois variables
+          checks:
+            - pattern: '\btitre\s*:\s*string\s*='
+              message: "Déclare titre avec le type string."
+            - pattern: '\bdisponible\s*:\s*boolean\s*=\s*true'
+              message: "Déclare disponible avec le type boolean."
+            - pattern: '\bgenres\s*:\s*(string\[\]|Array<string>)\s*=\s*\['
+              message: "Déclare genres avec le type string[]."
+      - slug: ng-ex-types-bug
+        kind: CORRIGER_ERREUR
+        title: "Une majuscule de trop"
+        difficulty: FACILE
+        skill: typescript
+        statement: |
+          Les types de base s'écrivent en minuscules. Corrige `String` et `Boolean`.
+        criteria: "string et boolean en minuscules."
+        hints:
+          - "Regarde la première lettre des types."
+          - "Les types de base sont en minuscules."
+          - "`string` et `boolean`."
+        solution: |
+          let ville: string = "Lyon";
+          let ouvert: boolean = true;
+        explanation: "`String` avec majuscule désigne autre chose : on écrit toujours `string`."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            let ville: String = "Lyon";
+            let ouvert: Boolean = true;
+          checks:
+            - pattern: ':\s*(String|Boolean)\b'
+              absent: true
+              message: "Écris les types en minuscules."
+            - pattern: '\bville\s*:\s*string\b'
+              message: "ville : string."
+            - pattern: '\bouvert\s*:\s*boolean\b'
+              message: "ouvert : boolean."
+
+  # ===================================================================== LEÇON 2
+  - slug: ng-interfaces
+    title: "Les interfaces et les fonctions typées"
+    duration: 10
+    objective: "Décrire la forme d'un objet avec une interface et l'utiliser comme type de paramètre."
+    prerequisites: "Leçon « TypeScript : des étiquettes sur les valeurs »."
+    skills: [typescript]
+    xp: 15
+    memo: |
+      - `interface` : la **forme** d'un objet (ses champs et leurs types).
+      - `?` = champ **facultatif** : `telephone?: string;`.
+      - Fonction typée : `function fiche(livre: Livre): string { … }` — type du paramètre, puis type du résultat.
+      - Tous les champs sans `?` sont obligatoires.
+    commonMistakes: |
+      - Oublier un champ obligatoire en créant l'objet.
+      - Confondre interface (une forme) et classe (qui existe à l'exécution).
+    blocks:
+      - type: definition
+        id: def-interface
+        term: "Interface"
+        md: |
+          Le **plan** d'un objet : la liste de ses champs et leurs types. Comme un formulaire papier vierge
+          qui dit quelles cases remplir. Un point d'interrogation `?` marque une case facultative.
+      - type: code
+        id: code-interface
+        language: typescript
+        title: "Décrire un livre"
+        code: |
+          interface Livre {
+            id: number;
+            titre: string;
+            auteur: string;
+            emprunte?: boolean;
+          }
+
+          function fiche(livre: Livre): string {
+            return `${livre.titre}, de ${livre.auteur}`;
+          }
+
+          const conte: Livre = { id: 1, titre: "Le Petit Prince", auteur: "Saint-Exupéry" };
+          console.log(fiche(conte)); // Le Petit Prince, de Saint-Exupéry
+        lines:
+          - n: 1
+            note: "`interface Livre` : le plan de tout objet « livre »."
+          - n: 5
+            note: "`emprunte?` : champ facultatif, on peut ne pas le donner."
+          - n: 8
+            note: "Le paramètre doit être un `Livre`, et la fonction renvoie un texte (`string`)."
+          - n: 12
+            note: "Si on oublie `titre`, TypeScript refuse."
+      - type: question
+        ref: ng-ts-q2
+        review: def-interface
+      - type: question
+        ref: ng-ts-q4
+        review: code-interface
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète l'interface."
+      - type: exercise
+        ref: ng-ex-interface-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une interface et une fonction typée."
+      - type: exercise
+        ref: ng-ex-interface
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un champ facultatif oublié."
+      - type: exercise
+        ref: ng-ex-interface-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre une interface et une classe en TypeScript ?"
+            a: "L'interface décrit seulement une forme ; elle disparaît à la compilation. La classe existe à l'exécution : on peut créer des objets avec new et elle contient du code."
+      - type: quiz
+        items:
+          - ref: ng-it-q3
+            review: def-interface
+          - ref: ng-it-q4
+            review: code-interface
+          - ref: ng-it-q5
+            review: code-interface
+    questions:
+      - code: ng-ts-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: typescript
+        prompt: "Dans une interface, que signifie `telephone?: string;` ?"
+        choices:
+          - label: "Le champ est facultatif"
+            correct: true
+            why: "Le `?` rend le champ optionnel."
+          - label: "Le champ est une question"
+            correct: false
+            why: "Le `?` n'a rien à voir avec une question."
+          - label: "Le champ peut contenir n'importe quel type"
+            correct: false
+            why: "S'il est présent, c'est un `string`."
+        explanation: "`?` = on peut ne pas le fournir."
+      - code: ng-ts-q4
+        kind: RESULTAT_CODE
+        difficulty: 2
+        skill: typescript
+        prompt: "Que se passe-t-il avec ce code ?"
+        snippet: |
+          interface Livre { titre: string; auteur: string; }
+          const l: Livre = { titre: "Dune" };
+        language: typescript
+        choices:
+          - label: "Erreur : le champ auteur manque"
+            correct: true
+            why: "auteur n'a pas de `?` : il est obligatoire."
+          - label: "Aucune erreur"
+            correct: false
+            why: "Le plan exige auteur."
+          - label: "auteur vaut un texte vide automatiquement"
+            correct: false
+            why: "TypeScript ne remplit rien tout seul."
+        explanation: "Tous les champs sans `?` doivent être présents."
+      - code: ng-it-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: typescript
+        prompt: "Une interface décrit la forme d'un objet, sans contenir de code à exécuter."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Elle n'est qu'un plan."
+          - label: "Faux"
+            correct: false
+            why: "C'est la classe qui contient du code."
+        explanation: "Interface = plan ; classe = fabrique d'objets."
+      - code: ng-it-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: typescript
+        prompt: "Dans `function fiche(livre: Livre): string`, que veut dire le `string` final ?"
+        choices:
+          - label: "La fonction renvoie un texte"
+            correct: true
+            why: "C'est le type du résultat."
+          - label: "Le paramètre est un texte"
+            correct: false
+            why: "Le paramètre est un Livre."
+          - label: "La fonction s'appelle string"
+            correct: false
+            why: "Elle s'appelle fiche."
+        explanation: "Type des paramètres entre parenthèses, type du résultat après."
+      - code: ng-it-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: typescript
+        prompt: "Que se passe-t-il si on appelle `fiche(\"Dune\")` ?"
+        choices:
+          - label: "TypeScript signale une erreur : un texte n'est pas un Livre"
+            correct: true
+            why: "Le paramètre doit respecter l'interface."
+          - label: "Ça marche"
+            correct: false
+            why: "Le type du paramètre protège la fonction."
+          - label: "Le texte est transformé en Livre"
+            correct: false
+            why: "Rien n'est transformé automatiquement."
+        explanation: "L'interface protège la fonction contre les mauvais arguments."
+    exercises:
+      - slug: ng-ex-interface-guide
+        kind: COMPLETER
+        title: "Compléter une interface"
+        difficulty: FACILE
+        skill: typescript
+        statement: "Complète l'interface Salle : le mot-clé, le type du nom, et le symbole qui rend `projecteur` facultatif."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le mot-clé qui déclare un plan d'objet."
+          - "Un nom est un texte ; facultatif s'écrit avec un point d'interrogation."
+          - "interface, string, ?."
+        solution: '["interface", "string", "?"]'
+        explanation: "`projecteur?: boolean` : on peut ne pas le donner."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            [[1]] Salle {
+              nom: [[2]];
+              projecteur[[3]]: boolean;
+            }
+          blanks:
+            - ["interface"]
+            - ["string"]
+            - ["?"]
       - slug: ng-ex-interface
         kind: CODE_LIBRE
         title: "Une interface et une fonction typée"
         difficulty: INTERMEDIAIRE
         skill: typescript
         statement: |
-          1. Écris une interface `Livre` avec : `titre` (texte), `auteur` (texte), `pages` (nombre) et
-             `emprunte` (vrai/faux, **facultatif**).
-          2. Écris une fonction `estLong(livre: Livre): boolean` qui renvoie `true` si le livre a plus de
-             300 pages.
-        criteria: "L'interface a les quatre champs bien typés ; la fonction est typée et compare pages à 300."
+          1. Écris une interface `Film` avec : `titre` (texte), `realisatrice` (texte) et `vu` (vrai/faux,
+             **facultatif**).
+          2. Écris une fonction `resume(film: Film): string` qui renvoie le titre suivi de « , de » et du nom de
+             la réalisatrice.
+        criteria: "L'interface a les trois champs bien typés ; la fonction est typée et utilise le titre et la réalisatrice."
         hints:
-          - "Commence par `interface Livre {` et termine chaque champ par un point-virgule."
-          - "Le champ facultatif s'écrit `emprunte?: boolean;`."
-          - "`function estLong(livre: Livre): boolean { return livre.pages > 300; }`"
+          - "Commence par `interface Film {` et termine chaque champ par un point-virgule."
+          - "Le champ facultatif s'écrit `vu?: boolean;`."
+          - "``function resume(film: Film): string { return `${film.titre}, de ${film.realisatrice}`; }``"
         solution: |
-          interface Livre {
+          interface Film {
             titre: string;
-            auteur: string;
-            pages: number;
-            emprunte?: boolean;
+            realisatrice: string;
+            vu?: boolean;
           }
 
-          function estLong(livre: Livre): boolean {
-            return livre.pages > 300;
+          function resume(film: Film): string {
+            return `${film.titre}, de ${film.realisatrice}`;
           }
         explanation: "L'interface décrit la forme ; la fonction ne peut recevoir qu'un objet qui respecte cette forme."
         xp: 20
         payload:
           language: typescript
           starter: |
-            // 1. L'interface Livre
+            // 1. L'interface Film
 
 
-            // 2. La fonction estLong
+            // 2. La fonction resume
           checks:
-            - pattern: 'interface\s+Livre\s*\{'
-              message: "Déclare `interface Livre { … }`."
+            - pattern: 'interface\s+Film\s*\{'
+              message: "Déclare `interface Film { … }`."
             - pattern: '\btitre\s*:\s*string'
               message: "titre doit être de type string."
-            - pattern: '\bauteur\s*:\s*string'
-              message: "auteur doit être de type string."
-            - pattern: '\bpages\s*:\s*number'
-              message: "pages doit être de type number."
-            - pattern: '\bemprunte\s*\?\s*:\s*boolean'
-              message: "emprunte est facultatif : `emprunte?: boolean`."
-            - pattern: 'function\s+estLong\s*\(\s*livre\s*:\s*Livre\s*\)\s*:\s*boolean'
-              message: "Écris la signature `function estLong(livre: Livre): boolean`."
-            - pattern: 'livre\.pages\s*>\s*300|300\s*<\s*livre\.pages'
-              message: "Compare `livre.pages` à 300."
+            - pattern: '\brealisatrice\s*:\s*string'
+              message: "realisatrice doit être de type string."
+            - pattern: '\bvu\s*\?\s*:\s*boolean'
+              message: "vu est facultatif : `vu?: boolean`."
+            - pattern: 'function\s+resume\s*\(\s*film\s*:\s*Film\s*\)\s*:\s*string'
+              message: "Écris la signature `function resume(film: Film): string`."
+            - pattern: 'film\.titre[\s\S]*film\.realisatrice'
+              message: "Utilise film.titre puis film.realisatrice dans le texte renvoyé."
+      - slug: ng-ex-interface-bug
+        kind: CORRIGER_ERREUR
+        title: "Un champ facultatif oublié"
+        difficulty: FACILE
+        skill: typescript
+        statement: |
+          L'objet `alice` n'a pas de téléphone, et TypeScript refuse de le créer. Rends le champ `telephone`
+          facultatif dans l'interface.
+        criteria: "telephone?: string."
+        hints:
+          - "Quel symbole rend un champ facultatif ?"
+          - "Il se place juste après le nom du champ."
+          - "`telephone?: string;`"
+        solution: |
+          interface Contact {
+            nom: string;
+            telephone?: string;
+          }
+          const alice: Contact = { nom: "Alice" };
+        explanation: "Le `?` autorise l'absence du champ."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            interface Contact {
+              nom: string;
+              telephone: string;
+            }
+            const alice: Contact = { nom: "Alice" };
+          checks:
+            - pattern: '\btelephone\s*\?\s*:\s*string'
+              message: "Écris telephone?: string."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 3
   - slug: ng-composant
     title: "Mon premier composant"
-    duration: 13
-    objective: "Comprendre ce qu'est un composant Angular, écrire sa classe et son template, et afficher une valeur avec l'interpolation."
-    prerequisites: "Leçon « TypeScript : du JavaScript avec des étiquettes »."
+    duration: 11
+    objective: "Écrire un composant Angular : sa classe, son sélecteur et un template qui affiche une valeur avec l'interpolation."
+    prerequisites: "Leçon « Les interfaces et les fonctions typées »."
     skills: [angular-composants, typescript]
-    xp: 25
+    xp: 15
     memo: |
       - Un **composant** = une brique d'interface : une **classe** TypeScript (les données) + un **template** HTML (l'affichage).
       - `@Component({ selector, template })` : le décorateur qui transforme la classe en composant.
       - `selector: 'app-carte'` : le nom de la balise pour utiliser le composant (`<app-carte />`).
       - `{{ titre }}` : l'**interpolation**, qui affiche la valeur d'une propriété de la classe.
-      - Depuis Angular 17+, les composants sont **standalone** : ils déclarent eux-mêmes leurs `imports`.
     commonMistakes: |
       - Oublier `export` devant la classe : les autres fichiers ne peuvent pas l'utiliser.
       - Écrire `{{ this.titre }}` : dans le template, on écrit juste `{{ titre }}`.
-      - Utiliser un composant dans un autre sans l'ajouter aux `imports`.
     blocks:
       - type: text
         md: |
-          Regarde une page web : un menu, une barre de recherche, des cartes produits, un pied de page. Chaque
-          morceau est une **brique**. Angular te fait construire chaque brique à part, puis les assembler.
+          Regarde une page web : un menu, une barre de recherche, des cartes, un pied de page. Chaque morceau est
+          une **brique**. Angular te fait construire chaque brique à part.
       - type: definition
         id: def-composant
         term: "Composant"
@@ -319,20 +558,20 @@ lessons:
       - type: code
         id: code-composant
         language: typescript
-        title: "carte-produit.component.ts"
+        title: "carte-livre.component.ts"
         code: |
           import { Component } from '@angular/core';
 
           @Component({
-            selector: 'app-carte-produit',
+            selector: 'app-carte-livre',
             template: `
-              <h2>{{ nom }}</h2>
-              <p>Prix : {{ prix }} €</p>
+              <h2>{{ titre }}</h2>
+              <p>Auteur : {{ auteur }}</p>
             `,
           })
-          export class CarteProduitComponent {
-            nom = 'Café';
-            prix = 2.5;
+          export class CarteLivreComponent {
+            titre = 'Le Petit Prince';
+            auteur = 'Saint-Exupéry';
           }
         lines:
           - n: 1
@@ -340,9 +579,9 @@ lessons:
           - n: 3
             note: "`@Component` est un **décorateur** : une étiquette qui dit « cette classe est un composant »."
           - n: 4
-            note: "Le nom de la balise HTML à utiliser : `<app-carte-produit />`."
+            note: "Le nom de la balise HTML à utiliser : `<app-carte-livre />`."
           - n: 6
-            note: "`{{ nom }}` affiche la valeur de la propriété `nom` de la classe."
+            note: "`{{ titre }}` affiche la valeur de la propriété `titre` de la classe."
           - n: 10
             note: "`export` rend la classe utilisable ailleurs."
           - n: 11
@@ -351,61 +590,38 @@ lessons:
         variant: info
         title: "Template dans un fichier séparé"
         md: |
-          Pour un grand template, on utilise `templateUrl: './carte-produit.component.html'` et on met le
-          HTML dans son propre fichier. Le style se met dans `styleUrl`.
+          Pour un grand template, on utilise `templateUrl: './carte-livre.component.html'` et on met le HTML dans
+          son propre fichier. Le style se met dans `styleUrl`.
       - type: question
         ref: ng-cp-q1
         review: code-composant
-      - type: definition
-        id: def-imports
-        term: "Utiliser un composant dans un autre"
-        md: |
-          Pour placer la carte dans une page, on ajoute la classe dans les `imports` de la page, puis on
-          écrit sa balise dans le template : c'est comme **ranger un outil dans sa boîte** avant de s'en servir.
-      - type: code
-        id: code-imports
-        language: typescript
-        title: "La page catalogue utilise la carte"
-        code: |
-          @Component({
-            selector: 'app-catalogue',
-            imports: [CarteProduitComponent],
-            template: `
-              <h1>Catalogue</h1>
-              <app-carte-produit />
-            `,
-          })
-          export class CatalogueComponent {}
-        lines:
-          - n: 3
-            note: "On déclare les briques utilisées par ce template."
-          - n: 6
-            note: "La balise affiche le composant carte à cet endroit."
       - type: question
-        ref: ng-cp-q2
-        review: def-imports
+        ref: ng-cp-q3
+        review: code-composant
       - type: text
-        md: "Exercice guidé : complète ce composant."
+        md: "**Exercice 1 (guidé)** : complète ce composant."
       - type: exercise
         ref: ng-ex-composant-guide
       - type: text
-        md: "En autonomie : écris un composant complet."
+        md: "**Exercice 2 (en autonomie)** : écris un composant complet."
       - type: exercise
         ref: ng-ex-composant
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un `this` de trop."
+      - type: exercise
+        ref: ng-ex-composant-bug
       - type: jury
         items:
           - q: "Qu'est-ce qu'un composant Angular ?"
-            a: "Une brique d'interface réutilisable : une classe TypeScript qui porte les données et la logique d'affichage, associée à un template HTML et à des styles. Le décorateur @Component déclare son sélecteur et son template."
-          - q: "Qu'est-ce qu'un composant standalone ?"
-            a: "Un composant qui déclare lui-même ses dépendances dans imports, sans NgModule. C'est le mode par défaut depuis Angular 17 ; ça simplifie la structure et permet le chargement différé par route."
+            a: "Une brique d'interface réutilisable : une classe TypeScript qui porte les données, associée à un template HTML et à des styles. Le décorateur @Component déclare son sélecteur et son template."
       - type: quiz
         items:
-          - ref: ng-cp-q3
-            review: code-composant
           - ref: ng-cp-q4
             review: def-composant
-          - ref: ng-cp-q5
-            review: code-imports
+          - ref: ng-co-q4
+            review: code-composant
+          - ref: ng-co-q5
+            review: code-composant
     questions:
       - code: ng-cp-q1
         kind: CHOIX_UNIQUE
@@ -423,22 +639,6 @@ lessons:
             correct: false
             why: "Ce n'est pas la syntaxe d'Angular."
         explanation: "Double accolade = afficher une valeur."
-      - code: ng-cp-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: angular-composants
-        prompt: "La page affiche une erreur « 'app-carte' is not a known element ». Pourquoi ?"
-        choices:
-          - label: "Le composant carte n'est pas dans les imports de la page"
-            correct: true
-            why: "Il faut l'ajouter à `imports`."
-          - label: "Le navigateur est trop ancien"
-            correct: false
-            why: "C'est une erreur de compilation d'Angular."
-          - label: "Il manque un point-virgule"
-            correct: false
-            why: "Le message parle d'un élément inconnu."
-        explanation: "Un composant utilisé dans un template doit être importé."
       - code: ng-cp-q3
         kind: CHOIX_UNIQUE
         difficulty: 1
@@ -474,13 +674,42 @@ lessons:
             correct: false
             why: "La base est côté serveur."
         explanation: "Classe + template (+ styles), reliés par @Component."
-      - code: ng-cp-q5
-        kind: TEXTE
-        difficulty: 2
+      - code: ng-co-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
         skill: angular-composants
-        prompt: "Dans `@Component({ … })`, quel champ liste les composants utilisés par le template ? (un seul mot)"
-        answers: ["imports"]
-        explanation: "`imports: [CarteProduitComponent]` rend la balise utilisable."
+        prompt: "Pourquoi écrire `export` devant la classe du composant ?"
+        choices:
+          - label: "Pour que les autres fichiers puissent l'utiliser"
+            correct: true
+            why: "Sans export, elle reste enfermée dans son fichier."
+          - label: "Pour l'envoyer au serveur"
+            correct: false
+            why: "Rien n'est envoyé."
+          - label: "Pour l'afficher en gras"
+            correct: false
+            why: "Aucun rapport avec le style."
+        explanation: "export = rendre disponible ailleurs."
+      - code: ng-co-q5
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Qu'affiche ce template ?"
+        snippet: |
+          // classe : ville = 'Lyon';
+          <p>Ville : {{ ville }}</p>
+        language: typescript
+        choices:
+          - label: "Ville : Lyon"
+            correct: true
+            why: "L'interpolation remplace {{ ville }} par sa valeur."
+          - label: "Ville : {{ ville }}"
+            correct: false
+            why: "Angular remplace les doubles accolades."
+          - label: "Ville : ville"
+            correct: false
+            why: "On affiche la valeur, pas le nom."
+        explanation: "{{ }} affiche la valeur de la propriété."
     exercises:
       - slug: ng-ex-composant-guide
         kind: COMPLETER
@@ -562,34 +791,317 @@ lessons:
               message: "Affiche le prénom dans un `<h2>` avec `{{ prenom }}`."
             - pattern: '<p>\s*\{\{\s*ville\s*\}\}\s*</p>'
               message: "Affiche la ville dans un `<p>` avec `{{ ville }}`."
+      - slug: ng-ex-composant-bug
+        kind: CORRIGER_ERREUR
+        title: "Un this de trop"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Dans un template, on n'écrit pas `this.`. Corrige l'interpolation.
+        criteria: "{{ titre }} sans this."
+        hints:
+          - "Le template voit directement les propriétés de la classe."
+          - "Retire `this.`."
+          - "`<h1>{{ titre }}</h1>`"
+        solution: |
+          @Component({
+            selector: 'app-titre',
+            template: `<h1>{{ titre }}</h1>`,
+          })
+          export class TitreComponent {
+            titre = 'Bibliothèque';
+          }
+        explanation: "Dans le template, on écrit juste le nom de la propriété."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            @Component({
+              selector: 'app-titre',
+              template: `<h1>{{ this.titre }}</h1>`,
+            })
+            export class TitreComponent {
+              titre = 'Bibliothèque';
+            }
+          checks:
+            - pattern: '\{\{\s*this\.'
+              absent: true
+              message: "Retire `this.` dans le template."
+            - pattern: '\{\{\s*titre\s*\}\}'
+              message: "Écris {{ titre }}."
+
+  # ===================================================================== LEÇON 4
+  - slug: ng-imports-composants
+    title: "Utiliser un composant dans un autre"
+    duration: 9
+    objective: "Placer un composant dans la page d'un autre grâce à imports et à sa balise."
+    prerequisites: "Leçon « Mon premier composant »."
+    skills: [angular-composants]
+    xp: 15
+    memo: |
+      - Pour utiliser un composant dans un autre : l'ajouter dans `imports: [...]`, puis écrire sa **balise** dans le template.
+      - Depuis Angular 17+, les composants sont **standalone** : chacun déclare lui-même ses `imports`.
+      - Un même composant peut être affiché **plusieurs fois**.
+    commonMistakes: |
+      - Utiliser la balise sans ajouter le composant aux `imports` : erreur « is not a known element ».
+      - Mettre le nom de la classe dans le template au lieu de la balise.
+    blocks:
+      - type: definition
+        id: def-imports
+        term: "Utiliser un composant dans un autre"
+        md: |
+          Pour placer la carte dans une page, on ajoute la classe dans les `imports` de la page, puis on écrit sa
+          balise dans le template : c'est comme **ranger un outil dans sa boîte** avant de s'en servir.
+      - type: code
+        id: code-imports
+        language: typescript
+        title: "La page catalogue utilise la carte"
+        code: |
+          @Component({
+            selector: 'app-catalogue',
+            imports: [CarteLivreComponent],
+            template: `
+              <h1>Catalogue</h1>
+              <app-carte-livre />
+            `,
+          })
+          export class CatalogueComponent {}
+        lines:
+          - n: 3
+            note: "On déclare les briques utilisées par ce template."
+          - n: 6
+            note: "La balise affiche le composant carte à cet endroit."
+      - type: question
+        ref: ng-cp-q2
+        review: def-imports
+      - type: question
+        ref: ng-cp-q5
+        review: code-imports
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la page."
+      - type: exercise
+        ref: ng-ex-imports-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une page d'accueil qui assemble deux briques."
+      - type: exercise
+        ref: ng-ex-imports-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un composant inconnu."
+      - type: exercise
+        ref: ng-ex-imports-bug
+      - type: jury
+        items:
+          - q: "Qu'est-ce qu'un composant standalone ?"
+            a: "Un composant qui déclare lui-même ses dépendances dans imports, sans NgModule. C'est le mode par défaut depuis Angular 17 ; ça simplifie la structure et permet le chargement différé par route."
+      - type: quiz
+        items:
+          - ref: ng-c1-b2
+            review: def-imports
+          - ref: ng-im-q4
+            review: code-imports
+          - ref: ng-im-q5
+            review: def-imports
+    questions:
+      - code: ng-cp-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "La page affiche une erreur « 'app-carte' is not a known element ». Pourquoi ?"
+        choices:
+          - label: "Le composant carte n'est pas dans les imports de la page"
+            correct: true
+            why: "Il faut l'ajouter à `imports`."
+          - label: "Le navigateur est trop ancien"
+            correct: false
+            why: "C'est une erreur de compilation d'Angular."
+          - label: "Il manque un point-virgule"
+            correct: false
+            why: "Le message parle d'un élément inconnu."
+        explanation: "Un composant utilisé dans un template doit être importé."
+      - code: ng-cp-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Dans `@Component({ … })`, quel champ liste les composants utilisés par le template ? (un seul mot)"
+        answers: ["imports"]
+        explanation: "`imports: [CarteLivreComponent]` rend la balise utilisable."
+      - code: ng-c1-b2
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Un même composant peut être affiché plusieurs fois dans une page."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "C'est tout l'intérêt d'une brique réutilisable."
+          - label: "Faux"
+            correct: false
+            why: "On peut écrire sa balise autant de fois que nécessaire."
+        explanation: "Une liste de livres affiche le même composant carte pour chaque livre."
+      - code: ng-im-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Dans le template de la page, comment afficher `CarteLivreComponent` (sélecteur `app-carte-livre`) ?"
+        choices:
+          - label: "`<app-carte-livre />`"
+            correct: true
+            why: "On utilise la balise du sélecteur."
+          - label: "`<CarteLivreComponent />`"
+            correct: false
+            why: "C'est le nom de la classe, pas la balise."
+          - label: "`{{ CarteLivreComponent }}`"
+            correct: false
+            why: "L'interpolation affiche une valeur."
+        explanation: "Classe dans imports, balise dans le template."
+      - code: ng-im-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Que veut dire « composant standalone » ?"
+        choices:
+          - label: "Il déclare lui-même, dans imports, les briques qu'il utilise"
+            correct: true
+            why: "Sans NgModule."
+          - label: "Il ne peut pas être utilisé dans un autre composant"
+            correct: false
+            why: "Il peut l'être, via imports."
+          - label: "Il fonctionne sans navigateur"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Standalone = autonome pour ses dépendances."
+    exercises:
+      - slug: ng-ex-imports-guide
+        kind: COMPLETER
+        title: "Compléter la page"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: "La page Accueil affiche le composant `MenuComponent` (sélecteur `app-menu`). Complète."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Le champ qui liste les briques utilisées."
+          - "La balise vient du sélecteur."
+          - "imports, app-menu."
+        solution: '["imports", "app-menu"]'
+        explanation: "On importe la classe, on écrit la balise."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            @Component({
+              selector: 'app-accueil',
+              [[1]]: [MenuComponent],
+              template: `<[[2]] />`,
+            })
+            export class AccueilComponent {}
+          blanks:
+            - ["imports"]
+            - ["app-menu"]
+      - slug: ng-ex-imports-libre
+        kind: CODE_LIBRE
+        title: "Assembler deux briques"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Écris le décorateur de `PageAccueilComponent` (sélecteur `app-page-accueil`). Son template affiche
+          `<app-entete />` puis `<app-pied-page />`. Les classes s'appellent `EnteteComponent` et
+          `PiedPageComponent`.
+        criteria: "Les deux classes dans imports, les deux balises dans le template."
+        hints:
+          - "`imports: [EnteteComponent, PiedPageComponent]`"
+          - "Le template contient les deux balises."
+          - "N'oublie pas `export class PageAccueilComponent {}`."
+        solution: |
+          @Component({
+            selector: 'app-page-accueil',
+            imports: [EnteteComponent, PiedPageComponent],
+            template: `
+              <app-entete />
+              <app-pied-page />
+            `,
+          })
+          export class PageAccueilComponent {}
+        explanation: "Une page est un assemblage de briques."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            @Component({
+
+            })
+            export class PageAccueilComponent {}
+          checks:
+            - pattern: 'selector\s*:\s*[''"`]app-page-accueil[''"`]'
+              message: "Le sélecteur doit être 'app-page-accueil'."
+            - pattern: 'imports\s*:\s*\[[^\]]*EnteteComponent'
+              message: "Ajoute EnteteComponent dans imports."
+            - pattern: 'imports\s*:\s*\[[^\]]*PiedPageComponent'
+              message: "Ajoute PiedPageComponent dans imports."
+            - pattern: '<app-entete\s*/?>[\s\S]*<app-pied-page\s*/?>'
+              message: "Écris <app-entete /> puis <app-pied-page /> dans le template."
+      - slug: ng-ex-imports-bug
+        kind: CORRIGER_ERREUR
+        title: "Un composant inconnu"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          La page affiche l'erreur « 'app-carte-livre' is not a known element ». Ajoute ce qui manque.
+        criteria: "CarteLivreComponent est dans imports."
+        hints:
+          - "Relis le message : l'élément est inconnu."
+          - "La page doit déclarer les briques qu'elle utilise."
+          - "`imports: [CarteLivreComponent],`"
+        solution: |
+          @Component({
+            selector: 'app-catalogue',
+            imports: [CarteLivreComponent],
+            template: `<app-carte-livre />`,
+          })
+          export class CatalogueComponent {}
+        explanation: "Sans imports, Angular ne connaît pas la balise."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            @Component({
+              selector: 'app-catalogue',
+              template: `<app-carte-livre />`,
+            })
+            export class CatalogueComponent {}
+          checks:
+            - pattern: 'imports\s*:\s*\[[^\]]*CarteLivreComponent'
+              message: "Ajoute CarteLivreComponent dans imports."
 
 bank:
-  - code: ng-c1-b1
+  - code: ng-c1-b3
     kind: CHOIX_UNIQUE
     difficulty: 1
     skill: typescript
-    prompt: "Pourquoi éviter le type `any` ?"
+    prompt: "Qu'est-ce que l'inférence de type ?"
     choices:
-      - label: "Il désactive les vérifications de TypeScript sur cette valeur"
+      - label: "TypeScript devine le type à partir de la valeur"
         correct: true
-        why: "On perd la protection."
-      - label: "Il ralentit le navigateur"
+        why: "`let ville = \"Lyon\"` → string."
+      - label: "Une erreur de compilation"
         correct: false
-        why: "Les types disparaissent à l'exécution."
-      - label: "Il est interdit par Angular"
+        why: "C'est une aide."
+      - label: "Un type réservé à Angular"
         correct: false
-        why: "Il est permis, mais déconseillé."
-    explanation: "Préfère un type précis, ou `unknown` si tu ne sais vraiment pas."
-  - code: ng-c1-b2
-    kind: VRAI_FAUX
+        why: "C'est une fonction de TypeScript."
+    explanation: "On écrit le type surtout là où il ne peut pas être deviné (paramètres)."
+  - code: ng-c1-b4
+    kind: CHOIX_UNIQUE
     difficulty: 1
     skill: angular-composants
-    prompt: "Un même composant peut être affiché plusieurs fois dans une page."
+    prompt: "Dans quel champ met-on le HTML d'un composant quand il est dans un fichier séparé ?"
     choices:
-      - label: "Vrai"
+      - label: "`templateUrl`"
         correct: true
-        why: "C'est tout l'intérêt d'une brique réutilisable."
-      - label: "Faux"
+        why: "Le chemin vers le fichier .html."
+      - label: "`selector`"
         correct: false
-        why: "On peut écrire sa balise autant de fois que nécessaire."
-    explanation: "Une liste de produits affiche le même composant carte pour chaque produit."
+        why: "C'est le nom de la balise."
+      - label: "`imports`"
+        correct: false
+        why: "Ce sont les briques utilisées."
+    explanation: "`template` pour du HTML en ligne, `templateUrl` pour un fichier."

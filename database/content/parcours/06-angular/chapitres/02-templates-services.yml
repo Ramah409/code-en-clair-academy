@@ -2,124 +2,88 @@ slug: ng-templates-services
 position: 2
 level: INTERMEDIAIRE
 title: "Templates, signaux et services"
-summary: "Réagir aux clics, afficher des listes et des conditions, garder l'état dans des signaux et partager les données avec un service."
-quizQuestionCount: 12
+summary: "Réagir aux clics, remplir des attributs, afficher selon une condition, répéter une liste, garder l'état dans des signaux, faire parler les composants et partager les données avec un service. Une seule notion par leçon."
+quizQuestionCount: 16
 
 lessons:
   # ===================================================================== LEÇON 1
-  - slug: ng-templates
-    title: "Templates : liaisons, conditions et listes"
-    duration: 14
-    objective: "Relier le template à la classe (propriétés et événements), afficher une partie selon une condition et répéter un élément pour chaque valeur d'une liste."
+  - slug: ng-evenements
+    title: "Réagir à un clic : (click)"
+    duration: 9
+    objective: "Appeler une méthode de la classe quand l'utilisatrice clique, avec la liaison d'événement (click)."
     prerequisites: "Chapitre « TypeScript et premier composant »."
     skills: [angular-composants]
-    xp: 25
+    xp: 15
     memo: |
-      - `{{ valeur }}` : afficher une valeur (classe → écran).
-      - `[disabled]="panierVide"` : **liaison de propriété**, remplit un attribut HTML avec une valeur de la classe.
-      - `(click)="ajouter()"` : **liaison d'événement**, appelle une méthode quand l'utilisatrice agit (écran → classe).
-      - `@if (condition) { … } @else { … }` : afficher selon une condition.
-      - `@for (p of produits; track p.id) { … } @empty { … }` : répéter pour chaque élément ; `track` aide Angular à reconnaître chaque élément.
+      - `(click)="dire()"` : **liaison d'événement**. Quand on clique, Angular appelle la méthode `dire()` de la classe.
+      - Les **parenthèses** autour du nom de l'événement **écoutent** (écran → classe).
+      - Dans la méthode, on écrit `this.` pour parler des propriétés de la classe.
+      - Quand une propriété change, l'écran se met à jour tout seul.
     commonMistakes: |
-      - Oublier `track` dans `@for` : Angular refuse de compiler.
-      - Écrire `(click)="ajouter"` sans parenthèses : la méthode n'est pas appelée.
-      - Confondre `[ ]` (valeur vers l'écran) et `( )` (événement vers la classe).
+      - Écrire `(click)="dire"` sans parenthèses d'appel : la méthode n'est pas appelée.
+      - Oublier `this.` dans la méthode.
     blocks:
       - type: text
         md: |
-          Un template n'est pas une page figée : il **suit** les données de la classe. Quand une valeur change,
-          l'écran se met à jour tout seul. Et quand l'utilisatrice clique, la classe est prévenue.
+          Un template n'est pas une page figée : quand l'utilisatrice clique, la classe est prévenue et peut
+          changer ses données. L'écran suit.
       - type: definition
-        id: def-liaisons
-        term: "Liaisons (bindings)"
+        id: def-evenement
+        term: "Liaison d'événement"
         md: |
-          Des **fils** entre la classe et l'écran. Les **crochets** `[ ]` envoient une valeur **vers l'écran** ;
-          les **parenthèses** `( )` font remonter un **événement** vers la classe. Astuce : les parenthèses
-          ressemblent à des oreilles qui écoutent.
+          Une **sonnette** posée sur un bouton : quand on appuie, elle fait sonner une méthode de la classe.
+          Astuce : les parenthèses `( )` ressemblent à des **oreilles** qui écoutent.
       - type: code
-        id: code-liaisons
+        id: code-evenement
         language: typescript
-        title: "Un compteur de panier"
+        title: "Un bouton qui change le message"
         code: |
           @Component({
-            selector: 'app-panier',
+            selector: 'app-accueil',
             template: `
-              <p>Articles : {{ quantite }}</p>
-              <button (click)="ajouter()">Ajouter</button>
-              <button [disabled]="quantite === 0" (click)="vider()">Vider</button>
+              <p>{{ message }}</p>
+              <button (click)="remercier()">Dire merci</button>
             `,
           })
-          export class PanierComponent {
-            quantite = 0;
-            ajouter() { this.quantite++; }
-            vider() { this.quantite = 0; }
+          export class AccueilComponent {
+            message = 'Bonjour !';
+            remercier() {
+              this.message = 'Merci pour ta visite !';
+            }
           }
         lines:
           - n: 4
-            note: "Interpolation : la valeur actuelle s'affiche."
+            note: "L'interpolation affiche le message actuel."
           - n: 5
-            note: "`(click)` écoute le clic et appelle la méthode `ajouter()`."
-          - n: 6
-            note: "`[disabled]` : le bouton est grisé tant que la quantité vaut 0."
+            note: "`(click)` écoute le clic et appelle `remercier()`."
           - n: 11
-            note: "Dans la classe, on écrit `this.` pour parler de ses propres propriétés."
+            note: "La méthode change la propriété ; l'écran affiche aussitôt le nouveau message."
       - type: question
         ref: ng-tp-q1
-        review: def-liaisons
-      - type: definition
-        id: def-controle
-        term: "Blocs de contrôle @if et @for"
-        md: |
-          `@if` montre un morceau **seulement si** une condition est vraie. `@for` **répète** un morceau pour
-          chaque élément d'une liste, comme une imprimante qui sort une étiquette par produit.
-      - type: code
-        id: code-controle
-        language: html
-        title: "Afficher la liste des produits"
-        code: |
-          @if (chargement) {
-            <p>Chargement…</p>
-          } @else {
-            <ul>
-              @for (p of produits; track p.id) {
-                <li>{{ p.nom }} – {{ p.prix }} €</li>
-              } @empty {
-                <li>Aucun produit.</li>
-              }
-            </ul>
-          }
-        lines:
-          - n: 1
-            note: "Pendant le chargement, on affiche un message d'attente."
-          - n: 5
-            note: "Pour chaque produit `p` de la liste. `track p.id` : chaque élément est reconnu par son identifiant."
-          - n: 7
-            note: "`@empty` : ce qui s'affiche si la liste est vide."
+        review: def-evenement
       - type: question
-        ref: ng-tp-q2
-        review: code-controle
+        ref: ng-tp-q5
+        review: def-evenement
       - type: text
-        md: "Exercice guidé : complète les liaisons et la boucle."
+        md: "**Exercice 1 (guidé)** : complète la liaison."
       - type: exercise
-        ref: ng-ex-template-guide
+        ref: ng-ex-evenement-guide
       - type: text
-        md: "En autonomie : corrige ce template qui ne compile pas."
+        md: "**Exercice 2 (en autonomie)** : un bouton qui affiche un message d'au revoir."
       - type: exercise
-        ref: ng-ex-template-corriger
-      - type: jury
-        items:
-          - q: "Quelle différence entre [propriete] et (evenement) ?"
-            a: "Les crochets lient une valeur de la classe vers le DOM (liaison de propriété). Les parenthèses écoutent un événement du DOM et appellent une méthode de la classe. [(ngModel)] combine les deux : c'est la liaison bidirectionnelle."
-          - q: "À quoi sert track dans @for ?"
-            a: "À identifier chaque élément, par exemple par son id. Quand la liste change, Angular ne recrée que les éléments modifiés au lieu de tout redessiner : c'est plus rapide et ça garde l'état des éléments."
+        ref: ng-ex-evenement-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une méthode jamais appelée."
+      - type: exercise
+        ref: ng-ex-evenement-bug
       - type: quiz
         items:
-          - ref: ng-tp-q3
-            review: code-liaisons
-          - ref: ng-tp-q4
-            review: code-controle
-          - ref: ng-tp-q5
-            review: def-liaisons
+          - ref: ng-ev-q3
+            review: code-evenement
+          - ref: ng-ev-q4
+            review: code-evenement
+          - ref: ng-ev-q5
+            review: def-evenement
     questions:
       - code: ng-tp-q1
         kind: CHOIX_UNIQUE
@@ -132,11 +96,699 @@ lessons:
             why: "Parenthèses = écouter un événement."
           - label: "<button [click]=\"envoyer()\">"
             correct: false
-            why: "Les crochets envoient une valeur, ils n'écoutent pas."
+            why: "Les crochets n'écoutent pas."
           - label: "<button click=\"{{ envoyer() }}\">"
             correct: false
             why: "L'interpolation affiche, elle n'écoute pas."
         explanation: "`(événement)=\"méthode()\"`."
+      - code: ng-tp-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Quel symbole entoure un nom d'événement dans un template : crochets ou parenthèses ? (un mot)"
+        answers: ["parenthèses", "parentheses", "parenthèse", "()"]
+        explanation: "`(click)`, `(submit)`, `(input)`… Les parenthèses écoutent."
+      - code: ng-ev-q3
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Dans l'exemple, qu'affiche le paragraphe après un clic sur « Dire merci » ?"
+        snippet: |
+          message = 'Bonjour !';
+          remercier() { this.message = 'Merci pour ta visite !'; }
+        language: typescript
+        choices:
+          - label: "Merci pour ta visite !"
+            correct: true
+            why: "La méthode a remplacé le message."
+          - label: "Bonjour !"
+            correct: false
+            why: "L'écran suit la nouvelle valeur."
+          - label: "remercier()"
+            correct: false
+            why: "On affiche la propriété message."
+        explanation: "Clic → méthode → propriété changée → écran mis à jour."
+      - code: ng-ev-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Dans une méthode de la classe, comment modifier la propriété `message` ?"
+        choices:
+          - label: "`this.message = 'Salut';`"
+            correct: true
+            why: "Dans la classe, on écrit this."
+          - label: "`message = 'Salut';`"
+            correct: false
+            why: "Sans this, ce n'est pas la propriété."
+          - label: "`{{ message }} = 'Salut';`"
+            correct: false
+            why: "Les accolades sont pour le template."
+        explanation: "Template : `message` ; classe : `this.message`."
+      - code: ng-ev-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Avec `(click)`, l'information va de l'écran vers la classe."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le clic remonte vers la classe."
+          - label: "Faux"
+            correct: false
+            why: "C'est justement le sens des parenthèses."
+        explanation: "Parenthèses : écran → classe."
+    exercises:
+      - slug: ng-ex-evenement-guide
+        kind: COMPLETER
+        title: "Compléter la liaison"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: "Le bouton doit appeler `ouvrir()`. Complète."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "L'événement s'écrit entre parenthèses."
+          - "On appelle la méthode avec ses parenthèses."
+          - "(click), ouvrir()."
+        solution: '["(click)", "ouvrir()"]'
+        explanation: "`(click)=\"ouvrir()\"`."
+        xp: 10
+        payload:
+          language: html
+          template: |
+            <button [[1]]="[[2]]">Ouvrir</button>
+          blanks:
+            - ["(click)"]
+            - ["ouvrir()"]
+      - slug: ng-ex-evenement-libre
+        kind: CODE_LIBRE
+        title: "Un message d'au revoir"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Écris la classe et le template de `SortieComponent` (sélecteur `app-sortie`) :
+          - une propriété `texte = 'À bientôt ?'` affichée dans un `<p>` ;
+          - un bouton « Partir » qui appelle `partir()` au clic ;
+          - la méthode `partir()` remplace le texte par `'Au revoir !'`.
+        criteria: "Interpolation, (click) qui appelle partir(), méthode qui modifie this.texte."
+        hints:
+          - "`<p>{{ texte }}</p>`"
+          - "`<button (click)=\"partir()\">Partir</button>`"
+          - "`partir() { this.texte = 'Au revoir !'; }`"
+        solution: |
+          @Component({
+            selector: 'app-sortie',
+            template: `
+              <p>{{ texte }}</p>
+              <button (click)="partir()">Partir</button>
+            `,
+          })
+          export class SortieComponent {
+            texte = 'À bientôt ?';
+            partir() {
+              this.texte = 'Au revoir !';
+            }
+          }
+        explanation: "Le clic change la donnée, l'écran suit."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            @Component({
+              selector: 'app-sortie',
+              template: ``,
+            })
+            export class SortieComponent {
+
+            }
+          checks:
+            - pattern: '<p>\s*\{\{\s*texte\s*\}\}\s*</p>'
+              message: "Affiche le texte : <p>{{ texte }}</p>."
+            - pattern: '\(click\)\s*=\s*"partir\(\)"'
+              message: "Le bouton appelle partir() : (click)=\"partir()\"."
+            - pattern: '\btexte\s*=\s*[''"]À bientôt \?[''"]'
+              message: "Déclare texte = 'À bientôt ?'."
+            - pattern: 'partir\s*\(\s*\)\s*\{\s*this\.texte\s*=\s*[''"]Au revoir !?[''"]'
+              message: "Dans partir(), écris this.texte = 'Au revoir !';"
+      - slug: ng-ex-evenement-bug
+        kind: CORRIGER_ERREUR
+        title: "Une méthode jamais appelée"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Le bouton n'appelle pas vraiment la méthode `commander` : il manque les parenthèses d'appel. Corrige.
+        criteria: "(click)=\"commander()\"."
+        hints:
+          - "Regarde ce qu'il y a entre les guillemets."
+          - "Une méthode s'appelle avec des parenthèses."
+          - "`(click)=\"commander()\"`"
+        solution: |
+          <button (click)="commander()">Commander</button>
+        explanation: "Sans parenthèses, on nomme la méthode sans l'appeler."
+        xp: 10
+        payload:
+          language: html
+          starter: |
+            <button (click)="commander">Commander</button>
+          checks:
+            - pattern: '\(click\)\s*=\s*"commander\s*\(\s*\)"'
+              message: "Écris (click)=\"commander()\"."
+
+  # ===================================================================== LEÇON 2
+  - slug: ng-liaison-propriete
+    title: "Remplir un attribut : [propriété]"
+    duration: 9
+    objective: "Remplir un attribut HTML avec une valeur de la classe grâce à la liaison de propriété [ ]."
+    prerequisites: "Leçon « Réagir à un clic : (click) »."
+    skills: [angular-composants]
+    xp: 15
+    memo: |
+      - `[disabled]="envoiEnCours"` : **liaison de propriété**. L'attribut prend la valeur de la classe (classe → écran).
+      - `[src]="photo"` : l'image affiche l'adresse contenue dans la propriété `photo`.
+      - Les **crochets** envoient une valeur vers l'écran ; les **parenthèses** écoutent un événement.
+    commonMistakes: |
+      - Écrire `disabled="envoiEnCours"` sans crochets : Angular y met le texte « envoiEnCours », pas la valeur.
+      - Confondre `[ ]` (valeur vers l'écran) et `( )` (événement vers la classe).
+    blocks:
+      - type: definition
+        id: def-propriete
+        term: "Liaison de propriété"
+        md: |
+          Un **tuyau** de la classe vers l'écran : la valeur de la propriété coule dans l'attribut HTML. Si la
+          valeur change, l'attribut change aussi.
+      - type: code
+        id: code-propriete
+        language: typescript
+        title: "Un bouton grisé pendant l'envoi"
+        code: |
+          @Component({
+            selector: 'app-envoi',
+            template: `
+              <img [src]="logo" alt="Logo" />
+              <button [disabled]="envoiEnCours" (click)="envoyer()">Envoyer</button>
+            `,
+          })
+          export class EnvoiComponent {
+            logo = 'assets/logo.png';
+            envoiEnCours = false;
+            envoyer() {
+              this.envoiEnCours = true;
+            }
+          }
+        lines:
+          - n: 4
+            note: "`[src]` : l'image prend l'adresse contenue dans `logo`."
+          - n: 5
+            note: "`[disabled]` : le bouton est grisé quand `envoiEnCours` vaut `true`."
+          - n: 12
+            note: "Après le clic, le bouton se grise tout seul."
+      - type: question
+        ref: ng-tp-q3
+        review: code-propriete
+      - type: question
+        ref: ng-lp-q2
+        review: def-propriete
+      - type: text
+        md: "**Exercice 1 (guidé)** : crochets ou parenthèses ?"
+      - type: exercise
+        ref: ng-ex-propriete-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une photo de profil."
+      - type: exercise
+        ref: ng-ex-propriete-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des crochets oubliés."
+      - type: exercise
+        ref: ng-ex-propriete-bug
+      - type: jury
+        items:
+          - q: "Quelle différence entre [propriete] et (evenement) ?"
+            a: "Les crochets lient une valeur de la classe vers le DOM (liaison de propriété). Les parenthèses écoutent un événement du DOM et appellent une méthode de la classe. [(ngModel)] combine les deux : c'est la liaison bidirectionnelle."
+      - type: quiz
+        items:
+          - ref: ng-lp-q3
+            review: def-propriete
+          - ref: ng-lp-q4
+            review: code-propriete
+          - ref: ng-c2-b1
+            review: def-propriete
+    questions:
+      - code: ng-tp-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Que fait `[disabled]=\"envoiEnCours\"` ?"
+        choices:
+          - label: "Désactive le bouton quand envoiEnCours vaut true"
+            correct: true
+            why: "La valeur remplit l'attribut disabled."
+          - label: "Lance l'envoi au clic"
+            correct: false
+            why: "Ce serait un événement (click)."
+          - label: "Affiche le texte « envoiEnCours »"
+            correct: false
+            why: "Les crochets lisent la valeur de la propriété."
+        explanation: "Liaison de propriété : classe → écran."
+      - code: ng-lp-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Dans quel sens va l'information avec les crochets `[ ]` ?"
+        choices:
+          - label: "De la classe vers l'écran"
+            correct: true
+            why: "La valeur remplit l'attribut."
+          - label: "De l'écran vers la classe"
+            correct: false
+            why: "C'est le rôle des parenthèses."
+          - label: "Du serveur vers la base"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "[ ] : vers l'écran ; ( ) : vers la classe."
+      - code: ng-lp-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: angular-composants
+        prompt: "`<img src=\"photo\">` affiche l'image dont l'adresse est dans la propriété `photo`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Sans crochets, l'adresse est le texte « photo »."
+          - label: "Faux"
+            correct: true
+            why: "Il faut `[src]=\"photo\"`."
+        explanation: "Sans crochets, c'est du texte brut."
+      - code: ng-lp-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Comment afficher l'image dont l'adresse est dans la propriété `avatar` ?"
+        choices:
+          - label: "`<img [src]=\"avatar\" />`"
+            correct: true
+            why: "Liaison de propriété."
+          - label: "`<img (src)=\"avatar\" />`"
+            correct: false
+            why: "src n'est pas un événement."
+          - label: "`<img src=\"avatar\" />`"
+            correct: false
+            why: "Ce serait le texte « avatar »."
+        explanation: "[attribut]=\"propriété\"."
+      - code: ng-c2-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Quelle écriture crée une liaison dans les deux sens sur un champ de formulaire (avec FormsModule) ?"
+        choices:
+          - label: "[(ngModel)]=\"nom\""
+            correct: true
+            why: "La « banane dans la boîte » : crochets + parenthèses."
+          - label: "(ngModel)=\"nom\""
+            correct: false
+            why: "Seulement l'écoute."
+          - label: "{{ ngModel }}"
+            correct: false
+            why: "Seulement l'affichage."
+        explanation: "`[( )]` combine valeur vers l'écran et événement vers la classe."
+    exercises:
+      - slug: ng-ex-propriete-guide
+        kind: COMPLETER
+        title: "Crochets ou parenthèses ?"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: "Complète : l'image affiche `photo`, le bouton est grisé si `occupe`, et il appelle `valider()` au clic."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Une valeur vers l'écran : crochets."
+          - "Un événement : parenthèses."
+          - "[src], [disabled], (click)."
+        solution: '["[src]", "[disabled]", "(click)"]'
+        explanation: "Crochets pour remplir, parenthèses pour écouter."
+        xp: 10
+        payload:
+          language: html
+          template: |
+            <img [[1]]="photo" alt="Photo" />
+            <button [[2]]="occupe" [[3]]="valider()">Valider</button>
+          blanks:
+            - ["[src]"]
+            - ["[disabled]"]
+            - ["(click)"]
+      - slug: ng-ex-propriete-libre
+        kind: CODE_LIBRE
+        title: "Une photo de profil"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Écris le template : une image dont l'adresse vient de la propriété `photo` et dont le texte alternatif
+          vient de la propriété `prenom` (liaison `[alt]`).
+        criteria: "[src]=\"photo\" et [alt]=\"prenom\"."
+        hints:
+          - "Deux attributs, deux paires de crochets."
+          - "`[src]=\"photo\"`"
+          - "`<img [src]=\"photo\" [alt]=\"prenom\" />`"
+        solution: |
+          <img [src]="photo" [alt]="prenom" />
+        explanation: "Chaque attribut peut être relié à une propriété."
+        xp: 15
+        payload:
+          language: html
+          starter: |
+            <img />
+          checks:
+            - pattern: '<img[^>]*\[src\]\s*=\s*"photo"'
+              message: "Relie l'adresse : [src]=\"photo\"."
+            - pattern: '<img[^>]*\[alt\]\s*=\s*"prenom"'
+              message: "Relie le texte alternatif : [alt]=\"prenom\"."
+      - slug: ng-ex-propriete-bug
+        kind: CORRIGER_ERREUR
+        title: "Des crochets oubliés"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Le bouton devrait être grisé quand `chargement` vaut `true`, mais Angular reçoit le texte
+          « chargement ». Ajoute les crochets.
+        criteria: "[disabled]=\"chargement\"."
+        hints:
+          - "Sans crochets, c'est du texte."
+          - "Avec crochets, c'est la valeur de la propriété."
+          - "`[disabled]=\"chargement\"`"
+        solution: |
+          <button [disabled]="chargement">Enregistrer</button>
+        explanation: "Les crochets lisent la valeur."
+        xp: 10
+        payload:
+          language: html
+          starter: |
+            <button disabled="chargement">Enregistrer</button>
+          checks:
+            - pattern: '\[disabled\]\s*=\s*"chargement"'
+              message: "Écris [disabled]=\"chargement\"."
+
+  # ===================================================================== LEÇON 3
+  - slug: ng-if
+    title: "Afficher selon une condition : @if"
+    duration: 9
+    objective: "Afficher un morceau de template seulement si une condition est vraie, avec @if et @else."
+    prerequisites: "Leçon « Remplir un attribut : [propriété] »."
+    skills: [angular-composants]
+    xp: 15
+    memo: |
+      - `@if (connecte) { … }` : le morceau s'affiche **seulement si** `connecte` est vrai.
+      - `@else { … }` : ce qui s'affiche sinon.
+      - Les accolades délimitent le morceau concerné.
+    commonMistakes: |
+      - Oublier les parenthèses autour de la condition.
+      - Oublier une accolade fermante.
+    blocks:
+      - type: definition
+        id: def-if
+        term: "@if"
+        md: |
+          Un **videur** à l'entrée d'une salle : il ne laisse entrer le morceau que si la condition est vraie.
+          `@else` est la salle d'à côté, pour tous les autres cas.
+      - type: code
+        id: code-if
+        language: html
+        title: "Un message selon la connexion"
+        code: |
+          @if (connecte) {
+            <p>Bienvenue, {{ prenom }} !</p>
+          } @else {
+            <button (click)="seConnecter()">Se connecter</button>
+          }
+        lines:
+          - n: 1
+            note: "Si `connecte` vaut `true`, on affiche le message de bienvenue."
+          - n: 3
+            note: "Sinon, on affiche le bouton de connexion."
+      - type: question
+        ref: ng-if-q1
+        review: def-if
+      - type: question
+        ref: ng-if-q2
+        review: code-if
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la condition."
+      - type: exercise
+        ref: ng-ex-if-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un message de chargement."
+      - type: exercise
+        ref: ng-ex-if-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une condition sans parenthèses."
+      - type: exercise
+        ref: ng-ex-if-bug
+      - type: quiz
+        items:
+          - ref: ng-if-q3
+            review: code-if
+          - ref: ng-if-q4
+            review: def-if
+          - ref: ng-if-q5
+            review: code-if
+    questions:
+      - code: ng-if-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "À quoi sert `@if` dans un template ?"
+        choices:
+          - label: "À afficher un morceau seulement si une condition est vraie"
+            correct: true
+            why: "Le videur laisse passer ou non."
+          - label: "À répéter un morceau"
+            correct: false
+            why: "C'est le rôle de @for."
+          - label: "À écouter un clic"
+            correct: false
+            why: "C'est le rôle de (click)."
+        explanation: "@if = afficher sous condition."
+      - code: ng-if-q2
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Avec `connecte = false`, qu'affiche l'exemple ?"
+        snippet: |
+          @if (connecte) {
+            <p>Bienvenue !</p>
+          } @else {
+            <button>Se connecter</button>
+          }
+        language: html
+        choices:
+          - label: "Le bouton « Se connecter »"
+            correct: true
+            why: "La condition est fausse : on passe dans @else."
+          - label: "Le message « Bienvenue ! »"
+            correct: false
+            why: "Il faudrait connecte = true."
+          - label: "Les deux"
+            correct: false
+            why: "Un seul des deux morceaux s'affiche."
+        explanation: "Condition fausse → @else."
+      - code: ng-if-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Quelle écriture est correcte ?"
+        choices:
+          - label: "`@if (admin) { <p>Espace admin</p> }`"
+            correct: true
+            why: "Condition entre parenthèses, morceau entre accolades."
+          - label: "`@if admin { <p>Espace admin</p> }`"
+            correct: false
+            why: "Il manque les parenthèses."
+          - label: "`if (admin) <p>Espace admin</p>`"
+            correct: false
+            why: "Dans un template, on écrit @if avec des accolades."
+        explanation: "@if (condition) { … }."
+      - code: ng-if-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Le bloc `@else` est obligatoire après un `@if`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Il est facultatif."
+          - label: "Faux"
+            correct: true
+            why: "Sans @else, rien ne s'affiche quand la condition est fausse."
+        explanation: "@else seulement si on veut afficher autre chose."
+      - code: ng-if-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Si la propriété `connecte` passe de false à true, que se passe-t-il à l'écran ?"
+        choices:
+          - label: "Le morceau du @if apparaît tout seul"
+            correct: true
+            why: "Le template suit les données."
+          - label: "Rien, il faut recharger la page"
+            correct: false
+            why: "Angular met l'écran à jour."
+          - label: "Une erreur"
+            correct: false
+            why: "C'est le fonctionnement normal."
+        explanation: "L'écran suit toujours les données."
+    exercises:
+      - slug: ng-ex-if-guide
+        kind: COMPLETER
+        title: "Compléter la condition"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: "Affiche « Livre disponible » si `disponible` est vrai, sinon « Déjà emprunté »."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Le bloc qui teste une condition."
+          - "La propriété testée, puis le bloc « sinon »."
+          - "if, disponible, else."
+        solution: '["if", "disponible", "else"]'
+        explanation: "@if (disponible) { … } @else { … }"
+        xp: 10
+        payload:
+          language: html
+          template: |
+            @[[1]] ([[2]]) {
+              <p>Livre disponible</p>
+            } @[[3]] {
+              <p>Déjà emprunté</p>
+            }
+          blanks:
+            - ["if"]
+            - ["disponible"]
+            - ["else"]
+      - slug: ng-ex-if-libre
+        kind: CODE_LIBRE
+        title: "Un message de chargement"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Écris le template : si `chargement` est vrai, affiche `<p>Chargement…</p>` ; sinon, affiche
+          `<h1>{{ titre }}</h1>`.
+        criteria: "@if (chargement) avec @else."
+        hints:
+          - "`@if (chargement) { … }`"
+          - "Puis `@else { … }`."
+          - "Le titre s'affiche avec l'interpolation."
+        solution: |
+          @if (chargement) {
+            <p>Chargement…</p>
+          } @else {
+            <h1>{{ titre }}</h1>
+          }
+        explanation: "Un message d'attente, puis le contenu."
+        xp: 15
+        payload:
+          language: html
+          starter: |
+            <!-- Ton template -->
+          checks:
+            - pattern: '@if\s*\(\s*chargement\s*\)\s*\{[\s\S]*<p>\s*Chargement'
+              message: "Écris @if (chargement) { <p>Chargement…</p> }."
+            - pattern: '\}\s*@else\s*\{[\s\S]*<h1>\s*\{\{\s*titre\s*\}\}\s*</h1>'
+              message: "Ajoute @else { <h1>{{ titre }}</h1> }."
+      - slug: ng-ex-if-bug
+        kind: CORRIGER_ERREUR
+        title: "Une condition sans parenthèses"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Angular refuse ce template : la condition doit être entre parenthèses. Corrige.
+        criteria: "@if (admin)."
+        hints:
+          - "Regarde ce qui suit @if."
+          - "La condition s'écrit entre parenthèses."
+          - "`@if (admin) {`"
+        solution: |
+          @if (admin) {
+            <a href="/admin">Administration</a>
+          }
+        explanation: "@if (condition) { … }."
+        xp: 10
+        payload:
+          language: html
+          starter: |
+            @if admin {
+              <a href="/admin">Administration</a>
+            }
+          checks:
+            - pattern: '@if\s*\(\s*admin\s*\)\s*\{'
+              message: "Écris @if (admin) {."
+
+  # ===================================================================== LEÇON 4
+  - slug: ng-for
+    title: "Répéter pour chaque élément : @for"
+    duration: 11
+    objective: "Afficher un élément pour chaque valeur d'une liste avec @for, track et @empty."
+    prerequisites: "Leçon « Afficher selon une condition : @if »."
+    skills: [angular-composants]
+    xp: 15
+    memo: |
+      - `@for (l of livres; track l.id) { … }` : répéter le morceau pour chaque livre `l`.
+      - `track` est **obligatoire** : il aide Angular à reconnaître chaque élément (souvent par son `id`).
+      - `@empty { … }` : ce qui s'affiche si la liste est vide.
+    commonMistakes: |
+      - Oublier `track` : Angular refuse de compiler.
+      - Utiliser `@else` après un `@for` : le bon bloc est `@empty`.
+    blocks:
+      - type: definition
+        id: def-for
+        term: "@for"
+        md: |
+          Une **imprimante à étiquettes** : elle sort une étiquette par élément de la liste. `track` est le
+          numéro de série qui permet de reconnaître chaque étiquette.
+      - type: code
+        id: code-for
+        language: html
+        title: "Afficher la liste des livres"
+        code: |
+          <ul>
+            @for (l of livres; track l.id) {
+              <li>{{ l.titre }} – {{ l.auteur }}</li>
+            } @empty {
+              <li>Aucun livre.</li>
+            }
+          </ul>
+        lines:
+          - n: 2
+            note: "Pour chaque livre `l` de la liste. `track l.id` : chaque élément est reconnu par son identifiant."
+          - n: 3
+            note: "Le morceau répété, qui utilise `l`."
+          - n: 4
+            note: "`@empty` : ce qui s'affiche si la liste est vide."
+      - type: question
+        ref: ng-tp-q2
+        review: def-for
+      - type: question
+        ref: ng-tp-q4
+        review: code-for
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la boucle."
+      - type: exercise
+        ref: ng-ex-template-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : la liste des salles."
+      - type: exercise
+        ref: ng-ex-for-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : réparer un template."
+      - type: exercise
+        ref: ng-ex-template-corriger
+      - type: jury
+        items:
+          - q: "À quoi sert track dans @for ?"
+            a: "À identifier chaque élément, par exemple par son id. Quand la liste change, Angular ne recrée que les éléments modifiés au lieu de tout redessiner : c'est plus rapide et ça garde l'état des éléments."
+      - type: quiz
+        items:
+          - ref: ng-fo-q3
+            review: code-for
+          - ref: ng-fo-q4
+            review: def-for
+          - ref: ng-fo-q5
+            review: code-for
+    questions:
       - code: ng-tp-q2
         kind: VRAI_FAUX
         difficulty: 1
@@ -150,22 +802,6 @@ lessons:
             correct: false
             why: "Angular l'exige."
         explanation: "On utilise souvent `track item.id`."
-      - code: ng-tp-q3
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: angular-composants
-        prompt: "Que fait `[disabled]=\"quantite === 0\"` ?"
-        choices:
-          - label: "Désactive le bouton quand la quantité vaut 0"
-            correct: true
-            why: "La valeur de l'expression remplit l'attribut disabled."
-          - label: "Met la quantité à 0 au clic"
-            correct: false
-            why: "Ce serait un événement (click)."
-          - label: "Affiche le texte « quantite === 0 »"
-            correct: false
-            why: "Les crochets évaluent l'expression."
-        explanation: "Liaison de propriété : classe → écran."
       - code: ng-tp-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -182,43 +818,124 @@ lessons:
             correct: false
             why: "Ce bloc n'existe pas."
         explanation: "`@for (…) { … } @empty { … }`."
-      - code: ng-tp-q5
-        kind: TEXTE
+      - code: ng-fo-q3
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Avec `livres` contenant trois livres, combien de `<li>` affiche l'exemple ?"
+        snippet: |
+          @for (l of livres; track l.id) {
+            <li>{{ l.titre }}</li>
+          }
+        language: html
+        choices:
+          - label: "Un par livre, donc trois"
+            correct: true
+            why: "Le morceau est répété pour chaque élément."
+          - label: "Un seul"
+            correct: false
+            why: "@for répète."
+          - label: "Aucun"
+            correct: false
+            why: "La liste n'est pas vide."
+        explanation: "Un élément de liste → un morceau affiché."
+      - code: ng-fo-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Dans `@for (s of salles; track s.id)`, que représente `s` ?"
+        choices:
+          - label: "La salle en cours, à chaque tour"
+            correct: true
+            why: "s prend chaque élément à son tour."
+          - label: "La liste entière"
+            correct: false
+            why: "La liste, c'est salles."
+          - label: "Le nombre de salles"
+            correct: false
+            why: "s est un élément."
+        explanation: "`élément of liste`."
+      - code: ng-fo-q5
+        kind: CHOIX_UNIQUE
         difficulty: 2
         skill: angular-composants
-        prompt: "Quel symbole entoure un nom d'événement dans un template : crochets ou parenthèses ? (un mot)"
-        answers: ["parenthèses", "parentheses", "parenthèse", "()"]
-        explanation: "`(click)`, `(submit)`, `(input)`… Les parenthèses écoutent."
+        prompt: "Pourquoi choisir `track l.id` plutôt que rien ?"
+        choices:
+          - label: "Pour qu'Angular reconnaisse chaque livre et ne redessine que ce qui change"
+            correct: true
+            why: "Plus rapide, et l'état est conservé."
+          - label: "Pour trier la liste"
+            correct: false
+            why: "track ne trie pas."
+          - label: "Pour cacher l'identifiant"
+            correct: false
+            why: "track n'affiche ni ne cache rien."
+        explanation: "track = numéro de série de chaque élément."
     exercises:
       - slug: ng-ex-template-guide
         kind: COMPLETER
-        title: "Liaisons et boucle"
+        title: "Compléter la boucle"
         difficulty: FACILE
         skill: angular-composants
-        statement: "Complète le template : bouton qui appelle `supprimer`, bouton désactivé si `enCours`, boucle sur `taches`."
-        criteria: "Les quatre trous sont corrects."
+        statement: "Complète la boucle sur `taches` et le bloc affiché quand la liste est vide."
+        criteria: "Les trois trous sont corrects."
         hints:
-          - "Un événement : entre parenthèses, (click)."
-          - "Une valeur vers l'écran : entre crochets, [disabled]."
-          - "(click), [disabled], for, track."
-        solution: '["(click)", "[disabled]", "for", "track"]'
-        explanation: "Parenthèses pour écouter, crochets pour afficher, `@for … track` pour répéter."
+          - "Le bloc qui répète s'appelle for."
+          - "Le mot obligatoire pour reconnaître chaque élément, puis le bloc « liste vide »."
+          - "for, track, empty."
+        solution: '["for", "track", "empty"]'
+        explanation: "`@for … track … @empty`."
         xp: 10
         payload:
           language: html
           template: |
-            <button [[1]]="supprimer()">Supprimer</button>
-            <button [[2]]="enCours">Enregistrer</button>
             <ul>
-              @[[3]] (t of taches; [[4]] t.id) {
+              @[[1]] (t of taches; [[2]] t.id) {
                 <li>{{ t.titre }}</li>
+              } @[[3]] {
+                <li>Rien à faire.</li>
               }
             </ul>
           blanks:
-            - ["(click)"]
-            - ["[disabled]"]
             - ["for"]
             - ["track"]
+            - ["empty"]
+      - slug: ng-ex-for-libre
+        kind: CODE_LIBRE
+        title: "La liste des salles"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Écris un `<ul>` qui affiche, pour chaque salle `s` de la liste `salles`, un `<li>` avec `{{ s.nom }}`.
+          Utilise `track s.id`, et affiche `<li>Aucune salle.</li>` si la liste est vide.
+        criteria: "@for avec track et @empty."
+        hints:
+          - "`@for (s of salles; track s.id) { … }`"
+          - "`<li>{{ s.nom }}</li>`"
+          - "`} @empty { <li>Aucune salle.</li> }`"
+        solution: |
+          <ul>
+            @for (s of salles; track s.id) {
+              <li>{{ s.nom }}</li>
+            } @empty {
+              <li>Aucune salle.</li>
+            }
+          </ul>
+        explanation: "Une liste, un morceau par élément, un message si vide."
+        xp: 15
+        payload:
+          language: html
+          starter: |
+            <ul>
+
+            </ul>
+          checks:
+            - pattern: '@for\s*\(\s*s\s+of\s+salles\s*;\s*track\s+s\.id\s*\)'
+              message: "Écris @for (s of salles; track s.id)."
+            - pattern: '<li>\s*\{\{\s*s\.nom\s*\}\}\s*</li>'
+              message: "Affiche <li>{{ s.nom }}</li>."
+            - pattern: '\}\s*@empty\s*\{[\s\S]*Aucune salle'
+              message: "Ajoute @empty { <li>Aucune salle.</li> }."
       - slug: ng-ex-template-corriger
         kind: CORRIGER_ERREUR
         title: "Réparer un template"
@@ -227,23 +944,23 @@ lessons:
         statement: |
           Ce template contient trois erreurs :
           - la boucle n'a pas de `track` ;
-          - le bouton n'appelle pas vraiment la méthode `commander` (il manque les parenthèses d'appel) ;
+          - le bouton n'appelle pas vraiment la méthode `emprunter` (il manque les parenthèses d'appel) ;
           - le message d'absence utilise `@else` au lieu de `@empty`.
           Corrige-les.
-        criteria: "@for avec track, (click) qui appelle commander(), bloc @empty."
+        criteria: "@for avec track, (click) qui appelle emprunter(), bloc @empty."
         hints:
-          - "`@for (p of produits; track p.id) {`"
-          - "`(click)=\"commander(p)\"` : on appelle la méthode avec des parenthèses."
+          - "`@for (l of livres; track l.id) {`"
+          - "`(click)=\"emprunter(l)\"` : on appelle la méthode avec des parenthèses."
           - "Après une boucle, le bloc « liste vide » s'appelle `@empty`."
         solution: |
           <ul>
-            @for (p of produits; track p.id) {
+            @for (l of livres; track l.id) {
               <li>
-                {{ p.nom }}
-                <button (click)="commander(p)">Commander</button>
+                {{ l.titre }}
+                <button (click)="emprunter(l)">Emprunter</button>
               </li>
             } @empty {
-              <li>Aucun produit.</li>
+              <li>Aucun livre.</li>
             }
           </ul>
         explanation: "Trois erreurs classiques que le compilateur d'Angular (ou le jury) repère immédiatement."
@@ -252,44 +969,42 @@ lessons:
           language: html
           starter: |
             <ul>
-              @for (p of produits) {
+              @for (l of livres) {
                 <li>
-                  {{ p.nom }}
-                  <button (click)="commander">Commander</button>
+                  {{ l.titre }}
+                  <button (click)="emprunter">Emprunter</button>
                 </li>
               } @else {
-                <li>Aucun produit.</li>
+                <li>Aucun livre.</li>
               }
             </ul>
           checks:
-            - pattern: '@for\s*\(\s*p\s+of\s+produits\s*;\s*track\s+[\w.$]+'
-              message: "Ajoute `track` dans la boucle : `@for (p of produits; track p.id)`."
-            - pattern: '\(click\)\s*=\s*"commander\s*\([^"]*\)"'
-              message: "Le bouton doit appeler la méthode : `(click)=\"commander(p)\"`."
+            - pattern: '@for\s*\(\s*l\s+of\s+livres\s*;\s*track\s+[\w.$]+'
+              message: "Ajoute `track` dans la boucle : `@for (l of livres; track l.id)`."
+            - pattern: '\(click\)\s*=\s*"emprunter\s*\([^"]*\)"'
+              message: "Le bouton doit appeler la méthode : `(click)=\"emprunter(l)\"`."
             - pattern: '\}\s*@empty\s*\{'
               message: "Après une boucle, utilise `@empty`."
             - pattern: '@else'
               absent: true
               message: "`@else` n'existe pas après un `@for`."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 5
   - slug: ng-signaux
-    title: "Signaux et communication entre composants"
-    duration: 14
-    objective: "Stocker un état avec signal(), calculer une valeur dérivée avec computed(), et faire passer des données d'un composant parent à un enfant (input) et inversement (output)."
-    prerequisites: "Leçon « Templates : liaisons, conditions et listes »."
+    title: "Les signaux : une boîte qui prévient"
+    duration: 10
+    objective: "Stocker un état dans un signal, le lire avec des parenthèses et le modifier avec set et update."
+    prerequisites: "Leçon « Répéter pour chaque élément : @for »."
     skills: [angular-composants]
-    xp: 25
+    xp: 15
     memo: |
-      - `signal(0)` : une **boîte** qui contient une valeur et **prévient** l'écran quand elle change.
-      - Lire : `compteur()` ; écrire : `compteur.set(5)` ou `compteur.update(v => v + 1)`.
-      - `computed(() => …)` : une valeur **calculée** automatiquement à partir d'autres signaux.
-      - `input()` : une donnée reçue du **parent** (`<app-carte [produit]="p" />`).
-      - `output()` : un événement envoyé au **parent** (`<app-carte (ajout)="ajouter($event)" />`).
+      - `signal('Awa')` : une **boîte** qui contient une valeur et **prévient** l'écran quand elle change.
+      - Lire : `prenom()` (avec parenthèses) ; remplacer : `prenom.set('Léo')`.
+      - Modifier à partir de l'ancienne valeur : `sombre.update(v => !v)`.
+      - Pour une liste : `livres.update(liste => [...liste, nouveau])` — on crée une **nouvelle** liste.
     commonMistakes: |
-      - Oublier les parenthèses pour lire un signal : `{{ resume }}` au lieu de `{{ resume() }}`.
-      - Modifier un tableau dans un signal sans créer un nouveau tableau (`push`) : l'écran ne se met pas à jour.
-      - Vouloir modifier un `input()` depuis l'enfant : il appartient au parent.
+      - Oublier les parenthèses pour lire un signal : `{{ prenom }}` au lieu de `{{ prenom() }}`.
+      - Modifier une liste avec `push` : l'écran ne se met pas à jour.
     blocks:
       - type: text
         md: |
@@ -300,131 +1015,308 @@ lessons:
         term: "Signal"
         md: |
           Une **boîte avec une sonnette**. On y range une valeur ; dès qu'on la change, la sonnette prévient
-          tous ceux qui l'utilisent. On lit la valeur en « ouvrant » la boîte avec des parenthèses : `panier()`.
+          tous ceux qui l'utilisent. On lit la valeur en « ouvrant » la boîte avec des parenthèses : `prenom()`.
       - type: code
         id: code-signal
         language: typescript
-        title: "Un panier avec des signaux"
+        title: "Un thème clair ou sombre"
         code: |
-          import { Component, computed, signal } from '@angular/core';
+          import { Component, signal } from '@angular/core';
 
           @Component({
-            selector: 'app-panier',
+            selector: 'app-theme',
             template: `
-              <p>Dans ton panier : {{ resume() }}</p>
-              <button (click)="ajouter('café')">Ajouter un café</button>
+              <p>Mode sombre : {{ sombre() }}</p>
+              <button (click)="basculer()">Changer</button>
             `,
           })
-          export class PanierComponent {
-            articles = signal<string[]>([]);
-            resume = computed(() => this.articles().join(', ') || 'rien pour l\'instant');
+          export class ThemeComponent {
+            sombre = signal(false);
 
-            ajouter(nom: string) {
-              this.articles.update(liste => [...liste, nom]);
+            basculer() {
+              this.sombre.update(v => !v);
             }
           }
         lines:
           - n: 6
-            note: "On lit un signal en l'appelant : `resume()`."
+            note: "On lit un signal en l'appelant : `sombre()`."
           - n: 11
-            note: "`signal<string[]>([])` : une boîte qui contient une liste de noms d'articles, vide au départ."
-          - n: 12
-            note: "`computed` : le résumé (« café, thé ») se reconstruit tout seul quand `articles` change."
-          - n: 15
-            note: "`update` crée une **nouvelle** liste avec `[...liste, nom]` : l'ancienne plus le nouvel article."
+            note: "`signal(false)` : une boîte qui contient `false` au départ."
+          - n: 14
+            note: "`update` reçoit l'ancienne valeur `v` et renvoie son contraire (`!v`)."
       - type: question
         ref: ng-sg-q1
         review: code-signal
-      - type: definition
-        id: def-input-output
-        term: "input() et output()"
-        md: |
-          Un composant **parent** contient un composant **enfant**. Le parent **donne** des données à l'enfant
-          avec `input()` (comme on donne une lettre au facteur) ; l'enfant **prévient** le parent avec
-          `output()` (comme on sonne à la porte).
-      - type: code
-        id: code-input-output
-        language: typescript
-        title: "Une carte produit qui prévient sa page"
-        code: |
-          export class CarteProduitComponent {
-            produit = input.required<Produit>();
-            ajout = output<Produit>();
-
-            clic() {
-              this.ajout.emit(this.produit());
-            }
-          }
-
-          // Dans le template du parent :
-          // <app-carte-produit [produit]="p" (ajout)="panier.ajouter($event)" />
-        lines:
-          - n: 2
-            note: "`input.required` : le parent **doit** fournir un produit."
-          - n: 3
-            note: "`output` : l'enfant pourra émettre un événement `ajout`."
-          - n: 6
-            note: "`emit` envoie le produit au parent."
-          - n: 11
-            note: "Le parent donne `[produit]` et écoute `(ajout)` ; `$event` contient le produit envoyé."
       - type: question
-        ref: ng-sg-q2
-        review: def-input-output
+        ref: ng-si-q2
+        review: def-signal
       - type: text
-        md: "Exercice guidé : complète ce message à signaux."
+        md: "**Exercice 1 (guidé)** : crée, lis et remplace."
       - type: exercise
-        ref: ng-ex-signal-guide
+        ref: ng-ex-signal-base-guide
       - type: text
-        md: "En autonomie : écris un composant enfant avec input et output."
+        md: "**Exercice 2 (en autonomie)** : une liste de favoris."
       - type: exercise
-        ref: ng-ex-input-output
+        ref: ng-ex-signal-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une boîte jamais ouverte."
+      - type: exercise
+        ref: ng-ex-signal-bug
       - type: jury
         items:
           - q: "Qu'est-ce qu'un signal Angular ?"
-            a: "Une valeur réactive : on la lit en l'appelant, on la modifie avec set ou update, et Angular sait exactement quelles parties de l'écran mettre à jour. computed crée une valeur dérivée, effect exécute du code quand un signal change."
-          - q: "Comment deux composants communiquent-ils ?"
-            a: "Du parent vers l'enfant avec input, de l'enfant vers le parent avec output et emit. Entre composants éloignés, on passe par un service partagé qui contient des signaux."
+            a: "Une valeur réactive : on la lit en l'appelant, on la modifie avec set ou update, et Angular sait exactement quelles parties de l'écran mettre à jour."
       - type: quiz
         items:
-          - ref: ng-sg-q3
-            review: code-signal
-          - ref: ng-sg-q4
-            review: code-input-output
           - ref: ng-sg-q5
             review: def-signal
+          - ref: ng-si-q4
+            review: code-signal
+          - ref: ng-si-q5
+            review: code-signal
     questions:
       - code: ng-sg-q1
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: angular-composants
-        prompt: "Comment afficher la valeur du signal `score` dans un template ?"
+        prompt: "Comment afficher la valeur du signal `prenom` dans un template ?"
         choices:
-          - label: "{{ score() }}"
+          - label: "{{ prenom() }}"
             correct: true
             why: "On lit un signal en l'appelant."
-          - label: "{{ score }}"
+          - label: "{{ prenom }}"
             correct: false
             why: "Cela afficherait la boîte, pas son contenu."
-          - label: "{{ score.value }}"
+          - label: "{{ prenom.value }}"
             correct: false
             why: "Ce n'est pas la syntaxe des signaux Angular."
         explanation: "Parenthèses = ouvrir la boîte."
-      - code: ng-sg-q2
+      - code: ng-si-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Comment remplacer la valeur du signal `ville` par « Nantes » ?"
+        choices:
+          - label: "`this.ville.set('Nantes');`"
+            correct: true
+            why: "set remplace la valeur."
+          - label: "`this.ville = 'Nantes';`"
+            correct: false
+            why: "On casserait la boîte au lieu de changer son contenu."
+          - label: "`this.ville() = 'Nantes';`"
+            correct: false
+            why: "On ne peut pas affecter une lecture."
+        explanation: "Lire : `ville()` ; écrire : `ville.set(…)`."
+      - code: ng-sg-q5
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: angular-composants
+        prompt: "`this.liste().push(x)` met correctement l'écran à jour pour un signal de tableau."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Le signal ne voit pas ce changement."
+          - label: "Faux"
+            correct: true
+            why: "Il faut un nouveau tableau : `update(l => [...l, x])`."
+        explanation: "On remplace la valeur au lieu de la modifier en place."
+      - code: ng-si-q4
+        kind: RESULTAT_CODE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Que vaut `sombre()` après un clic sur « Changer » ?"
+        snippet: |
+          sombre = signal(false);
+          basculer() { this.sombre.update(v => !v); }
+        language: typescript
+        choices:
+          - label: "true"
+            correct: true
+            why: "Le contraire de false."
+          - label: "false"
+            correct: false
+            why: "update a changé la valeur."
+          - label: "undefined"
+            correct: false
+            why: "La valeur est bien remplacée."
+        explanation: "`!v` inverse vrai et faux."
+      - code: ng-si-q5
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: angular-composants
-        prompt: "Un enfant doit prévenir son parent qu'un bouton a été cliqué. Qu'utilise-t-il ?"
+        prompt: "Quelle différence entre `set` et `update` ?"
         choices:
-          - label: "output() et emit()"
+          - label: "set donne une nouvelle valeur ; update la calcule à partir de l'ancienne"
             correct: true
-            why: "L'enfant émet, le parent écoute."
-          - label: "input()"
+            why: "update reçoit l'ancienne valeur."
+          - label: "Aucune"
             correct: false
-            why: "input va du parent vers l'enfant."
-          - label: "Une variable globale"
+            why: "update utilise l'ancienne valeur."
+          - label: "set lit, update écrit"
             correct: false
-            why: "À éviter : difficile à suivre et à tester."
-        explanation: "input descend, output remonte."
+            why: "Les deux écrivent ; on lit avec ()."
+        explanation: "set('x') ; update(v => …)."
+    exercises:
+      - slug: ng-ex-signal-base-guide
+        kind: COMPLETER
+        title: "Créer, lire et remplacer"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: "Complète : créer le signal, le remplacer, puis l'afficher."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "On crée une boîte avec signal."
+          - "On remplace la valeur avec set ; on la lit avec des parenthèses."
+          - "signal, set, ville()."
+        solution: '["signal", "set", "ville()"]'
+        explanation: "signal pour créer, set pour remplacer, () pour lire."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            ville = [[1]]('Lyon');
+
+            demenager() {
+              this.ville.[[2]]('Nantes');
+            }
+            // template : <p>{{ [[3]] }}</p>
+          blanks:
+            - ["signal"]
+            - ["set"]
+            - ["ville()"]
+      - slug: ng-ex-signal-libre
+        kind: CODE_LIBRE
+        title: "Une liste de favoris"
+        difficulty: INTERMEDIAIRE
+        skill: angular-composants
+        statement: |
+          Dans une classe :
+          - crée un signal `favoris` contenant une liste de textes, vide au départ (`signal<string[]>([])`) ;
+          - écris une méthode `ajouter(titre: string)` qui ajoute le titre **sans** utiliser `push`.
+        criteria: "signal<string[]>([]) et update qui crée une nouvelle liste."
+        hints:
+          - "`favoris = signal<string[]>([]);`"
+          - "On crée une nouvelle liste avec `[...liste, titre]`."
+          - "`this.favoris.update(liste => [...liste, titre]);`"
+        solution: |
+          export class FavorisComponent {
+            favoris = signal<string[]>([]);
+
+            ajouter(titre: string) {
+              this.favoris.update(liste => [...liste, titre]);
+            }
+          }
+        explanation: "Une nouvelle liste : le signal prévient l'écran."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            export class FavorisComponent {
+
+            }
+          checks:
+            - pattern: '\bfavoris\s*=\s*signal\s*<\s*string\[\]\s*>\s*\(\s*\[\s*\]\s*\)'
+              message: "Déclare favoris = signal<string[]>([]);"
+            - pattern: 'ajouter\s*\(\s*titre\s*:\s*string\s*\)'
+              message: "Écris la méthode ajouter(titre: string)."
+            - pattern: 'this\.favoris\.update\s*\(\s*\(?\s*(\w+)\s*\)?\s*=>\s*\[\s*\.\.\.\1\s*,\s*titre\s*\]\s*\)'
+              message: "Ajoute avec this.favoris.update(liste => [...liste, titre])."
+            - pattern: '\.push\s*\('
+              absent: true
+              message: "N'utilise pas push : crée une nouvelle liste."
+      - slug: ng-ex-signal-bug
+        kind: CORRIGER_ERREUR
+        title: "Une boîte jamais ouverte"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Ce template affiche la boîte au lieu de son contenu. Corrige la lecture du signal `prenom`.
+        criteria: "{{ prenom() }}."
+        hints:
+          - "Comment lit-on un signal ?"
+          - "On l'appelle, avec des parenthèses."
+          - "`{{ prenom() }}`"
+        solution: |
+          <p>Bonjour {{ prenom() }} !</p>
+        explanation: "Les parenthèses ouvrent la boîte."
+        xp: 10
+        payload:
+          language: html
+          starter: |
+            <p>Bonjour {{ prenom }} !</p>
+          checks:
+            - pattern: '\{\{\s*prenom\s*\}\}'
+              absent: true
+              message: "Lis le signal avec des parenthèses."
+            - pattern: '\{\{\s*prenom\(\)\s*\}\}'
+              message: "Écris {{ prenom() }}."
+
+  # ===================================================================== LEÇON 6
+  - slug: ng-computed
+    title: "Une valeur qui se déduit : computed"
+    duration: 9
+    objective: "Créer une valeur dérivée d'autres signaux avec computed, qui se met à jour toute seule."
+    prerequisites: "Leçon « Les signaux : une boîte qui prévient »."
+    skills: [angular-composants]
+    xp: 15
+    memo: |
+      - `computed(() => …)` : une valeur **déduite** d'autres signaux, recalculée automatiquement quand ils changent.
+      - On la lit comme un signal : `message()`.
+      - On ne la modifie pas avec `set` : on modifie ses **sources**.
+    commonMistakes: |
+      - Vouloir appeler `set` sur un computed.
+      - Oublier de lire les signaux sources avec des parenthèses dans le computed.
+    blocks:
+      - type: definition
+        id: def-computed
+        term: "computed"
+        md: |
+          Un **panneau d'affichage** relié à d'autres boîtes : dès qu'une boîte change, le panneau se réécrit
+          tout seul. On ne peint jamais le panneau à la main.
+      - type: code
+        id: code-computed
+        language: typescript
+        title: "Un message de bienvenue qui suit le prénom"
+        code: |
+          prenom = signal('Awa');
+          bienvenue = computed(() => `Bonjour ${this.prenom()} !`);
+
+          changer() {
+            this.prenom.set('Léo');
+          }
+          // template : <p>{{ bienvenue() }}</p>
+        lines:
+          - n: 2
+            note: "`computed` lit `prenom()` : il se reconstruit dès que prenom change."
+          - n: 5
+            note: "On change la source ; le message suit tout seul."
+      - type: question
+        ref: ng-sg-q3
+        review: code-computed
+      - type: question
+        ref: ng-cm-q2
+        review: def-computed
+      - type: text
+        md: "**Exercice 1 (guidé)** : un message à signaux."
+      - type: exercise
+        ref: ng-ex-signal-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un libellé de statut."
+      - type: exercise
+        ref: ng-ex-computed-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un computed qu'on veut modifier."
+      - type: exercise
+        ref: ng-ex-computed-bug
+      - type: quiz
+        items:
+          - ref: ng-cm-q3
+            review: def-computed
+          - ref: ng-cm-q4
+            review: code-computed
+          - ref: ng-cm-q5
+            review: code-computed
+    questions:
       - code: ng-sg-q3
         kind: RESULTAT_CODE
         difficulty: 2
@@ -445,50 +1337,82 @@ lessons:
           - label: "Une erreur"
             correct: false
             why: "Ce code est correct."
-        explanation: "Une valeur calculée suit toujours ses sources."
-      - code: ng-sg-q4
+        explanation: "Une valeur déduite suit toujours ses sources."
+      - code: ng-cm-q2
         kind: CHOIX_UNIQUE
-        difficulty: 2
+        difficulty: 1
         skill: angular-composants
-        prompt: "Dans `(ajout)=\"ajouter($event)\"`, que contient `$event` ?"
+        prompt: "À quoi sert `computed` ?"
         choices:
-          - label: "La valeur envoyée par l'enfant avec emit()"
+          - label: "À créer une valeur déduite d'autres signaux, mise à jour toute seule"
             correct: true
-            why: "Ici, le produit."
-          - label: "Le clic de souris brut"
+            why: "Le panneau relié aux boîtes."
+          - label: "À écouter un clic"
             correct: false
-            why: "Pour un output, c'est la valeur émise."
-          - label: "Rien, c'est une variable vide"
+            why: "C'est (click)."
+          - label: "À répéter un morceau de template"
             correct: false
-            why: "Elle contient la donnée émise."
-        explanation: "`$event` transporte la donnée de l'événement."
-      - code: ng-sg-q5
+            why: "C'est @for."
+        explanation: "computed = valeur dérivée."
+      - code: ng-cm-q3
         kind: VRAI_FAUX
-        difficulty: 2
+        difficulty: 1
         skill: angular-composants
-        prompt: "`this.liste().push(x)` met correctement l'écran à jour pour un signal de tableau."
+        prompt: "On peut appeler `set` sur une valeur créée avec `computed`."
         choices:
           - label: "Vrai"
             correct: false
-            why: "Le signal ne voit pas ce changement."
+            why: "Un computed n'a pas de set."
           - label: "Faux"
             correct: true
-            why: "Il faut un nouveau tableau : `update(l => [...l, x])`."
-        explanation: "On remplace la valeur au lieu de la modifier en place."
+            why: "On modifie ses sources."
+        explanation: "On change la source, pas le panneau."
+      - code: ng-cm-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Comment lire le computed `bienvenue` dans le template ?"
+        choices:
+          - label: "{{ bienvenue() }}"
+            correct: true
+            why: "Comme un signal."
+          - label: "{{ bienvenue }}"
+            correct: false
+            why: "Il manque les parenthèses."
+          - label: "{{ computed(bienvenue) }}"
+            correct: false
+            why: "On appelle directement bienvenue()."
+        explanation: "Signal ou computed : on lit avec ()."
+      - code: ng-cm-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Dans `computed(() => this.prenom().toUpperCase())`, quand la valeur change-t-elle ?"
+        choices:
+          - label: "Chaque fois que prenom change"
+            correct: true
+            why: "computed suit les signaux qu'il lit."
+          - label: "Jamais"
+            correct: false
+            why: "Il suit sa source."
+          - label: "Seulement au rechargement de la page"
+            correct: false
+            why: "La mise à jour est immédiate."
+        explanation: "computed lit prenom() : il dépend de prenom."
     exercises:
       - slug: ng-ex-signal-guide
         kind: COMPLETER
         title: "Un message à signaux"
         difficulty: FACILE
         skill: angular-composants
-        statement: "Complète : créer le signal, fabriquer un message dérivé, changer le prénom."
+        statement: "Complète : créer le signal, fabriquer un message déduit, changer le prénom, afficher le message."
         criteria: "Les quatre trous sont corrects."
         hints:
           - "On crée une boîte avec signal('Awa')."
-          - "Une valeur dérivée : computed. Remplacer la valeur : set."
+          - "Une valeur déduite : computed. Remplacer la valeur : set."
           - "signal, computed, set, message."
         solution: '["signal", "computed", "set", "message"]'
-        explanation: "signal pour stocker, computed pour dériver, set pour remplacer la valeur."
+        explanation: "signal pour stocker, computed pour déduire, set pour remplacer la valeur."
         xp: 10
         payload:
           language: typescript
@@ -505,6 +1429,511 @@ lessons:
             - ["computed"]
             - ["set"]
             - ["message"]
+      - slug: ng-ex-computed-libre
+        kind: CODE_LIBRE
+        title: "Un libellé de statut"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          La classe a un signal `connecte = signal(false);`. Crée un computed `statut` qui vaut `'En ligne'`
+          si `connecte()` est vrai, sinon `'Hors ligne'`.
+        criteria: "computed qui lit connecte() et renvoie l'un des deux textes."
+        hints:
+          - "`statut = computed(() => …);`"
+          - "Utilise la condition courte : `condition ? a : b`."
+          - "`statut = computed(() => this.connecte() ? 'En ligne' : 'Hors ligne');`"
+        solution: |
+          connecte = signal(false);
+          statut = computed(() => this.connecte() ? 'En ligne' : 'Hors ligne');
+        explanation: "Le libellé suit la connexion, sans jamais être écrit à la main."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            connecte = signal(false);
+          checks:
+            - pattern: '\bstatut\s*=\s*computed\s*\(\s*\(\s*\)\s*=>'
+              message: "Déclare statut = computed(() => …)."
+            - pattern: 'this\.connecte\(\)'
+              message: "Lis la source avec this.connecte()."
+            - pattern: '[''"]En ligne[''"][\s\S]*[''"]Hors ligne[''"]'
+              message: "Renvoie 'En ligne' ou 'Hors ligne'."
+      - slug: ng-ex-computed-bug
+        kind: CORRIGER_ERREUR
+        title: "Un computed qu'on veut modifier"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          On ne peut pas appeler `set` sur un computed. Pour changer le message, modifie plutôt sa source :
+          `this.prenom.set('Léo');`.
+        criteria: "set est appelé sur prenom, pas sur bienvenue."
+        hints:
+          - "bienvenue est déduit de prenom."
+          - "On change la source."
+          - "`this.prenom.set('Léo');`"
+        solution: |
+          prenom = signal('Awa');
+          bienvenue = computed(() => `Bonjour ${this.prenom()} !`);
+
+          changer() {
+            this.prenom.set('Léo');
+          }
+        explanation: "Le computed suit tout seul."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            prenom = signal('Awa');
+            bienvenue = computed(() => `Bonjour ${this.prenom()} !`);
+
+            changer() {
+              this.bienvenue.set('Bonjour Léo !');
+            }
+          checks:
+            - pattern: 'bienvenue\.set'
+              absent: true
+              message: "On n'appelle pas set sur un computed."
+            - pattern: 'this\.prenom\.set\s*\(\s*[''"]Léo[''"]\s*\)'
+              message: "Écris this.prenom.set('Léo');"
+
+  # ===================================================================== LEÇON 7
+  - slug: ng-input
+    title: "Recevoir une donnée du parent : input()"
+    duration: 10
+    objective: "Faire passer une donnée d'un composant parent à un composant enfant avec input()."
+    prerequisites: "Leçon « Une valeur qui se déduit : computed »."
+    skills: [angular-composants]
+    xp: 15
+    memo: |
+      - Un composant **parent** contient un composant **enfant** dans son template.
+      - Dans l'enfant : `titre = input.required<string>();` (obligatoire) ou `input('')` (avec valeur par défaut).
+      - Dans le parent : `<app-carte [titre]="l.titre" />`.
+      - L'enfant lit la donnée comme un signal : `titre()`. Il ne la modifie pas : elle appartient au parent.
+    commonMistakes: |
+      - Oublier les crochets côté parent : l'enfant reçoit un texte fixe.
+      - Vouloir modifier un `input()` depuis l'enfant.
+    blocks:
+      - type: definition
+        id: def-input
+        term: "input()"
+        md: |
+          Le **facteur** : le parent confie une lettre (la donnée) à l'enfant. L'enfant peut la lire, mais
+          c'est le parent qui l'écrit.
+      - type: code
+        id: code-input
+        language: typescript
+        title: "Une carte qui reçoit son titre"
+        code: |
+          @Component({
+            selector: 'app-carte-livre',
+            template: `<h2>{{ titre() }}</h2>`,
+          })
+          export class CarteLivreComponent {
+            titre = input.required<string>();
+          }
+
+          // Dans le template du parent :
+          // @for (l of livres; track l.id) {
+          //   <app-carte-livre [titre]="l.titre" />
+          // }
+        lines:
+          - n: 3
+            note: "L'enfant lit la donnée comme un signal : `titre()`."
+          - n: 6
+            note: "`input.required` : le parent **doit** fournir un titre."
+          - n: 11
+            note: "Le parent donne la valeur avec des crochets : `[titre]`."
+      - type: question
+        ref: ng-in-q1
+        review: def-input
+      - type: question
+        ref: ng-in-q2
+        review: code-input
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète l'enfant et le parent."
+      - type: exercise
+        ref: ng-ex-input-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une carte de salle."
+      - type: exercise
+        ref: ng-ex-input-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un input jamais ouvert."
+      - type: exercise
+        ref: ng-ex-input-bug
+      - type: quiz
+        items:
+          - ref: ng-in-q3
+            review: def-input
+          - ref: ng-in-q4
+            review: code-input
+          - ref: ng-in-q5
+            review: code-input
+    questions:
+      - code: ng-in-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Dans quel sens va une donnée passée avec `input()` ?"
+        choices:
+          - label: "Du parent vers l'enfant"
+            correct: true
+            why: "Le parent confie la donnée."
+          - label: "De l'enfant vers le parent"
+            correct: false
+            why: "Ce serait output."
+          - label: "Du serveur vers la base"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "input descend."
+      - code: ng-in-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Côté parent, comment donner le titre `l.titre` à `<app-carte-livre>` ?"
+        choices:
+          - label: "`<app-carte-livre [titre]=\"l.titre\" />`"
+            correct: true
+            why: "Crochets : une valeur vers l'enfant."
+          - label: "`<app-carte-livre (titre)=\"l.titre\" />`"
+            correct: false
+            why: "Les parenthèses écoutent un événement."
+          - label: "`<app-carte-livre titre=\"l.titre\" />`"
+            correct: false
+            why: "Ce serait le texte « l.titre »."
+        explanation: "Comme une liaison de propriété."
+      - code: ng-in-q3
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: angular-composants
+        prompt: "L'enfant peut modifier un `input()` avec `set`."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "La donnée appartient au parent."
+          - label: "Faux"
+            correct: true
+            why: "L'enfant la lit seulement."
+        explanation: "Le parent écrit, l'enfant lit."
+      - code: ng-in-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Dans l'enfant, comment afficher l'input `titre` ?"
+        choices:
+          - label: "{{ titre() }}"
+            correct: true
+            why: "Un input se lit comme un signal."
+          - label: "{{ titre }}"
+            correct: false
+            why: "Il manque les parenthèses."
+          - label: "{{ input.titre }}"
+            correct: false
+            why: "On lit directement titre()."
+        explanation: "input = signal en lecture seule."
+      - code: ng-in-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Que veut dire `input.required<string>()` ?"
+        choices:
+          - label: "Le parent doit obligatoirement fournir un texte"
+            correct: true
+            why: "Sinon, Angular signale une erreur."
+          - label: "L'enfant doit fournir un texte au parent"
+            correct: false
+            why: "input va du parent vers l'enfant."
+          - label: "Le texte est facultatif"
+            correct: false
+            why: "required = obligatoire."
+        explanation: "required = obligatoire."
+    exercises:
+      - slug: ng-ex-input-guide
+        kind: COMPLETER
+        title: "Compléter l'enfant et le parent"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: "Complète l'enfant (qui reçoit `nom`) et le parent (qui le lui donne)."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La fonction qui déclare une donnée reçue."
+          - "L'enfant lit la donnée avec des parenthèses ; le parent la donne avec des crochets."
+          - "input, nom(), [nom]."
+        solution: '["input", "nom()", "[nom]"]'
+        explanation: "L'enfant déclare et lit ; le parent donne."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            // Enfant
+            nom = [[1]].required<string>();
+            // template de l'enfant : <p>{{ [[2]] }}</p>
+
+            // Parent
+            // <app-badge [[3]]="utilisatrice.prenom" />
+          blanks:
+            - ["input"]
+            - ["nom()"]
+            - ["[nom]"]
+      - slug: ng-ex-input-libre
+        kind: CODE_LIBRE
+        title: "Une carte de salle"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          1. Écris la classe `CarteSalleComponent` (sans le décorateur) avec un input **obligatoire** `nom` de
+             type `string`.
+          2. Complète le template du parent `SallesComponent` pour qu'il affiche
+             `<app-carte-salle [nom]="salle.nom" />`.
+        criteria: "input.required<string>() dans l'enfant, et [nom] dans le template du parent."
+        hints:
+          - "`nom = input.required<string>();`"
+          - "Le parent donne la valeur avec des crochets."
+          - "`template: `<app-carte-salle [nom]=\"salle.nom\" />`,`"
+        solution: |
+          export class CarteSalleComponent {
+            nom = input.required<string>();
+          }
+
+          @Component({
+            selector: 'app-salles',
+            imports: [CarteSalleComponent],
+            template: `<app-carte-salle [nom]="salle.nom" />`,
+          })
+          export class SallesComponent {
+            salle = { nom: 'Atelier' };
+          }
+        explanation: "Déclarer côté enfant, fournir côté parent."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            export class CarteSalleComponent {
+
+            }
+
+            @Component({
+              selector: 'app-salles',
+              imports: [CarteSalleComponent],
+              template: ``,
+            })
+            export class SallesComponent {
+              salle = { nom: 'Atelier' };
+            }
+          checks:
+            - pattern: '\bnom\s*=\s*input\.required\s*<\s*string\s*>\s*\(\s*\)'
+              message: "Déclare nom = input.required<string>();"
+            - pattern: '<app-carte-salle\s+\[nom\]\s*=\s*"salle\.nom"'
+              message: "Dans le template du parent : <app-carte-salle [nom]=\"salle.nom\" />."
+      - slug: ng-ex-input-bug
+        kind: CORRIGER_ERREUR
+        title: "Un input jamais ouvert"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Le template de l'enfant affiche la boîte au lieu du titre reçu. Corrige la lecture de `titre`.
+        criteria: "{{ titre() }}."
+        hints:
+          - "Un input se lit comme un signal."
+          - "Avec des parenthèses."
+          - "`{{ titre() }}`"
+        solution: |
+          <h2>{{ titre() }}</h2>
+        explanation: "input = signal : on l'ouvre avec ()."
+        xp: 10
+        payload:
+          language: html
+          starter: |
+            <h2>{{ titre }}</h2>
+          checks:
+            - pattern: '\{\{\s*titre\s*\}\}'
+              absent: true
+              message: "Lis l'input avec des parenthèses."
+            - pattern: '\{\{\s*titre\(\)\s*\}\}'
+              message: "Écris {{ titre() }}."
+
+  # ===================================================================== LEÇON 8
+  - slug: ng-output
+    title: "Prévenir le parent : output()"
+    duration: 10
+    objective: "Faire remonter un événement de l'enfant vers le parent avec output() et emit()."
+    prerequisites: "Leçon « Recevoir une donnée du parent : input() »."
+    skills: [angular-composants]
+    xp: 15
+    memo: |
+      - Dans l'enfant : `choisi = output<string>();` puis `this.choisi.emit(valeur)`.
+      - Dans le parent : `<app-carte (choisi)="ouvrir($event)" />`.
+      - `$event` contient la valeur envoyée par `emit`.
+      - input **descend** (parent → enfant), output **remonte** (enfant → parent).
+    commonMistakes: |
+      - Oublier `emit` : le parent n'est jamais prévenu.
+      - Utiliser des crochets côté parent : un output s'écoute avec des parenthèses.
+    blocks:
+      - type: definition
+        id: def-output
+        term: "output()"
+        md: |
+          La **sonnette** de l'enfant : quand il se passe quelque chose, il sonne (`emit`) et le parent, qui
+          écoute, vient voir ce qu'on lui apporte (`$event`).
+      - type: code
+        id: code-input-output
+        language: typescript
+        title: "Une carte qui prévient sa page"
+        code: |
+          export class CarteLivreComponent {
+            titre = input.required<string>();
+            emprunt = output<string>();
+
+            clic() {
+              this.emprunt.emit(this.titre());
+            }
+          }
+
+          // Dans le template du parent :
+          // <app-carte-livre [titre]="l.titre" (emprunt)="emprunter($event)" />
+        lines:
+          - n: 3
+            note: "`output` : l'enfant pourra émettre un événement `emprunt`."
+          - n: 6
+            note: "`emit` envoie le titre au parent."
+          - n: 11
+            note: "Le parent donne `[titre]` et écoute `(emprunt)` ; `$event` contient le titre envoyé."
+      - type: question
+        ref: ng-sg-q2
+        review: def-output
+      - type: question
+        ref: ng-sg-q4
+        review: code-input-output
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète l'émission."
+      - type: exercise
+        ref: ng-ex-output-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une carte de tâche."
+      - type: exercise
+        ref: ng-ex-input-output
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un parent qui n'écoute pas."
+      - type: exercise
+        ref: ng-ex-output-bug
+      - type: jury
+        items:
+          - q: "Comment deux composants communiquent-ils ?"
+            a: "Du parent vers l'enfant avec input, de l'enfant vers le parent avec output et emit. Entre composants éloignés, on passe par un service partagé qui contient des signaux."
+      - type: quiz
+        items:
+          - ref: ng-ou-q3
+            review: def-output
+          - ref: ng-ou-q4
+            review: code-input-output
+          - ref: ng-ou-q5
+            review: def-output
+    questions:
+      - code: ng-sg-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Un enfant doit prévenir son parent qu'un bouton a été cliqué. Qu'utilise-t-il ?"
+        choices:
+          - label: "output() et emit()"
+            correct: true
+            why: "L'enfant émet, le parent écoute."
+          - label: "input()"
+            correct: false
+            why: "input va du parent vers l'enfant."
+          - label: "Une variable globale"
+            correct: false
+            why: "À éviter : difficile à suivre et à tester."
+        explanation: "input descend, output remonte."
+      - code: ng-sg-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Dans `(emprunt)=\"emprunter($event)\"`, que contient `$event` ?"
+        choices:
+          - label: "La valeur envoyée par l'enfant avec emit()"
+            correct: true
+            why: "Ici, le titre."
+          - label: "Le clic de souris brut"
+            correct: false
+            why: "Pour un output, c'est la valeur émise."
+          - label: "Rien, c'est une variable vide"
+            correct: false
+            why: "Elle contient la donnée émise."
+        explanation: "`$event` transporte la donnée de l'événement."
+      - code: ng-ou-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Côté parent, on écoute un output avec des parenthèses : `(emprunt)=\"…\"`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Un output est un événement."
+          - label: "Faux"
+            correct: false
+            why: "Les crochets sont pour les inputs."
+        explanation: "[input] et (output)."
+      - code: ng-ou-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Quelle méthode envoie la valeur au parent ?"
+        choices:
+          - label: "`emit`"
+            correct: true
+            why: "Elle fait sonner la sonnette."
+          - label: "`set`"
+            correct: false
+            why: "set remplace la valeur d'un signal."
+          - label: "`push`"
+            correct: false
+            why: "push ajoute à un tableau."
+        explanation: "`this.emprunt.emit(valeur)`."
+      - code: ng-ou-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Deux composants éloignés (sans lien parent-enfant) doivent partager une donnée. Que faire ?"
+        choices:
+          - label: "Passer par un service partagé"
+            correct: true
+            why: "Tu le verras dans la leçon suivante."
+          - label: "Utiliser output"
+            correct: false
+            why: "output suppose un lien parent-enfant."
+          - label: "Copier la donnée dans chacun"
+            correct: false
+            why: "Les copies finiraient par diverger."
+        explanation: "input/output entre parent et enfant ; service entre composants éloignés."
+    exercises:
+      - slug: ng-ex-output-guide
+        kind: COMPLETER
+        title: "Compléter l'émission"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: "Complète : déclarer l'output, émettre la valeur, écouter côté parent."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La fonction qui déclare un événement de sortie."
+          - "La méthode qui envoie ; le parent écoute avec des parenthèses."
+          - "output, emit, (supprime)."
+        solution: '["output", "emit", "(supprime)"]'
+        explanation: "Déclarer, émettre, écouter."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            // Enfant
+            supprime = [[1]]<string>();
+            clic() { this.supprime.[[2]]('tache-1'); }
+
+            // Parent
+            // <app-tache [[3]]="retirer($event)" />
+          blanks:
+            - ["output"]
+            - ["emit"]
+            - ["(supprime)"]
       - slug: ng-ex-input-output
         kind: CODE_LIBRE
         title: "Une carte de tâche"
@@ -546,36 +1975,63 @@ lessons:
               message: "Écris la méthode `terminer()`."
             - pattern: 'this\.terminee\.emit\s*\(\s*this\.titre\s*\(\s*\)\s*\)'
               message: "Émets le titre : `this.terminee.emit(this.titre());` (n'oublie pas `titre()` avec parenthèses)."
+      - slug: ng-ex-output-bug
+        kind: CORRIGER_ERREUR
+        title: "Un parent qui n'écoute pas"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Le parent utilise des crochets pour l'output `choisi` : il n'écoute rien. Remplace-les par des
+          parenthèses.
+        criteria: "(choisi)=\"ouvrir($event)\"."
+        hints:
+          - "Un output est un événement."
+          - "Un événement s'écoute avec des parenthèses."
+          - "`(choisi)=\"ouvrir($event)\"`"
+        solution: |
+          <app-carte-salle [nom]="s.nom" (choisi)="ouvrir($event)" />
+        explanation: "[input] pour donner, (output) pour écouter."
+        xp: 10
+        payload:
+          language: html
+          starter: |
+            <app-carte-salle [nom]="s.nom" [choisi]="ouvrir($event)" />
+          checks:
+            - pattern: '\[choisi\]'
+              absent: true
+              message: "Un output ne s'écrit pas avec des crochets."
+            - pattern: '\(choisi\)\s*=\s*"ouvrir\(\$event\)"'
+              message: "Écris (choisi)=\"ouvrir($event)\"."
 
-  # ===================================================================== LEÇON 3
+  # ===================================================================== LEÇON 9
   - slug: ng-services
     title: "Services et injection de dépendances"
-    duration: 13
+    duration: 12
     objective: "Sortir la logique des composants dans un service, l'injecter avec inject() et partager un état entre plusieurs composants."
-    prerequisites: "Leçon « Signaux et communication entre composants »."
+    prerequisites: "Leçon « Prévenir le parent : output() »."
     skills: [angular-services]
-    xp: 25
+    xp: 20
     memo: |
-      - Un **service** = une classe qui contient la logique partagée (données, appels HTTP, calculs).
+      - Un **service** = une classe qui contient la logique partagée (données, appels HTTP, règles).
       - `@Injectable({ providedIn: 'root' })` : **une seule instance** pour toute l'application.
-      - `private panier = inject(PanierService);` : Angular **fournit** le service au composant.
+      - `private favoris = inject(FavorisService);` : Angular **fournit** le service au composant.
       - Le composant **affiche** ; le service **sait faire**.
-      - Exposer un signal en lecture seule : `readonly articles = this._articles.asReadonly();`.
+      - Exposer un signal en lecture seule : `readonly titres = this._titres.asReadonly();`.
     commonMistakes: |
-      - Créer le service soi-même avec `new PanierService()` : chaque composant aurait sa propre copie.
+      - Créer le service soi-même avec `new FavorisService()` : chaque composant aurait sa propre copie.
       - Mettre les appels HTTP directement dans les composants.
       - Laisser les composants modifier l'état du service sans passer par ses méthodes.
     blocks:
       - type: text
         md: |
-          Le panier doit s'afficher dans l'en-tête **et** dans la page de commande. Si chaque composant garde
-          sa propre liste, elles ne seront jamais d'accord. Il faut **un seul panier**, partagé : un service.
+          Les favoris doivent s'afficher dans l'en-tête **et** dans la page des livres. Si chaque composant garde
+          sa propre liste, elles ne seront jamais d'accord. Il faut **une seule liste**, partagée : un service.
       - type: definition
         id: def-service
         term: "Service"
         md: |
-          Une classe qui **rend un service** aux composants : garder des données, appeler le serveur, faire un
-          calcul. Comme la **cuisine** d'un restaurant : les serveurs (composants) prennent les commandes et
+          Une classe qui **rend un service** aux composants : garder des données, appeler le serveur, appliquer
+          une règle. Comme la **cuisine** d'un restaurant : les serveurs (composants) prennent les commandes et
           servent, la cuisine prépare.
       - type: definition
         id: def-injection
@@ -586,37 +2042,40 @@ lessons:
       - type: code
         id: code-service
         language: typescript
-        title: "panier.service.ts et son utilisation"
+        title: "favoris.service.ts et son utilisation"
         code: |
           @Injectable({ providedIn: 'root' })
-          export class PanierService {
-            private readonly _articles = signal<string[]>([]);
-            readonly articles = this._articles.asReadonly();
-            readonly nombre = computed(() => this._articles().length);
+          export class FavorisService {
+            private readonly _titres = signal<string[]>([]);
+            readonly titres = this._titres.asReadonly();
 
-            ajouter(nom: string) {
-              this._articles.update(liste => [...liste, nom]);
+            ajouter(titre: string) {
+              this._titres.update(liste => [...liste, titre]);
             }
           }
 
           @Component({
             selector: 'app-entete',
-            template: `<span>Panier ({{ panier.nombre() }})</span>`,
+            template: `
+              @for (t of favoris.titres(); track t) {
+                <span>{{ t }}</span>
+              }
+            `,
           })
           export class EnteteComponent {
-            protected readonly panier = inject(PanierService);
+            protected readonly favoris = inject(FavorisService);
           }
         lines:
           - n: 1
-            note: "`providedIn: 'root'` : Angular crée **un seul** panier pour toute l'application."
+            note: "`providedIn: 'root'` : Angular crée **une seule** liste de favoris pour toute l'application."
           - n: 3
             note: "Le vrai stockage est **privé** : seul le service le modifie."
           - n: 4
             note: "Les composants lisent une version en lecture seule."
-          - n: 7
-            note: "La seule porte d'entrée pour modifier le panier."
-          - n: 17
-            note: "`inject(PanierService)` : Angular fournit la même instance à tous les composants."
+          - n: 6
+            note: "La seule porte d'entrée pour modifier les favoris."
+          - n: 20
+            note: "`inject(FavorisService)` : Angular fournit la même instance à tous les composants."
       - type: question
         ref: ng-sv-q1
         review: code-service
@@ -624,13 +2083,17 @@ lessons:
         ref: ng-sv-q2
         review: def-injection
       - type: text
-        md: "Exercice guidé : remets ce service dans l'ordre."
+        md: "**Exercice 1 (guidé)** : remets ce service dans l'ordre."
       - type: exercise
         ref: ng-ex-service-ordre
       - type: text
-        md: "En autonomie : écris un service de notifications."
+        md: "**Exercice 2 (en autonomie)** : écris un service de notifications."
       - type: exercise
         ref: ng-ex-service
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un service fabriqué à la main."
+      - type: exercise
+        ref: ng-ex-service-bug
       - type: jury
         items:
           - q: "Qu'est-ce que l'injection de dépendances ?"
@@ -645,6 +2108,8 @@ lessons:
             review: def-service
           - ref: ng-sv-q5
             review: def-injection
+          - ref: ng-c2-b2
+            review: def-service
     questions:
       - code: ng-sv-q1
         kind: CHOIX_UNIQUE
@@ -666,9 +2131,9 @@ lessons:
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: angular-services
-        prompt: "Pourquoi ne pas écrire `panier = new PanierService();` dans un composant ?"
+        prompt: "Pourquoi ne pas écrire `favoris = new FavorisService();` dans un composant ?"
         choices:
-          - label: "Chaque composant aurait son propre panier, non partagé"
+          - label: "Chaque composant aurait sa propre liste, non partagée"
             correct: true
             why: "Et on ne pourrait plus le remplacer dans les tests."
           - label: "new est interdit en TypeScript"
@@ -700,13 +2165,13 @@ lessons:
           - label: "Les appels HTTP vers l'API"
             correct: true
             why: "Logique d'accès aux données."
-          - label: "L'état partagé (panier, utilisateur connecté)"
+          - label: "L'état partagé (favoris, utilisateur connecté)"
             correct: true
             why: "Partagé entre composants."
           - label: "Le HTML de la page"
             correct: false
             why: "Il va dans le template du composant."
-          - label: "Les règles métier (un article déjà dans le panier, un compte désactivé)"
+          - label: "Les règles métier (un livre déjà en favori, un compte désactivé)"
             correct: true
             why: "Logique réutilisable et testable."
         explanation: "Le composant affiche, le service sait faire."
@@ -717,6 +2182,22 @@ lessons:
         prompt: "Quelle fonction Angular utilise-t-on pour obtenir un service dans un composant ? (un mot)"
         answers: ["inject", "inject()"]
         explanation: "`private readonly api = inject(ApiService);`"
+      - code: ng-c2-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-services
+        prompt: "Comment partager une donnée entre deux composants qui n'ont aucun lien parent-enfant ?"
+        choices:
+          - label: "Avec un service injecté dans les deux composants"
+            correct: true
+            why: "Le service tient l'état commun."
+          - label: "Avec input()"
+            correct: false
+            why: "input suppose un lien parent-enfant."
+          - label: "En copiant la donnée dans chaque composant"
+            correct: false
+            why: "Les copies finiraient par diverger."
+        explanation: "Un service singleton = une seule source de vérité."
     exercises:
       - slug: ng-ex-service-ordre
         kind: REMETTRE_ORDRE
@@ -782,7 +2263,7 @@ lessons:
               this._messages.set([]);
             }
           }
-        explanation: "Le même modèle sert pour un panier, un utilisateur connecté, des filtres…"
+        explanation: "Le même modèle sert pour des favoris, un utilisateur connecté, des filtres…"
         xp: 25
         payload:
           language: typescript
@@ -806,37 +2287,68 @@ lessons:
               message: "N'utilise pas `push` : crée un nouveau tableau."
             - pattern: 'vider\s*\(\s*\)[^{]*\{\s*this\._messages\.set\s*\(\s*\[\s*\]\s*\)'
               message: "Dans `vider()`, écris `this._messages.set([]);`."
+      - slug: ng-ex-service-bug
+        kind: CORRIGER_ERREUR
+        title: "Un service fabriqué à la main"
+        difficulty: FACILE
+        skill: angular-services
+        statement: |
+          Ce composant fabrique sa propre copie du service avec `new` : ses favoris ne sont pas partagés.
+          Demande plutôt le service à Angular avec `inject`.
+        criteria: "inject(FavorisService), sans new."
+        hints:
+          - "Qui doit fournir le service ?"
+          - "Angular, avec la fonction inject."
+          - "`protected readonly favoris = inject(FavorisService);`"
+        solution: |
+          export class PageLivresComponent {
+            protected readonly favoris = inject(FavorisService);
+          }
+        explanation: "inject donne la même instance partagée à tous."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            export class PageLivresComponent {
+              protected readonly favoris = new FavorisService();
+            }
+          checks:
+            - pattern: 'new\s+FavorisService'
+              absent: true
+              message: "Ne fabrique pas le service avec new."
+            - pattern: '=\s*inject\s*\(\s*FavorisService\s*\)'
+              message: "Écris inject(FavorisService)."
 
 bank:
-  - code: ng-c2-b1
+  - code: ng-c2-b3
     kind: CHOIX_UNIQUE
-    difficulty: 2
+    difficulty: 1
     skill: angular-composants
-    prompt: "Quelle écriture crée une liaison bidirectionnelle sur un champ de formulaire (avec FormsModule) ?"
+    prompt: "Quel bloc de template répète un morceau pour chaque élément d'une liste ?"
     choices:
-      - label: "[(ngModel)]=\"nom\""
+      - label: "@for"
         correct: true
-        why: "La « banane dans la boîte » : crochets + parenthèses."
-      - label: "(ngModel)=\"nom\""
+        why: "Un morceau par élément."
+      - label: "@if"
         correct: false
-        why: "Seulement l'écoute."
-      - label: "{{ ngModel }}"
+        why: "@if affiche selon une condition."
+      - label: "@empty"
         correct: false
-        why: "Seulement l'affichage."
-    explanation: "`[( )]` combine valeur vers l'écran et événement vers la classe."
-  - code: ng-c2-b2
+        why: "@empty s'affiche quand la liste est vide."
+    explanation: "@if choisit, @for répète."
+  - code: ng-c2-b4
     kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: angular-services
-    prompt: "Comment partager une donnée entre deux composants qui n'ont aucun lien parent-enfant ?"
+    difficulty: 1
+    skill: angular-composants
+    prompt: "Comment lire la valeur du signal `theme` dans une méthode de la classe ?"
     choices:
-      - label: "Avec un service injecté dans les deux composants"
+      - label: "`this.theme()`"
         correct: true
-        why: "Le service tient l'état commun."
-      - label: "Avec input()"
+        why: "this, puis les parenthèses pour ouvrir la boîte."
+      - label: "`theme`"
         correct: false
-        why: "input suppose un lien parent-enfant."
-      - label: "En copiant la donnée dans chaque composant"
+        why: "Il manque this et les parenthèses."
+      - label: "`this.theme.value`"
         correct: false
-        why: "Les copies finiraient par diverger."
-    explanation: "Un service singleton = une seule source de vérité."
+        why: "Ce n'est pas la syntaxe des signaux Angular."
+    explanation: "Dans la classe : `this.nom()` ; dans le template : `nom()`."

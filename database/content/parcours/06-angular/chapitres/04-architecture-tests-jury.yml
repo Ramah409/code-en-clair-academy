@@ -2,34 +2,29 @@ slug: ng-architecture-tests-jury
 position: 4
 level: EXAMEN
 title: "Architecture, tests et jury Angular"
-summary: "Organiser les dossiers d'une vraie application, tester un service et un composant, puis répondre aux questions du jury."
-quizQuestionCount: 12
+summary: "Ranger les dossiers d'une vraie application, tester un service puis un composant, comprendre le cycle de vie et la protection XSS, et répondre aux questions du jury. Une seule notion par leçon."
+quizQuestionCount: 16
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: ng-architecture-tests
-    title: "Organiser et tester une application Angular"
-    duration: 15
-    objective: "Ranger une application en core / shared / features, écrire un test unitaire de service et un test de composant avec TestBed."
+    title: "Ranger son application : core, shared, features"
+    duration: 9
+    objective: "Ranger chaque fichier d'une application Angular dans core, shared ou features."
     prerequisites: "Chapitre « Routage, formulaires et appels HTTP »."
-    skills: [angular-composants, tests-strategie]
-    xp: 30
+    skills: [angular-composants]
+    xp: 15
     memo: |
       - **core/** : ce qui existe une seule fois (authentification, intercepteurs, gardes, services API).
       - **shared/** : les briques réutilisables (boutons, cartes, pipes).
-      - **features/** : un dossier par fonctionnalité (catalogue, panier, compte), chargé à la demande.
-      - Test de service : on crée le service, on appelle une méthode, on vérifie le résultat avec `expect`.
-      - Test de composant : `TestBed.createComponent`, `fixture.detectChanges()`, puis on lit le HTML produit.
-      - Appels HTTP en test : `provideHttpClientTesting()` + `HttpTestingController` (aucune vraie requête).
+      - **features/** : un dossier par fonctionnalité (catalogue, favoris, compte), chargé à la demande.
     commonMistakes: |
       - Un dossier `components/` fourre-tout avec 50 fichiers.
-      - Oublier `fixture.detectChanges()` : le template n'est pas encore affiché.
-      - Tester des détails internes au lieu de ce que voit l'utilisatrice.
+      - Ranger dans shared un composant utilisé par une seule page.
     blocks:
       - type: text
         md: |
-          Une application grandit vite. Sans rangement, on ne retrouve plus rien. Et sans tests, chaque
-          modification fait peur. Cette leçon règle les deux problèmes.
+          Une application grandit vite. Sans rangement, on ne retrouve plus rien.
       - type: definition
         id: def-architecture
         term: "core, shared, features"
@@ -47,11 +42,11 @@ lessons:
               auth/ (auth.service.ts, auth.guard.ts, auth.interceptor.ts)
               api/  (api.service.ts, models.ts)
             shared/
-              carte-produit.component.ts
-              prix.pipe.ts
+              carte-livre.component.ts
+              date-courte.pipe.ts
             features/
-              catalogue/  (catalogue.component.ts, detail-produit.component.ts)
-              panier/     (panier.component.ts, panier.service.ts)
+              catalogue/  (catalogue.component.ts, detail-livre.component.ts)
+              favoris/    (favoris.component.ts, favoris.service.ts)
               compte/     (compte.component.ts)
             app.routes.ts
             app.config.ts
@@ -65,6 +60,222 @@ lessons:
       - type: question
         ref: ng-at-q1
         review: def-architecture
+      - type: question
+        ref: ng-at-q4
+        review: code-arborescence
+      - type: text
+        md: "**Exercice 1 (guidé)** : range chaque fichier."
+      - type: exercise
+        ref: ng-ex-rangement-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : l'arborescence d'une application de réservation."
+      - type: exercise
+        ref: ng-ex-rangement-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une garde mal rangée."
+      - type: exercise
+        ref: ng-ex-rangement-bug
+      - type: jury
+        items:
+          - q: "Comment est organisé votre frontend ?"
+            a: "En trois zones : core pour les éléments uniques (authentification, intercepteur, gardes, accès API), shared pour les composants réutilisables, et features avec un dossier par fonctionnalité chargé à la demande. Les composants sont standalone et utilisent des signaux."
+      - type: quiz
+        items:
+          - ref: ng-ar-q3
+            review: def-architecture
+          - ref: ng-ar-q4
+            review: code-arborescence
+          - ref: ng-ar-q5
+            review: def-architecture
+    questions:
+      - code: ng-at-q1
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Où ranger l'intercepteur qui ajoute le jeton JWT ?"
+        choices:
+          - label: "core/"
+            correct: true
+            why: "Il existe une seule fois pour toute l'application."
+          - label: "shared/"
+            correct: false
+            why: "shared contient des briques d'interface réutilisables."
+          - label: "features/favoris/"
+            correct: false
+            why: "Il ne concerne pas que les favoris."
+        explanation: "core = les éléments techniques uniques."
+      - code: ng-at-q4
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Un composant réutilisé dans plusieurs pages (carte livre) se range dans shared/."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "C'est une brique de la boîte à outils."
+          - label: "Faux"
+            correct: false
+            why: "features/ contient ce qui est propre à une seule fonctionnalité."
+        explanation: "Partagé → shared ; propre à une fonctionnalité → features."
+      - code: ng-ar-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Où ranger la page « Mon compte » et ses composants propres ?"
+        choices:
+          - label: "features/compte/"
+            correct: true
+            why: "Une fonctionnalité, un dossier."
+          - label: "core/"
+            correct: false
+            why: "core contient la technique unique, pas les pages."
+          - label: "shared/"
+            correct: false
+            why: "Elle n'est pas réutilisée ailleurs."
+        explanation: "Une pièce de la maison = une feature."
+      - code: ng-ar-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Où ranger le service d'authentification ?"
+        choices:
+          - label: "core/auth/"
+            correct: true
+            why: "Un seul exemplaire, utilisé partout."
+          - label: "shared/"
+            correct: false
+            why: "shared est pour les briques d'interface."
+          - label: "features/compte/"
+            correct: false
+            why: "Il sert à toute l'application."
+        explanation: "Authentification = chaudière de la maison."
+      - code: ng-ar-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Quel avantage apporte un dossier par fonctionnalité ?"
+        choices:
+          - label: "On retrouve vite tout ce qui concerne une fonctionnalité, et on peut la charger à la demande"
+            correct: true
+            why: "Rangement clair + chargement différé."
+          - label: "Il y a moins de fichiers"
+            correct: false
+            why: "Le nombre ne change pas."
+          - label: "Les tests deviennent inutiles"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Ranger par fonctionnalité, pas par type de fichier."
+    exercises:
+      - slug: ng-ex-rangement-guide
+        kind: COMPLETER
+        title: "Ranger chaque fichier"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: "Complète chaque ligne avec core, shared ou features."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La garde d'authentification existe une seule fois."
+          - "Un bouton réutilisé partout va dans la boîte à outils ; une page va dans sa fonctionnalité."
+          - "core, shared, features."
+        solution: '["core", "shared", "features"]'
+        explanation: "Unique, réutilisable, propre à une page."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            auth.guard.ts → [[1]]/auth/
+            bouton-principal.component.ts → [[2]]/
+            reservations.component.ts → [[3]]/reservations/
+          blanks:
+            - ["core"]
+            - ["shared"]
+            - ["features"]
+      - slug: ng-ex-rangement-libre
+        kind: CODE_LIBRE
+        title: "L'arborescence d'une application de réservation"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Écris une ligne par fichier, sous la forme `dossier/fichier` :
+          - `auth.interceptor.ts` (unique, technique) ;
+          - `carte-salle.component.ts` (réutilisée dans plusieurs pages) ;
+          - `salles.component.ts` (la page des salles, dans `features/salles/`).
+        criteria: "Chaque fichier est dans le bon dossier."
+        hints:
+          - "L'intercepteur est unique : core."
+          - "La carte est partagée : shared."
+          - "La page est une fonctionnalité : features/salles."
+        solution: |
+          core/auth.interceptor.ts
+          shared/carte-salle.component.ts
+          features/salles/salles.component.ts
+        explanation: "Chaque fichier à sa place."
+        xp: 15
+        payload:
+          language: text
+          starter: |
+            auth.interceptor.ts
+            carte-salle.component.ts
+            salles.component.ts
+          checks:
+            - pattern: '(?m)^\s*core/(?:\w+/)?auth\.interceptor\.ts'
+              message: "L'intercepteur va dans core/."
+            - pattern: '(?m)^\s*shared/(?:\w+/)?carte-salle\.component\.ts'
+              message: "La carte partagée va dans shared/."
+            - pattern: '(?m)^\s*features/salles/salles\.component\.ts'
+              message: "La page va dans features/salles/."
+      - slug: ng-ex-rangement-bug
+        kind: CORRIGER_ERREUR
+        title: "Une garde mal rangée"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          La garde d'authentification a été rangée dans la fonctionnalité favoris, alors qu'elle protège toute
+          l'application. Déplace-la dans `core/auth/`.
+        criteria: "core/auth/auth.guard.ts."
+        hints:
+          - "Elle existe une seule fois et sert partout."
+          - "Donc dans core."
+          - "`core/auth/auth.guard.ts`"
+        solution: |
+          core/auth/auth.guard.ts
+          features/favoris/favoris.component.ts
+        explanation: "Technique unique → core."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            features/favoris/auth.guard.ts
+            features/favoris/favoris.component.ts
+          checks:
+            - pattern: 'features/favoris/auth\.guard\.ts'
+              absent: true
+              message: "La garde n'appartient pas aux favoris."
+            - pattern: 'core/auth/auth\.guard\.ts'
+              message: "Range-la dans core/auth/."
+
+  # ===================================================================== LEÇON 2
+  - slug: ng-test-service
+    title: "Tester un service"
+    duration: 11
+    objective: "Écrire un test unitaire de service en trois temps : préparer, agir, vérifier."
+    prerequisites: "Leçon « Ranger son application : core, shared, features »."
+    skills: [tests-strategie]
+    xp: 15
+    memo: |
+      - `describe('Nom', () => { … })` : un groupe de tests ; `it('fait ceci', () => { … })` : un test.
+      - `beforeEach` : exécuté avant **chaque** test ; `TestBed.inject(Service)` fournit le service.
+      - `expect(valeur).toEqual(attendu)` : vérifier ; `toBe` pour une valeur simple.
+      - Trois temps : **préparer**, **agir**, **vérifier**.
+    commonMistakes: |
+      - Oublier de repartir de zéro avant chaque test.
+      - Écrire un test sans expect : il passe toujours.
+    blocks:
+      - type: text
+        md: |
+          Sans tests, chaque modification fait peur. Un test vérifie tout seul, en une seconde, que le code fait
+          toujours ce qu'on attend.
       - type: definition
         id: def-test-unitaire
         term: "Test unitaire"
@@ -74,20 +285,18 @@ lessons:
       - type: code
         id: code-test-service
         language: typescript
-        title: "panier.service.spec.ts"
+        title: "favoris.service.spec.ts"
         code: |
-          describe('PanierService', () => {
-            let service: PanierService;
+          describe('FavorisService', () => {
+            let service: FavorisService;
 
             beforeEach(() => {
-              TestBed.configureTestingModule({});
-              service = TestBed.inject(PanierService);
+              service = TestBed.inject(FavorisService);
             });
 
-            it('compte les articles ajoutés', () => {
-              service.ajouter('Café');
-              service.ajouter('Thé');
-              expect(service.nombre()).toBe(2);
+            it('garde les titres ajoutés', () => {
+              service.ajouter('Dune');
+              expect(service.titres()).toEqual(['Dune']);
             });
           });
         lines:
@@ -95,12 +304,243 @@ lessons:
             note: "`describe` : un groupe de tests pour un même élément."
           - n: 4
             note: "`beforeEach` : exécuté avant **chaque** test, pour repartir de zéro."
-          - n: 6
+          - n: 5
             note: "Préparer : on obtient le service comme Angular le ferait."
+          - n: 9
+            note: "Agir : on ajoute un titre."
           - n: 10
-            note: "Agir : on ajoute deux articles."
-          - n: 12
-            note: "Vérifier : `expect(valeur).toBe(attendu)`."
+            note: "Vérifier : la liste contient exactement ce titre."
+      - type: question
+        ref: ng-at-q3
+        review: def-test-unitaire
+      - type: question
+        ref: ng-ts-s-q2
+        review: code-test-service
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète ce test de service."
+      - type: exercise
+        ref: ng-ex-test-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : tester le thème."
+      - type: exercise
+        ref: ng-ex-test-service-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un test qui ne vérifie rien."
+      - type: exercise
+        ref: ng-ex-test-service-bug
+      - type: quiz
+        items:
+          - ref: ng-at-q5
+            review: def-test-unitaire
+          - ref: ng-ts-s-q4
+            review: code-test-service
+          - ref: ng-c4-b2
+            review: def-test-unitaire
+    questions:
+      - code: ng-at-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Dans quel ordre s'écrit un test unitaire ?"
+        choices:
+          - label: "Préparer, agir, vérifier"
+            correct: true
+            why: "Arrange, Act, Assert."
+          - label: "Vérifier, préparer, agir"
+            correct: false
+            why: "On ne peut pas vérifier avant d'agir."
+          - label: "Agir, vérifier, préparer"
+            correct: false
+            why: "Il faut préparer d'abord."
+        explanation: "Le modèle AAA rend chaque test lisible."
+      - code: ng-ts-s-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "À quoi sert `beforeEach` ?"
+        choices:
+          - label: "À préparer un point de départ neuf avant chaque test"
+            correct: true
+            why: "Les tests ne se gênent pas entre eux."
+          - label: "À lancer les tests plus vite"
+            correct: false
+            why: "C'est une question d'indépendance."
+          - label: "À vérifier le résultat"
+            correct: false
+            why: "C'est le rôle d'expect."
+        explanation: "Chaque test repart de zéro."
+      - code: ng-at-q5
+        kind: CHOIX_MULTIPLE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Quels sont les avantages des tests automatisés ? (plusieurs réponses)"
+        choices:
+          - label: "Détecter une régression dès qu'on modifie le code"
+            correct: true
+            why: "Un test qui passait et échoue alerte tout de suite."
+          - label: "Documenter le comportement attendu"
+            correct: true
+            why: "Un test se lit comme un exemple d'utilisation."
+          - label: "Remplacer la validation côté serveur"
+            correct: false
+            why: "Aucun rapport."
+          - label: "Modifier le code avec confiance"
+            correct: true
+            why: "Refactoriser sans peur."
+        explanation: "Les tests sont un filet de sécurité."
+      - code: ng-ts-s-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Un test sans `expect` ne vérifie rien et passe toujours."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Aucune vérification, aucun échec possible."
+          - label: "Faux"
+            correct: false
+            why: "C'est expect qui peut faire échouer le test."
+        explanation: "Pas d'expect, pas de test."
+      - code: ng-c4-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: tests-strategie
+        prompt: "Comment tester un service qui fait des appels HTTP sans appeler le vrai serveur ?"
+        choices:
+          - label: "Avec provideHttpClientTesting() et HttpTestingController"
+            correct: true
+            why: "On intercepte la requête et on renvoie une fausse réponse."
+          - label: "En lançant le backend avant les tests"
+            correct: false
+            why: "Ce serait un test d'intégration, lent et fragile."
+          - label: "Ce n'est pas possible"
+            correct: false
+            why: "Angular le prévoit."
+        explanation: "`httpMock.expectOne('/api/livres').flush([...])` renvoie les données voulues."
+    exercises:
+      - slug: ng-ex-test-guide
+        kind: COMPLETER
+        title: "Compléter un test de service"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: "Complète ce test qui vérifie que `vider()` vide la liste des favoris."
+        criteria: "Les quatre trous sont corrects."
+        hints:
+          - "Avant chaque test : beforeEach."
+          - "On obtient le service avec TestBed.inject."
+          - "beforeEach, inject, expect, toEqual."
+        solution: '["beforeEach", "inject", "expect", "toEqual"]'
+        explanation: "Préparer (beforeEach + inject), agir (vider), vérifier (expect + toEqual)."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            let service: FavorisService;
+
+            [[1]](() => {
+              service = TestBed.[[2]](FavorisService);
+            });
+
+            it('vide les favoris', () => {
+              service.ajouter('Dune');
+              service.vider();
+              [[3]](service.titres()).[[4]]([]);
+            });
+          blanks:
+            - ["beforeEach"]
+            - ["inject"]
+            - ["expect"]
+            - ["toEqual"]
+      - slug: ng-ex-test-service-libre
+        kind: CODE_LIBRE
+        title: "Tester le thème"
+        difficulty: INTERMEDIAIRE
+        skill: tests-strategie
+        statement: |
+          `ThemeService` a un signal `sombre` (faux au départ) et une méthode `basculer()`. Écris un test
+          `it('passe en sombre', …)` qui obtient le service avec `TestBed.inject`, appelle `basculer()`, puis
+          vérifie que `sombre()` vaut `true`.
+        criteria: "TestBed.inject, appel de basculer, expect(service.sombre()).toBe(true)."
+        hints:
+          - "`const service = TestBed.inject(ThemeService);`"
+          - "`service.basculer();`"
+          - "`expect(service.sombre()).toBe(true);`"
+        solution: |
+          it('passe en sombre', () => {
+            const service = TestBed.inject(ThemeService);
+            service.basculer();
+            expect(service.sombre()).toBe(true);
+          });
+        explanation: "Préparer, agir, vérifier."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            it('passe en sombre', () => {
+
+            });
+          checks:
+            - pattern: 'TestBed\.inject\s*\(\s*ThemeService\s*\)'
+              message: "Obtiens le service avec TestBed.inject(ThemeService)."
+            - pattern: '\.basculer\s*\(\s*\)'
+              message: "Appelle basculer()."
+            - pattern: 'expect\s*\(\s*\w+\.sombre\(\)\s*\)\s*\.\s*(?:toBe|toEqual)\s*\(\s*true\s*\)|expect\s*\(\s*\w+\.sombre\(\)\s*\)\s*\.\s*toBeTrue\s*\(\s*\)'
+              message: "Vérifie : expect(service.sombre()).toBe(true)."
+      - slug: ng-ex-test-service-bug
+        kind: CORRIGER_ERREUR
+        title: "Un test qui ne vérifie rien"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: |
+          Ce test agit mais ne vérifie rien : il passerait même si `ajouter` était cassé. Ajoute la vérification
+          `expect(service.titres()).toEqual(['Dune']);`.
+        criteria: "Un expect sur titres() après l'ajout."
+        hints:
+          - "Il manque le troisième temps."
+          - "La vérification commence par expect."
+          - "`expect(service.titres()).toEqual(['Dune']);`"
+        solution: |
+          it('ajoute un favori', () => {
+            const service = TestBed.inject(FavorisService);
+            service.ajouter('Dune');
+            expect(service.titres()).toEqual(['Dune']);
+          });
+        explanation: "Sans expect, le test ne protège rien."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            it('ajoute un favori', () => {
+              const service = TestBed.inject(FavorisService);
+              service.ajouter('Dune');
+            });
+          checks:
+            - pattern: "ajouter\\([^)]*\\)[\\s\\S]*expect\\s*\\(\\s*service\\.titres\\(\\)\\s*\\)\\s*\\.\\s*toEqual\\s*\\(\\s*\\[\\s*['\"]Dune['\"]\\s*\\]\\s*\\)"
+              message: "Après l'ajout, vérifie : expect(service.titres()).toEqual(['Dune'])."
+
+  # ===================================================================== LEÇON 3
+  - slug: ng-test-composant
+    title: "Tester un composant"
+    duration: 12
+    objective: "Monter un composant avec TestBed, afficher son template avec detectChanges et vérifier ce que voit l'utilisatrice."
+    prerequisites: "Leçon « Tester un service »."
+    skills: [tests-strategie, angular-composants]
+    xp: 15
+    memo: |
+      - `TestBed.configureTestingModule({ imports: [MonComposant] })` puis `TestBed.createComponent(MonComposant)`.
+      - `fixture.detectChanges()` : Angular dessine le template (à rappeler après chaque action).
+      - `fixture.nativeElement.querySelector('h2')` : chercher un élément dans le HTML produit.
+      - On teste **ce que voit l'utilisatrice**, pas les détails internes.
+    commonMistakes: |
+      - Oublier `fixture.detectChanges()` : le template n'est pas encore affiché.
+      - Oublier de rappeler `detectChanges()` après un clic.
+    blocks:
+      - type: definition
+        id: def-fixture
+        term: "fixture"
+        md: |
+          Un **banc d'essai** : le composant est monté dans un mini-navigateur de test. On peut cliquer dessus
+          et lire ce qu'il affiche, comme une vraie utilisatrice.
       - type: code
         id: code-test-composant
         language: typescript
@@ -126,45 +566,34 @@ lessons:
       - type: question
         ref: ng-at-q2
         review: code-test-composant
+      - type: question
+        ref: ng-tc-q2
+        review: def-fixture
       - type: text
-        md: "Exercice guidé : complète ce test de service."
+        md: "**Exercice 1 (guidé)** : complète le test."
       - type: exercise
-        ref: ng-ex-test-guide
+        ref: ng-ex-test-composant-guide
       - type: text
-        md: "En autonomie : écris un test de composant."
+        md: "**Exercice 2 (en autonomie)** : tester un clic."
       - type: exercise
         ref: ng-ex-test-composant
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un template jamais dessiné."
+      - type: exercise
+        ref: ng-ex-test-composant-bug
       - type: jury
         items:
-          - q: "Comment est organisé votre frontend ?"
-            a: "En trois zones : core pour les éléments uniques (authentification, intercepteur, gardes, accès API), shared pour les composants réutilisables, et features avec un dossier par fonctionnalité chargé à la demande. Les composants sont standalone et utilisent des signaux."
           - q: "Comment testez-vous votre application Angular ?"
-            a: "Des tests unitaires sur les services (logique, calculs) et des tests de composants avec TestBed pour vérifier l'affichage. Les appels HTTP sont simulés avec HttpTestingController. Les parcours complets peuvent être couverts par des tests de bout en bout (Playwright ou Cypress)."
+            a: "Des tests unitaires sur les services (logique, règles) et des tests de composants avec TestBed pour vérifier l'affichage. Les appels HTTP sont simulés avec HttpTestingController. Les parcours complets peuvent être couverts par des tests de bout en bout (Playwright ou Cypress)."
       - type: quiz
         items:
-          - ref: ng-at-q3
-            review: code-test-service
-          - ref: ng-at-q4
-            review: code-arborescence
-          - ref: ng-at-q5
-            review: def-test-unitaire
+          - ref: ng-tc-q3
+            review: code-test-composant
+          - ref: ng-tc-q4
+            review: def-fixture
+          - ref: ng-tc-q5
+            review: code-test-composant
     questions:
-      - code: ng-at-q1
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: angular-composants
-        prompt: "Où ranger l'intercepteur qui ajoute le jeton JWT ?"
-        choices:
-          - label: "core/"
-            correct: true
-            why: "Il existe une seule fois pour toute l'application."
-          - label: "shared/"
-            correct: false
-            why: "shared contient des briques d'interface réutilisables."
-          - label: "features/panier/"
-            correct: false
-            why: "Il ne concerne pas que le panier."
-        explanation: "core = les éléments techniques uniques."
       - code: ng-at-q2
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -181,163 +610,197 @@ lessons:
             correct: false
             why: "Un test unitaire n'a pas besoin du backend."
         explanation: "detectChanges = « dessine maintenant »."
-      - code: ng-at-q3
+      - code: ng-tc-q2
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: tests-strategie
-        prompt: "Dans quel ordre s'écrit un test unitaire ?"
+        prompt: "Que contient `fixture` ?"
         choices:
-          - label: "Préparer, agir, vérifier"
+          - label: "Le composant monté dans un mini-navigateur de test"
             correct: true
-            why: "Arrange, Act, Assert."
-          - label: "Vérifier, préparer, agir"
+            why: "Le banc d'essai."
+          - label: "La base de données de test"
             correct: false
-            why: "On ne peut pas vérifier avant d'agir."
-          - label: "Agir, vérifier, préparer"
+            why: "Aucune base ici."
+          - label: "Le résultat du test"
             correct: false
-            why: "Il faut préparer d'abord."
-        explanation: "Le modèle AAA rend chaque test lisible."
-      - code: ng-at-q4
+            why: "Le résultat vient d'expect."
+        explanation: "On clique et on lit sur la fixture."
+      - code: ng-tc-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: tests-strategie
+        prompt: "Comment trouver le bouton dans le HTML du composant testé ?"
+        choices:
+          - label: "`fixture.nativeElement.querySelector('button')`"
+            correct: true
+            why: "On cherche dans le HTML produit."
+          - label: "`document.button`"
+            correct: false
+            why: "On passe par la fixture."
+          - label: "`TestBed.button()`"
+            correct: false
+            why: "Cette méthode n'existe pas."
+        explanation: "nativeElement = le HTML dessiné."
+      - code: ng-tc-q4
         kind: VRAI_FAUX
         difficulty: 2
-        skill: angular-composants
-        prompt: "Un composant réutilisé dans plusieurs pages (carte produit) se range dans shared/."
+        skill: tests-strategie
+        prompt: "Après un clic dans un test, il faut rappeler `detectChanges()` pour voir le nouvel affichage."
         choices:
           - label: "Vrai"
             correct: true
-            why: "C'est une brique de la boîte à outils."
+            why: "Angular redessine à ce moment-là."
           - label: "Faux"
             correct: false
-            why: "features/ contient ce qui est propre à une seule fonctionnalité."
-        explanation: "Partagé → shared ; propre à une fonctionnalité → features."
-      - code: ng-at-q5
-        kind: CHOIX_MULTIPLE
+            why: "Sans lui, on lit l'ancien affichage."
+        explanation: "Agir, puis redessiner, puis vérifier."
+      - code: ng-tc-q5
+        kind: CHOIX_UNIQUE
         difficulty: 2
         skill: tests-strategie
-        prompt: "Quels sont les avantages des tests automatisés ? (plusieurs réponses)"
+        prompt: "Que doit vérifier en priorité un test de composant ?"
         choices:
-          - label: "Détecter une régression dès qu'on modifie le code"
+          - label: "Ce que voit l'utilisatrice (textes, boutons, messages)"
             correct: true
-            why: "Un test qui passait et échoue alerte tout de suite."
-          - label: "Documenter le comportement attendu"
-            correct: true
-            why: "Un test se lit comme un exemple d'utilisation."
-          - label: "Remplacer la validation côté serveur"
+            why: "Un test proche de l'usage réel."
+          - label: "Le nom des variables privées"
             correct: false
-            why: "Aucun rapport."
-          - label: "Modifier le code avec confiance"
-            correct: true
-            why: "Refactoriser sans peur."
-        explanation: "Les tests sont un filet de sécurité."
+            why: "Détail interne, fragile."
+          - label: "La vitesse du navigateur"
+            correct: false
+            why: "Ce n'est pas le but."
+        explanation: "Tester le comportement visible."
     exercises:
-      - slug: ng-ex-test-guide
+      - slug: ng-ex-test-composant-guide
         kind: COMPLETER
-        title: "Compléter un test de service"
+        title: "Compléter le test"
         difficulty: FACILE
         skill: tests-strategie
-        statement: "Complète ce test qui vérifie que `vider()` remet le panier à zéro."
-        criteria: "Les quatre trous sont corrects."
+        statement: "Complète : créer le composant, dessiner le template, chercher le paragraphe."
+        criteria: "Les trois trous sont corrects."
         hints:
-          - "Avant chaque test : beforeEach."
-          - "On obtient le service avec TestBed.inject."
-          - "beforeEach, inject, expect, toBe."
-        solution: '["beforeEach", "inject", "expect", "toBe"]'
-        explanation: "Préparer (beforeEach + inject), agir (vider), vérifier (expect + toBe)."
+          - "Créer : createComponent."
+          - "Dessiner : detectChanges ; chercher : querySelector."
+          - "createComponent, detectChanges, querySelector."
+        solution: '["createComponent", "detectChanges", "querySelector"]'
+        explanation: "Monter, dessiner, lire."
         xp: 10
         payload:
           language: typescript
           template: |
-            let service: PanierService;
-
-            [[1]](() => {
-              service = TestBed.[[2]](PanierService);
-            });
-
-            it('vide le panier', () => {
-              service.ajouter('Café');
-              service.vider();
-              [[3]](service.nombre()).[[4]](0);
-            });
+            TestBed.configureTestingModule({ imports: [AccueilComponent] });
+            const fixture = TestBed.[[1]](AccueilComponent);
+            fixture.[[2]]();
+            const p = fixture.nativeElement.[[3]]('p');
+            expect(p.textContent).toContain('Bonjour');
           blanks:
-            - ["beforeEach"]
-            - ["inject"]
-            - ["expect"]
-            - ["toBe", "toEqual"]
+            - ["createComponent"]
+            - ["detectChanges"]
+            - ["querySelector"]
       - slug: ng-ex-test-composant
         kind: CODE_LIBRE
-        title: "Tester l'affichage d'un compteur"
+        title: "Tester un clic"
         difficulty: DIFFICILE
         skill: tests-strategie
         statement: |
-          Le composant `CompteurComponent` affiche `<p>{{ valeur() }}</p>` et a un bouton `+` qui appelle
-          `plusUn()`. Écris un test `it('augmente au clic', …)` qui :
+          Le composant `AccueilComponent` affiche `<p>{{ message }}</p>` (« Bonjour ! » au départ) et un bouton
+          qui remplace le message par « Merci pour ta visite ! ». Écris un test `it('remercie au clic', …)` qui :
           1. configure TestBed avec le composant dans `imports` ;
           2. crée le composant et appelle `detectChanges()` ;
           3. clique sur le bouton (`querySelector('button').click()`) ;
           4. rappelle `detectChanges()` ;
-          5. vérifie que le `<p>` contient `1`.
+          5. vérifie que le `<p>` contient `Merci`.
         criteria: "TestBed configuré, createComponent, clic sur le bouton, deux detectChanges, expect sur le texte du paragraphe."
         hints:
-          - "`TestBed.configureTestingModule({ imports: [CompteurComponent] });`"
-          - "`const fixture = TestBed.createComponent(CompteurComponent);` puis `fixture.detectChanges();`"
-          - "`fixture.nativeElement.querySelector('button').click();` puis `detectChanges()` et `expect(…textContent).toContain('1')`."
+          - "`TestBed.configureTestingModule({ imports: [AccueilComponent] });`"
+          - "`const fixture = TestBed.createComponent(AccueilComponent);` puis `fixture.detectChanges();`"
+          - "`fixture.nativeElement.querySelector('button').click();` puis `detectChanges()` et `expect(…textContent).toContain('Merci')`."
         solution: |
-          it('augmente au clic', () => {
-            TestBed.configureTestingModule({ imports: [CompteurComponent] });
-            const fixture = TestBed.createComponent(CompteurComponent);
+          it('remercie au clic', () => {
+            TestBed.configureTestingModule({ imports: [AccueilComponent] });
+            const fixture = TestBed.createComponent(AccueilComponent);
             fixture.detectChanges();
 
             fixture.nativeElement.querySelector('button').click();
             fixture.detectChanges();
 
             const p = fixture.nativeElement.querySelector('p');
-            expect(p.textContent).toContain('1');
+            expect(p.textContent).toContain('Merci');
           });
-        explanation: "On teste ce que voit l'utilisatrice : elle clique, le chiffre change."
+        explanation: "On teste ce que voit l'utilisatrice : elle clique, le message change."
         xp: 30
         payload:
           language: typescript
           starter: |
-            it('augmente au clic', () => {
+            it('remercie au clic', () => {
 
             });
           checks:
-            - pattern: 'TestBed\.configureTestingModule\s*\(\s*\{\s*imports\s*:\s*\[\s*CompteurComponent\s*\]'
-              message: "Configure TestBed : `imports: [CompteurComponent]`."
-            - pattern: 'TestBed\.createComponent\s*\(\s*CompteurComponent\s*\)'
-              message: "Crée le composant avec `TestBed.createComponent(CompteurComponent)`."
+            - pattern: 'TestBed\.configureTestingModule\s*\(\s*\{\s*imports\s*:\s*\[\s*AccueilComponent\s*\]'
+              message: "Configure TestBed : `imports: [AccueilComponent]`."
+            - pattern: 'TestBed\.createComponent\s*\(\s*AccueilComponent\s*\)'
+              message: "Crée le composant avec `TestBed.createComponent(AccueilComponent)`."
             - pattern: "querySelector\\s*\\(\\s*['\"]button['\"]\\s*\\)\\s*\\.click\\s*\\(\\s*\\)"
               message: "Clique sur le bouton : `querySelector('button').click()`."
             - pattern: '\A(?>[\s\S]*?\.detectChanges\s*\(\s*\)){2}'
               message: "Appelle `detectChanges()` deux fois : après la création et après le clic."
             - pattern: '\.click\s*\(\s*\)[\s\S]*?\.detectChanges\s*\(\s*\)'
               message: "Rappelle `detectChanges()` après le clic."
-            - pattern: "expect\\s*\\([^;]*textContent[^;]*\\)\\s*\\.\\s*(?:toContain|toBe|toEqual)\\s*\\(\\s*['\"]\\s*1\\s*['\"]\\s*\\)"
-              message: "Vérifie le texte : `expect(p.textContent).toContain('1')`."
+            - pattern: "expect\\s*\\([^;]*textContent[^;]*\\)\\s*\\.\\s*(?:toContain|toBe|toEqual)\\s*\\(\\s*['\"][^'\"]*Merci[^'\"]*['\"]\\s*\\)"
+              message: "Vérifie le texte : `expect(p.textContent).toContain('Merci')`."
+      - slug: ng-ex-test-composant-bug
+        kind: CORRIGER_ERREUR
+        title: "Un template jamais dessiné"
+        difficulty: FACILE
+        skill: tests-strategie
+        statement: |
+          Ce test échoue : le `<h2>` est vide. Ajoute l'appel qui dessine le template, juste après la création.
+        criteria: "fixture.detectChanges() avant querySelector."
+        hints:
+          - "Angular n'a pas encore dessiné le template."
+          - "La méthode s'appelle detectChanges."
+          - "`fixture.detectChanges();`"
+        solution: |
+          it('affiche le titre', () => {
+            TestBed.configureTestingModule({ imports: [TitreComponent] });
+            const fixture = TestBed.createComponent(TitreComponent);
+            fixture.detectChanges();
+            const h2 = fixture.nativeElement.querySelector('h2');
+            expect(h2.textContent).toContain('Bibliothèque');
+          });
+        explanation: "detectChanges = « dessine maintenant »."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            it('affiche le titre', () => {
+              TestBed.configureTestingModule({ imports: [TitreComponent] });
+              const fixture = TestBed.createComponent(TitreComponent);
+              const h2 = fixture.nativeElement.querySelector('h2');
+              expect(h2.textContent).toContain('Bibliothèque');
+            });
+          checks:
+            - pattern: 'createComponent\([^)]*\)\s*;\s*fixture\.detectChanges\s*\(\s*\)\s*;[\s\S]*querySelector'
+              message: "Appelle fixture.detectChanges() juste après la création, avant querySelector."
 
-  # ===================================================================== LEÇON 2
-  - slug: ng-questions-jury
-    title: "Angular devant le jury"
-    duration: 12
-    objective: "Répondre avec des mots simples aux questions classiques du jury sur Angular : cycle de vie, détection des changements, sécurité, performance."
-    prerequisites: "Leçon « Organiser et tester une application Angular »."
-    skills: [angular-composants, oral-cda]
-    xp: 25
+  # ===================================================================== LEÇON 4
+  - slug: ng-cycle-vie
+    title: "Le cycle de vie d'un composant"
+    duration: 9
+    objective: "Savoir ce qui se passe dans constructor, ngOnInit et ngOnDestroy, et où placer chaque action."
+    prerequisites: "Leçon « Tester un composant »."
+    skills: [angular-composants]
+    xp: 15
     memo: |
-      - **Cycle de vie** : `constructor` → `ngOnInit` (entrées reçues) → … → `ngOnDestroy` (nettoyage).
-      - **Détection des changements** : Angular met l'écran à jour ; avec `OnPush` et les signaux, seulement quand c'est nécessaire.
-      - **Sécurité** : l'interpolation **échappe** le HTML (protection XSS) ; ne jamais contourner `DomSanitizer` sans raison.
-      - **Performance** : chargement différé des routes, `@defer`, `track` dans `@for`, `OnPush`.
-      - **SPA** : une seule page HTML, le routeur change les composants.
+      - `constructor` : le composant naît ; on reçoit les services injectés.
+      - `ngOnInit` : les inputs sont disponibles ; on lance le chargement des données.
+      - `ngOnDestroy` : le composant va disparaître ; on nettoie (minuteur, abonnement infini).
+      - Pour les flux infinis : `takeUntilDestroyed()` ou `toSignal()` se désabonnent tout seuls.
     commonMistakes: |
-      - Réciter une définition sans exemple tiré de son projet.
-      - Dire que le frontend « sécurise » les données.
-      - Oublier de se désabonner d'un Observable infini (utiliser `takeUntilDestroyed` ou `toSignal`).
+      - Lire un input dans le constructeur : il n'est pas encore rempli.
+      - Oublier d'arrêter un minuteur à la destruction.
     blocks:
-      - type: text
-        md: |
-          Devant le jury, une bonne réponse tient en trois temps : **une définition simple**, **un exemple de
-          ton projet**, **une limite ou une bonne pratique**.
       - type: definition
         id: def-cycle-vie
         term: "Cycle de vie d'un composant"
@@ -345,49 +808,62 @@ lessons:
           Les grandes étapes de la vie d'un composant, comme une journée de travail : **arriver**
           (`ngOnInit`, on prépare), **travailler** (les mises à jour), **partir** (`ngOnDestroy`, on range et on
           éteint la lumière).
-      - type: definition
-        id: def-xss
-        term: "Faille XSS"
-        md: |
-          Une attaque où quelqu'un glisse du **code JavaScript** dans un texte (un commentaire, un nom) pour
-          qu'il s'exécute chez les autres. Angular **échappe** automatiquement ce qu'il affiche avec `{{ }}` :
-          le code s'affiche comme du texte au lieu de s'exécuter.
+      - type: code
+        id: code-cycle-vie
+        language: typescript
+        title: "Un composant qui charge puis nettoie"
+        code: |
+          export class HorlogeComponent implements OnInit, OnDestroy {
+            private readonly service = inject(MessageService);
+            private minuteur?: ReturnType<typeof setInterval>;
+
+            ngOnInit() {
+              this.minuteur = setInterval(() => this.service.rafraichir(), 60000);
+            }
+
+            ngOnDestroy() {
+              clearInterval(this.minuteur);
+            }
+          }
+        lines:
+          - n: 2
+            note: "L'injection a lieu à la naissance du composant."
+          - n: 5
+            note: "`ngOnInit` : on démarre le travail."
+          - n: 9
+            note: "`ngOnDestroy` : on arrête le minuteur, sinon il continuerait après la disparition du composant."
       - type: question
         ref: ng-jq-q1
         review: def-cycle-vie
       - type: question
-        ref: ng-jq-q2
-        review: def-xss
-      - type: jury
-        id: jury-angular
-        title: "Questions fréquentes sur Angular"
-        items:
-          - q: "Qu'est-ce qu'une SPA ?"
-            a: "Une Single Page Application : le navigateur charge une seule page HTML, puis Angular change les composants affichés selon l'adresse, sans recharger. Les données viennent de l'API en JSON."
-          - q: "À quoi sert ngOnInit ?"
-            a: "C'est le moment où les inputs du composant sont disponibles : on y lance l'initialisation (chargement de données). Le constructeur sert seulement à l'injection."
-          - q: "Qu'est-ce que la stratégie OnPush ?"
-            a: "Le composant n'est revérifié que si ses inputs changent, si un événement s'y produit ou si un signal qu'il lit change. Moins de vérifications, donc de meilleures performances."
-          - q: "Comment Angular vous protège-t-il des failles XSS ?"
-            a: "Toute valeur affichée par interpolation ou liaison est échappée ou assainie. Je n'utilise jamais bypassSecurityTrustHtml sur des données saisies par les utilisateurs. Côté serveur, les entrées sont aussi validées."
-          - q: "Comment éviter les fuites de mémoire avec RxJS ?"
-            a: "HttpClient se termine tout seul après la réponse. Pour les flux infinis, j'utilise takeUntilDestroyed() ou toSignal(), qui se désabonnent automatiquement à la destruction du composant."
+        ref: ng-cv-q2
+        review: code-cycle-vie
       - type: text
-        md: "Exercice guidé : associe chaque étape du cycle de vie à son rôle."
+        md: "**Exercice 1 (guidé)** : associe chaque étape à son rôle."
       - type: exercise
         ref: ng-ex-cycle-guide
       - type: text
-        md: "En autonomie : prépare ta réponse en trois temps."
+        md: "**Exercice 2 (en autonomie)** : charger au démarrage."
       - type: exercise
-        ref: ng-ex-reponse-jury
+        ref: ng-ex-cycle-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un minuteur jamais arrêté."
+      - type: exercise
+        ref: ng-ex-cycle-bug
+      - type: jury
+        items:
+          - q: "À quoi sert ngOnInit ?"
+            a: "C'est le moment où les inputs du composant sont disponibles : on y lance l'initialisation (chargement de données). Le constructeur sert seulement à l'injection."
+          - q: "Comment éviter les fuites de mémoire avec RxJS ?"
+            a: "HttpClient se termine tout seul après la réponse. Pour les flux infinis, j'utilise takeUntilDestroyed() ou toSignal(), qui se désabonnent automatiquement à la destruction du composant."
       - type: quiz
         items:
-          - ref: ng-jq-q3
-            review: jury-angular
-          - ref: ng-jq-q4
-            review: jury-angular
-          - ref: ng-jq-q5
-            review: def-xss
+          - ref: ng-cv-q3
+            review: def-cycle-vie
+          - ref: ng-cv-q4
+            review: code-cycle-vie
+          - ref: ng-cv-q5
+            review: def-cycle-vie
     questions:
       - code: ng-jq-q1
         kind: CHOIX_UNIQUE
@@ -405,61 +881,67 @@ lessons:
             correct: false
             why: "Le composant vient seulement de naître."
         explanation: "On « éteint la lumière » en partant."
-      - code: ng-jq-q2
-        kind: VRAI_FAUX
-        difficulty: 2
-        skill: angular-composants
-        prompt: "Avec `{{ commentaire }}`, un texte contenant `<script>` s'exécute dans le navigateur."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "Angular échappe la valeur."
-          - label: "Faux"
-            correct: true
-            why: "Le texte s'affiche tel quel, sans s'exécuter."
-        explanation: "L'interpolation protège contre les XSS."
-      - code: ng-jq-q3
+      - code: ng-cv-q2
         kind: CHOIX_UNIQUE
         difficulty: 1
         skill: angular-composants
-        prompt: "Qu'est-ce qu'une SPA ?"
+        prompt: "Où lancer le chargement des données d'un composant ?"
         choices:
-          - label: "Une application qui charge une seule page HTML et change les composants affichés sans recharger"
+          - label: "Dans ngOnInit"
             correct: true
-            why: "Single Page Application."
-          - label: "Une application avec une seule fonctionnalité"
+            why: "Les inputs y sont disponibles."
+          - label: "Dans ngOnDestroy"
             correct: false
-            why: "Elle peut en avoir beaucoup."
-          - label: "Une application sans backend"
+            why: "Le composant est en train de partir."
+          - label: "Dans le template"
             correct: false
-            why: "Elle dialogue avec une API."
-        explanation: "Le routeur change les pages côté navigateur."
-      - code: ng-jq-q4
-        kind: CHOIX_MULTIPLE
-        difficulty: 3
-        skill: angular-composants
-        prompt: "Quelles techniques améliorent les performances d'une application Angular ? (plusieurs réponses)"
-        choices:
-          - label: "Charger les routes à la demande (loadComponent)"
-            correct: true
-            why: "Premier chargement plus léger."
-          - label: "La stratégie OnPush et les signaux"
-            correct: true
-            why: "Moins de vérifications."
-          - label: "`track` dans les boucles @for"
-            correct: true
-            why: "Moins d'éléments recréés."
-          - label: "Mettre tout le code dans un seul composant"
-            correct: false
-            why: "Plus difficile à maintenir et à optimiser."
-        explanation: "Charger moins, vérifier moins, redessiner moins."
-      - code: ng-jq-q5
-        kind: TEXTE
+            why: "Le template affiche seulement."
+        explanation: "ngOnInit = on se met au travail."
+      - code: ng-cv-q3
+        kind: VRAI_FAUX
         difficulty: 2
-        skill: securite-owasp
-        prompt: "Quel est le sigle de la faille qui consiste à injecter du JavaScript dans une page ? (trois lettres)"
-        answers: ["XSS"]
-        explanation: "Cross-Site Scripting. Angular s'en protège en échappant les valeurs affichées."
+        skill: angular-composants
+        prompt: "Dans le constructeur, les inputs du composant sont déjà remplis."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Ils arrivent après la naissance."
+          - label: "Faux"
+            correct: true
+            why: "On les lit à partir de ngOnInit."
+        explanation: "Constructeur : injection ; ngOnInit : inputs prêts."
+      - code: ng-cv-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Que se passe-t-il si on oublie `clearInterval` dans ngOnDestroy ?"
+        choices:
+          - label: "Le minuteur continue de tourner après la disparition du composant"
+            correct: true
+            why: "C'est une fuite de mémoire."
+          - label: "Le composant ne s'affiche pas"
+            correct: false
+            why: "L'affichage n'est pas concerné."
+          - label: "Rien"
+            correct: false
+            why: "Le minuteur tourne pour rien."
+        explanation: "Toujours éteindre la lumière en partant."
+      - code: ng-cv-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Quel outil se désabonne tout seul d'un flux infini à la destruction du composant ?"
+        choices:
+          - label: "takeUntilDestroyed()"
+            correct: true
+            why: "Il coupe le flux quand le composant disparaît."
+          - label: "setInterval()"
+            correct: false
+            why: "Il crée un minuteur."
+          - label: "console.log()"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "takeUntilDestroyed ou toSignal."
     exercises:
       - slug: ng-ex-cycle-guide
         kind: COMPLETER
@@ -485,6 +967,478 @@ lessons:
             - ["constructor"]
             - ["ngOnInit"]
             - ["ngOnDestroy"]
+      - slug: ng-ex-cycle-libre
+        kind: CODE_LIBRE
+        title: "Charger au démarrage"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Dans `ListeSallesComponent` (qui implémente `OnInit`), écris la méthode `ngOnInit()` qui appelle
+          `this.charger()`.
+        criteria: "ngOnInit qui appelle this.charger()."
+        hints:
+          - "La méthode s'appelle ngOnInit."
+          - "Elle ne prend aucun paramètre."
+          - "`ngOnInit() { this.charger(); }`"
+        solution: |
+          export class ListeSallesComponent implements OnInit {
+            ngOnInit() {
+              this.charger();
+            }
+
+            charger() {}
+          }
+        explanation: "Le chargement démarre quand le composant est prêt."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            export class ListeSallesComponent implements OnInit {
+
+              charger() {}
+            }
+          checks:
+            - pattern: 'ngOnInit\s*\(\s*\)\s*(?::\s*void\s*)?\{\s*this\.charger\s*\(\s*\)'
+              message: "Écris ngOnInit() { this.charger(); }."
+      - slug: ng-ex-cycle-bug
+        kind: CORRIGER_ERREUR
+        title: "Un minuteur jamais arrêté"
+        difficulty: FACILE
+        skill: angular-composants
+        statement: |
+          Ce composant démarre un minuteur mais ne l'arrête jamais. Ajoute `ngOnDestroy()` qui appelle
+          `clearInterval(this.minuteur)`.
+        criteria: "ngOnDestroy avec clearInterval."
+        hints:
+          - "Quelle méthode est appelée au départ du composant ?"
+          - "ngOnDestroy."
+          - "`ngOnDestroy() { clearInterval(this.minuteur); }`"
+        solution: |
+          export class HorlogeComponent implements OnInit, OnDestroy {
+            private minuteur?: ReturnType<typeof setInterval>;
+
+            ngOnInit() {
+              this.minuteur = setInterval(() => this.rafraichir(), 60000);
+            }
+
+            ngOnDestroy() {
+              clearInterval(this.minuteur);
+            }
+
+            rafraichir() {}
+          }
+        explanation: "On éteint la lumière en partant."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            export class HorlogeComponent implements OnInit, OnDestroy {
+              private minuteur?: ReturnType<typeof setInterval>;
+
+              ngOnInit() {
+                this.minuteur = setInterval(() => this.rafraichir(), 60000);
+              }
+
+              rafraichir() {}
+            }
+          checks:
+            - pattern: 'ngOnDestroy\s*\(\s*\)\s*(?::\s*void\s*)?\{\s*clearInterval\s*\(\s*this\.minuteur\s*\)'
+              message: "Ajoute ngOnDestroy() { clearInterval(this.minuteur); }."
+
+  # ===================================================================== LEÇON 5
+  - slug: ng-securite-xss
+    title: "La protection contre les failles XSS"
+    duration: 9
+    objective: "Comprendre comment l'interpolation protège contre les failles XSS et ce qu'il ne faut pas faire."
+    prerequisites: "Leçon « Le cycle de vie d'un composant »."
+    skills: [angular-composants, securite-owasp]
+    xp: 15
+    memo: |
+      - **XSS** : quelqu'un glisse du JavaScript dans un texte pour qu'il s'exécute chez les autres.
+      - `{{ commentaire }}` **échappe** la valeur : le code s'affiche comme du texte.
+      - `[innerHTML]` est assaini par Angular ; `bypassSecurityTrustHtml` désactive la protection : jamais sur des données saisies.
+      - Le backend valide aussi les entrées.
+    commonMistakes: |
+      - Utiliser `bypassSecurityTrustHtml` sur un commentaire d'utilisatrice.
+      - Construire du HTML à la main avec des textes saisis.
+    blocks:
+      - type: definition
+        id: def-xss
+        term: "Faille XSS"
+        md: |
+          Une attaque où quelqu'un glisse du **code JavaScript** dans un texte (un commentaire, un nom) pour
+          qu'il s'exécute chez les autres. Angular **échappe** automatiquement ce qu'il affiche avec `{{ }}` :
+          le code s'affiche comme du texte au lieu de s'exécuter, comme une lettre piégée qu'on lirait à voix
+          haute sans jamais l'ouvrir.
+      - type: code
+        id: code-xss
+        language: html
+        title: "Afficher un commentaire sans danger"
+        code: |
+          <!-- commentaire = '<script>voler()</script>' -->
+          <p>{{ commentaire }}</p>
+          <!-- Affiche le texte « <script>voler()</script> » sans l'exécuter. -->
+        lines:
+          - n: 2
+            note: "L'interpolation transforme les chevrons en simple texte : rien ne s'exécute."
+      - type: question
+        ref: ng-jq-q2
+        review: def-xss
+      - type: question
+        ref: ng-jq-q5
+        review: def-xss
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la règle de sécurité."
+      - type: exercise
+        ref: ng-ex-xss-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : afficher un avis de lecteur."
+      - type: exercise
+        ref: ng-ex-xss-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une protection désactivée."
+      - type: exercise
+        ref: ng-ex-xss-bug
+      - type: jury
+        items:
+          - q: "Comment Angular vous protège-t-il des failles XSS ?"
+            a: "Toute valeur affichée par interpolation ou liaison est échappée ou assainie. Je n'utilise jamais bypassSecurityTrustHtml sur des données saisies par les utilisateurs. Côté serveur, les entrées sont aussi validées."
+      - type: quiz
+        items:
+          - ref: ng-xs-q3
+            review: code-xss
+          - ref: ng-xs-q4
+            review: def-xss
+          - ref: ng-xs-q5
+            review: def-xss
+    questions:
+      - code: ng-jq-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: angular-composants
+        prompt: "Avec `{{ commentaire }}`, un texte contenant `<script>` s'exécute dans le navigateur."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Angular échappe la valeur."
+          - label: "Faux"
+            correct: true
+            why: "Le texte s'affiche tel quel, sans s'exécuter."
+        explanation: "L'interpolation protège contre les XSS."
+      - code: ng-jq-q5
+        kind: TEXTE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quel est le sigle de la faille qui consiste à injecter du JavaScript dans une page ? (trois lettres)"
+        answers: ["XSS"]
+        explanation: "Cross-Site Scripting. Angular s'en protège en échappant les valeurs affichées."
+      - code: ng-xs-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: securite-owasp
+        prompt: "Que veut dire « échapper » une valeur ?"
+        choices:
+          - label: "La transformer pour qu'elle s'affiche comme du texte, sans s'exécuter"
+            correct: true
+            why: "Les chevrons deviennent de simples caractères."
+          - label: "La supprimer"
+            correct: false
+            why: "Elle reste affichée."
+          - label: "La chiffrer"
+            correct: false
+            why: "Aucun chiffrement ici."
+        explanation: "Lire la lettre piégée sans l'ouvrir."
+      - code: ng-xs-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: securite-owasp
+        prompt: "Quand peut-on utiliser `bypassSecurityTrustHtml` ?"
+        choices:
+          - label: "Jamais sur des données saisies par les utilisateurs"
+            correct: true
+            why: "Il désactive la protection."
+          - label: "Sur tous les commentaires"
+            correct: false
+            why: "Ce serait ouvrir la porte aux XSS."
+          - label: "Pour accélérer l'affichage"
+            correct: false
+            why: "Ce n'est pas son rôle."
+        explanation: "bypass = contourner la protection."
+      - code: ng-xs-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: securite-owasp
+        prompt: "Même avec la protection d'Angular, le backend doit valider les données reçues."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "On peut appeler l'API sans Angular."
+          - label: "Faux"
+            correct: false
+            why: "La défense se fait des deux côtés."
+        explanation: "Défense en profondeur."
+    exercises:
+      - slug: ng-ex-xss-guide
+        kind: COMPLETER
+        title: "La règle de sécurité"
+        difficulty: FACILE
+        skill: securite-owasp
+        statement: "Complète avec : XSS, échappe, bypassSecurityTrustHtml."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La faille s'appelle XSS."
+          - "L'interpolation échappe les valeurs."
+          - "XSS, échappe, bypassSecurityTrustHtml."
+        solution: '["XSS", "échappe", "bypassSecurityTrustHtml"]'
+        explanation: "Connaître la faille, la protection et ce qu'il ne faut pas faire."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            La faille qui injecte du JavaScript s'appelle [[1]].
+            L'interpolation {{ }} [[2]] les valeurs affichées.
+            On n'utilise jamais [[3]] sur des données saisies.
+          blanks:
+            - ["XSS"]
+            - ["échappe", "echappe"]
+            - ["bypassSecurityTrustHtml"]
+      - slug: ng-ex-xss-libre
+        kind: CODE_LIBRE
+        title: "Afficher un avis de lecteur"
+        difficulty: FACILE
+        skill: securite-owasp
+        statement: |
+          Écris le template qui affiche l'avis saisi par un lecteur (`avis`) dans un `<p>`, de manière sûre,
+          avec l'interpolation.
+        criteria: "<p>{{ avis }}</p>, sans innerHTML ni bypass."
+        hints:
+          - "L'interpolation protège automatiquement."
+          - "Pas besoin d'innerHTML."
+          - "`<p>{{ avis }}</p>`"
+        solution: |
+          <p>{{ avis }}</p>
+        explanation: "La solution la plus simple est aussi la plus sûre."
+        xp: 15
+        payload:
+          language: html
+          starter: |
+            <!-- L'avis du lecteur -->
+          checks:
+            - pattern: '<p>\s*\{\{\s*avis\s*\}\}\s*</p>'
+              message: "Affiche l'avis avec <p>{{ avis }}</p>."
+            - pattern: 'innerHTML|bypassSecurityTrust'
+              absent: true
+              message: "Pas besoin d'innerHTML ni de bypass : l'interpolation suffit."
+      - slug: ng-ex-xss-bug
+        kind: CORRIGER_ERREUR
+        title: "Une protection désactivée"
+        difficulty: INTERMEDIAIRE
+        skill: securite-owasp
+        statement: |
+          Ce composant désactive la protection sur un commentaire saisi par une utilisatrice. Retire
+          `bypassSecurityTrustHtml` et affiche simplement le commentaire avec `{{ commentaire }}`.
+        criteria: "Pas de bypass ; interpolation de commentaire."
+        hints:
+          - "bypass désactive la protection."
+          - "L'interpolation échappe le texte."
+          - "`template: `<p>{{ commentaire }}</p>``"
+        solution: |
+          @Component({
+            selector: 'app-commentaire',
+            template: `<p>{{ commentaire }}</p>`,
+          })
+          export class CommentaireComponent {
+            commentaire = '';
+          }
+        explanation: "Données saisies = toujours échappées."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            @Component({
+              selector: 'app-commentaire',
+              template: `<p [innerHTML]="contenu"></p>`,
+            })
+            export class CommentaireComponent {
+              commentaire = '';
+              contenu = inject(DomSanitizer).bypassSecurityTrustHtml(this.commentaire);
+            }
+          checks:
+            - pattern: 'bypassSecurityTrust'
+              absent: true
+              message: "Retire bypassSecurityTrustHtml."
+            - pattern: '<p>\s*\{\{\s*commentaire\s*\}\}\s*</p>'
+              message: "Affiche <p>{{ commentaire }}</p>."
+
+  # ===================================================================== LEÇON 6
+  - slug: ng-questions-jury
+    title: "Angular devant le jury"
+    duration: 11
+    objective: "Répondre en trois temps (définition, exemple, bonne pratique) aux questions classiques du jury sur Angular."
+    prerequisites: "Leçon « La protection contre les failles XSS »."
+    skills: [angular-composants, oral-cda]
+    xp: 20
+    memo: |
+      - Une bonne réponse : **une définition simple**, **un exemple de ton projet**, **une bonne pratique**.
+      - **SPA** : une seule page HTML, le routeur change les composants.
+      - **Performance** : chargement différé des routes, `@defer`, `track` dans `@for`, `OnPush` et signaux.
+    commonMistakes: |
+      - Réciter une définition sans exemple tiré de son projet.
+      - Dire que le frontend « sécurise » les données.
+    blocks:
+      - type: text
+        md: |
+          Devant le jury, une bonne réponse tient en trois temps : **une définition simple**, **un exemple de
+          ton projet**, **une limite ou une bonne pratique**.
+      - type: steps
+        id: etapes-reponse
+        title: "Répondre en trois temps"
+        items:
+          - "**Définition** : « Une SPA charge une seule page HTML. »"
+          - "**Exemple** : « Dans mon projet, le routeur affiche la liste des livres ou le détail sans recharger. »"
+          - "**Bonne pratique** : « Je charge les pages à la demande pour un démarrage rapide. »"
+      - type: jury
+        id: jury-angular
+        title: "Questions fréquentes sur Angular"
+        items:
+          - q: "Qu'est-ce qu'une SPA ?"
+            a: "Une Single Page Application : le navigateur charge une seule page HTML, puis Angular change les composants affichés selon l'adresse, sans recharger. Les données viennent de l'API en JSON."
+          - q: "Qu'est-ce que la stratégie OnPush ?"
+            a: "Le composant n'est revérifié que si ses inputs changent, si un événement s'y produit ou si un signal qu'il lit change. Moins de vérifications, donc de meilleures performances."
+      - type: question
+        ref: ng-jq-q3
+        review: jury-angular
+      - type: question
+        ref: ng-qj-q2
+        review: etapes-reponse
+      - type: text
+        md: "**Exercice 1 (guidé)** : les trois temps d'une réponse."
+      - type: exercise
+        ref: ng-ex-trois-temps-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : prépare ta réponse en trois temps."
+      - type: exercise
+        ref: ng-ex-reponse-jury
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une réponse sans exemple."
+      - type: exercise
+        ref: ng-ex-reponse-bug
+      - type: quiz
+        items:
+          - ref: ng-jq-q4
+            review: jury-angular
+          - ref: ng-c4-b1
+            review: jury-angular
+          - ref: ng-qj-q5
+            review: etapes-reponse
+    questions:
+      - code: ng-jq-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-composants
+        prompt: "Qu'est-ce qu'une SPA ?"
+        choices:
+          - label: "Une application qui charge une seule page HTML et change les composants affichés sans recharger"
+            correct: true
+            why: "Single Page Application."
+          - label: "Une application avec une seule fonctionnalité"
+            correct: false
+            why: "Elle peut en avoir beaucoup."
+          - label: "Une application sans backend"
+            correct: false
+            why: "Elle dialogue avec une API."
+        explanation: "Le routeur change les pages côté navigateur."
+      - code: ng-qj-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Quels sont les trois temps d'une bonne réponse au jury ?"
+        choices:
+          - label: "Définition, exemple de mon projet, bonne pratique"
+            correct: true
+            why: "Simple, concret, réfléchi."
+          - label: "Définition, définition, définition"
+            correct: false
+            why: "Le jury veut du concret."
+          - label: "Un long historique du framework"
+            correct: false
+            why: "Hors sujet."
+        explanation: "Montre que tu as compris et appliqué."
+      - code: ng-jq-q4
+        kind: CHOIX_MULTIPLE
+        difficulty: 3
+        skill: angular-composants
+        prompt: "Quelles techniques améliorent les performances d'une application Angular ? (plusieurs réponses)"
+        choices:
+          - label: "Charger les routes à la demande (loadComponent)"
+            correct: true
+            why: "Premier chargement plus léger."
+          - label: "La stratégie OnPush et les signaux"
+            correct: true
+            why: "Moins de vérifications."
+          - label: "`track` dans les boucles @for"
+            correct: true
+            why: "Moins d'éléments recréés."
+          - label: "Mettre tout le code dans un seul composant"
+            correct: false
+            why: "Plus difficile à maintenir et à optimiser."
+        explanation: "Charger moins, vérifier moins, redessiner moins."
+      - code: ng-c4-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: angular-composants
+        prompt: "À quoi sert le bloc `@defer (on viewport) { … }` ?"
+        choices:
+          - label: "À charger ce morceau de page seulement quand il devient visible"
+            correct: true
+            why: "Son code est téléchargé plus tard."
+          - label: "À retarder l'appel à l'API de quelques secondes"
+            correct: false
+            why: "Il concerne le chargement du code des composants."
+          - label: "À masquer un élément aux lecteurs d'écran"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Utile pour un commentaire, une carte ou un graphique en bas de page."
+      - code: ng-qj-q5
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: oral-cda
+        prompt: "Citer un exemple tiré de son propre projet rend une réponse plus convaincante."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le jury voit que tu as appliqué la notion."
+          - label: "Faux"
+            correct: false
+            why: "L'exemple prouve la compréhension."
+        explanation: "Une définition + ton exemple."
+    exercises:
+      - slug: ng-ex-trois-temps-guide
+        kind: COMPLETER
+        title: "Les trois temps d'une réponse"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: "Complète avec : Définition, Exemple, Bonne pratique."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "On commence par dire ce que c'est."
+          - "Puis un cas concret, puis un conseil."
+          - "Définition, Exemple, Bonne pratique."
+        solution: '["Définition", "Exemple", "Bonne pratique"]'
+        explanation: "Simple, concret, réfléchi."
+        xp: 10
+        payload:
+          language: text
+          caseSensitive: false
+          template: |
+            [[1]] : une SPA charge une seule page HTML.
+            [[2]] : dans mon projet, la liste et le détail des livres s'affichent sans recharger.
+            [[3]] : je charge les pages à la demande pour démarrer vite.
+          blanks:
+            - ["Définition", "Definition"]
+            - ["Exemple"]
+            - ["Bonne pratique"]
       - slug: ng-ex-reponse-jury
         kind: CODE_LIBRE
         title: "Répondre en trois temps"
@@ -523,37 +1477,65 @@ lessons:
               message: "Parle de l'injection de dépendances."
             - pattern: '\b[A-Z]\w*Service\b'
               message: "Cite un de tes services (par exemple AuthService)."
+      - slug: ng-ex-reponse-bug
+        kind: CORRIGER_ERREUR
+        title: "Une réponse sans exemple"
+        difficulty: FACILE
+        skill: oral-cda
+        statement: |
+          Cette réponse sur les gardes n'a pas d'exemple concret. Complète la ligne `Exemple :` avec un cas de
+          ton projet qui cite une garde (un nom qui finit par `Guard`).
+        criteria: "La ligne Exemple contient une vraie phrase et un nom de garde."
+        hints:
+          - "Quelle page de ton projet est protégée ?"
+          - "Donne le nom de la garde."
+          - "Exemple : mon authGuard protège la page Mon compte et renvoie vers la connexion."
+        solution: |
+          Définition : une garde décide si l'on peut entrer sur une route.
+          Exemple : mon authGuard protège la page Mon compte et renvoie vers la connexion.
+          Bonne pratique : l'API vérifie aussi les droits, car la garde n'est qu'un confort.
+        explanation: "L'exemple prouve que tu as appliqué la notion."
+        xp: 10
+        payload:
+          language: text
+          starter: |
+            Définition : une garde décide si l'on peut entrer sur une route.
+            Exemple :
+            Bonne pratique : l'API vérifie aussi les droits, car la garde n'est qu'un confort.
+          checks:
+            - pattern: '(?m)^\s*Exemple\s*:[^\n]*\b\w+Guard\b[^\n]{10,}'
+              message: "Dans la ligne Exemple, cite une garde de ton projet (…Guard) et ce qu'elle protège."
 
 bank:
-  - code: ng-c4-b1
-    kind: CHOIX_UNIQUE
-    difficulty: 3
-    skill: angular-composants
-    prompt: "À quoi sert le bloc `@defer (on viewport) { … }` ?"
-    choices:
-      - label: "À charger ce morceau de page seulement quand il devient visible"
-        correct: true
-        why: "Son code est téléchargé plus tard."
-      - label: "À retarder l'appel à l'API de 5 secondes"
-        correct: false
-        why: "Il concerne le chargement du code des composants."
-      - label: "À masquer un élément aux lecteurs d'écran"
-        correct: false
-        why: "Aucun rapport."
-    explanation: "Utile pour un commentaire, une carte ou un graphique en bas de page."
-  - code: ng-c4-b2
+  - code: ng-c4-b3
     kind: CHOIX_UNIQUE
     difficulty: 2
-    skill: tests-strategie
-    prompt: "Comment tester un service qui fait des appels HTTP sans appeler le vrai serveur ?"
+    skill: angular-composants
+    prompt: "Qu'est-ce que la stratégie OnPush ?"
     choices:
-      - label: "Avec provideHttpClientTesting() et HttpTestingController"
+      - label: "Le composant n'est revérifié que si ses inputs, un de ses événements ou un de ses signaux changent"
         correct: true
-        why: "On intercepte la requête et on renvoie une fausse réponse."
-      - label: "En lançant le backend avant les tests"
+        why: "Moins de vérifications inutiles."
+      - label: "Le composant envoie des notifications push"
         correct: false
-        why: "Ce serait un test d'intégration, lent et fragile."
-      - label: "Ce n'est pas possible"
+        why: "Aucun rapport avec les notifications."
+      - label: "Le composant est chargé à la demande"
         correct: false
-        why: "Angular le prévoit."
-    explanation: "`httpMock.expectOne('/api/produits').flush([...])` renvoie les données voulues."
+        why: "C'est le lazy loading."
+    explanation: "OnPush + signaux = performances."
+  - code: ng-c4-b4
+    kind: CHOIX_UNIQUE
+    difficulty: 1
+    skill: tests-strategie
+    prompt: "Dans un test, que fait `it('affiche le titre', () => { … })` ?"
+    choices:
+      - label: "Il déclare un test, avec sa description"
+        correct: true
+        why: "Un it = un test."
+      - label: "Il lance l'application"
+        correct: false
+        why: "Il déclare seulement un test."
+      - label: "Il affiche le titre dans la console"
+        correct: false
+        why: "La description sert au rapport de test."
+    explanation: "describe regroupe, it déclare."

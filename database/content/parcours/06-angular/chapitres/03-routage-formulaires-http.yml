@@ -2,29 +2,26 @@ slug: ng-routage-formulaires-http
 position: 3
 level: AVANCE
 title: "Routage, formulaires et appels HTTP"
-summary: "Naviguer entre les pages et les protéger, créer des formulaires validés, puis dialoguer avec l'API Spring Boot."
-quizQuestionCount: 12
+summary: "Naviguer entre les pages, lire un paramètre d'adresse, protéger une page, créer un formulaire puis le valider, et dialoguer avec l'API Spring Boot. Une seule notion par leçon."
+quizQuestionCount: 16
 
 lessons:
   # ===================================================================== LEÇON 1
   - slug: ng-routage
-    title: "Le routage et les gardes"
-    duration: 14
-    objective: "Déclarer des routes, naviguer avec routerLink, lire un paramètre d'URL et protéger une page avec une garde."
+    title: "Les routes : une adresse, une page"
+    duration: 11
+    objective: "Déclarer des routes, afficher la page active avec router-outlet et naviguer avec routerLink."
     prerequisites: "Chapitre « Templates, signaux et services »."
     skills: [angular-routage]
-    xp: 25
+    xp: 15
     memo: |
-      - Une **route** associe une adresse (`/produits`) à un composant.
+      - Une **route** associe une adresse (`/livres`) à un composant.
       - `<router-outlet />` : l'**emplacement** où s'affiche la page de la route active.
-      - `routerLink="/produits"` : un lien qui change de page **sans recharger** le site.
-      - `path: 'produits/:id'` : `:id` est un **paramètre** lu avec `input()` (option `withComponentInputBinding`) ou `ActivatedRoute`.
-      - `canActivate: [authGuard]` : une **garde** décide si on a le droit d'entrer.
-      - `loadComponent: () => import(…)` : la page n'est chargée que si on la visite.
+      - `routerLink="/livres"` : un lien qui change de page **sans recharger** le site.
+      - `path: '**'` attrape les adresses inconnues (page 404) ; elle se place **en dernier**.
     commonMistakes: |
       - Utiliser `href` au lieu de `routerLink` : toute l'application se recharge.
-      - Croire qu'une garde suffit à protéger les données : le **backend** doit aussi vérifier les droits.
-      - Oublier la route `**` pour les adresses inconnues.
+      - Oublier la route `**` pour les adresses inconnues, ou la placer avant les autres.
     blocks:
       - type: text
         md: |
@@ -35,7 +32,7 @@ lessons:
         term: "Route"
         md: |
           Une ligne du **plan de l'immeuble** : « à l'adresse `/profil`, on trouve la pièce `ProfilComponent` ».
-          Le routeur lit l'adresse et ouvre la bonne pièce.
+          Le routeur lit l'adresse et ouvre la bonne pièce, à l'emplacement `<router-outlet />`.
       - type: code
         id: code-routes
         language: typescript
@@ -43,77 +40,51 @@ lessons:
         code: |
           export const routes: Routes = [
             { path: '', component: AccueilComponent },
-            { path: 'produits', component: ListeProduitsComponent },
-            { path: 'produits/:id', component: DetailProduitComponent },
-            {
-              path: 'compte',
-              canActivate: [authGuard],
-              loadComponent: () => import('./compte/compte.component').then(m => m.CompteComponent),
-            },
+            { path: 'livres', component: ListeLivresComponent },
+            { path: 'contact', component: ContactComponent },
             { path: '**', component: PageIntrouvableComponent },
           ];
+
+          // Dans le template principal :
+          // <a routerLink="/livres">Livres</a>
+          // <router-outlet />
         lines:
           - n: 2
             note: "Le chemin vide : la page d'accueil."
-          - n: 4
-            note: "`:id` est variable : `/produits/12`, `/produits/40`…"
-          - n: 7
-            note: "La garde `authGuard` est consultée avant d'entrer."
-          - n: 8
-            note: "Chargement différé : le code de la page n'est téléchargé que si on y va."
-          - n: 10
+          - n: 3
+            note: "À l'adresse `/livres`, on affiche `ListeLivresComponent`."
+          - n: 5
             note: "`**` attrape toutes les adresses inconnues (page 404). Elle doit être **en dernier**."
+          - n: 9
+            note: "`routerLink` : on change de page sans recharger."
+          - n: 10
+            note: "`<router-outlet />` : l'endroit où la page s'affiche."
       - type: question
         ref: ng-rt-q1
         review: code-routes
-      - type: definition
-        id: def-garde
-        term: "Garde (guard)"
-        md: |
-          Le **vigile** à l'entrée d'une page. Il répond oui (on entre) ou redirige ailleurs (vers la page de
-          connexion). Il améliore le confort, mais la vraie sécurité reste sur le serveur.
-      - type: code
-        id: code-garde
-        language: typescript
-        title: "auth.guard.ts"
-        code: |
-          export const authGuard: CanActivateFn = () => {
-            const auth = inject(AuthService);
-            const router = inject(Router);
-            return auth.estConnecte() ? true : router.createUrlTree(['/connexion']);
-          };
-        lines:
-          - n: 1
-            note: "Une garde est une simple fonction de type `CanActivateFn`."
-          - n: 2
-            note: "Elle peut injecter des services comme un composant."
-          - n: 4
-            note: "`true` : on entre. Sinon, on renvoie une redirection vers `/connexion`."
       - type: question
-        ref: ng-rt-q2
-        review: def-garde
+        ref: ng-rt-q5
+        review: def-route
       - type: text
-        md: "Exercice guidé : complète le fichier de routes."
+        md: "**Exercice 1 (guidé)** : complète le fichier de routes."
       - type: exercise
         ref: ng-ex-routes-guide
       - type: text
-        md: "En autonomie : écris une garde réservée aux administrateurs."
+        md: "**Exercice 2 (en autonomie)** : les routes d'une bibliothèque."
       - type: exercise
-        ref: ng-ex-garde
-      - type: jury
-        items:
-          - q: "Comment protégez-vous les pages réservées ?"
-            a: "Avec des gardes Angular (canActivate) qui redirigent vers la connexion si l'utilisatrice n'est pas authentifiée ou n'a pas le bon rôle. Mais c'est seulement du confort : l'API Spring Security vérifie le jeton et le rôle à chaque requête."
-          - q: "Qu'est-ce que le lazy loading ?"
-            a: "Le chargement différé : avec loadComponent ou loadChildren, le code d'une page n'est téléchargé qu'à la première visite. Le premier chargement de l'application est plus léger et plus rapide."
+        ref: ng-ex-routes-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un lien qui recharge tout."
+      - type: exercise
+        ref: ng-ex-routerlink-bug
       - type: quiz
         items:
           - ref: ng-rt-q3
             review: code-routes
-          - ref: ng-rt-q4
-            review: def-garde
-          - ref: ng-rt-q5
+          - ref: ng-ro-q4
             review: def-route
+          - ref: ng-ro-q5
+            review: code-routes
     questions:
       - code: ng-rt-q1
         kind: CHOIX_UNIQUE
@@ -121,29 +92,23 @@ lessons:
         skill: angular-routage
         prompt: "Quel lien change de page sans recharger toute l'application ?"
         choices:
-          - label: "<a routerLink=\"/produits\">"
+          - label: "<a routerLink=\"/livres\">"
             correct: true
             why: "Le routeur gère la navigation."
-          - label: "<a href=\"/produits\">"
+          - label: "<a href=\"/livres\">"
             correct: false
             why: "href recharge tout le site."
-          - label: "<a link=\"/produits\">"
+          - label: "<a link=\"/livres\">"
             correct: false
             why: "Cet attribut n'existe pas."
         explanation: "routerLink = navigation interne."
-      - code: ng-rt-q2
-        kind: VRAI_FAUX
+      - code: ng-rt-q5
+        kind: TEXTE
         difficulty: 2
         skill: angular-routage
-        prompt: "Une garde Angular suffit à protéger les données d'une page administrateur."
-        choices:
-          - label: "Vrai"
-            correct: false
-            why: "Le code du navigateur peut être contourné."
-          - label: "Faux"
-            correct: true
-            why: "L'API doit vérifier les droits à chaque requête."
-        explanation: "Le frontend protège l'affichage ; le backend protège les données."
+        prompt: "Quelle balise indique où s'affiche la page de la route active ? (sans les chevrons)"
+        answers: ["router-outlet", "router-outlet /", "router-outlet/"]
+        explanation: "`<router-outlet />` se place en général dans le composant principal."
       - code: ng-rt-q3
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -160,6 +125,461 @@ lessons:
             correct: false
             why: "Placée avant, elle masquerait les autres."
         explanation: "Premier trouvé, premier servi."
+      - code: ng-ro-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: angular-routage
+        prompt: "Une application Angular change réellement de page HTML à chaque navigation."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Il n'y a qu'une page : le routeur échange les composants."
+          - label: "Faux"
+            correct: true
+            why: "Seul le contenu de router-outlet change."
+        explanation: "Une seule page, des composants échangés."
+      - code: ng-ro-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-routage
+        prompt: "Quelle route affiche la page d'accueil ?"
+        choices:
+          - label: "`{ path: '', component: AccueilComponent }`"
+            correct: true
+            why: "Le chemin vide correspond à la racine du site."
+          - label: "`{ path: '**', component: AccueilComponent }`"
+            correct: false
+            why: "`**` est pour les adresses inconnues."
+          - label: "`{ path: '/', component: AccueilComponent }`"
+            correct: false
+            why: "Les chemins s'écrivent sans barre au début."
+        explanation: "'' = accueil ; '**' = 404."
+    exercises:
+      - slug: ng-ex-routes-guide
+        kind: COMPLETER
+        title: "Compléter les routes"
+        difficulty: FACILE
+        skill: angular-routage
+        statement: "Complète : la page des livres (`/livres`), la page des salles (`/salles`) et la page introuvable."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Les chemins s'écrivent sans barre au début."
+          - "La page 404 attrape toutes les adresses."
+          - "livres, salles, **."
+        solution: '["livres", "salles", "**"]'
+        explanation: "Une adresse par page, et la 404 en dernier."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            export const routes: Routes = [
+              { path: '', component: AccueilComponent },
+              { path: '[[1]]', component: ListeLivresComponent },
+              { path: '[[2]]', component: SallesComponent },
+              { path: '[[3]]', component: PageIntrouvableComponent },
+            ];
+          blanks:
+            - ["livres"]
+            - ["salles"]
+            - ["**"]
+      - slug: ng-ex-routes-libre
+        kind: CODE_LIBRE
+        title: "Les routes d'une bibliothèque"
+        difficulty: FACILE
+        skill: angular-routage
+        statement: |
+          Écris le tableau `routes` avec, dans cet ordre :
+          - `''` → `AccueilComponent` ;
+          - `'livres'` → `ListeLivresComponent` ;
+          - `'**'` → `PageIntrouvableComponent`.
+        criteria: "Trois routes, la route ** en dernier."
+        hints:
+          - "`export const routes: Routes = [ … ];`"
+          - "Chaque route : `{ path: 'livres', component: ListeLivresComponent }`."
+          - "La route `**` se place à la fin."
+        solution: |
+          export const routes: Routes = [
+            { path: '', component: AccueilComponent },
+            { path: 'livres', component: ListeLivresComponent },
+            { path: '**', component: PageIntrouvableComponent },
+          ];
+        explanation: "Chaque adresse a sa page ; la 404 ferme la marche."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            export const routes: Routes = [
+
+            ];
+          checks:
+            - pattern: 'path\s*:\s*[''"]{2}\s*,\s*component\s*:\s*AccueilComponent'
+              message: "Ajoute la route '' vers AccueilComponent."
+            - pattern: 'path\s*:\s*[''"]livres[''"]\s*,\s*component\s*:\s*ListeLivresComponent'
+              message: "Ajoute la route 'livres' vers ListeLivresComponent."
+            - pattern: 'path\s*:\s*[''"]\*\*[''"]\s*,\s*component\s*:\s*PageIntrouvableComponent\s*\}\s*,?\s*\]'
+              message: "Termine par la route '**' vers PageIntrouvableComponent."
+      - slug: ng-ex-routerlink-bug
+        kind: CORRIGER_ERREUR
+        title: "Un lien qui recharge tout"
+        difficulty: FACILE
+        skill: angular-routage
+        statement: |
+          Ce menu utilise `href` : à chaque clic, toute l'application se recharge. Remplace par `routerLink`.
+        criteria: "Les deux liens utilisent routerLink."
+        hints:
+          - "Quel attribut navigue sans recharger ?"
+          - "routerLink."
+          - "`<a routerLink=\"/livres\">Livres</a>`"
+        solution: |
+          <nav>
+            <a routerLink="/livres">Livres</a>
+            <a routerLink="/contact">Contact</a>
+          </nav>
+        explanation: "routerLink laisse le routeur changer la page."
+        xp: 10
+        payload:
+          language: html
+          starter: |
+            <nav>
+              <a href="/livres">Livres</a>
+              <a href="/contact">Contact</a>
+            </nav>
+          checks:
+            - pattern: '\bhref\s*='
+              absent: true
+              message: "Remplace href par routerLink."
+            - pattern: 'routerLink\s*=\s*"/livres"[\s\S]*routerLink\s*=\s*"/contact"'
+              message: "Utilise routerLink pour les deux liens."
+
+  # ===================================================================== LEÇON 2
+  - slug: ng-parametres-route
+    title: "Lire un paramètre d'adresse : :id"
+    duration: 10
+    objective: "Déclarer une route avec un paramètre et le lire dans le composant."
+    prerequisites: "Leçon « Les routes : une adresse, une page »."
+    skills: [angular-routage]
+    xp: 15
+    memo: |
+      - `path: 'livres/:id'` : `:id` est un **paramètre** : `/livres/12`, `/livres/40`…
+      - Avec l'option `withComponentInputBinding()`, le composant le reçoit dans un **input du même nom** : `id = input<string>();`.
+      - Lien vers un détail : `[routerLink]="['/livres', l.id]"`.
+    commonMistakes: |
+      - Oublier les deux-points : `livres/id` ne correspond qu'à l'adresse exacte « /livres/id ».
+      - Donner à l'input un autre nom que le paramètre.
+    blocks:
+      - type: definition
+        id: def-parametre
+        term: "Paramètre de route"
+        md: |
+          Une **case à remplir** dans l'adresse, comme le numéro de chambre sur une clé d'hôtel : `/livres/:id`
+          sert pour tous les livres, et `id` dit lequel.
+      - type: code
+        id: code-parametre
+        language: typescript
+        title: "La page détail d'un livre"
+        code: |
+          // app.routes.ts
+          { path: 'livres/:id', component: DetailLivreComponent }
+
+          // detail-livre.component.ts
+          export class DetailLivreComponent {
+            id = input<string>();
+          }
+
+          // Dans la liste :
+          // <a [routerLink]="['/livres', l.id]">{{ l.titre }}</a>
+        lines:
+          - n: 2
+            note: "`:id` : la partie variable de l'adresse."
+          - n: 6
+            note: "Le routeur remplit l'input qui porte le même nom que le paramètre."
+          - n: 10
+            note: "On construit l'adresse `/livres/12` à partir de l'identifiant."
+      - type: question
+        ref: ng-c3-b2
+        review: code-parametre
+      - type: question
+        ref: ng-pa-q2
+        review: def-parametre
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la route et le composant."
+      - type: exercise
+        ref: ng-ex-parametre-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : la page détail d'une salle."
+      - type: exercise
+        ref: ng-ex-parametre-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : des deux-points oubliés."
+      - type: exercise
+        ref: ng-ex-parametre-bug
+      - type: quiz
+        items:
+          - ref: ng-pa-q3
+            review: code-parametre
+          - ref: ng-pa-q4
+            review: def-parametre
+          - ref: ng-pa-q5
+            review: code-parametre
+    questions:
+      - code: ng-c3-b2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-routage
+        prompt: "Comment lire le paramètre `:id` de la route dans un composant (avec `withComponentInputBinding`) ?"
+        choices:
+          - label: "Avec un input nommé id : `id = input<string>();`"
+            correct: true
+            why: "Le routeur remplit l'input du même nom."
+          - label: "Avec `document.location`"
+            correct: false
+            why: "On passe par le routeur, pas par le navigateur."
+          - label: "Ce n'est pas possible"
+            correct: false
+            why: "C'est même très courant (page détail)."
+        explanation: "Sans cette option, on utilise `inject(ActivatedRoute)`."
+      - code: ng-pa-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-routage
+        prompt: "Quelles adresses correspondent à `path: 'livres/:id'` ?"
+        choices:
+          - label: "`/livres/12` et `/livres/40`"
+            correct: true
+            why: ":id prend n'importe quelle valeur."
+          - label: "Seulement `/livres/id`"
+            correct: false
+            why: "Les deux-points rendent la partie variable."
+          - label: "Seulement `/livres`"
+            correct: false
+            why: "Il faut une partie après /livres/."
+        explanation: ":nom = partie variable."
+      - code: ng-pa-q3
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: angular-routage
+        prompt: "L'input qui reçoit le paramètre doit porter le même nom que lui (`id`)."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "C'est ainsi que le routeur le retrouve."
+          - label: "Faux"
+            correct: false
+            why: "Un autre nom resterait vide."
+        explanation: "`:id` → `id = input()`."
+      - code: ng-pa-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-routage
+        prompt: "À quoi sert un paramètre de route ?"
+        choices:
+          - label: "À utiliser une seule page pour tous les éléments (tous les livres)"
+            correct: true
+            why: "Une page détail, un identifiant variable."
+          - label: "À protéger une page"
+            correct: false
+            why: "C'est le rôle d'une garde."
+          - label: "À charger la page plus vite"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Une route, une infinité d'adresses."
+      - code: ng-pa-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-routage
+        prompt: "Comment écrire un lien vers le détail du livre `l` ?"
+        choices:
+          - label: "`<a [routerLink]=\"['/livres', l.id]\">`"
+            correct: true
+            why: "Le routeur assemble /livres/ et l'identifiant."
+          - label: "`<a routerLink=\"/livres/l.id\">`"
+            correct: false
+            why: "Sans crochets, « l.id » serait du texte."
+          - label: "`<a href=\"/livres/{{ l.id }}\">`"
+            correct: false
+            why: "href recharge toute l'application."
+        explanation: "Crochets + tableau de morceaux d'adresse."
+    exercises:
+      - slug: ng-ex-parametre-guide
+        kind: COMPLETER
+        title: "Compléter la route et le composant"
+        difficulty: FACILE
+        skill: angular-routage
+        statement: "Complète la route avec un paramètre `id`, puis l'input qui le reçoit."
+        criteria: "Les deux trous sont corrects."
+        hints:
+          - "Un paramètre commence par deux-points."
+          - "L'input porte le même nom que le paramètre."
+          - ":id, id."
+        solution: '[":id", "id"]'
+        explanation: "Même nom des deux côtés."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            { path: 'commandes/[[1]]', component: DetailCommandeComponent }
+
+            export class DetailCommandeComponent {
+              [[2]] = input<string>();
+            }
+          blanks:
+            - [":id"]
+            - ["id"]
+      - slug: ng-ex-parametre-libre
+        kind: CODE_LIBRE
+        title: "La page détail d'une salle"
+        difficulty: FACILE
+        skill: angular-routage
+        statement: |
+          1. Écris la route `salles/:id` vers `DetailSalleComponent` (dans une constante `route`).
+          2. Écris la classe `DetailSalleComponent` avec un input `id` de type `string`.
+        criteria: "Route avec :id et input id."
+        hints:
+          - "`const route = { path: 'salles/:id', component: DetailSalleComponent };`"
+          - "`id = input<string>();`"
+          - "Les deux noms doivent être identiques."
+        solution: |
+          const route = { path: 'salles/:id', component: DetailSalleComponent };
+
+          export class DetailSalleComponent {
+            id = input<string>();
+          }
+        explanation: "Le routeur remplit l'input id avec la valeur de l'adresse."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            const route =
+
+            export class DetailSalleComponent {
+
+            }
+          checks:
+            - pattern: 'path\s*:\s*[''"]salles/:id[''"]\s*,\s*component\s*:\s*DetailSalleComponent'
+              message: "Écris la route { path: 'salles/:id', component: DetailSalleComponent }."
+            - pattern: '\bid\s*=\s*input\s*<\s*string\s*>\s*\(\s*\)'
+              message: "Déclare id = input<string>();"
+      - slug: ng-ex-parametre-bug
+        kind: CORRIGER_ERREUR
+        title: "Des deux-points oubliés"
+        difficulty: FACILE
+        skill: angular-routage
+        statement: |
+          Cette route ne correspond qu'à l'adresse exacte « /livres/id ». Rends `id` variable.
+        criteria: "path: 'livres/:id'."
+        hints:
+          - "Qu'est-ce qui rend une partie variable ?"
+          - "Deux-points devant le nom."
+          - "`'livres/:id'`"
+        solution: |
+          { path: 'livres/:id', component: DetailLivreComponent }
+        explanation: "`:id` = partie variable."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            { path: 'livres/id', component: DetailLivreComponent }
+          checks:
+            - pattern: 'path\s*:\s*[''"]livres/:id[''"]'
+              message: "Écris path: 'livres/:id'."
+
+  # ===================================================================== LEÇON 3
+  - slug: ng-gardes
+    title: "Protéger une page : les gardes"
+    duration: 11
+    objective: "Écrire une garde canActivate qui laisse entrer ou redirige, en sachant que la vraie sécurité est sur le serveur."
+    prerequisites: "Leçon « Lire un paramètre d'adresse : :id »."
+    skills: [angular-routage]
+    xp: 15
+    memo: |
+      - `canActivate: [authGuard]` : une **garde** décide si on a le droit d'entrer sur la route.
+      - Une garde est une fonction `CanActivateFn` qui renvoie `true` (entrer) ou `router.createUrlTree(['/connexion'])` (rediriger).
+      - Elle améliore le confort, mais le **backend** doit toujours vérifier les droits.
+      - `loadComponent: () => import(…)` : la page n'est téléchargée que si on la visite (chargement différé).
+    commonMistakes: |
+      - Croire qu'une garde suffit à protéger les données.
+      - Rediriger avec `window.location` : toute l'application se recharge.
+    blocks:
+      - type: definition
+        id: def-garde
+        term: "Garde (guard)"
+        md: |
+          Le **vigile** à l'entrée d'une page. Il répond oui (on entre) ou redirige ailleurs (vers la page de
+          connexion). Il améliore le confort, mais la vraie sécurité reste sur le serveur.
+      - type: code
+        id: code-garde
+        language: typescript
+        title: "auth.guard.ts et son utilisation"
+        code: |
+          export const authGuard: CanActivateFn = () => {
+            const auth = inject(AuthService);
+            const router = inject(Router);
+            return auth.estConnecte() ? true : router.createUrlTree(['/connexion']);
+          };
+
+          // app.routes.ts
+          { path: 'compte', canActivate: [authGuard], component: CompteComponent }
+        lines:
+          - n: 1
+            note: "Une garde est une simple fonction de type `CanActivateFn`."
+          - n: 2
+            note: "Elle peut injecter des services comme un composant."
+          - n: 4
+            note: "`true` : on entre. Sinon, on renvoie une redirection vers `/connexion`."
+          - n: 8
+            note: "La garde est consultée avant d'entrer sur `/compte`."
+      - type: callout
+        variant: tip
+        title: "Le chargement différé"
+        md: |
+          Avec `loadComponent: () => import('./compte/compte.component').then(m => m.CompteComponent)`, le code
+          de la page n'est téléchargé qu'à la première visite : l'application démarre plus vite.
+      - type: question
+        ref: ng-rt-q2
+        review: def-garde
+      - type: question
+        ref: ng-rt-q4
+        review: code-garde
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète la garde."
+      - type: exercise
+        ref: ng-ex-garde-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : une garde réservée aux administrateurs."
+      - type: exercise
+        ref: ng-ex-garde
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une page non protégée."
+      - type: exercise
+        ref: ng-ex-garde-bug
+      - type: jury
+        items:
+          - q: "Comment protégez-vous les pages réservées ?"
+            a: "Avec des gardes Angular (canActivate) qui redirigent vers la connexion si l'utilisatrice n'est pas authentifiée ou n'a pas le bon rôle. Mais c'est seulement du confort : l'API Spring Security vérifie le jeton et le rôle à chaque requête."
+          - q: "Qu'est-ce que le lazy loading ?"
+            a: "Le chargement différé : avec loadComponent ou loadChildren, le code d'une page n'est téléchargé qu'à la première visite. Le premier chargement de l'application est plus léger et plus rapide."
+      - type: quiz
+        items:
+          - ref: ng-ga-q3
+            review: code-garde
+          - ref: ng-ga-q4
+            review: def-garde
+          - ref: ng-ga-q5
+            review: code-garde
+    questions:
+      - code: ng-rt-q2
+        kind: VRAI_FAUX
+        difficulty: 2
+        skill: angular-routage
+        prompt: "Une garde Angular suffit à protéger les données d'une page administrateur."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "Le code du navigateur peut être contourné."
+          - label: "Faux"
+            correct: true
+            why: "L'API doit vérifier les droits à chaque requête."
+        explanation: "Le frontend protège l'affichage ; le backend protège les données."
       - code: ng-rt-q4
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -176,40 +596,83 @@ lessons:
             correct: false
             why: "Ce n'est pas une redirection."
         explanation: "true = entrer ; UrlTree = rediriger."
-      - code: ng-rt-q5
-        kind: TEXTE
+      - code: ng-ga-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-routage
+        prompt: "Dans quelle propriété d'une route place-t-on une garde ?"
+        choices:
+          - label: "`canActivate`"
+            correct: true
+            why: "« Peut-on activer cette route ? »"
+          - label: "`component`"
+            correct: false
+            why: "C'est la page affichée."
+          - label: "`path`"
+            correct: false
+            why: "C'est l'adresse."
+        explanation: "`canActivate: [authGuard]`."
+      - code: ng-ga-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-routage
+        prompt: "Que se passe-t-il quand la garde renvoie `true` ?"
+        choices:
+          - label: "On entre sur la page"
+            correct: true
+            why: "Le vigile laisse passer."
+          - label: "On est redirigé vers la connexion"
+            correct: false
+            why: "Il faudrait renvoyer un UrlTree."
+          - label: "La page se recharge"
+            correct: false
+            why: "Aucun rechargement."
+        explanation: "true = oui ; UrlTree = ailleurs."
+      - code: ng-ga-q5
+        kind: CHOIX_UNIQUE
         difficulty: 2
         skill: angular-routage
-        prompt: "Quelle balise indique où s'affiche la page de la route active ? (sans les chevrons)"
-        answers: ["router-outlet", "router-outlet /", "router-outlet/"]
-        explanation: "`<router-outlet />` se place en général dans le composant principal."
+        prompt: "Quel avantage apporte `loadComponent` ?"
+        choices:
+          - label: "La page n'est téléchargée qu'à la première visite"
+            correct: true
+            why: "Démarrage plus léger."
+          - label: "La page est protégée"
+            correct: false
+            why: "C'est le rôle de la garde."
+          - label: "La page s'affiche sans router-outlet"
+            correct: false
+            why: "router-outlet reste nécessaire."
+        explanation: "Chargement différé (lazy loading)."
     exercises:
-      - slug: ng-ex-routes-guide
+      - slug: ng-ex-garde-guide
         kind: COMPLETER
-        title: "Compléter les routes"
+        title: "Compléter la garde"
         difficulty: FACILE
         skill: angular-routage
-        statement: "Complète : paramètre d'identifiant, garde, page introuvable."
+        statement: "Complète le type de la garde, la redirection, puis son utilisation dans la route."
         criteria: "Les trois trous sont corrects."
         hints:
-          - "Un paramètre commence par deux-points."
-          - "La garde se place dans canActivate."
-          - ":id, canActivate, **."
-        solution: '[":id", "canActivate", "**"]'
-        explanation: "Paramètre, protection et page 404 : les trois briques d'un plan de routes."
+          - "Le type d'une garde : CanActivateFn."
+          - "La redirection : createUrlTree ; la propriété de route : canActivate."
+          - "CanActivateFn, createUrlTree, canActivate."
+        solution: '["CanActivateFn", "createUrlTree", "canActivate"]'
+        explanation: "Déclarer, rediriger, brancher."
         xp: 10
         payload:
           language: typescript
           template: |
-            export const routes: Routes = [
-              { path: 'commandes/[[1]]', component: DetailCommandeComponent },
-              { path: 'admin', [[2]]: [adminGuard], component: AdminComponent },
-              { path: '[[3]]', component: PageIntrouvableComponent },
-            ];
+            export const connecteGuard: [[1]] = () => {
+              const auth = inject(AuthService);
+              const router = inject(Router);
+              return auth.estConnecte() ? true : router.[[2]](['/connexion']);
+            };
+
+            { path: 'favoris', [[3]]: [connecteGuard], component: FavorisComponent }
           blanks:
-            - [":id"]
+            - ["CanActivateFn"]
+            - ["createUrlTree"]
             - ["canActivate"]
-            - ["**"]
       - slug: ng-ex-garde
         kind: CODE_LIBRE
         title: "Une garde administrateur"
@@ -248,125 +711,388 @@ lessons:
               message: "Teste `auth.estAdmin()`."
             - pattern: 'createUrlTree\s*\(\s*\[\s*[''"]/accueil[''"]\s*\]\s*\)'
               message: "Redirige avec `router.createUrlTree(['/accueil'])`."
+      - slug: ng-ex-garde-bug
+        kind: CORRIGER_ERREUR
+        title: "Une page non protégée"
+        difficulty: FACILE
+        skill: angular-routage
+        statement: |
+          La page `/admin` n'a pas de garde : tout le monde peut l'ouvrir. Branche `adminGuard` sur cette route.
+        criteria: "canActivate: [adminGuard] sur la route admin."
+        hints:
+          - "Quelle propriété de route reçoit les gardes ?"
+          - "canActivate, avec une liste."
+          - "`canActivate: [adminGuard],`"
+        solution: |
+          { path: 'admin', canActivate: [adminGuard], component: AdminComponent }
+        explanation: "La garde est consultée avant l'entrée."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            { path: 'admin', component: AdminComponent }
+          checks:
+            - pattern: 'canActivate\s*:\s*\[\s*adminGuard\s*\]'
+              message: "Ajoute canActivate: [adminGuard]."
 
-  # ===================================================================== LEÇON 2
+  # ===================================================================== LEÇON 4
   - slug: ng-formulaires
-    title: "Les formulaires réactifs"
-    duration: 15
-    objective: "Construire un formulaire réactif, ajouter des validateurs et afficher des messages d'erreur clairs."
-    prerequisites: "Leçon « Le routage et les gardes »."
+    title: "Le formulaire réactif"
+    duration: 11
+    objective: "Décrire un formulaire dans la classe avec fb.group, le brancher dans le template et récupérer les valeurs."
+    prerequisites: "Leçon « Protéger une page : les gardes »."
     skills: [angular-formulaires]
-    xp: 25
+    xp: 15
     memo: |
-      - Formulaire **réactif** : le formulaire est décrit **dans la classe** (`FormGroup`, `FormControl`), le template s'y branche.
-      - `inject(NonNullableFormBuilder).group({ email: ['', [Validators.required, Validators.email]] })`.
+      - Formulaire **réactif** : le formulaire est décrit **dans la classe**, le template s'y branche.
+      - `form = inject(NonNullableFormBuilder).group({ email: [''] })` : un champ `email`, vide au départ.
       - Template : `<form [formGroup]="form" (ngSubmit)="envoyer()">` et `<input formControlName="email">`.
-      - `form.invalid`, `form.controls.email.hasError('required')`, `touched` : pour afficher les erreurs au bon moment.
-      - `form.getRawValue()` : les valeurs saisies, bien typées.
+      - `form.getRawValue()` : les valeurs saisies.
+      - Ajouter `ReactiveFormsModule` dans les `imports` du composant.
     commonMistakes: |
       - Oublier `ReactiveFormsModule` dans les `imports` du composant.
-      - Afficher les erreurs avant que l'utilisatrice ait touché le champ.
-      - Ne valider que côté Angular : le backend doit valider aussi (`@Valid`).
+      - Écrire `name="email"` au lieu de `formControlName="email"`.
     blocks:
-      - type: text
-        md: |
-          Un formulaire d'inscription doit vérifier que l'e-mail ressemble à un e-mail, que le mot de passe est
-          assez long, et le dire **gentiment** avant l'envoi. Angular le fait avec les **formulaires réactifs**.
       - type: definition
         id: def-form-reactif
         term: "Formulaire réactif"
         md: |
-          Le formulaire est d'abord **décrit dans la classe**, comme un **plan de montage** : quels champs,
-          quelles règles. Le template ne fait que brancher chaque champ HTML sur son morceau du plan.
+          Le formulaire est d'abord **décrit dans la classe**, comme un **plan de montage** : quels champs. Le
+          template ne fait que brancher chaque champ HTML sur son morceau du plan.
       - type: code
         id: code-formulaire
         language: typescript
-        title: "inscription.component.ts"
+        title: "contact.component.ts"
         code: |
           @Component({
-            selector: 'app-inscription',
+            selector: 'app-contact',
             imports: [ReactiveFormsModule],
-            templateUrl: './inscription.component.html',
+            template: `
+              <form [formGroup]="form" (ngSubmit)="envoyer()">
+                <label for="nom">Nom</label>
+                <input id="nom" formControlName="nom">
+                <button type="submit">Envoyer</button>
+              </form>
+            `,
           })
-          export class InscriptionComponent {
+          export class ContactComponent {
             private readonly fb = inject(NonNullableFormBuilder);
-
-            form = this.fb.group({
-              email: ['', [Validators.required, Validators.email]],
-              motDePasse: ['', [Validators.required, Validators.minLength(12)]],
-            });
+            form = this.fb.group({ nom: [''] });
 
             envoyer() {
-              if (this.form.invalid) {
-                this.form.markAllAsTouched();
-                return;
-              }
               console.log(this.form.getRawValue());
             }
           }
         lines:
           - n: 3
             note: "Sans `ReactiveFormsModule`, `formGroup` est inconnu dans le template."
-          - n: 7
-            note: "Le constructeur de formulaires ; `NonNullable` : les valeurs ne sont jamais `null`."
-          - n: 10
-            note: "Valeur de départ `''`, puis la liste des règles (**validateurs**)."
-          - n: 11
-            note: "`minLength(12)` : au moins 12 caractères."
-          - n: 16
-            note: "Si le formulaire n'est pas valide, on marque tout comme « touché » pour afficher les erreurs."
-          - n: 19
-            note: "Les valeurs saisies, prêtes à être envoyées à l'API."
-      - type: code
-        id: code-formulaire-html
-        language: html
-        title: "inscription.component.html"
-        code: |
-          <form [formGroup]="form" (ngSubmit)="envoyer()">
-            <label for="email">E-mail</label>
-            <input id="email" type="email" formControlName="email">
-            @if (form.controls.email.touched && form.controls.email.hasError('email')) {
-              <p class="erreur">Cet e-mail n'a pas un format valide.</p>
-            }
-            <button type="submit">Créer mon compte</button>
-          </form>
-        lines:
-          - n: 1
+          - n: 5
             note: "`[formGroup]` branche le HTML sur le plan ; `(ngSubmit)` est appelé à l'envoi."
-          - n: 2
+          - n: 6
             note: "Un `label` relié au champ : indispensable pour l'accessibilité."
-          - n: 3
-            note: "`formControlName` relie ce champ au contrôle `email`."
-          - n: 4
-            note: "On n'affiche l'erreur que si le champ a été touché."
-      - type: question
-        ref: ng-fm-q1
-        review: code-formulaire
+          - n: 7
+            note: "`formControlName` relie ce champ au contrôle `nom`."
+          - n: 14
+            note: "Le plan : un champ `nom`, vide au départ."
+          - n: 17
+            note: "Les valeurs saisies, par exemple `{ nom: 'Awa' }`."
       - type: question
         ref: ng-fm-q2
-        review: code-formulaire-html
+        review: code-formulaire
+      - type: question
+        ref: ng-fm-q5
+        review: def-form-reactif
       - type: text
-        md: "Exercice guidé : complète le formulaire de connexion."
+        md: "**Exercice 1 (guidé)** : branche le formulaire."
       - type: exercise
-        ref: ng-ex-form-guide
+        ref: ng-ex-form-base-guide
       - type: text
-        md: "En autonomie : écris le formulaire d'un contact."
+        md: "**Exercice 2 (en autonomie)** : un formulaire de recherche."
       - type: exercise
-        ref: ng-ex-form
+        ref: ng-ex-form-base-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un champ débranché."
+      - type: exercise
+        ref: ng-ex-form-base-bug
       - type: jury
         items:
           - q: "Formulaires réactifs ou formulaires pilotés par le template ?"
             a: "J'utilise les formulaires réactifs : la structure et les validateurs sont dans la classe, fortement typés, faciles à tester et à faire évoluer. Les formulaires template (ngModel) conviennent aux très petits formulaires."
+      - type: quiz
+        items:
+          - ref: ng-fm-q4
+            review: code-formulaire
+          - ref: ng-fr-q4
+            review: code-formulaire
+          - ref: ng-fr-q5
+            review: code-formulaire
+    questions:
+      - code: ng-fm-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-formulaires
+        prompt: "Quel attribut relie un `<input>` à un contrôle du FormGroup ?"
+        choices:
+          - label: "formControlName=\"email\""
+            correct: true
+            why: "Il désigne le contrôle par son nom."
+          - label: "name=\"email\""
+            correct: false
+            why: "C'est l'attribut HTML classique, sans lien avec le FormGroup."
+          - label: "[(ngModel)]=\"email\""
+            correct: false
+            why: "C'est la syntaxe des formulaires template."
+        explanation: "`formControlName` dans un `[formGroup]`."
+      - code: ng-fm-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-formulaires
+        prompt: "Où sont déclarés les champs d'un formulaire réactif ?"
+        choices:
+          - label: "Dans la classe du composant"
+            correct: true
+            why: "Le template s'y branche."
+          - label: "Uniquement dans le HTML"
+            correct: false
+            why: "C'est le principe des formulaires template."
+          - label: "Dans la base de données"
+            correct: false
+            why: "Aucun rapport."
+        explanation: "Réactif = piloté par le code."
+      - code: ng-fm-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: angular-formulaires
+        prompt: "Chaque champ doit avoir un `<label>` relié pour être accessible aux lecteurs d'écran."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Le label est lu quand le champ reçoit le focus."
+          - label: "Faux"
+            correct: false
+            why: "Un placeholder ne remplace pas un label."
+        explanation: "`<label for=\"id\">` + `<input id=\"id\">`."
+      - code: ng-fr-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-formulaires
+        prompt: "Quel événement appelle `envoyer()` quand on soumet le formulaire ?"
+        choices:
+          - label: "`(ngSubmit)=\"envoyer()\"` sur la balise form"
+            correct: true
+            why: "Il est déclenché par le bouton submit."
+          - label: "`[ngSubmit]=\"envoyer()\"`"
+            correct: false
+            why: "Un événement s'écoute avec des parenthèses."
+          - label: "`(click)=\"envoyer\"` sur le label"
+            correct: false
+            why: "Le label ne soumet rien."
+        explanation: "`<form [formGroup]=\"form\" (ngSubmit)=\"envoyer()\">`."
+      - code: ng-fr-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-formulaires
+        prompt: "Que renvoie `this.form.getRawValue()` ?"
+        choices:
+          - label: "Un objet avec les valeurs saisies, par exemple `{ nom: 'Awa' }`"
+            correct: true
+            why: "Prêt à être envoyé à l'API."
+          - label: "Le HTML du formulaire"
+            correct: false
+            why: "Il renvoie les données."
+          - label: "Le nombre de champs"
+            correct: false
+            why: "Il renvoie les valeurs."
+        explanation: "getRawValue = les données saisies."
+    exercises:
+      - slug: ng-ex-form-base-guide
+        kind: COMPLETER
+        title: "Brancher le formulaire"
+        difficulty: FACILE
+        skill: angular-formulaires
+        statement: "Complète le template qui se branche sur `form` (champ `email`) et appelle `connecter()` à l'envoi."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "La balise form se branche avec [formGroup], crochets compris."
+          - "L'envoi s'écoute avec (ngSubmit) ; le champ se relie avec formControlName."
+          - "[formGroup], ngSubmit, formControlName."
+        solution: '["[formGroup]", "ngSubmit", "formControlName"]'
+        explanation: "Brancher le groupe, écouter l'envoi, relier le champ."
+        xp: 10
+        payload:
+          language: html
+          template: |
+            <form [[1]]="form" ([[2]])="connecter()">
+              <input type="email" [[3]]="email">
+              <button type="submit">Se connecter</button>
+            </form>
+          blanks:
+            - ["[formGroup]"]
+            - ["ngSubmit"]
+            - ["formControlName"]
+      - slug: ng-ex-form-base-libre
+        kind: CODE_LIBRE
+        title: "Un formulaire de recherche"
+        difficulty: FACILE
+        skill: angular-formulaires
+        statement: |
+          Dans la classe `RechercheComponent` (sans décorateur) :
+          - injecte `NonNullableFormBuilder` dans `fb` ;
+          - crée `form` avec un champ `motCle`, vide au départ ;
+          - écris `chercher()` qui affiche `this.form.getRawValue()` avec `console.log`.
+        criteria: "fb injecté, group avec motCle, méthode chercher qui lit getRawValue."
+        hints:
+          - "`private readonly fb = inject(NonNullableFormBuilder);`"
+          - "`form = this.fb.group({ motCle: [''] });`"
+          - "`chercher() { console.log(this.form.getRawValue()); }`"
+        solution: |
+          export class RechercheComponent {
+            private readonly fb = inject(NonNullableFormBuilder);
+            form = this.fb.group({ motCle: [''] });
+
+            chercher() {
+              console.log(this.form.getRawValue());
+            }
+          }
+        explanation: "Le plan dans la classe, les valeurs à l'envoi."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            export class RechercheComponent {
+
+            }
+          checks:
+            - pattern: '\bfb\s*=\s*inject\s*\(\s*NonNullableFormBuilder\s*\)'
+              message: "Injecte NonNullableFormBuilder dans fb."
+            - pattern: 'form\s*=\s*this\.fb\.group\s*\(\s*\{\s*motCle\s*:\s*\[\s*[''"]{2}\s*\]'
+              message: "Crée form = this.fb.group({ motCle: [''] })."
+            - pattern: 'chercher\s*\(\s*\)[^{]*\{[^}]*this\.form\.getRawValue\s*\(\s*\)'
+              message: "Dans chercher(), lis this.form.getRawValue()."
+      - slug: ng-ex-form-base-bug
+        kind: CORRIGER_ERREUR
+        title: "Un champ débranché"
+        difficulty: FACILE
+        skill: angular-formulaires
+        statement: |
+          Le champ `ville` utilise l'attribut HTML `name` : il n'est pas relié au formulaire réactif. Corrige.
+        criteria: "formControlName=\"ville\"."
+        hints:
+          - "Quel attribut relie un champ au FormGroup ?"
+          - "formControlName."
+          - "`<input formControlName=\"ville\">`"
+        solution: |
+          <form [formGroup]="form" (ngSubmit)="envoyer()">
+            <input formControlName="ville">
+          </form>
+        explanation: "name ne relie rien ; formControlName si."
+        xp: 10
+        payload:
+          language: html
+          starter: |
+            <form [formGroup]="form" (ngSubmit)="envoyer()">
+              <input name="ville">
+            </form>
+          checks:
+            - pattern: '<input[^>]*\bname\s*='
+              absent: true
+              message: "Remplace name par formControlName."
+            - pattern: '<input[^>]*formControlName\s*=\s*"ville"'
+              message: "Écris formControlName=\"ville\"."
+
+  # ===================================================================== LEÇON 5
+  - slug: ng-validateurs
+    title: "Valider un formulaire et afficher les erreurs"
+    duration: 12
+    objective: "Ajouter des validateurs, bloquer l'envoi d'un formulaire invalide et afficher des messages d'erreur au bon moment."
+    prerequisites: "Leçon « Le formulaire réactif »."
+    skills: [angular-formulaires]
+    xp: 15
+    memo: |
+      - Les règles se placent après la valeur de départ : `email: ['', [Validators.required, Validators.email]]`.
+      - `Validators.required` (obligatoire), `Validators.email` (format), `Validators.minLength(12)` (longueur minimale).
+      - `form.invalid` : vrai s'il reste une erreur ; `markAllAsTouched()` affiche toutes les erreurs.
+      - Afficher l'erreur seulement si le champ a été touché : `form.controls.email.touched && form.controls.email.hasError('email')`.
+    commonMistakes: |
+      - Afficher les erreurs avant que l'utilisatrice ait touché le champ.
+      - Ne valider que côté Angular : le backend doit valider aussi (`@Valid`).
+    blocks:
+      - type: text
+        md: |
+          Un formulaire d'inscription doit vérifier que l'e-mail ressemble à un e-mail, et le dire **gentiment**
+          avant l'envoi.
+      - type: definition
+        id: def-validateur
+        term: "Validateur"
+        md: |
+          Un **contrôleur de billets** posté sur un champ : il vérifie une règle (rempli, bon format…). Tant qu'un
+          contrôleur dit non, le formulaire est **invalide**.
+      - type: code
+        id: code-validateurs
+        language: typescript
+        title: "inscription.component.ts"
+        code: |
+          form = this.fb.group({
+            email: ['', [Validators.required, Validators.email]],
+            motDePasse: ['', [Validators.required, Validators.minLength(12)]],
+          });
+
+          envoyer() {
+            if (this.form.invalid) {
+              this.form.markAllAsTouched();
+              return;
+            }
+            console.log(this.form.getRawValue());
+          }
+        lines:
+          - n: 2
+            note: "Valeur de départ `''`, puis la liste des règles (**validateurs**)."
+          - n: 3
+            note: "`minLength(12)` : au moins 12 caractères."
+          - n: 7
+            note: "Formulaire invalide : on marque tout comme « touché » pour afficher les erreurs, puis on s'arrête."
+      - type: code
+        id: code-erreur-html
+        language: html
+        title: "Le message d'erreur"
+        code: |
+          <input id="email" type="email" formControlName="email">
+          @if (form.controls.email.touched && form.controls.email.hasError('email')) {
+            <p class="erreur">Cet e-mail n'a pas un format valide.</p>
+          }
+        lines:
+          - n: 2
+            note: "On n'affiche l'erreur que si le champ a été touché et que la règle email échoue."
+      - type: question
+        ref: ng-fm-q1
+        review: def-validateur
+      - type: question
+        ref: ng-fm-q3
+        review: code-validateurs
+      - type: text
+        md: "**Exercice 1 (guidé)** : le formulaire de connexion."
+      - type: exercise
+        ref: ng-ex-form-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : le formulaire de contact."
+      - type: exercise
+        ref: ng-ex-form
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un formulaire envoyé malgré les erreurs."
+      - type: exercise
+        ref: ng-ex-validateur-bug
+      - type: jury
+        items:
           - q: "La validation côté Angular suffit-elle ?"
             a: "Non. Elle améliore l'expérience utilisateur, mais n'importe qui peut appeler l'API directement. Le backend revalide avec Bean Validation (@Valid, @NotBlank, @Email) et renvoie une erreur 400 claire."
       - type: quiz
         items:
-          - ref: ng-fm-q3
-            review: code-formulaire
-          - ref: ng-fm-q4
-            review: code-formulaire-html
-          - ref: ng-fm-q5
-            review: def-form-reactif
+          - ref: ng-va-q3
+            review: code-erreur-html
+          - ref: ng-va-q4
+            review: def-validateur
+          - ref: ng-va-q5
+            review: code-validateurs
     questions:
       - code: ng-fm-q1
         kind: CHOIX_UNIQUE
@@ -384,22 +1110,6 @@ lessons:
             correct: false
             why: "Il ne se déclenche pas sur une valeur vide ; on utilise required."
         explanation: "required = obligatoire."
-      - code: ng-fm-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: angular-formulaires
-        prompt: "Quel attribut relie un `<input>` à un contrôle du FormGroup ?"
-        choices:
-          - label: "formControlName=\"email\""
-            correct: true
-            why: "Il désigne le contrôle par son nom."
-          - label: "name=\"email\""
-            correct: false
-            why: "C'est l'attribut HTML classique, sans lien avec le FormGroup."
-          - label: "[(ngModel)]=\"email\""
-            correct: false
-            why: "C'est la syntaxe des formulaires template."
-        explanation: "`formControlName` dans un `[formGroup]`."
       - code: ng-fm-q3
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -416,49 +1126,65 @@ lessons:
             correct: false
             why: "C'est reset()."
         explanation: "L'utilisatrice voit tout ce qu'il reste à corriger."
-      - code: ng-fm-q4
-        kind: VRAI_FAUX
-        difficulty: 1
-        skill: angular-formulaires
-        prompt: "Chaque champ doit avoir un `<label>` relié pour être accessible aux lecteurs d'écran."
-        choices:
-          - label: "Vrai"
-            correct: true
-            why: "Le label est lu quand le champ reçoit le focus."
-          - label: "Faux"
-            correct: false
-            why: "Un placeholder ne remplace pas un label."
-        explanation: "`<label for=\"id\">` + `<input id=\"id\">`."
-      - code: ng-fm-q5
+      - code: ng-va-q3
         kind: CHOIX_UNIQUE
         difficulty: 2
         skill: angular-formulaires
-        prompt: "Où sont déclarés les champs et les règles d'un formulaire réactif ?"
+        prompt: "Pourquoi tester `touched` avant d'afficher une erreur ?"
         choices:
-          - label: "Dans la classe du composant"
+          - label: "Pour ne pas afficher d'erreurs sur un formulaire que l'utilisatrice n'a pas encore rempli"
             correct: true
-            why: "Le template s'y branche."
-          - label: "Uniquement dans le HTML"
+            why: "Un formulaire tout rouge dès l'ouverture décourage."
+          - label: "Parce que hasError ne marche pas sans"
             correct: false
-            why: "C'est le principe des formulaires template."
-          - label: "Dans la base de données"
+            why: "hasError fonctionne toujours."
+          - label: "Pour accélérer le formulaire"
+            correct: false
+            why: "C'est une question de confort."
+        explanation: "Afficher l'erreur au bon moment."
+      - code: ng-va-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: angular-formulaires
+        prompt: "Si la validation Angular est bonne, le backend n'a pas besoin de revalider."
+        choices:
+          - label: "Vrai"
+            correct: false
+            why: "On peut appeler l'API sans passer par Angular."
+          - label: "Faux"
+            correct: true
+            why: "Le backend revalide toujours."
+        explanation: "Angular : confort ; backend : sécurité."
+      - code: ng-va-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-formulaires
+        prompt: "Où placer les validateurs d'un champ ?"
+        choices:
+          - label: "Après la valeur de départ : `['', [Validators.required]]`"
+            correct: true
+            why: "Valeur, puis liste des règles."
+          - label: "Dans le HTML, dans l'attribut name"
+            correct: false
+            why: "Les règles sont dans la classe."
+          - label: "Dans la route"
             correct: false
             why: "Aucun rapport."
-        explanation: "Réactif = piloté par le code."
+        explanation: "`champ: [valeur, [règles]]`."
     exercises:
       - slug: ng-ex-form-guide
         kind: COMPLETER
         title: "Le formulaire de connexion"
         difficulty: FACILE
         skill: angular-formulaires
-        statement: "Complète la classe puis le template du formulaire de connexion."
-        criteria: "Les quatre trous sont corrects."
+        statement: "Complète les validateurs du champ email, puis le test qui bloque l'envoi."
+        criteria: "Les trois trous sont corrects."
         hints:
-          - "Le validateur « obligatoire » : required."
-          - "L'envoi du formulaire s'écoute avec (ngSubmit)."
-          - "required, email, ngSubmit, formControlName."
-        solution: '["required", "email", "ngSubmit", "formControlName"]'
-        explanation: "Validateurs dans la classe, branchements dans le template."
+          - "Obligatoire : required ; format : email."
+          - "La propriété vraie s'il reste une erreur : invalid."
+          - "required, email, invalid."
+        solution: '["required", "email", "invalid"]'
+        explanation: "Des règles, puis un contrôle avant l'envoi."
         xp: 10
         payload:
           language: typescript
@@ -468,13 +1194,16 @@ lessons:
               motDePasse: ['', Validators.required],
             });
 
-            <form [formGroup]="form" ([[3]])="connecter()">
-              <input type="email" [[4]]="email">
+            connecter() {
+              if (this.form.[[3]]) {
+                this.form.markAllAsTouched();
+                return;
+              }
+            }
           blanks:
             - ["required"]
             - ["email"]
-            - ["ngSubmit"]
-            - ["formControlName"]
+            - ["invalid"]
       - slug: ng-ex-form
         kind: CODE_LIBRE
         title: "Le formulaire de contact"
@@ -530,26 +1259,54 @@ lessons:
               message: "Dans `envoyer()`, commence par tester `this.form.invalid`."
             - pattern: 'this\.form\.markAllAsTouched\s*\(\s*\)'
               message: "Appelle `this.form.markAllAsTouched()` pour afficher les erreurs."
+      - slug: ng-ex-validateur-bug
+        kind: CORRIGER_ERREUR
+        title: "Un formulaire envoyé malgré les erreurs"
+        difficulty: FACILE
+        skill: angular-formulaires
+        statement: |
+          `envoyer()` transmet les valeurs même si le formulaire est invalide. Ajoute au début le test qui
+          affiche les erreurs et s'arrête.
+        criteria: "if (this.form.invalid) { markAllAsTouched(); return; } avant l'envoi."
+        hints:
+          - "Quelle propriété dit qu'il reste une erreur ?"
+          - "this.form.invalid."
+          - "`if (this.form.invalid) { this.form.markAllAsTouched(); return; }`"
+        solution: |
+          envoyer() {
+            if (this.form.invalid) {
+              this.form.markAllAsTouched();
+              return;
+            }
+            this.service.envoyer(this.form.getRawValue());
+          }
+        explanation: "On ne transmet que des données valides."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            envoyer() {
+              this.service.envoyer(this.form.getRawValue());
+            }
+          checks:
+            - pattern: 'if\s*\(\s*this\.form\.invalid\s*\)\s*\{\s*this\.form\.markAllAsTouched\s*\(\s*\)\s*;\s*return\s*;\s*\}[\s\S]*this\.service\.envoyer'
+              message: "Au début d'envoyer(), teste this.form.invalid, appelle markAllAsTouched() puis return."
 
-  # ===================================================================== LEÇON 3
+  # ===================================================================== LEÇON 6
   - slug: ng-http
-    title: "Appeler l'API avec HttpClient et RxJS"
-    duration: 15
-    objective: "Récupérer et envoyer des données avec HttpClient, comprendre les Observables, gérer les erreurs et ajouter le jeton JWT avec un intercepteur."
-    prerequisites: "Leçon « Les formulaires réactifs » et leçon « Services et injection de dépendances »."
+    title: "Lire des données de l'API : get et subscribe"
+    duration: 12
+    objective: "Récupérer des données avec HttpClient.get, comprendre qu'un Observable attend un abonnement, et gérer l'erreur."
+    prerequisites: "Leçon « Valider un formulaire et afficher les erreurs »."
     skills: [angular-services, api-rest, full-stack]
-    xp: 30
+    xp: 15
     memo: |
-      - `HttpClient` s'active avec `provideHttpClient()` dans `app.config.ts`.
-      - `http.get<Produit[]>('/api/produits')` renvoie un **Observable** : rien ne part tant qu'on ne s'**abonne** pas.
+      - `HttpClient` s'active avec `provideHttpClient()` dans `app.config.ts`, puis s'injecte dans un service.
+      - `http.get<Livre[]>('/api/livres')` renvoie un **Observable** : rien ne part tant qu'on ne s'**abonne** pas.
       - `subscribe({ next, error })` : réagir à la réponse ou à l'erreur.
-      - Opérateurs RxJS dans `pipe(…)` : `map` (transformer), `catchError` (gérer l'erreur), `switchMap` (enchaîner).
-      - `toSignal(obs$)` : transformer un Observable en signal pour le template.
-      - Un **intercepteur** ajoute `Authorization: Bearer <jeton>` à toutes les requêtes.
     commonMistakes: |
       - Appeler `http.get(...)` sans `subscribe` : la requête n'est jamais envoyée.
       - Oublier de gérer l'erreur : l'écran reste bloqué sur « Chargement… ».
-      - Écrire l'adresse complète du serveur partout au lieu d'une configuration unique.
     blocks:
       - type: text
         md: |
@@ -565,41 +1322,35 @@ lessons:
       - type: code
         id: code-http
         language: typescript
-        title: "produit.service.ts"
+        title: "livre.service.ts"
         code: |
           @Injectable({ providedIn: 'root' })
-          export class ProduitService {
+          export class LivreService {
             private readonly http = inject(HttpClient);
 
-            lister(): Observable<Produit[]> {
-              return this.http.get<Produit[]>('/api/produits');
-            }
-
-            creer(produit: NouveauProduit): Observable<Produit> {
-              return this.http.post<Produit>('/api/produits', produit);
+            lister(): Observable<Livre[]> {
+              return this.http.get<Livre[]>('/api/livres');
             }
           }
         lines:
           - n: 3
             note: "Le service reçoit `HttpClient` par injection."
           - n: 6
-            note: "`get<Produit[]>` : on annonce le type de la réponse. **Rien n'est encore envoyé.**"
-          - n: 10
-            note: "`post` envoie l'objet en JSON dans le corps de la requête."
+            note: "`get<Livre[]>` : on annonce le type de la réponse. **Rien n'est encore envoyé.**"
       - type: code
         id: code-subscribe
         language: typescript
         title: "Dans le composant"
         code: |
-          export class ListeProduitsComponent {
-            private readonly service = inject(ProduitService);
-            produits = signal<Produit[]>([]);
+          export class ListeLivresComponent {
+            private readonly service = inject(LivreService);
+            livres = signal<Livre[]>([]);
             erreur = signal('');
 
             constructor() {
               this.service.lister().subscribe({
-                next: liste => this.produits.set(liste),
-                error: () => this.erreur.set('Impossible de charger les produits.'),
+                next: liste => this.livres.set(liste),
+                error: () => this.erreur.set('Impossible de charger les livres.'),
               });
             }
           }
@@ -613,67 +1364,39 @@ lessons:
       - type: question
         ref: ng-ht-q1
         review: def-observable
-      - type: definition
-        id: def-intercepteur
-        term: "Intercepteur"
-        md: |
-          Un **guichet de contrôle** par lequel passent **toutes** les requêtes. Il peut y coller un tampon
-          (le jeton JWT), mesurer le temps, ou réagir à une erreur 401 en renvoyant vers la connexion.
-      - type: code
-        id: code-intercepteur
-        language: typescript
-        title: "auth.interceptor.ts"
-        code: |
-          export const authInterceptor: HttpInterceptorFn = (req, next) => {
-            const jeton = inject(AuthService).jeton();
-            if (!jeton) {
-              return next(req);
-            }
-            return next(req.clone({ setHeaders: { Authorization: `Bearer ${jeton}` } }));
-          };
-
-          // app.config.ts
-          // provideHttpClient(withInterceptors([authInterceptor]))
-        lines:
-          - n: 1
-            note: "Une fonction qui reçoit la requête et le « suivant » dans la chaîne."
-          - n: 4
-            note: "Pas de jeton : la requête passe telle quelle."
-          - n: 6
-            note: "Une requête ne se modifie pas : on la **clone** avec l'en-tête en plus."
-          - n: 10
-            note: "On enregistre l'intercepteur une seule fois, dans la configuration."
       - type: question
-        ref: ng-ht-q2
-        review: code-intercepteur
+        ref: ng-ht-q3
+        review: code-subscribe
       - type: text
-        md: "Exercice guidé : remets l'appel et l'abonnement dans l'ordre."
+        md: "**Exercice 1 (guidé)** : remets l'appel et l'abonnement dans l'ordre."
       - type: exercise
         ref: ng-ex-http-ordre
       - type: text
-        md: "En autonomie : écris un service HTTP complet."
+        md: "**Exercice 2 (en autonomie)** : charger les salles."
       - type: exercise
-        ref: ng-ex-http
+        ref: ng-ex-http-get-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une requête jamais envoyée."
+      - type: exercise
+        ref: ng-ex-http-get-bug
       - type: jury
         items:
           - q: "Qu'est-ce qu'un Observable, et quelle différence avec une Promise ?"
             a: "Un flux de valeurs asynchrones de RxJS. Il est paresseux (rien ne se passe sans subscribe), peut émettre plusieurs valeurs, s'annuler (unsubscribe) et se transformer avec des opérateurs comme map ou switchMap. Une Promise démarre tout de suite et ne donne qu'une valeur."
-          - q: "Comment le jeton JWT est-il envoyé à l'API ?"
-            a: "Un intercepteur HTTP ajoute l'en-tête Authorization: Bearer <jeton> à chaque requête. Il peut aussi intercepter les réponses 401 pour déconnecter l'utilisatrice et la renvoyer vers la page de connexion."
       - type: quiz
         items:
-          - ref: ng-ht-q3
-            review: code-subscribe
-          - ref: ng-ht-q4
+          - ref: ng-hg-q3
             review: code-http
-          - ref: ng-ht-q5
-            review: def-intercepteur
+          - ref: ng-hg-q4
+            review: code-subscribe
+          - ref: ng-c3-b1
+            review: def-observable
     questions:
       - code: ng-ht-q1
         kind: VRAI_FAUX
         difficulty: 1
         skill: angular-services
-        prompt: "`this.http.get('/api/produits');` seul, sans subscribe, envoie la requête."
+        prompt: "`this.http.get('/api/livres');` seul, sans subscribe, envoie la requête."
         choices:
           - label: "Vrai"
             correct: false
@@ -682,22 +1405,6 @@ lessons:
             correct: true
             why: "La requête part au moment de l'abonnement."
         explanation: "Pas d'abonnement, pas de requête (sauf `toSignal` ou le pipe `async`, qui s'abonnent pour toi)."
-      - code: ng-ht-q2
-        kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: api-rest
-        prompt: "Quel en-tête transporte le jeton JWT vers l'API ?"
-        choices:
-          - label: "Authorization: Bearer <jeton>"
-            correct: true
-            why: "C'est la convention standard."
-          - label: "Cookie: jwt"
-            correct: false
-            why: "Possible dans d'autres architectures, mais pas avec un intercepteur Bearer."
-          - label: "Content-Type: jwt"
-            correct: false
-            why: "Content-Type décrit le format du corps."
-        explanation: "Bearer = « porteur » du jeton."
       - code: ng-ht-q3
         kind: CHOIX_UNIQUE
         difficulty: 2
@@ -714,38 +1421,54 @@ lessons:
             correct: false
             why: "C'est justement pour ça qu'on gère error."
         explanation: "Prévois toujours un message d'erreur clair."
-      - code: ng-ht-q4
+      - code: ng-hg-q3
         kind: CHOIX_UNIQUE
-        difficulty: 2
-        skill: api-rest
-        prompt: "Quelle méthode HttpClient utiliser pour créer un nouveau produit ?"
-        choices:
-          - label: "post"
-            correct: true
-            why: "POST crée une ressource."
-          - label: "get"
-            correct: false
-            why: "GET lit."
-          - label: "delete"
-            correct: false
-            why: "DELETE supprime."
-        explanation: "GET lire, POST créer, PUT/PATCH modifier, DELETE supprimer."
-      - code: ng-ht-q5
-        kind: CHOIX_UNIQUE
-        difficulty: 2
+        difficulty: 1
         skill: angular-services
-        prompt: "Pourquoi l'intercepteur utilise-t-il `req.clone(…)` ?"
+        prompt: "Où placer les appels HTTP ?"
         choices:
-          - label: "Parce qu'une requête HttpClient ne peut pas être modifiée : on en crée une copie modifiée"
+          - label: "Dans un service"
             correct: true
-            why: "Les requêtes sont immuables."
-          - label: "Pour envoyer la requête deux fois"
+            why: "Le composant affiche, le service sait faire."
+          - label: "Dans le template"
             correct: false
-            why: "Une seule requête part."
-          - label: "Pour chiffrer la requête"
+            why: "Le template affiche seulement."
+          - label: "Dans le fichier de routes"
             correct: false
-            why: "C'est HTTPS qui chiffre."
-        explanation: "Immuable = on remplace au lieu de modifier."
+            why: "Aucun rapport."
+        explanation: "Service = accès aux données."
+      - code: ng-hg-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-services
+        prompt: "Dans `subscribe({ next: liste => this.livres.set(liste) })`, que contient `liste` ?"
+        choices:
+          - label: "La réponse de l'API : les livres"
+            correct: true
+            why: "next reçoit les données arrivées."
+          - label: "L'adresse de l'API"
+            correct: false
+            why: "C'est la donnée reçue."
+          - label: "Le message d'erreur"
+            correct: false
+            why: "Il arrive dans error."
+        explanation: "next = livraison reçue."
+      - code: ng-c3-b1
+        kind: CHOIX_UNIQUE
+        difficulty: 3
+        skill: angular-services
+        prompt: "Une recherche lance une requête à chaque frappe. Quel opérateur RxJS annule la requête précédente quand une nouvelle arrive ?"
+        choices:
+          - label: "switchMap"
+            correct: true
+            why: "Il « bascule » sur la dernière requête et abandonne l'ancienne."
+          - label: "map"
+            correct: false
+            why: "map transforme une valeur, il n'enchaîne pas de requête."
+          - label: "filter"
+            correct: false
+            why: "filter garde ou rejette des valeurs."
+        explanation: "Les opérateurs RxJS se placent dans `pipe(…)` ; switchMap est souvent combiné avec `debounceTime`."
     exercises:
       - slug: ng-ex-http-ordre
         kind: REMETTRE_ORDRE
@@ -774,6 +1497,251 @@ lessons:
             - "    next: liste => this.commandes.set(liste),"
             - "    error: () => this.erreur.set('Chargement impossible.'),"
             - "  });"
+      - slug: ng-ex-http-get-libre
+        kind: CODE_LIBRE
+        title: "Charger les salles"
+        difficulty: INTERMEDIAIRE
+        skill: angular-services
+        statement: |
+          1. Dans `SalleService`, écris `lister(): Observable<Salle[]>` qui fait un GET sur `/api/salles`
+             (`http` est déjà injecté).
+          2. Dans le composant, abonne-toi : `next` range la liste dans le signal `salles`, `error` met
+             `'Chargement impossible.'` dans le signal `erreur`.
+        criteria: "get<Salle[]> sur /api/salles, subscribe avec next et error."
+        hints:
+          - "`return this.http.get<Salle[]>('/api/salles');`"
+          - "`this.service.lister().subscribe({ next: …, error: … });`"
+          - "`next: liste => this.salles.set(liste)`"
+        solution: |
+          lister(): Observable<Salle[]> {
+            return this.http.get<Salle[]>('/api/salles');
+          }
+
+          this.service.lister().subscribe({
+            next: liste => this.salles.set(liste),
+            error: () => this.erreur.set('Chargement impossible.'),
+          });
+        explanation: "Le service prépare la requête ; le composant s'abonne."
+        xp: 20
+        payload:
+          language: typescript
+          starter: |
+            // 1. Dans SalleService
+
+            // 2. Dans le composant
+          checks:
+            - pattern: 'lister\s*\(\s*\)\s*:\s*Observable\s*<\s*Salle\[\]\s*>'
+              message: "Signature attendue : lister(): Observable<Salle[]>."
+            - pattern: 'http\.get\s*(?:<[^>]*>)?\s*\(\s*[''"`]/api/salles[''"`]\s*\)'
+              message: "Fais un GET sur '/api/salles'."
+            - pattern: '\.subscribe\s*\(\s*\{'
+              message: "Abonne-toi avec subscribe({ … })."
+            - pattern: 'next\s*:\s*\(?\s*(\w+)\s*\)?\s*=>\s*this\.salles\.set\s*\(\s*\1\s*\)'
+              message: "Dans next, range la liste : this.salles.set(liste)."
+            - pattern: 'error\s*:\s*\(\s*\w*\s*\)\s*=>\s*this\.erreur\.set\s*\('
+              message: "Dans error, remplis le signal erreur."
+      - slug: ng-ex-http-get-bug
+        kind: CORRIGER_ERREUR
+        title: "Une requête jamais envoyée"
+        difficulty: FACILE
+        skill: angular-services
+        statement: |
+          Ce composant appelle `lister()` mais ne s'abonne jamais : la requête ne part pas. Ajoute l'abonnement
+          qui range la liste dans `livres`.
+        criteria: "subscribe avec next qui remplit livres."
+        hints:
+          - "Un Observable attend un abonnement."
+          - "subscribe({ next: … })."
+          - "`this.service.lister().subscribe({ next: liste => this.livres.set(liste) });`"
+        solution: |
+          constructor() {
+            this.service.lister().subscribe({
+              next: liste => this.livres.set(liste),
+            });
+          }
+        explanation: "Pas d'abonnement, pas de requête."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            constructor() {
+              this.service.lister();
+            }
+          checks:
+            - pattern: 'lister\(\)\s*\.subscribe\s*\('
+              message: "Abonne-toi : this.service.lister().subscribe(…)."
+            - pattern: 'next\s*:\s*\(?\s*(\w+)\s*\)?\s*=>\s*this\.livres\.set\s*\(\s*\1\s*\)'
+              message: "Dans next, range la liste : this.livres.set(liste)."
+
+  # ===================================================================== LEÇON 7
+  - slug: ng-http-ecrire
+    title: "Créer et supprimer : post et delete"
+    duration: 11
+    objective: "Envoyer des données avec post et supprimer avec delete, en choisissant le bon verbe HTTP."
+    prerequisites: "Leçon « Lire des données de l'API : get et subscribe »."
+    skills: [api-rest, angular-services]
+    xp: 15
+    memo: |
+      - GET **lire**, POST **créer**, PUT/PATCH **modifier**, DELETE **supprimer**.
+      - `http.post<Livre>('/api/livres', livre)` : l'objet part en JSON dans le corps de la requête.
+      - `http.delete<void>(`/api/livres/${id}`)` : l'identifiant est dans l'adresse.
+      - Chaque méthode du service correspond à une action de l'API.
+    commonMistakes: |
+      - Utiliser `get` pour créer une ressource.
+      - Oublier d'envoyer l'objet en second argument de `post`.
+    blocks:
+      - type: definition
+        id: def-verbes
+        term: "Verbes HTTP"
+        md: |
+          Les **verbes** disent au serveur ce qu'on veut faire, comme au guichet de la bibliothèque :
+          « je consulte » (GET), « je dépose » (POST), « je remplace » (PUT), « je retire » (DELETE).
+      - type: code
+        id: code-http-ecrire
+        language: typescript
+        title: "livre.service.ts (suite)"
+        code: |
+          creer(livre: NouveauLivre): Observable<Livre> {
+            return this.http.post<Livre>('/api/livres', livre);
+          }
+
+          supprimer(id: number): Observable<void> {
+            return this.http.delete<void>(`/api/livres/${id}`);
+          }
+        lines:
+          - n: 2
+            note: "`post` envoie l'objet en JSON ; l'API répond avec le livre créé."
+          - n: 6
+            note: "`delete` : l'identifiant est placé dans l'adresse avec un gabarit."
+      - type: question
+        ref: ng-ht-q4
+        review: def-verbes
+      - type: question
+        ref: ng-he-q2
+        review: code-http-ecrire
+      - type: text
+        md: "**Exercice 1 (guidé)** : le bon verbe pour chaque action."
+      - type: exercise
+        ref: ng-ex-verbes-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : le service des rendez-vous."
+      - type: exercise
+        ref: ng-ex-http
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : un GET qui veut créer."
+      - type: exercise
+        ref: ng-ex-http-post-bug
+      - type: quiz
+        items:
+          - ref: ng-he-q3
+            review: def-verbes
+          - ref: ng-he-q4
+            review: code-http-ecrire
+          - ref: ng-he-q5
+            review: def-verbes
+    questions:
+      - code: ng-ht-q4
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: api-rest
+        prompt: "Quelle méthode HttpClient utiliser pour créer un nouveau livre ?"
+        choices:
+          - label: "post"
+            correct: true
+            why: "POST crée une ressource."
+          - label: "get"
+            correct: false
+            why: "GET lit."
+          - label: "delete"
+            correct: false
+            why: "DELETE supprime."
+        explanation: "GET lire, POST créer, PUT/PATCH modifier, DELETE supprimer."
+      - code: ng-he-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: api-rest
+        prompt: "Dans `http.post<Livre>('/api/livres', livre)`, où part l'objet `livre` ?"
+        choices:
+          - label: "Dans le corps de la requête, en JSON"
+            correct: true
+            why: "Le second argument est le corps."
+          - label: "Dans l'adresse"
+            correct: false
+            why: "L'adresse est le premier argument."
+          - label: "Nulle part"
+            correct: false
+            why: "Il est envoyé au serveur."
+        explanation: "post(adresse, corps)."
+      - code: ng-he-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: api-rest
+        prompt: "Quel verbe pour supprimer la salle 3 ?"
+        choices:
+          - label: "DELETE /api/salles/3"
+            correct: true
+            why: "DELETE retire."
+          - label: "GET /api/salles/3"
+            correct: false
+            why: "GET lit."
+          - label: "POST /api/salles/3"
+            correct: false
+            why: "POST crée."
+        explanation: "L'identifiant dans l'adresse, le verbe DELETE."
+      - code: ng-he-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: angular-services
+        prompt: "`http.post(...)` comme `http.get(...)` ne part qu'au moment du subscribe."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Tous les appels HttpClient sont des Observables."
+          - label: "Faux"
+            correct: false
+            why: "Ils attendent tous un abonnement."
+        explanation: "Même règle pour tous les verbes."
+      - code: ng-he-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: api-rest
+        prompt: "Quel verbe pour remplacer entièrement un livre existant ?"
+        choices:
+          - label: "PUT"
+            correct: true
+            why: "PUT remplace."
+          - label: "POST"
+            correct: false
+            why: "POST crée."
+          - label: "GET"
+            correct: false
+            why: "GET lit."
+        explanation: "PUT remplace, PATCH modifie une partie."
+    exercises:
+      - slug: ng-ex-verbes-guide
+        kind: COMPLETER
+        title: "Le bon verbe pour chaque action"
+        difficulty: FACILE
+        skill: api-rest
+        statement: "Complète chaque méthode avec get, post ou delete."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "Lire : get."
+          - "Créer : post ; supprimer : delete."
+          - "get, post, delete."
+        solution: '["get", "post", "delete"]'
+        explanation: "Un verbe par action."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            lister() { return this.http.[[1]]<Salle[]>('/api/salles'); }
+            creer(salle: NouvelleSalle) { return this.http.[[2]]<Salle>('/api/salles', salle); }
+            supprimer(id: number) { return this.http.[[3]]<void>(`/api/salles/${id}`); }
+          blanks:
+            - ["get"]
+            - ["post"]
+            - ["delete"]
       - slug: ng-ex-http
         kind: CODE_LIBRE
         title: "Le service des rendez-vous"
@@ -833,37 +1801,311 @@ lessons:
               message: "Signature attendue : `annuler(id: number): Observable<void>`."
             - pattern: 'http\.delete\s*(?:<[^>]*>)?\s*\(\s*(?:`/api/rendez-vous/\$\{\s*id\s*\}`|[''"]/api/rendez-vous/[''"]\s*\+\s*id)\s*\)'
               message: "annuler fait un DELETE sur `/api/rendez-vous/${id}`."
+      - slug: ng-ex-http-post-bug
+        kind: CORRIGER_ERREUR
+        title: "Un GET qui veut créer"
+        difficulty: FACILE
+        skill: api-rest
+        statement: |
+          Cette méthode doit **créer** un livre, mais elle utilise `get` et n'envoie pas l'objet. Corrige-la
+          avec `post` et l'objet `livre` en second argument.
+        criteria: "http.post<Livre>('/api/livres', livre)."
+        hints:
+          - "Quel verbe crée ?"
+          - "post prend l'adresse puis l'objet."
+          - "`return this.http.post<Livre>('/api/livres', livre);`"
+        solution: |
+          creer(livre: NouveauLivre): Observable<Livre> {
+            return this.http.post<Livre>('/api/livres', livre);
+          }
+        explanation: "Créer = POST avec un corps."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            creer(livre: NouveauLivre): Observable<Livre> {
+              return this.http.get<Livre>('/api/livres');
+            }
+          checks:
+            - pattern: 'http\.get'
+              absent: true
+              message: "GET sert à lire, pas à créer."
+            - pattern: 'http\.post\s*(?:<[^>]*>)?\s*\(\s*[''"]/api/livres[''"]\s*,\s*livre\s*\)'
+              message: "Écris this.http.post<Livre>('/api/livres', livre)."
+
+  # ===================================================================== LEÇON 8
+  - slug: ng-intercepteur
+    title: "Envoyer le jeton : l'intercepteur"
+    duration: 10
+    objective: "Ajouter automatiquement le jeton JWT à toutes les requêtes avec un intercepteur HTTP."
+    prerequisites: "Leçon « Créer et supprimer : post et delete »."
+    skills: [angular-services, api-rest]
+    xp: 15
+    memo: |
+      - Un **intercepteur** voit passer **toutes** les requêtes HTTP.
+      - Il ajoute `Authorization: Bearer <jeton>` en **clonant** la requête : `req.clone({ setHeaders: { … } })`.
+      - On l'enregistre une fois : `provideHttpClient(withInterceptors([authInterceptor]))`.
+    commonMistakes: |
+      - Vouloir modifier la requête directement : elle est immuable, on la clone.
+      - Oublier de laisser passer la requête avec `next(...)`.
+    blocks:
+      - type: definition
+        id: def-intercepteur
+        term: "Intercepteur"
+        md: |
+          Un **guichet de contrôle** par lequel passent **toutes** les requêtes. Il peut y coller un tampon
+          (le jeton JWT) avant de les laisser partir.
+      - type: code
+        id: code-intercepteur
+        language: typescript
+        title: "auth.interceptor.ts"
+        code: |
+          export const authInterceptor: HttpInterceptorFn = (req, next) => {
+            const jeton = inject(AuthService).jeton();
+            if (!jeton) {
+              return next(req);
+            }
+            return next(req.clone({ setHeaders: { Authorization: `Bearer ${jeton}` } }));
+          };
+
+          // app.config.ts
+          // provideHttpClient(withInterceptors([authInterceptor]))
+        lines:
+          - n: 1
+            note: "Une fonction qui reçoit la requête et le « suivant » dans la chaîne."
+          - n: 4
+            note: "Pas de jeton : la requête passe telle quelle."
+          - n: 6
+            note: "Une requête ne se modifie pas : on la **clone** avec l'en-tête en plus."
+          - n: 10
+            note: "On enregistre l'intercepteur une seule fois, dans la configuration."
+      - type: question
+        ref: ng-ht-q2
+        review: code-intercepteur
+      - type: question
+        ref: ng-ht-q5
+        review: code-intercepteur
+      - type: text
+        md: "**Exercice 1 (guidé)** : complète l'intercepteur."
+      - type: exercise
+        ref: ng-ex-intercepteur-guide
+      - type: text
+        md: "**Exercice 2 (en autonomie)** : un intercepteur de langue."
+      - type: exercise
+        ref: ng-ex-intercepteur-libre
+      - type: text
+        md: "**Exercice 3 (trouver l'erreur)** : une requête modifiée directement."
+      - type: exercise
+        ref: ng-ex-intercepteur-bug
+      - type: jury
+        items:
+          - q: "Comment le jeton JWT est-il envoyé à l'API ?"
+            a: "Un intercepteur HTTP ajoute l'en-tête Authorization: Bearer <jeton> à chaque requête. Il peut aussi intercepter les réponses 401 pour déconnecter l'utilisatrice et la renvoyer vers la page de connexion."
+      - type: quiz
+        items:
+          - ref: ng-ic-q3
+            review: def-intercepteur
+          - ref: ng-ic-q4
+            review: code-intercepteur
+          - ref: ng-ic-q5
+            review: code-intercepteur
+    questions:
+      - code: ng-ht-q2
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: api-rest
+        prompt: "Quel en-tête transporte le jeton JWT vers l'API ?"
+        choices:
+          - label: "Authorization: Bearer <jeton>"
+            correct: true
+            why: "C'est la convention standard."
+          - label: "Cookie: jwt"
+            correct: false
+            why: "Possible dans d'autres architectures, mais pas avec un intercepteur Bearer."
+          - label: "Content-Type: jwt"
+            correct: false
+            why: "Content-Type décrit le format du corps."
+        explanation: "Bearer = « porteur » du jeton."
+      - code: ng-ht-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-services
+        prompt: "Pourquoi l'intercepteur utilise-t-il `req.clone(…)` ?"
+        choices:
+          - label: "Parce qu'une requête HttpClient ne peut pas être modifiée : on en crée une copie modifiée"
+            correct: true
+            why: "Les requêtes sont immuables."
+          - label: "Pour envoyer la requête deux fois"
+            correct: false
+            why: "Une seule requête part."
+          - label: "Pour chiffrer la requête"
+            correct: false
+            why: "C'est HTTPS qui chiffre."
+        explanation: "Immuable = on remplace au lieu de modifier."
+      - code: ng-ic-q3
+        kind: CHOIX_UNIQUE
+        difficulty: 1
+        skill: angular-services
+        prompt: "Quelles requêtes passent par l'intercepteur ?"
+        choices:
+          - label: "Toutes les requêtes HttpClient"
+            correct: true
+            why: "C'est un guichet commun."
+          - label: "Seulement les GET"
+            correct: false
+            why: "Tous les verbes passent."
+          - label: "Seulement celles d'un composant"
+            correct: false
+            why: "Il est global."
+        explanation: "Un endroit unique pour toutes les requêtes."
+      - code: ng-ic-q4
+        kind: VRAI_FAUX
+        difficulty: 1
+        skill: angular-services
+        prompt: "Sans jeton, l'intercepteur laisse passer la requête telle quelle avec `next(req)`."
+        choices:
+          - label: "Vrai"
+            correct: true
+            why: "Les pages publiques continuent de marcher."
+          - label: "Faux"
+            correct: false
+            why: "C'est la branche « pas de jeton »."
+        explanation: "next(req) = laisser partir."
+      - code: ng-ic-q5
+        kind: CHOIX_UNIQUE
+        difficulty: 2
+        skill: angular-services
+        prompt: "Où enregistre-t-on l'intercepteur ?"
+        choices:
+          - label: "Une fois, dans app.config.ts avec withInterceptors"
+            correct: true
+            why: "Il s'applique ensuite partout."
+          - label: "Dans chaque composant"
+            correct: false
+            why: "Une seule fois suffit."
+          - label: "Dans le fichier de routes"
+            correct: false
+            why: "Les routes ne gèrent pas HTTP."
+        explanation: "`provideHttpClient(withInterceptors([authInterceptor]))`."
+    exercises:
+      - slug: ng-ex-intercepteur-guide
+        kind: COMPLETER
+        title: "Compléter l'intercepteur"
+        difficulty: FACILE
+        skill: angular-services
+        statement: "Complète le clonage, l'en-tête et l'envoi."
+        criteria: "Les trois trous sont corrects."
+        hints:
+          - "On copie la requête avec clone."
+          - "L'en-tête du jeton s'appelle Authorization ; on laisse partir avec next."
+          - "clone, Authorization, next."
+        solution: '["clone", "Authorization", "next"]'
+        explanation: "Copier, tamponner, laisser partir."
+        xp: 10
+        payload:
+          language: typescript
+          template: |
+            const copie = req.[[1]]({ setHeaders: { [[2]]: `Bearer ${jeton}` } });
+            return [[3]](copie);
+          blanks:
+            - ["clone"]
+            - ["Authorization"]
+            - ["next"]
+      - slug: ng-ex-intercepteur-libre
+        kind: CODE_LIBRE
+        title: "Un intercepteur de langue"
+        difficulty: INTERMEDIAIRE
+        skill: angular-services
+        statement: |
+          Écris `langueInterceptor` de type `HttpInterceptorFn`, qui ajoute à toutes les requêtes l'en-tête
+          `'Accept-Language': 'fr'` puis laisse partir la copie.
+        criteria: "HttpInterceptorFn, clone avec setHeaders, next sur la copie."
+        hints:
+          - "`export const langueInterceptor: HttpInterceptorFn = (req, next) => { … };`"
+          - "`req.clone({ setHeaders: { 'Accept-Language': 'fr' } })`"
+          - "`return next(req.clone(…));`"
+        solution: |
+          export const langueInterceptor: HttpInterceptorFn = (req, next) => {
+            return next(req.clone({ setHeaders: { 'Accept-Language': 'fr' } }));
+          };
+        explanation: "Le même modèle sert pour tout en-tête commun."
+        xp: 15
+        payload:
+          language: typescript
+          starter: |
+            export const langueInterceptor
+          checks:
+            - pattern: 'langueInterceptor\s*:\s*HttpInterceptorFn\s*=\s*\(\s*req\s*,\s*next\s*\)\s*=>'
+              message: "Déclare langueInterceptor: HttpInterceptorFn = (req, next) => …"
+            - pattern: 'req\.clone\s*\(\s*\{\s*setHeaders\s*:\s*\{\s*[''"]Accept-Language[''"]\s*:\s*[''"]fr[''"]'
+              message: "Clone la requête avec setHeaders: { 'Accept-Language': 'fr' }."
+            - pattern: 'next\s*\(\s*req\.clone'
+              message: "Laisse partir la copie : return next(req.clone(…))."
+      - slug: ng-ex-intercepteur-bug
+        kind: CORRIGER_ERREUR
+        title: "Une requête modifiée directement"
+        difficulty: INTERMEDIAIRE
+        skill: angular-services
+        statement: |
+          Cet intercepteur essaie de modifier la requête directement, ce qui est impossible. Remplace les deux
+          dernières lignes par un seul `return next(req.clone(…))` qui ajoute l'en-tête `Authorization`.
+        criteria: "Clonage avec setHeaders, sans modification directe."
+        hints:
+          - "Une requête est immuable."
+          - "On la clone avec l'en-tête en plus."
+          - "`return next(req.clone({ setHeaders: { Authorization: `Bearer ${jeton}` } }));`"
+        solution: |
+          export const authInterceptor: HttpInterceptorFn = (req, next) => {
+            const jeton = inject(AuthService).jeton();
+            return next(req.clone({ setHeaders: { Authorization: `Bearer ${jeton}` } }));
+          };
+        explanation: "Immuable : on clone."
+        xp: 10
+        payload:
+          language: typescript
+          starter: |
+            export const authInterceptor: HttpInterceptorFn = (req, next) => {
+              const jeton = inject(AuthService).jeton();
+              req.headers.set('Authorization', `Bearer ${jeton}`);
+              return next(req);
+            };
+          checks:
+            - pattern: 'req\.headers\.set'
+              absent: true
+              message: "On ne modifie pas la requête directement."
+            - pattern: 'next\s*\(\s*req\.clone\s*\(\s*\{\s*setHeaders\s*:\s*\{\s*Authorization\s*:'
+              message: "Écris return next(req.clone({ setHeaders: { Authorization: … } }))."
 
 bank:
-  - code: ng-c3-b1
+  - code: ng-c3-b3
     kind: CHOIX_UNIQUE
-    difficulty: 3
-    skill: angular-services
-    prompt: "Une recherche lance une requête à chaque frappe. Quel opérateur annule la requête précédente quand une nouvelle arrive ?"
+    difficulty: 1
+    skill: angular-formulaires
+    prompt: "Quel module ajouter aux imports d'un composant qui utilise `[formGroup]` ?"
     choices:
-      - label: "switchMap"
+      - label: "ReactiveFormsModule"
         correct: true
-        why: "Il « bascule » sur la dernière requête et abandonne l'ancienne."
-      - label: "map"
+        why: "Il apporte formGroup et formControlName."
+      - label: "HttpClientModule"
         correct: false
-        why: "map transforme une valeur, il n'enchaîne pas de requête."
-      - label: "filter"
+        why: "Il concerne HTTP."
+      - label: "RouterModule"
         correct: false
-        why: "filter garde ou rejette des valeurs."
-    explanation: "Souvent combiné avec `debounceTime(300)` pour attendre la fin de la frappe."
-  - code: ng-c3-b2
+        why: "Il concerne les routes."
+    explanation: "Sans lui, `formGroup` est inconnu."
+  - code: ng-c3-b4
     kind: CHOIX_UNIQUE
-    difficulty: 2
-    skill: angular-routage
-    prompt: "Comment lire le paramètre `:id` de la route dans un composant (avec `withComponentInputBinding`) ?"
+    difficulty: 1
+    skill: api-rest
+    prompt: "Quel verbe HTTP pour lire la liste des livres ?"
     choices:
-      - label: "Avec un input nommé id : `id = input<string>();`"
+      - label: "GET"
         correct: true
-        why: "Le routeur remplit l'input du même nom."
-      - label: "Avec `document.location`"
+        why: "GET lit."
+      - label: "POST"
         correct: false
-        why: "On passe par le routeur, pas par le navigateur."
-      - label: "Ce n'est pas possible"
+        why: "POST crée."
+      - label: "DELETE"
         correct: false
-        why: "C'est même très courant (page détail)."
-    explanation: "Sans cette option, on utilise `inject(ActivatedRoute)`."
+        why: "DELETE supprime."
+    explanation: "GET lire, POST créer, PUT modifier, DELETE supprimer."
